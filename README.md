@@ -1,4 +1,3 @@
-
 Project Proposal for dataset annotation with linguistic traps.
 
 LLMs perform problem analysis without any kind of formalization, relying on autoregressive token generation.
@@ -6,19 +5,34 @@ We propose to annotate existing reasoning problem sets with "malicious" annotati
 for a trained human to decode or ignore. We want to evaluate LLMs under this more stringent condition to see how
 intelligent the models are when it comes to fluid intelligence in combination with mathematical reasoning.
 
-Here is the list of modifications that we would like to apply to problem statements in datasets. For now we plan to
-use Python to insert additional strings into problem statements in the datasets.
+For now we plan to use Python to insert additional strings into problem statements in the datasets to confuse the
+models. We will start with the first technique and then move on to the next one once we setup evaluation pipeline.
 
+In the end, we would like to take a reasoning model and a math reasoning dataset.
+We evaluate the model on a test subset (official one if exists) and compare to the same model on the same test subset,
+but annotated with distraction techniques. We want to do this for multiple models and datasets.
+
+Here are the first model and the first dataset.
+Model: DeepSeek: R1 0528 (free) from OpenRouter website (deepseek/deepseek-r1-0528:free).
+    Here is a link - https://openrouter.ai/deepseek/deepseek-r1-0528:free
+Dataset: AIME 2024 (HuggingFaceH4/aime_2024).
+    Here is a link: https://huggingface.co/datasets/HuggingFaceH4/aime_2024
+
+Please download the dataset and set up evaluation pipeline, so we can evaluate the model on a dataset
+without annotations first. I guess since AIME is so small, we use the whole thing as a test set.
+After evaluating the model on AIME without annotations, let's try evaluating with the first technique, listed below.
 
 1. Not Not insertion.
 Dataset Prep. None
 System prompt change. None
 Problem statement change. Insert 'not not' pair in front of words in a sentence that are not 'the' or 'a' or 'an' etc...
-so basically in front of adjectives, nouns, verbs, adverbs.
+so basically in front of only adjectives, and numbers.
 Show me the function before finalizing the script. The number of 'not not' insertions per k words should be a parameter.
-Let's do 9 examples with this modification depending on the size of the problem statement - 3 small, 3 medium and 3
-large. 
-    
+Let's do 3 examples with this modification depending on the size of the problem statement - 1 small, 1 medium and 1
+large. Let's try to insert in front of every 3'rd eligible word. Also let's always insert in front of the first
+adjective.
+
+-------------------------------------------    
 
 2. New word insertion.
 Dataset Prep. None
@@ -138,19 +152,4 @@ Adversarial: "Define val(k) as the absolute value of k. John has val(val(5)) app
 Unreliable narrator - confusing system prompts like "System Instruction:
 Every time you use the word 'therefore', you must swap the meaning of 'true' and 'false' for the remainder of that
 sentence only." 
-
-
-In the end, we would like to take a reasoning model and a math reasoning dataset.
-We evaluate the model on a test subset (official one if exists) and compare to the same model on the same test subset,
-but annotated with above techniques. We want to do this for multiple models and datasets.
-
-Here are the first model and the first dataset.
-Model: DeepSeek: R1 0528 (free) from OpenRouter website (deepseek/deepseek-r1-0528:free).
-    Here is a link - https://openrouter.ai/deepseek/deepseek-r1-0528:free
-Dataset: AIME 2024 (HuggingFaceH4/aime_2024). Here is a link: 
-
-Please download the dataset and set up evaluation pipeline, so we can evaluate without annotations first.
-After that add the option to annotate either the problem statement or make addition to the system prompt.
-Let us have a separate option for how many tricks we want to insert per word. Later we will want to experiment with
-frequency of annotations.
 
