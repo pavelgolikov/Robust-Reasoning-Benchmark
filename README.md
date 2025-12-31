@@ -41,102 +41,66 @@ Same thing, please show me the function and 9 examples with the same logic.
 -------------------------------------------    
 
 3. Symbol Remapping.
-Dataset Prep. 
-We want to replace most frequently occuring symbols in the problem statement with symbols that have different
-mathematical and reasoning meaning. We divide relevant symbols into 3 groups: symbols, variables, and words.
 
-Here are the lists of most frequently occuring symbols:
-Arithmetic & Algebra
-+ (Plus / Addition)
-- (Minus / Subtraction)
-* (Asterisk / Multiplication)
-/ (Forward Slash / Division)
-= (Equals)
-< (Less Than)
-> (Greater Than)
-^ (Caret / Exponentiation)
-% (Percent / Modulo)
+This is a more elaborate scheme. In this technique we want to replace some words in the problem statement with
+symbols that have different mathematical and reasoning meaning. A set of symbols and words that we draw from is as
+follows:
 
-Logic & Sets (High Confusion Potential)
-& (Ampersand / Logical AND)
-| (Pipe / Logical OR)
-! (Exclamation / Logical NOT - often used in coding context)
-~ (Tilde / Negation)
-→ (Arrow / Implication - if dataset supports unicode)
-∀ (For All)
-∃ (There Exists)
-Grouping (Structural Symbols)
-( ) (Parentheses)
-[ ] (Brackets)
-{ } (Curly Braces)
+Frequent symbols pool: [+, -, *, /, =, <, >, ^, %, (, ), [ ], { }, &, |, !, ~, →, ∀, ∃]
 
-"Malicious" Swap Tip:
-If you swap structural symbols like ( or ) with a common word or symbol, you effectively destroy the model's ability to
-parse the "tree" of the equation, which is devastating for Transformers. 
+Frequent strings pool: [variable, constant, sum, total, plus, add, combined, increase, minus, difference, subtract,
+less, reduce, decrease, times, product, multiply, double/triple/quadruple, twice, divide, quotient, split, per, ratio,
+fraction, square, cube, root, power, mean, remainder, if, then, else, otherwise, assume, suppose, and, or, not, nor,
+xor, therefore, hence, thus, implies, consequently, given, equals, is, equivalent, same, greater, larger, smaller,
+fewer, exceeds]
 
-For the substitution algorithm to be effective ("malicious" but solvable), you want symbols and variables that trigger
-strong priors in the model (e.g., seeing x makes the model think "algebra," and seeing + makes it think "addition"). 
+Forbidden mappings:
+We don't want to map a symbol to its actual meaning. For example, we don't want to map + to addition, - to subtraction,
+* to multiplication, / to division, etc. Below is the list of forbidden mappings:
 
-Most Commonly Used Strings:
-variable constant 
-sum total plus added combined increase
-minus difference subtract less reduce decrease
-times product multiply double/triple/quadruple twice
-divide quotient split per ratio fraction
-square cube root power mean remainder
-if then else otherwise assume suppose
-and or not nor xor
-therefore hence thus implies consequently given
-equals is equivalent same
-greater larger smaller
-fewer exceeds
-return result output input value compute calculate solve find evaluate
+Forbidden swaps:
+[+ -> increase, add, plus]
+[- -> decrease, subtract, less, minus]
+[* -> multiply, product]
+[/ -> divide, quotient, per, ratio]
+[% -> remainder, ]
+[= -> equals, equivalent, same, is]
+[< -> less, fewer, smaller]
+[> -> greater, exceeds, more, larger]
+[& -> and]
+[| -> or]
+[! -> not]
 
-These words are not necessarily in the most occurring order. Please sort them yourself in order of occurence in math
-logic texts. We can swap randomly for now. The point is to NOT remap the symbol to its actual meaning for example,
-'add' should not remap with '+' because that would be the correct mapping. The point is to remap the symbol to a word
-that has a different meaning, and vice versa.
+In general, there are 3 things we need to do. The first one is a modification of the system prompt. The other two are
+per problem statement.
 
-Procedure Recommendation
-Since we want to avoid ambiguity, we should prioritize the swap based on frequency in the specific problem.
-Algorithm Concept:
-Scan the current problem statement.
-Identify which top symbols (e.g., +, -) and strings are NOT present in the problem statement.
-Select a target word that appears often in the problem statement (e.g., "John") and a target operator (e.g., "+").
-Swap:
-Replace "John" with +.
-Replace "received" with output.
-(Crucially) Replace every + with the word "John".
-Example Result:
-Original: "John received 5 apples. If John adds 2 more, what is the total?"
-Swapped: "+ output 5 apples. If + adds 2 more, what is the total?"
-This creates the "semantic cipher" we are looking for.
+- Inform the model through system prompt that there will be extra definitions given.
+Here is the addition to the system prompt I think is unambiguous, correct me if I am wrong:
+"Each user query can be accompanied by word re-mappings. Definitions for these re-mappings will be enclosed in the
+'defyn{}' block at the beginning of the user query."
+When we perform swaps, we need to add definitions for the swapped symbols to the 'defyn{}' block like in this example:
+defyn{Let "John" mean "+", let "received" mean "output"}.
 
-We will have to modify the system prompt to inform the model in an unambiguous way that there were redefinitions done
-in the problem statement. These redefinitions will be listed with "Definition: " prefix. But we have to be careful that
-string "Definition: " does not appear in the actual problem statement outside of our modifications.
-If it is, we will not use that example or rephrase it to something that does not appear in the problem statement.
-Example of system prompt:
-"Every user prompt will feature redefinitions of words and symbols. These redefinitions will be listed with 'Definition: '
-prefix before the problem statement." 
+- For each problem statement, we do the following.
+a. Create a list of most common symbols and strings occuring in the problem statement, call it 'common symbols'. In
+fact, let us create 2 lists - one for symbols and one for strings, so 'common symbols' and 'common strings' lists.
+b. Remove from the frequent strings and symbols pools those symbols and strings that appear in the problem statement.
+At this point we will have a list of symbols and strings from which we can draw substitutions (updated frequent strings
+and symbols pools) and a list of symbols and strings from the problem statement that are candidates for remapping (most
+commonly occuring symbols and strings in the problem statement).
+c. Replace most frequently occuring items in the problem statement with items from the updated pools.
+Let's have an option to replace symbols and strings separately, as well as an option to swap symbols with strings and
+strings with symbols. We will want to have a parameter k for this function - it will be the number of items to swap
+from the problem statement with items from the updated pools. For now, let's replace top 3 strings and top 3 symbols
+with items from the updated frequent pools. For now let's replace symbols with strings and strings with symbols. We will
+experiment with other possibilities later.
 
-Example of redefinition with generic placeholders and problem statement:
-Definition: Let the string "{WORD}" be defined as the symbol "{SYMBOL}".
-Definition: Let the symbol "{SYMBOL}" be defined as the string "{WORD}".
-Definition: Let the string "{WORD}" be defined as the string "{WORD}".
-Definition: Let the symbol "{SYMBOL}" be defined as the symbol "{SYMBOL}".
-
-Given these definitions, solve:
-{MODIFIED_PROBLEM_STATEMENT}
-
-We are at first looking to just use the following heuristic. We first identify which top words and symbols (e.g., +, -)
-are NOT present in the problem statement. These are our replacement pool. Then we identify the most occuring words and
-symbols in the problem statement and make swaps from the replacement pool. Before we finalize the script, we will need
-to experiment with a few examples manually. Just make it a separate step in the pipeline. Let us also make a parameter k
-in this function where top k symbols or words from the original problem statement are swapped. We will then decide on
-the final k. Give me 9 examples with replacements - 3 small, 3 medium and 3 large - depending on the size of the problem
-statement. TODO: provide more precise definition of how many swaps you want to make for each size.
+- Update the 'defyn{}' block in the problem statement by adding definitions for the swapped symbols and strings.
     
+Before we go ahead with evaluation, show me the function that does this and 3 problem statement examples before and
+after the transformation. Let's call them transformations and not perturbations please. Let's correct transformations vs
+perturbations terminology everywhere we used it. I mean in the python files etc...
+
 
 5. Trivial functional wrapper.
 Dataset prep. None
