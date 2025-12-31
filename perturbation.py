@@ -60,11 +60,60 @@ def apply_not_not_perturbation(text, k=3):
         
     return "".join(result)
 
+import random
+
+def apply_yot_perturbation(text, k=3):
+    """
+    Inserts 'yot', 'yot yot', or 'not not' before the first adjective and every k-th eligible word thereafter.
+    Eligible words are adjectives (ADJ) and numbers (NUM).
+    
+    Args:
+        text (str): The input text (problem statement).
+        k (int): Interval for insertion on eligible words.
+        
+    Returns:
+        str: The perturbed text.
+    """
+    doc = nlp(text)
+    
+    eligible_indices = []
+    adj_indices = []
+    
+    for i, token in enumerate(doc):
+        if token.pos_ == "ADJ":
+            adj_indices.append(i)
+        elif token.pos_ == "NUM":
+            eligible_indices.append(i)
+                
+    insertion_indices = set()
+    
+    # User Request: Put something in front of EVERY adjective
+    for idx in adj_indices:
+        insertion_indices.add(idx)
+        
+    # Also keep the k-th logic for numbers (or other eligible words if we expand)
+    for count, idx in enumerate(eligible_indices, 1):
+        if count % k == 0:
+            insertion_indices.add(idx)
+            
+    result = []
+    options = ["yot ", "yot yot ", "not not "]
+    
+    for i, token in enumerate(doc):
+        if i in insertion_indices:
+            # Randomly choose one of the options
+            result.append(random.choice(options))
+            
+        result.append(token.text_with_ws)
+        
+    return "".join(result)
+
 def main():
     # Only for quick testing if run directly
     text = "The quick brown fox jumps over the lazy dog."
     print(f"Original: {text}")
-    print(f"Perturbed: {apply_not_not_perturbation(text, k=2)}")
+    print(f"Not Not: {apply_not_not_perturbation(text, k=2)}")
+    print(f"New Word: {apply_new_word_perturbation(text, k=2)}")
 
 if __name__ == "__main__":
     main()

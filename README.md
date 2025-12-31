@@ -32,14 +32,13 @@ Let's do 3 examples with this modification depending on the size of the problem 
 large. Let's try to insert in front of every 3'rd eligible word. Also let's always insert in front of the first
 adjective.
 
--------------------------------------------    
-
 2. New word insertion.
 Dataset Prep. None
 System prompt change. 'yot = opposite of ‘not’'
 Problem statement change. Insert 'yot' or pairs 'yot yot' or 'not not' in front of any word in a sentence.
 Same thing, please show me the function and 9 examples with the same logic.
 
+-------------------------------------------    
 
 3. Symbol Remapping.
 Dataset Prep. 
