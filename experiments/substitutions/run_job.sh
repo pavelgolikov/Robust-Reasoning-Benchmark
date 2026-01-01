@@ -32,6 +32,10 @@
 # Modify this line to point to the specific experiment script you want to run
 echo "Starting Evaluation..."
 
+# Set HuggingFace Cache to Project Directory to avoid Quota issues in Home
+export HF_HOME=/project/6107991/golikovp/cache
+mkdir -p $HF_HOME
+
 # Example: Run Opposi# Run the consolidated baseline evaluation
 # Default model is GAIR/LIMO, but can be overridden with --model if needed
 python evaluate.py --limit 1
