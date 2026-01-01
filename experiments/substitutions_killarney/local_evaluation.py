@@ -48,9 +48,9 @@ def run_local_evaluation(
     system_prompt,
     results_dir,
     logs_dir,
-    limit=None,
     k=None,
-    seed=42
+    seed=42,
+    model_path=MODEL_PATH # Default to constant if not provided
 ):
     """
     Run evaluation specifically for Killarney/Local HPC using vLLM.
@@ -58,16 +58,15 @@ def run_local_evaluation(
     if LLM is None:
         raise ImportError("vLLM module is missing. Please install it.")
 
-    print(f"Initializing vLLM with model: {MODEL_PATH}")
-    llm = LLM(model=MODEL_PATH, tensor_parallel_size=1, trust_remote_code=True)
+    current_model = model_path if model_path else MODEL_PATH
+    print(f"Initializing vLLM with model: {current_model}")
+    llm = LLM(model=current_model, tensor_parallel_size=1, trust_remote_code=True)
     sampling_params = SamplingParams(temperature=0.6, max_tokens=8192)
 
     if seed is not None:
         random.seed(seed)
         
     dataset = load_dataset("HuggingFaceH4/aime_2024", split="train")
-    if limit:
-        dataset = dataset.select(range(min(limit, len(dataset))))
         
     print(f"Starting {experiment_name} on {len(dataset)} examples. Seed={seed}, k={k}")
     
