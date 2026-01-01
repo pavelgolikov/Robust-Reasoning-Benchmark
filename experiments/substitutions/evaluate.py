@@ -60,7 +60,14 @@ def main():
         raise ImportError("vLLM module is missing. Please install it.")
 
     print(f"Initializing vLLM with model: {args.model}")
-    llm = LLM(model=args.model, tensor_parallel_size=1, trust_remote_code=True)
+    # Fix OOM: Reduce memory utilization to leave room for overhead, and enforce half precision if needed
+    llm = LLM(
+        model=args.model,
+        tensor_parallel_size=1,
+        trust_remote_code=True,
+        gpu_memory_utilization=0.85, # Reduce to prevent OOM
+        dtype="bfloat16" # Enforce bf16 (or float16) to fit 14B model
+    )
     sampling_params = SamplingParams(temperature=0.6, max_tokens=12768)
 
     random.seed(args.seed)
