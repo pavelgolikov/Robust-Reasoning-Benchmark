@@ -212,8 +212,92 @@ def apply_symbol_remapping_transformation(text, k=3):
         
     return def_block + transformed_text
 
+
+from antonyms import ANTONYM_DICTIONARY
+
+def apply_opposite_semantic_remapping(text, k=2, seed=None):
+    """
+    Identifies Verbs and Adjectives.
+    Randomly selects 1/k of them (default k=2 means 50%).
+    Replaces them with their antonym (or a placeholder if not in dict).
+    
+    Args:
+        text (str): Input text.
+        k (int): 1/k fraction of words to swap. k=1 (100%), k=2 (50%).
+        seed (int): Random seed.
+        
+    Generates defyn{let "new" mean "old"}.
+    """
+    if seed is not None:
+        random.seed(seed)
+        
+    doc = nlp(text)
+    
+    # Identify candidates: (index, token_text, pos)
+    candidates = []
+    for token in doc:
+        if token.pos_ in ["VERB", "ADJ"] and token.is_alpha:
+            candidates.append(token)
+            
+    if not candidates:
+        return text
+        
+    # Select 1/k
+    num_to_swap = max(1, len(candidates) // k)
+    to_swap = random.sample(candidates, num_to_swap)
+    
+    definitions = []
+    replacements = {} # index -> new_word
+    
+    for token in to_swap:
+        word_lower = token.text.lower()
+        original_text = token.text
+        
+        # Determine replacement
+        if word_lower in ANTONYM_DICTIONARY:
+            replacement_base = ANTONYM_DICTIONARY[word_lower]
+        else:
+            # Fallback for words not in dictionary if instructions allow "closest"
+            # Since we moved dictionary out, assuming it's comprehensive enough or we use prefix
+            replacement_base = "anti" + word_lower
+            
+        # Match case
+        if original_text[0].isupper():
+            replacement = replacement_base.capitalize()
+        else:
+            replacement = replacement_base
+            
+        replacements[token.i] = replacement
+        
+        # Add definition: let "replacement" mean "original"
+        def_str = f'let "{replacement}" mean "{original_text}"'
+        if def_str not in definitions:
+            definitions.append(def_str)
+            
+    # Reconstruct text
+    output_tokens = []
+    for i, token in enumerate(doc):
+        if i in replacements:
+            output_tokens.append(replacements[i] + token.whitespace_)
+        else:
+            output_tokens.append(token.text_with_ws)
+            
+    transformed_text = "".join(output_tokens)
+    
+    if definitions:
+        def_block = "defyn{" + ", ".join(definitions) + "}.\n\n"
+    else:
+        def_block = ""
+        
+    return def_block + transformed_text
+
 def main():
     text = "The quick brown fox jumps over the lazy dog."
     print(f"Original: {text}")
     print(f"Not Not: {apply_not_not_transformation(text, k=2)}")
     print(f"Yot: {apply_yot_transformation(text, k=2)}")
+    print(f"Opposites: {apply_opposite_semantic_remapping(text, k=2, seed=42)}")
+
+
+if __name__ == "__main__":
+    main()
