@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=golikovp_job
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:1           # Request 1 GPU
+#SBATCH --gres=gpu:h100:1
 #SBATCH --cpus-per-task=4      # CPU cores per task
 #SBATCH --mem=32G              # Memory
 #SBATCH --time=04:00:00        # Max run time (4 hours)

@@ -1,0 +1,136 @@
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m /home/golikovp/.local/lib/python3.11/site-packages/tvm_ffi/_optional_torch_c_dlpack.py:625: UserWarning: Failed to load torch c dlpack extension: CUDA_HOME environment variable is not set. Please set it to your CUDA install root.,EnvTensorAllocator will not be enabled.
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   warnings.warn(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m Process EngineCore_DP0:
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m Traceback (most recent call last):
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     self.run()
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/process.py", line 108, in run
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     self._target(*self._args, **self._kwargs)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 847, in run_engine_core
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     raise e
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 834, in run_engine_core
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     engine_core = EngineCoreProc(*args, **kwargs)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 610, in __init__
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     super().__init__(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 102, in __init__
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     self.model_executor = executor_class(vllm_config)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/executor/abstract.py", line 101, in __init__
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     self._init_executor()
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/executor/uniproc_executor.py", line 48, in _init_executor
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     self.driver_worker.load_model()
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/worker/gpu_worker.py", line 273, in load_model
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     self.model_runner.load_model(eep_scale_up=eep_scale_up)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/worker/gpu_model_runner.py", line 3484, in load_model
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     self.model = model_loader.load_model(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                  ^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/base_loader.py", line 55, in load_model
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     self.load_weights(model, model_config)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/default_loader.py", line 305, in load_weights
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     loaded_weights = model.load_weights(self.get_all_weights(model_config, model))
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/qwen2.py", line 569, in load_weights
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return loader.load_weights(weights)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/online_quantization.py", line 173, in patched_model_load_weights
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return original_load_weights(auto_weight_loader, weights, mapper=mapper)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 335, in load_weights
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     autoloaded_weights = set(self._load_module("", self.module, weights))
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 279, in _load_module
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     for child_prefix, child_weights in self._groupby_prefix(weights):
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 163, in _groupby_prefix
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     for prefix, group in itertools.groupby(weights_by_parts, key=lambda x: x[0][0]):
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 158, in <genexpr>
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     weights_by_parts = (
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                        ^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 331, in <genexpr>
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     weights = (
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m               ^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/default_loader.py", line 277, in get_all_weights
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     yield from self._get_weights_iterator(primary_weights)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/default_loader.py", line 190, in _get_weights_iterator
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     hf_folder, hf_weights_files, use_safetensors = self._prepare_weights(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                                                    ^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/default_loader.py", line 141, in _prepare_weights
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     hf_folder = download_weights_from_hf(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/weight_utils.py", line 472, in download_weights_from_hf
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     hf_folder = snapshot_download(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m                 ^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return fn(*args, **kwargs)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/_snapshot_download.py", line 332, in snapshot_download
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     thread_map(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/tqdm/contrib/concurrent.py", line 69, in thread_map
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return _executor_map(ThreadPoolExecutor, fn, *iterables, **tqdm_kwargs)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/tqdm/contrib/concurrent.py", line 51, in _executor_map
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return list(tqdm_class(ex.map(fn, *iterables, chunksize=chunksize), **kwargs))
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/tqdm/std.py", line 1169, in __iter__
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     for obj in iterable:
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/_base.py", line 619, in result_iterator
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     yield _result_or_cancel(fs.pop())
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/_base.py", line 317, in _result_or_cancel
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return fut.result(timeout)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/_base.py", line 456, in result
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return self.__get_result()
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     raise self._exception
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/thread.py", line 58, in run
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     result = self.fn(*self.args, **self.kwargs)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/_snapshot_download.py", line 306, in _inner_hf_hub_download
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return hf_hub_download(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return fn(*args, **kwargs)
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1010, in hf_hub_download
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     return _hf_hub_download_to_cache_dir(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1171, in _hf_hub_download_to_cache_dir
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     _download_to_tmp_and_move(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1723, in _download_to_tmp_and_move
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     xet_get(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 629, in xet_get
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m     download_files(
+[0;36m(EngineCore_DP0 pid=1375878)[0;0m RuntimeError: Data processing error: CAS service error : IO Error: Disk quota exceeded (os error 122)
+Traceback (most recent call last):
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/substitutions/evaluate.py", line 158, in <module>
+    main()
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/substitutions/evaluate.py", line 64, in main
+    llm = LLM(
+          ^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 334, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 183, in from_engine_args
+    return cls(
+           ^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 109, in __init__
+    self.engine_core = EngineCoreClient.make_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 93, in make_client
+    return SyncMPClient(vllm_config, executor_class, log_stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 642, in __init__
+    super().__init__(
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 471, in __init__
+    with launch_core_engines(vllm_config, executor_class, log_stats) as (
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 903, in launch_core_engines
+    wait_for_engine_startup(
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 960, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
