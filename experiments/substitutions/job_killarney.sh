@@ -31,8 +31,9 @@ fi
 # Modify this line to point to the specific experiment script you want to run
 echo "Starting Evaluation..."
 
-# Example: Run Opposites Evaluation
-# Note: Scripts need to be updated to use local_evaluation.py first!
-# python opposite_verbs_adj/run_killarney_eval.py --k 1
+# Example: Run Opposi# Run the consolidated baseline evaluation
+# Default model is GAIR/LIMO, but can be overridden with --model if needed
+echo "Starting Killarney Evaluation..."
+python evaluate.py
 
 echo "Job Complete"

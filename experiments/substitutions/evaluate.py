@@ -1,4 +1,3 @@
-
 import os
 import json
 import re
@@ -6,6 +5,7 @@ import time
 import random
 import argparse
 from datasets import load_dataset
+
 try:
     from vllm import LLM, SamplingParams
 except ImportError:
@@ -13,8 +13,13 @@ except ImportError:
     LLM = None
     SamplingParams = None
 
-# Constants
-MODEL_PATH = "GAIR/LIMO"
+
+def get_user_prompt(problem, name):
+    # modify problem according to experiment name - for now only baseline is implemented
+    if name == 'baseline':
+        return problem
+    else:
+        return 'Unimplemented'
 
 def extract_answer(text):
     if not text:
@@ -42,82 +47,78 @@ def normalize_answer(ans):
         return ""
     return str(int(digits))
 
-def run_local_evaluation(
-    experiment_name,
-    transformation_function,
-    system_prompt,
-    results_dir,
-    logs_dir,
-    limit=None,
-    k=None,
-    seed=42
-):
-    """
-    Run evaluation specifically for Killarney/Local HPC using vLLM.
-    """
+def main():
+    parser = argparse.ArgumentParser(description="Evaluate model on AIME dataset (Killarney/vLLM)")
+    parser.add_argument("--model", type=str, default="GAIR/LIMO", help="Path/Name of the model to evaluate")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
+    parser.add_argument("--output_dir", type=str, default="results")
+    parser.add_argument("--name", type=str, default='baseline', help="Name of the experiment")
+    args = parser.parse_args()
+
     if LLM is None:
         raise ImportError("vLLM module is missing. Please install it.")
 
-    print(f"Initializing vLLM with model: {MODEL_PATH}")
-    llm = LLM(model=MODEL_PATH, tensor_parallel_size=1, trust_remote_code=True)
+    print(f"Initializing vLLM with model: {args.model}")
+    llm = LLM(model=args.model, tensor_parallel_size=1, trust_remote_code=True)
     sampling_params = SamplingParams(temperature=0.6, max_tokens=12768)
 
-    if seed is not None:
-        random.seed(seed)
-        
-    dataset = load_dataset("HuggingFaceH4/aime_2024", split="train")
-    if limit:
-        dataset = dataset.select(range(min(limit, len(dataset))))
-        
-    print(f"Starting {experiment_name} on {len(dataset)} examples. Seed={seed}, k={k}")
+    random.seed(args.seed)
     
-    # Pre-calculate transformations to batch generate
+    # Load Dataset
+    print("Loading AIME 2024 dataset...")
+    dataset = load_dataset("HuggingFaceH4/aime_2024", split="train")
+    if args.limit:
+        dataset = dataset.select(range(min(args.limit, len(dataset))))
+        
+    print(f"Starting Evaluation on {len(dataset)} examples. Seed={args.seed}")
+
+    # Prepare Prompts
+    system_prompt = "You are a helpful math assistant. Solve the problem accurately. Output the final answer inside \\boxed{}."
     prompts = []
     metadata = []
-    
+
+    tokenizer = llm.get_tokenizer()
+
     for i, example in enumerate(dataset):
-        problem = example['problem']
+        user_prompt = get_user_prompt(example['problem'], args.name)
         ground_truth = example['answer']
         
-        problem_input, remapping = transformation_function(problem, k=k, seed=seed)
-            
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": problem_input}
+            {"role": "user", "content": user_prompt}
         ]
         
-        # We will let the tokenizer format this.
-        # But we need access to the tokenizer. `llm.get_tokenizer()`
-        tokenizer = llm.get_tokenizer()
+        # Format prompt
         formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        
         prompts.append(formatted_prompt)
+        
         metadata.append({
             "id": example.get('id', i),
-            "original": problem,
-            "transformed": problem_input,
-            "ground_truth": ground_truth,
-            "remapping": remapping
+            "original": user_prompt,
+            "ground_truth": ground_truth
         })
-        
-    # Batch Generate
+
+    # Generate
     print(f"Generating responses for {len(prompts)} prompts...")
     outputs = llm.generate(prompts, sampling_params)
-    
-    # Save Results
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    safe_name = experiment_name.replace(' ', '_').lower()
-    run_id = f"{safe_name}_k{k}_s{seed}_{timestamp}"
-    
-    os.makedirs(results_dir, exist_ok=True)
-    os.makedirs(logs_dir, exist_ok=True)
-    
-    json_file = os.path.join(results_dir, f"{run_id}.json")
-    
+
+    # Process Results
     results = []
     correct_count = 0
     total = 0
     
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    safe_name = args.model.replace('/', '_').replace(' ', '_')
+    run_id = f"{safe_name}_{args.name}_s{args.seed}_{timestamp}"
+    
+    # Save to [experiment_name]/results logic
+    experiment_dir = args.name
+    final_output_dir = os.path.join(experiment_dir, "results")
+    
+    os.makedirs(final_output_dir, exist_ok=True)
+    json_file = os.path.join(final_output_dir, f"{run_id}.json")
+
     for i, output in enumerate(outputs):
         generated_text = output.outputs[0].text
         meta = metadata[i]
@@ -131,7 +132,6 @@ def run_local_evaluation(
         result_entry = {
             "id": meta['id'],
             "original": meta['original'],
-            "transformed": meta['transformed'],
             "ground_truth": meta['ground_truth'],
             "output": generated_text,
             "extracted": extracted,
@@ -141,9 +141,11 @@ def run_local_evaluation(
         total += 1
         
     accuracy = correct_count / total if total > 0 else 0
-    print(f"\nEvaluation Complete. Accuracy: {accuracy:.2%}")
-    print(f"Results: {json_file}")
+    print(f"\nEvaluation Complete. Accuracy: {accuracy:.2%} ({correct_count}/{total})")
+    print(f"Results saved to: {json_file}")
     
     with open(json_file, "w") as f:
         json.dump(results, f, indent=2)
 
+if __name__ == "__main__":
+    main()
