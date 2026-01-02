@@ -9,10 +9,6 @@
 #SBATCH --error=slurm_out.err
 #SBATCH --account=aip-gpekhime
 
-# Load modules
-# module load python/3.10
-# module load cuda/12.1 # Adjust version as needed for Killarney
-
 # Run Evaluation
 echo "Starting Evaluation..."
 
@@ -22,4 +18,4 @@ export XDG_CACHE_HOME=/project/aip-gpekhime/golikovp/cache
 mkdir -p $HF_HOME
 
 # Run the consolidated baseline evaluation
-python evaluate.py
+python evaluate.py --limit 1

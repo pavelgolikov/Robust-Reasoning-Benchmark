@@ -1,111 +1,31 @@
 Starting Evaluation...
 Initializing vLLM with model: GAIR/LIMO
-INFO 01-01 17:19:50 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'gpu_memory_utilization': 0.75, 'disable_log_stats': True, 'model': 'GAIR/LIMO'}
-WARNING 01-01 17:19:50 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
-INFO 01-01 17:19:50 [model.py:637] Resolved architecture: Qwen2ForCausalLM
-INFO 01-01 17:19:50 [model.py:1750] Using max model len 32768
-INFO 01-01 17:19:51 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m INFO 01-01 17:19:52 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='GAIR/LIMO', speculative_config=None, tokenizer='GAIR/LIMO', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=GAIR/LIMO, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m INFO 01-01 17:19:54 [parallel_state.py:1200] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://10.1.1.169:48371 backend=nccl
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m INFO 01-01 17:19:54 [parallel_state.py:1408] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m INFO 01-01 17:19:55 [gpu_model_runner.py:3467] Starting to load model GAIR/LIMO...
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m INFO 01-01 17:19:56 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843] EngineCore failed to start.
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843] Traceback (most recent call last):
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 834, in run_engine_core
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     engine_core = EngineCoreProc(*args, **kwargs)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 610, in __init__
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     super().__init__(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 102, in __init__
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     self.model_executor = executor_class(vllm_config)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/executor/abstract.py", line 101, in __init__
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     self._init_executor()
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/executor/uniproc_executor.py", line 48, in _init_executor
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     self.driver_worker.load_model()
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/worker/gpu_worker.py", line 273, in load_model
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     self.model_runner.load_model(eep_scale_up=eep_scale_up)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/worker/gpu_model_runner.py", line 3484, in load_model
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     self.model = model_loader.load_model(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                  ^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/base_loader.py", line 55, in load_model
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     self.load_weights(model, model_config)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/default_loader.py", line 305, in load_weights
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     loaded_weights = model.load_weights(self.get_all_weights(model_config, model))
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/qwen2.py", line 569, in load_weights
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return loader.load_weights(weights)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/online_quantization.py", line 173, in patched_model_load_weights
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return original_load_weights(auto_weight_loader, weights, mapper=mapper)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 335, in load_weights
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     autoloaded_weights = set(self._load_module("", self.module, weights))
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 279, in _load_module
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     for child_prefix, child_weights in self._groupby_prefix(weights):
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 163, in _groupby_prefix
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     for prefix, group in itertools.groupby(weights_by_parts, key=lambda x: x[0][0]):
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 158, in <genexpr>
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     weights_by_parts = (
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                        ^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/models/utils.py", line 331, in <genexpr>
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     weights = (
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]               ^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/default_loader.py", line 277, in get_all_weights
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     yield from self._get_weights_iterator(primary_weights)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/default_loader.py", line 190, in _get_weights_iterator
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     hf_folder, hf_weights_files, use_safetensors = self._prepare_weights(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                                                    ^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/default_loader.py", line 141, in _prepare_weights
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     hf_folder = download_weights_from_hf(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                 ^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/model_executor/model_loader/weight_utils.py", line 472, in download_weights_from_hf
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     hf_folder = snapshot_download(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]                 ^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return fn(*args, **kwargs)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/_snapshot_download.py", line 332, in snapshot_download
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     thread_map(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/tqdm/contrib/concurrent.py", line 69, in thread_map
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return _executor_map(ThreadPoolExecutor, fn, *iterables, **tqdm_kwargs)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/tqdm/contrib/concurrent.py", line 51, in _executor_map
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return list(tqdm_class(ex.map(fn, *iterables, chunksize=chunksize), **kwargs))
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/tqdm/std.py", line 1169, in __iter__
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     for obj in iterable:
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/_base.py", line 619, in result_iterator
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     yield _result_or_cancel(fs.pop())
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/_base.py", line 317, in _result_or_cancel
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return fut.result(timeout)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/_base.py", line 456, in result
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return self.__get_result()
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     raise self._exception
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/concurrent/futures/thread.py", line 58, in run
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     result = self.fn(*self.args, **self.kwargs)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/_snapshot_download.py", line 306, in _inner_hf_hub_download
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return hf_hub_download(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return fn(*args, **kwargs)
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1010, in hf_hub_download
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     return _hf_hub_download_to_cache_dir(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1171, in _hf_hub_download_to_cache_dir
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     _download_to_tmp_and_move(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1723, in _download_to_tmp_and_move
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     xet_get(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]   File "/home/golikovp/.local/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 629, in xet_get
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843]     download_files(
-[0;36m(EngineCore_DP0 pid=1375878)[0;0m ERROR 01-01 17:23:56 [core.py:843] RuntimeError: Data processing error: CAS service error : IO Error: Disk quota exceeded (os error 122)
-Job Complete
+INFO 01-01 21:07:17 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 12768, 'disable_log_stats': True, 'model': 'GAIR/LIMO'}
+WARNING 01-01 21:07:18 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+INFO 01-01 21:07:18 [model.py:637] Resolved architecture: Qwen2ForCausalLM
+INFO 01-01 21:07:18 [model.py:1750] Using max model len 12768
+INFO 01-01 21:07:18 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:19 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='GAIR/LIMO', speculative_config=None, tokenizer='GAIR/LIMO', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=12768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=GAIR/LIMO, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:20 [parallel_state.py:1200] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://10.1.1.169:40513 backend=nccl
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:20 [parallel_state.py:1408] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:21 [gpu_model_runner.py:3467] Starting to load model GAIR/LIMO...
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:21 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:32 [default_loader.py:308] Loading weights took 10.32 seconds
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:32 [gpu_model_runner.py:3549] Model loading took 61.0375 GiB memory and 10.920276 seconds
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:41 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/8a3ede1b60/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:41 [backends.py:715] Dynamo bytecode transform time: 8.42 s
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:44 [backends.py:257] Cache the graph for dynamic shape for later use
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:53 [backends.py:288] Compiling a graph for dynamic shape takes 11.77 s
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:55 [monitor.py:34] torch.compile takes 20.19 s in total
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:58 [gpu_worker.py:359] Available KV cache memory: 4.38 GiB
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:58 [kv_cache_utils.py:1286] GPU KV cache size: 17,920 tokens
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:07:58 [kv_cache_utils.py:1291] Maximum concurrency for 12,768 tokens per request: 1.40x
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:09:56 [gpu_model_runner.py:4466] Graph capturing finished in 118 secs, took 1.35 GiB
+[0;36m(EngineCore_DP0 pid=2197465)[0;0m INFO 01-01 21:09:56 [core.py:254] init engine (profile, create kv cache, warmup model) took 144.13 seconds
+INFO 01-01 21:09:57 [llm.py:343] Supported tasks: ['generate']
+Loading AIME 2024 dataset...
+Starting Evaluation on 1 examples. Seed=42
+Generating responses for 1 prompts...
+
+Evaluation Complete. Accuracy: 100.00% (1/1)
+Results saved to: baseline/results/GAIR_LIMO_baseline_s42_20260101_211156.json

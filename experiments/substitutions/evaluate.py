@@ -61,14 +61,16 @@ def main():
 
     print(f"Initializing vLLM with model: {args.model}")
     # Fix OOM: Reduce memory utilization to leave room for overhead, and enforce half precision if needed
+    max_model_length = 12768
     llm = LLM(
         model=args.model,
         tensor_parallel_size=1,
         trust_remote_code=True,
-        gpu_memory_utilization=0.75, # Reduce to prevent OOM
+        # gpu_memory_utilization=0.75, # Reduce to prevent OOM
+        max_model_len=max_model_length,
         dtype="bfloat16" # Enforce bf16 (or float16) to fit 14B model
     )
-    sampling_params = SamplingParams(temperature=0.6, max_tokens=12768)
+    sampling_params = SamplingParams(temperature=0.6, max_tokens=max_model_length)
 
     random.seed(args.seed)
     
