@@ -49,7 +49,7 @@ def normalize_answer(ans):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate model on AIME dataset (Killarney/vLLM)")
-    parser.add_argument("--model", type=str, default="GAIR/LIMO", help="Path/Name of the model to evaluate")
+    parser.add_argument("--model", type=str, default=None, help="Path/Name of the model to evaluate")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
@@ -62,16 +62,16 @@ def main():
 
     print(f"Initializing vLLM with model: {args.model}")
     # Fix OOM: Reduce memory utilization to leave room for overhead, and enforce half precision if needed
-    max_model_length = 12768
+    max_model_length = 20000
     llm = LLM(
         model=args.model,
         tensor_parallel_size=1,
         trust_remote_code=True,
-        # gpu_memory_utilization=0.75, # Reduce to prevent OOM
+        swap_space_size=40,
         max_model_len=max_model_length,
         dtype="bfloat16" # Enforce bf16 (or float16) to fit 14B model
     )
-    sampling_params = SamplingParams(temperature=1.0, max_tokens=max_model_length)
+    sampling_params = SamplingParams(temperature=0.7, max_tokens=max_model_length)
 
     random.seed(args.seed)
     
@@ -84,7 +84,7 @@ def main():
     print(f"Starting Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
     # Prepare Prompts
-    system_prompt = "You are a helpful math assistant. Solve the problem accurately. Output the final answer inside \\boxed{}."
+    system_prompt = "Please reason step by step, and put your final answer within \\boxed{}."
     prompts = []
     metadata = []
 
