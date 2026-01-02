@@ -62,14 +62,14 @@ def main():
 
     print(f"Initializing vLLM with model: {args.model}")
     # Fix OOM: Reduce memory utilization to leave room for overhead, and enforce half precision if needed
-    max_model_length = 20000
+    max_model_length = 32000
     llm = LLM(
         model=args.model,
-        tensor_parallel_size=1,
+        tensor_parallel_size=2,
         trust_remote_code=True,
-        swap_space_size=40,
+        # swap_space=30,
         max_model_len=max_model_length,
-        dtype="bfloat16" # Enforce bf16 (or float16) to fit 14B model
+        dtype="bfloat16"
     )
     sampling_params = SamplingParams(temperature=0.7, max_tokens=max_model_length)
 
