@@ -18,4 +18,6 @@ export XDG_CACHE_HOME=/project/aip-gpekhime/golikovp/cache
 mkdir -p $HF_HOME
 
 # Run the consolidated baseline evaluation
-python evaluate.py --limit 1
+# Default model is GAIR/LIMO, but can be overridden with --model if needed
+# Running 5 samples per problem for objective averaging
+python evaluate.py --n_samples 5 --limit 30
