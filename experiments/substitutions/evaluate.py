@@ -52,6 +52,7 @@ def main():
     parser.add_argument("--model", type=str, default="GAIR/LIMO", help="Path/Name of the model to evaluate")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
+    parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--output_dir", type=str, default="results")
     parser.add_argument("--name", type=str, default='baseline', help="Name of the experiment")
     args = parser.parse_args()
@@ -70,7 +71,7 @@ def main():
         max_model_len=max_model_length,
         dtype="bfloat16" # Enforce bf16 (or float16) to fit 14B model
     )
-    sampling_params = SamplingParams(temperature=0.6, max_tokens=max_model_length)
+    sampling_params = SamplingParams(temperature=1.0, max_tokens=max_model_length)
 
     random.seed(args.seed)
     
@@ -80,7 +81,7 @@ def main():
     if args.limit:
         dataset = dataset.select(range(min(args.limit, len(dataset))))
         
-    print(f"Starting Evaluation on {len(dataset)} examples. Seed={args.seed}")
+    print(f"Starting Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
     # Prepare Prompts
     system_prompt = "You are a helpful math assistant. Solve the problem accurately. Output the final answer inside \\boxed{}."
@@ -100,13 +101,16 @@ def main():
         
         # Format prompt
         formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        prompts.append(formatted_prompt)
         
-        metadata.append({
-            "id": example.get('id', i),
-            "original": user_prompt,
-            "ground_truth": ground_truth
-        })
+        # Create n independent samples for this problem
+        for sample_idx in range(args.n_samples):
+            prompts.append(formatted_prompt)
+            metadata.append({
+                "id": example.get('id', i),
+                "sample_idx": sample_idx,
+                "original": user_prompt,
+                "ground_truth": ground_truth
+            })
 
     # Generate
     print(f"Generating responses for {len(prompts)} prompts...")
