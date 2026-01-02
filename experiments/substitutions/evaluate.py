@@ -15,9 +15,16 @@ except ImportError:
 
 
 def get_user_prompt(problem, name):
-    # modify problem according to experiment name - for now only baseline is implemented
+    # modify problem according to experiment name
     if name == 'baseline':
         return problem
+    elif name == 'opposites':
+        try:
+            from opposite_verbs_adj.transformation import apply_opposite_semantic_remapping
+            # k=2 means 1/2 aka 50% of candidates are replaced
+            return apply_opposite_semantic_remapping(problem, k=2)
+        except ImportError:
+            return "Error: Transformation module not found"
     else:
         return 'Unimplemented'
 
