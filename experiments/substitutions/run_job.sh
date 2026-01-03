@@ -15,7 +15,8 @@ echo "Starting Evaluation..."
 # Set Caches to Project Directory to avoid Quota issues in Home
 export HF_HOME=/project/aip-gpekhime/golikovp/cache
 export XDG_CACHE_HOME=/project/aip-gpekhime/golikovp/cache
+export NLTK_DATA=/project/aip-gpekhime/golikovp/nltk_data
 mkdir -p $HF_HOME
 
 # Running 5 samples per problem for averaging
-python evaluate.py --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
+python evaluate.py --name opposites --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"

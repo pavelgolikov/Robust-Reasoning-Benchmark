@@ -2,9 +2,28 @@ import os
 import json
 import re
 import time
+
+import multiprocessing
+import os
+# Force 'spawn' to avoid CUDA re-initialization errors
+try:
+    multiprocessing.set_start_method('spawn', force=True)
+except RuntimeError:
+    pass
+os.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'
+
 import random
 import argparse
 from datasets import load_dataset
+from opposites.transformation import apply_opposite_semantic_remapping
+
+# Ensure NLTK data (WordNet) is available
+try:
+    nltk.download('wordnet', quiet=True)
+    nltk.download('omw-1.4', quiet=True)
+except Exception as e:
+    print(f"Warning: Failed to download NLTK data: {e}")
+
 
 try:
     from vllm import LLM, SamplingParams
@@ -20,7 +39,6 @@ def get_user_prompt(problem, name):
         return problem
     elif name == 'opposites':
         try:
-            from opposite_verbs_adj.transformation import apply_opposite_semantic_remapping
             # k=2 means 1/2 aka 50% of candidates are replaced
             return apply_opposite_semantic_remapping(problem, k=2)
         except ImportError:
@@ -73,7 +91,7 @@ def main():
     llm = LLM(
         model=args.model,
         tensor_parallel_size=2,
-        trust_remote_code=True,
+        # trust_remote_code=True,
         # swap_space=30,
         max_model_len=max_model_length,
         dtype="bfloat16"
