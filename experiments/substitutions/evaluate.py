@@ -51,6 +51,12 @@ def get_user_prompt(problem, name):
             return apply_opposites_not_yot_transformation(problem, k_opp=1)
         except ImportError:
             return "Error: Transformation module not found"
+    elif name == 'wrappers':
+        try:
+            from wrappers.transformation import apply_wrapper_transformation
+            return apply_wrapper_transformation(problem, k=2)
+        except ImportError:
+            return "Error: Transformation module not found"
     else:
         return 'Unimplemented'
 
@@ -117,7 +123,11 @@ def main():
     print(f"Starting Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
     # Prepare Prompts
-    system_prompt = "Please reason step by step, and put your final answer within \\boxed{}."
+    if args.name == 'wrappers':
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. "
+    else:
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' blocks before user query."
     prompts = []
     metadata = []
 

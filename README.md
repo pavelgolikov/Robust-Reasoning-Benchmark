@@ -105,7 +105,7 @@ perturbations terminology everywhere we used it. I mean in the python files etc.
 5. Trivial functional wrapper.
 Dataset prep. None
 System prompt change. None
-User prompt change. Every numerical number that occurs, we wrap in a trivial function call.
+User prompt change. Every number that occurs, we wrap in a trivial function call.
 Example:
 Original: "John has 5 apples."
 Adversarial: "Define val(k) as the absolute value of k. John has val(val(5)) apples." - dilutes attention mechanism.
