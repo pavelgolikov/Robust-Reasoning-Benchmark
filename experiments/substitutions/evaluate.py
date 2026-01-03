@@ -40,7 +40,15 @@ def get_user_prompt(problem, name):
     elif name == 'opposites':
         try:
             # k=2 means 1/2 aka 50% of candidates are replaced
-            return apply_opposite_semantic_remapping(problem, k=2)
+            from opposites.transformation import apply_opposite_semantic_remapping
+            return apply_opposite_semantic_remapping(problem, k=1)
+        except ImportError:
+            return "Error: Transformation module not found"
+    elif name == 'opposites_not':
+        try:
+            # k=2 means 1/2 aka 50% of candidates are replaced
+            from opposites_not.transformation import apply_opposites_not_yot_transformation
+            return apply_opposites_not_yot_transformation(problem, k_opp=1)
         except ImportError:
             return "Error: Transformation module not found"
     else:
@@ -91,7 +99,7 @@ def main():
     llm = LLM(
         model=args.model,
         tensor_parallel_size=2,
-        # trust_remote_code=True,
+        trust_remote_code=True,
         # swap_space=30,
         max_model_len=max_model_length,
         dtype="bfloat16"

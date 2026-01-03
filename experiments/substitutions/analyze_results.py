@@ -2,9 +2,14 @@ import json
 import os
 import re
 
-result_file = "baseline/results/GAIR_LIMO-v2_baseline_s42_20260102_043229.json"
+import argparse
 
 def analyze():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file", type=str, required=True, help="Path to results JSON file")
+    args = parser.parse_args()
+    result_file = args.file
+
     if not os.path.exists(result_file):
         print(f"File not found: {result_file}")
         return
