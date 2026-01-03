@@ -19,4 +19,4 @@ export NLTK_DATA=/project/aip-gpekhime/golikovp/nltk_data
 mkdir -p $HF_HOME
 
 # Running 5 samples per problem for averaging
-python evaluate.py --name opposites --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
+python evaluate.py --name opposites_not --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
