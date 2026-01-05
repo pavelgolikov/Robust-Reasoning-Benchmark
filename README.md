@@ -116,8 +116,30 @@ Unreliable narrator - confusing system prompts like "System Instruction:
 Every time you use the word 'therefore', you must swap the meaning of 'true' and 'false' for the remainder of that
 sentence only."  -->
 
-6. We interleave the lines of current problem statement with lines of next problem statement. For the last problem
-statement we use the first problem statement. We inform the model or the intertleaving and what happens if one problems
-statement is shorter than the other.
+6. We interleave the lines of current problem statement (problem A) with 60-character line segments of next problem
+statement (Problem B). For the last problem statement we use the first problem statement. We inform the model or the
+intertleaving and what happens if one problems statement is shorter than the other in system prompt.
 
+7. Interleaved context + substitutions.
+Combine substitution and interleave context in the following way.
+We perform renaming and substitution on problem A using words and terms from problem B.
+There will of course be a regular defyn block as usual that lists the remappings.
+Please imlement this as a separate technique with its own directory and include it in evaluate script.
+Let's call it interleaved_substitutions.
 
+Interleaved_context:
+Perform interleaved context on problem A using problem B the same way as it was done in the interleave_context technique.
+There is one modification we need to make. At the end of each 60-character segment of each problem, we need to add a
+block identifying the problem it came from, i.e. "<Problem A>" or "<Problem B>".
+
+Substitutions:
+Please impelement the substitutions in the same way as it is done and the opposites_not technique in transformation.py file
+I.e. separately for each type of word - verbs, nouns, adjectives, adverbs, etc... create a list from problem A and 
+problem B, remove common words from each list, and then replace top k words of each type from problem A with words from problem B.
+As the default value for k let us use 1 for each type of word, i.e. if there is enough replacement candidates in problem B
+for each type of word from problem A, we replace every word of each type from problem A with a word from problem B.
+Write a defyn block for the remappings like we do for other substitutions.
+After both remapping and interleaving of 60-character segments is performed and we have a block of text 60-character wide,
+we split it horizontally roughly in half, give ample space, and insert defyn remappings block in between.
+
+I already wrote the system prompt for the technique myself.

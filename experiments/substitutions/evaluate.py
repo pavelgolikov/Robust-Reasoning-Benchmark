@@ -6,6 +6,7 @@ from opposites.transformation import apply_opposite_semantic_remapping
 from opposites_not.transformation import apply_opposites_not_yot
 from wrappers.transformation import apply_wrapper
 from interleaved_context.transformation import apply_interleaved_context
+from interleaved_substitutions.transformation import apply_interleaved_substitutions
 
 import multiprocessing
 import os
@@ -61,6 +62,19 @@ def get_prompts(problem, name, extra_context=None):
         else:
             user_prompt = apply_interleaved_context(problem, extra_context)
         return user_prompt, system_prompt
+    elif name == 'interleaved_substitutions':
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+            User query will consist of two problems - A and B, whose statements are interleaved. \
+            You need to solve only problem A. If one problem statement is shorter than the other, \
+            the empty lines resulting from the shorter problem statement will be filled with the \
+            shorter problem statement repeated from the beginning. On top of that, some words in problem A \
+            are remapped. The remappings are defined inside 'defyn{}' block in the middle of user query."
+        if extra_context is None:
+            user_prompt = "Error: Missing extra context for interleaved transformation"
+        else:
+            user_prompt = apply_interleaved_substitutions(problem, extra_context)
+        return user_prompt, system_prompt
+
     else:
         return 'Not Implemented', ''
 
@@ -132,7 +146,7 @@ def main():
 
     for i, example in enumerate(dataset):
         extra_context = None
-        if args.name == 'interleaved_context':
+        if args.name in ['interleaved_context', 'interleaved_substitutions']:
             # Use next problem as context, wrapping around to the first for the last problem
             next_idx = (i + 1) % len(dataset)
             extra_context = dataset[next_idx]['problem']
@@ -178,7 +192,8 @@ def main():
     run_id = f"{safe_name}_{args.name}_s{args.seed}_{timestamp}"
     
     # Save to [experiment_name]/results logic
-    experiment_dir = args.name
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    experiment_dir = os.path.join(base_dir, args.name)
     final_output_dir = os.path.join(experiment_dir, "results")
     
     os.makedirs(final_output_dir, exist_ok=True)
