@@ -217,4 +217,4 @@ def apply_opposites_not_yot_transformation(text, k_opp=1, k_not=3, seed=None):
     else:
         def_block = ""
         
-    return def_block + text_final
+    return def_block + text_final + "\n\n" + def_block

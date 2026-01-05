@@ -100,13 +100,11 @@ def main():
         raise ImportError("vLLM module is missing. Please install it.")
 
     print(f"Initializing vLLM with model: {args.model}")
-    # Fix OOM: Reduce memory utilization to leave room for overhead, and enforce half precision if needed
     max_model_length = 32000
     llm = LLM(
         model=args.model,
         tensor_parallel_size=2,
         trust_remote_code=True,
-        # swap_space=30,
         max_model_len=max_model_length,
         dtype="bfloat16"
     )
@@ -123,11 +121,11 @@ def main():
     print(f"Starting Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
     # Prepare Prompts
-    if args.name == 'wrappers':
+    if args.name == 'baseline':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. "
     else:
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' blocks before user query."
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query and there is another copy of the 'defyn{}' block after."
     prompts = []
     metadata = []
 
@@ -187,6 +185,7 @@ def main():
             
         result_entry = {
             "id": meta['id'],
+            "system_prompt": system_prompt,
             "original": meta['original'],
             "ground_truth": meta['ground_truth'],
             "output": generated_text,
