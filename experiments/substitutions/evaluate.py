@@ -103,7 +103,7 @@ def main():
     max_model_length = 32000
     llm = LLM(
         model=args.model,
-        tensor_parallel_size=2,
+        tensor_parallel_size=4,
         trust_remote_code=True,
         max_model_len=max_model_length,
         dtype="bfloat16"
