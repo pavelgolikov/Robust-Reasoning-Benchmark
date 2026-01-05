@@ -2,6 +2,10 @@ import os
 import json
 import re
 import time
+from opposites.transformation import apply_opposite_semantic_remapping
+from opposites_not.transformation import apply_opposites_not_yot
+from wrappers.transformation import apply_wrapper
+from interleaved_context.transformation import apply_interleaved_context
 
 import multiprocessing
 import os
@@ -16,6 +20,7 @@ import random
 import argparse
 from datasets import load_dataset
 from opposites.transformation import apply_opposite_semantic_remapping
+import nltk
 
 # Ensure NLTK data (WordNet) is available
 try:
@@ -24,41 +29,40 @@ try:
 except Exception as e:
     print(f"Warning: Failed to download NLTK data: {e}")
 
-
-try:
-    from vllm import LLM, SamplingParams
-except ImportError:
-    print("vLLM not found. This script requires vLLM for local inference.")
-    LLM = None
-    SamplingParams = None
-
-
-def get_user_prompt(problem, name):
+def get_prompts(problem, name, extra_context=None):
     # modify problem according to experiment name
     if name == 'baseline':
-        return problem
+        user_prompt = problem
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. "
+        return user_prompt, system_prompt
     elif name == 'opposites':
-        try:
-            # k=2 means 1/2 aka 50% of candidates are replaced
-            from opposites.transformation import apply_opposite_semantic_remapping
-            return apply_opposite_semantic_remapping(problem, k=1)
-        except ImportError:
-            return "Error: Transformation module not found"
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' blocks before user query."
+        user_prompt = apply_opposite_semantic_remapping(problem, k=1)
+        return user_prompt, system_prompt
     elif name == 'opposites_not':
-        try:
-            # k=2 means 1/2 aka 50% of candidates are replaced
-            from opposites_not.transformation import apply_opposites_not_yot_transformation
-            return apply_opposites_not_yot_transformation(problem, k_opp=1)
-        except ImportError:
-            return "Error: Transformation module not found"
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' blocks before user query."
+        user_prompt = apply_opposites_not_yot(problem, k_opp=1)
+        return user_prompt, system_prompt
     elif name == 'wrappers':
-        try:
-            from wrappers.transformation import apply_wrapper_transformation
-            return apply_wrapper_transformation(problem, k=2)
-        except ImportError:
-            return "Error: Transformation module not found"
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' blocks before user query."
+        user_prompt = apply_wrapper(problem, k=2)
+        return user_prompt, system_prompt
+    elif name == 'interleaved_context':
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+            User query will consist of two problems - A and B, whose statements are interleaved. \
+            You need to solve only problem A. If one problem statement is shorter than the other, \
+            the empty lines resulting from the shorter problem statement will be filled with the \
+            shorter problem statement repeated from the beginning."
+        if extra_context is None:
+            user_prompt = "Error: Missing extra context for interleaved transformation"
+        else:
+            user_prompt = apply_interleaved_context(problem, extra_context)
+        return user_prompt, system_prompt
     else:
-        return 'Unimplemented'
+        return 'Not Implemented', ''
 
 def extract_answer(text):
     if not text:
@@ -88,27 +92,27 @@ def normalize_answer(ans):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate model on AIME dataset (Killarney/vLLM)")
-    parser.add_argument("--model", type=str, default=None, help="Path/Name of the model to evaluate")
+    parser.add_argument("--model", type=str, default="NONE", help="Path/Name of the model to evaluate")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--output_dir", type=str, default="results")
     parser.add_argument("--name", type=str, default='baseline', help="Name of the experiment")
+    parser.add_argument("--dry", action="store_true", help="Dry run - do not evaluate, only produce prompts")
     args = parser.parse_args()
 
-    if LLM is None:
-        raise ImportError("vLLM module is missing. Please install it.")
-
-    print(f"Initializing vLLM with model: {args.model}")
-    max_model_length = 32000
-    llm = LLM(
-        model=args.model,
-        tensor_parallel_size=4,
-        trust_remote_code=True,
-        max_model_len=max_model_length,
-        dtype="bfloat16"
-    )
-    sampling_params = SamplingParams(temperature=0.7, max_tokens=max_model_length)
+    if not args.dry:
+        print(f"Initializing vLLM with model: {args.model}")
+        from vllm import LLM, SamplingParams
+        max_model_length = 32000
+        llm = LLM(
+            model=args.model,
+            tensor_parallel_size=4,
+            trust_remote_code=True,
+            max_model_len=max_model_length,
+            dtype="bfloat16"
+        )
+        sampling_params = SamplingParams(temperature=0.7, max_tokens=max_model_length)
 
     random.seed(args.seed)
     
@@ -120,19 +124,20 @@ def main():
         
     print(f"Starting Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
-    # Prepare Prompts
-    if args.name == 'baseline':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. "
-    else:
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query and there is another copy of the 'defyn{}' block after."
     prompts = []
     metadata = []
 
-    tokenizer = llm.get_tokenizer()
+    if not args.dry:
+        tokenizer = llm.get_tokenizer()
 
     for i, example in enumerate(dataset):
-        user_prompt = get_user_prompt(example['problem'], args.name)
+        extra_context = None
+        if args.name == 'interleaved_context':
+            # Use next problem as context, wrapping around to the first for the last problem
+            next_idx = (i + 1) % len(dataset)
+            extra_context = dataset[next_idx]['problem']
+            
+        user_prompt, system_prompt = get_prompts(example['problem'], args.name, extra_context)
         ground_truth = example['answer']
         
         messages = [
@@ -140,8 +145,11 @@ def main():
             {"role": "user", "content": user_prompt}
         ]
         
-        # Format prompt
-        formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        if not args.dry:
+            # Format prompt
+            formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        else:
+            formatted_prompt = messages
         
         # Create n independent samples for this problem
         for sample_idx in range(args.n_samples):
@@ -155,7 +163,10 @@ def main():
 
     # Generate
     print(f"Generating responses for {len(prompts)} prompts...")
-    outputs = llm.generate(prompts, sampling_params)
+    if not args.dry:
+        outputs = llm.generate(prompts, sampling_params)
+    else:
+        outputs = [''] * len(prompts)
 
     # Process Results
     results = []
@@ -174,7 +185,10 @@ def main():
     json_file = os.path.join(final_output_dir, f"{run_id}.json")
 
     for i, output in enumerate(outputs):
-        generated_text = output.outputs[0].text
+        if not args.dry:
+            generated_text = output.outputs[0].text
+        else:
+            generated_text = 'placeholder output from dry run'
         meta = metadata[i]
         
         extracted = extract_answer(generated_text)

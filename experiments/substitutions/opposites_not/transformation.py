@@ -162,7 +162,7 @@ def _apply_yot(text):
         
     return "".join(output_tokens)
 
-def apply_opposites_not_yot_transformation(text, k_opp=1, k_not=3, seed=None):
+def apply_opposites_not_yot(text, k_opp=1, k_not=3, seed=None):
     """
     Applies chain: Opposites -> Not Not -> Yot
     """

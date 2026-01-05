@@ -20,7 +20,7 @@ DISTRACTIVE_WRAPPERS = [
     "empty", "blank", "vacant", "hollow", "noise"
 ]
 
-def apply_wrapper_transformation(text, k=2, seed=None):
+def apply_wrapper(text, k=2, seed=None):
     """
     Identifies Nouns and Numbers.
     Randomly selects 1/k of them (default k=2 means 50%).
