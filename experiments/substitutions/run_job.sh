@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=02:00:00
+#SBATCH --time=01:00:00
 #SBATCH --output=slurm_out.out
 #SBATCH --error=slurm_out.err
 #SBATCH --account=aip-gpekhime
@@ -19,4 +19,4 @@ export NLTK_DATA=/project/aip-gpekhime/golikovp/nltk_data
 mkdir -p $HF_HOME
 
 # Running 5 samples per problem for averaging
-python evaluate.py --name opposites_not --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
+python evaluate.py --name interleaved_context --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
