@@ -7,6 +7,7 @@ from opposites_not.transformation import apply_opposites_not_yot
 from wrappers.transformation import apply_wrapper
 from interleaved_context.transformation import apply_interleaved_context
 from interleaved_substitutions.transformation import apply_interleaved_substitutions
+from numerical_wrappers.transformation import apply_numerical_wrappers
 
 import multiprocessing
 import os
@@ -38,17 +39,17 @@ def get_prompts(problem, name, extra_context=None):
         return user_prompt, system_prompt
     elif name == 'opposites':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' blocks before user query."
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
         user_prompt = apply_opposite_semantic_remapping(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'opposites_not':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' blocks before user query."
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
         user_prompt = apply_opposites_not_yot(problem, k_opp=1)
         return user_prompt, system_prompt
     elif name == 'wrappers':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' blocks before user query."
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
         user_prompt = apply_wrapper(problem, k=2)
         return user_prompt, system_prompt
     elif name == 'interleaved_context':
@@ -74,7 +75,11 @@ def get_prompts(problem, name, extra_context=None):
         else:
             user_prompt = apply_interleaved_substitutions(problem, extra_context)
         return user_prompt, system_prompt
-
+    elif name == 'numerical_wrappers':
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of the user query."
+        user_prompt = apply_numerical_wrappers(problem, k=1)
+        return user_prompt, system_prompt
     else:
         return 'Not Implemented', ''
 
