@@ -8,6 +8,7 @@ from wrappers.transformation import apply_wrapper
 from interleaved_context.transformation import apply_interleaved_context
 from interleaved_substitutions.transformation import apply_interleaved_substitutions
 from numerical_wrappers.transformation import apply_numerical_wrappers
+from variables.transformation import apply_variables
 
 import multiprocessing
 import os
@@ -80,6 +81,10 @@ def get_prompts(problem, name, extra_context=None):
             There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of the user query."
         user_prompt = apply_numerical_wrappers(problem, k=1)
         return user_prompt, system_prompt
+    elif name == 'variables':
+        system_prompt = "\n\nPlease identify all variables, names, and symbols in the problem statement and \
+            list them comma separated. Return ONLY this list."
+        return problem, system_prompt
     else:
         return 'Not Implemented', ''
 
