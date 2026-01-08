@@ -82,9 +82,11 @@ def get_prompts(problem, name, extra_context=None):
         user_prompt = apply_numerical_wrappers(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'variables':
-        system_prompt = "\n\nPlease identify all variables, names, and symbols in the problem statement and \
-            list them comma separated. Return ONLY this list."
-        return problem, system_prompt
+        # system_prompt = "\n\nPlease identify all variables, names, and symbols in the problem statement and \
+        #     list them comma separated. Return ONLY this list."
+        system_prompt = "You are a helpful math assistant. Your goal is to identify important 'load-bearing' terms in a math problem that we will later target for redefinition."
+        user_prompt = apply_variables(problem)
+        return user_prompt, system_prompt
     else:
         return 'Not Implemented', ''
 
