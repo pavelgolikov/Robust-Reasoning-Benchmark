@@ -195,7 +195,7 @@ def generate_system(terms, cur_term_ind, sys_index):
     domain = random.choice(domains)
     # each system defines 2 terms
     cur_term_index = (cur_term_ind + 2) % len(terms)
-    terms_list = terms[cur_term_index:cur_term_index + 2]
+    terms_list = [terms[(cur_term_index + i) % len(terms)] for i in range(2)]
     gen_bin_add = generate_random_binary_op(terms_list[0], terms_list[1], domain)
     gen_bin_mul = generate_random_binary_op(terms_list[0], terms_list[1], domain)
     gen_eq = generate_random_equality_condition(terms_list[0], terms_list[1])

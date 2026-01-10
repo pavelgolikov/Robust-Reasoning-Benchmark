@@ -144,32 +144,42 @@ wide, we split it horizontally roughly in half, give ample space, and insert def
 
 I already wrote the system prompt for the technique myself.
 
+8.0 Extraction of variables for each problem.
+Please take a look at the variables folder. In results subfolder there are files with variables extracted from each
+problem statement. Let's use the latest file. In there you will find model responses to the extraction task. "Output"
+item indicates the variables extracted from the problem statement. Extract variables and entities from the json
+structure. Save them in a file without special formatting symbols as a list of strings.
+
 8. Context rot.
 In context_rot folder, there is generate_systems.py script. In it there are functions to generate random
 mathematical system and ask the model to solve a question about this system. Let's call these sq_pairs - system-question
 pairs. Please take a look at the implementation.
+
 We will use these sq_pairs to create artificial problems that we will ask on top of the real problem. We will prompt the
 model with multiple sq_pairs, separated by spaces, together with one real problem from the dataset that needs to be
 solved. The problems are going to appear in random order. System prompt below (which is already written) describes the
 technique.
 
 system_prompt = """
-Problem index in the form [[ProblemK]] will be indicated in the problem statement itself, but will be split into 2 parts
+Problem index in the form [[ProblemK]] will be indicated in each problem statement itself, but will be split into 2 parts
 at random position. Each part will form its own sentence and will be placed in the problem statment at random position.
-For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The splits can be placed in inverse
-order, for example, "blemK]]" and "[[Pro". The index of the problem you are to solve will be indicated at the end of
-user query.
+For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The splits can be placed in reverse
+order, for example, "blemK]]" and "[[Pro". The index of the problem you are to solve will be indicated inside the user
+query.
 """
 NOTE: when embedding problem index into the problem statement, make sure not to place it in the first 10% or the last
 10% of the problem statement (in terms of length). The index should be placed roughly in the middle range of the problem
 statement.
 
+Here is how the user query should look like:
 user_query = """
-15 sq_pairs.
-You are to solve ProblemK.
-15 sq_pairs.
-Problem K problem statement.
+15 sq_pairs separated by spaces.
 
+You are to solve ProblemK.
+
+15 sq_pairs separated by spaces.
+
+Problem K problem statement.
 """
 
 Place the actual problem statement for the problem we are solving as the last problem in the prompt.
