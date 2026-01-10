@@ -165,16 +165,13 @@ NOTE: when embedding problem index into the problem statement, make sure not to 
 statement.
 
 user_query = """
-30 sq_pairs.
-...
-1 real problem at the end.
-
+15 sq_pairs.
 You are to solve ProblemK.
+15 sq_pairs.
+Problem K problem statement.
+
 """
 
 Place the actual problem statement for the problem we are solving as the last problem in the prompt.
-The point is to make the model read the entire context.
-We also place the index of the problem we are solving at the end of the user query.
-
-
-
+We place the explanation of the index of the problem to be solved (K in the example above) in the middle of the prompt
+The problem statement itself for this problem will be the last problem statement in the prompt.
