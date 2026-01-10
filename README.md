@@ -124,7 +124,7 @@ intertleaving and what happens if one problems statement is shorter than the oth
 Combine substitution and interleave context in the following way.
 We perform renaming and substitution on problem A using words and terms from problem B.
 There will of course be a regular defyn block as usual that lists the remappings.
-Please imlement this as a separate technique with its own directory and include it in evaluate script.
+Please implement this as a separate technique with its own directory and include it in evaluate script.
 Let's call it interleaved_substitutions.
 
 Interleaved_context:
@@ -143,3 +143,18 @@ After both remapping and interleaving of 60-character segments is performed and 
 we split it horizontally roughly in half, give ample space, and insert defyn remappings block in between.
 
 I already wrote the system prompt for the technique myself.
+
+8. Context rot.
+Each problem statement will have the entire dataset as context. The problems are going to appear in random order.
+System prompt below describes the technique. Use this system prompt for this technique.
+
+system_prompt = """
+Problem index in the form [[ProblemK]] will be indicated in the problem statement itself, but will be split into 2 parts
+at random position. Each part will form its own sentence and will be placed in the problem statment at random position.
+For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The splits can be placed in inverse order,
+for example, "blemK]]" and "[[Pro". The problem you are to solve will be indicated at the end of user query.
+"""
+
+Place the actual problem statement for the problem we are solving as the last problem in the prompt.
+The point is to make the model read the entire dataset as context.
+
