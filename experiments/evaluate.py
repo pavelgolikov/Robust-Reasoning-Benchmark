@@ -95,8 +95,8 @@ but will be split into 2 parts at random position. Each part will form its own s
 problem statment at random position of string "ProblemK" and including at least one letter in each part.
 For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The splits can be placed in reverse
 order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve 
-will be indicated in the middle of user query. Please reason step by step, and put your final answer within
-\\boxed{}.""" 
+will be indicated in the middle of user query. Problems are completely independent of each other.
+Please reason step by step, and put your final answer within \\boxed{}.""" 
         user_prompt = apply_split_indices(problem)
         return user_prompt, system_prompt
     else:

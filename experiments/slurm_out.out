@@ -1,40 +1,40 @@
 Starting Evaluation...
 Initializing vLLM with model: GAIR/LIMO-v2
-INFO 01-10 15:31:51 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 32000, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'GAIR/LIMO-v2'}
-WARNING 01-10 15:31:51 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
-INFO 01-10 15:31:52 [model.py:637] Resolved architecture: Qwen2ForCausalLM
-INFO 01-10 15:31:52 [model.py:1750] Using max model len 32000
-INFO 01-10 15:31:52 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
-[0;36m(EngineCore_DP0 pid=1920579)[0;0m INFO 01-10 15:32:03 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='GAIR/LIMO-v2', speculative_config=None, tokenizer='GAIR/LIMO-v2', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=GAIR/LIMO-v2, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
-[0;36m(EngineCore_DP0 pid=1920579)[0;0m WARNING 01-10 15:32:03 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
-INFO 01-10 15:32:13 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:60903 backend=nccl
-INFO 01-10 15:32:13 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:60903 backend=nccl
-INFO 01-10 15:32:13 [pynccl.py:111] vLLM is using nccl==2.27.7
-INFO 01-10 15:32:14 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
-INFO 01-10 15:32:14 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:15 [gpu_model_runner.py:3467] Starting to load model GAIR/LIMO-v2...
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:15 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP1 pid=1920774)[0;0m INFO 01-10 15:32:15 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:27 [default_loader.py:308] Loading weights took 10.97 seconds
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:27 [gpu_model_runner.py:3549] Model loading took 30.7099 GiB memory and 11.918983 seconds
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:40 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/7ad2fd0971/rank_0_0/backbone for vLLM's torch.compile
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:40 [backends.py:715] Dynamo bytecode transform time: 12.15 s
-[0;36m(Worker_TP1 pid=1920774)[0;0m INFO 01-10 15:32:44 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.014 s
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:44 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.258 s
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:46 [monitor.py:34] torch.compile takes 16.41 s in total
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:48 [gpu_worker.py:359] Available KV cache memory: 34.23 GiB
-[0;36m(EngineCore_DP0 pid=1920579)[0;0m INFO 01-10 15:32:48 [kv_cache_utils.py:1286] GPU KV cache size: 280,432 tokens
-[0;36m(EngineCore_DP0 pid=1920579)[0;0m INFO 01-10 15:32:48 [kv_cache_utils.py:1291] Maximum concurrency for 32,000 tokens per request: 8.76x
-[0;36m(Worker_TP1 pid=1920774)[0;0m INFO 01-10 15:32:55 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:56 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 15:32:56 [gpu_model_runner.py:4466] Graph capturing finished in 8 secs, took 1.33 GiB
-[0;36m(EngineCore_DP0 pid=1920579)[0;0m INFO 01-10 15:32:56 [core.py:254] init engine (profile, create kv cache, warmup model) took 29.24 seconds
-INFO 01-10 15:32:58 [llm.py:343] Supported tasks: ['generate']
+INFO 01-10 16:34:59 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 32000, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'GAIR/LIMO-v2'}
+WARNING 01-10 16:34:59 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+INFO 01-10 16:35:00 [model.py:637] Resolved architecture: Qwen2ForCausalLM
+INFO 01-10 16:35:00 [model.py:1750] Using max model len 32000
+INFO 01-10 16:35:01 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
+[0;36m(EngineCore_DP0 pid=1972398)[0;0m INFO 01-10 16:35:10 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='GAIR/LIMO-v2', speculative_config=None, tokenizer='GAIR/LIMO-v2', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=GAIR/LIMO-v2, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=1972398)[0;0m WARNING 01-10 16:35:10 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+INFO 01-10 16:35:20 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:37719 backend=nccl
+INFO 01-10 16:35:20 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:37719 backend=nccl
+INFO 01-10 16:35:20 [pynccl.py:111] vLLM is using nccl==2.27.7
+INFO 01-10 16:35:21 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
+INFO 01-10 16:35:21 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:21 [gpu_model_runner.py:3467] Starting to load model GAIR/LIMO-v2...
+[0;36m(Worker_TP1 pid=1972440)[0;0m INFO 01-10 16:35:22 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:22 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:32 [default_loader.py:308] Loading weights took 9.67 seconds
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:33 [gpu_model_runner.py:3549] Model loading took 30.7099 GiB memory and 10.613294 seconds
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:42 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/7ad2fd0971/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:42 [backends.py:715] Dynamo bytecode transform time: 8.77 s
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:46 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.522 s
+[0;36m(Worker_TP1 pid=1972440)[0;0m INFO 01-10 16:35:46 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.532 s
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:47 [monitor.py:34] torch.compile takes 12.30 s in total
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:49 [gpu_worker.py:359] Available KV cache memory: 34.23 GiB
+[0;36m(EngineCore_DP0 pid=1972398)[0;0m INFO 01-10 16:35:50 [kv_cache_utils.py:1286] GPU KV cache size: 280,432 tokens
+[0;36m(EngineCore_DP0 pid=1972398)[0;0m INFO 01-10 16:35:50 [kv_cache_utils.py:1291] Maximum concurrency for 32,000 tokens per request: 8.76x
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:56 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
+[0;36m(Worker_TP1 pid=1972440)[0;0m INFO 01-10 16:35:56 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 16:35:57 [gpu_model_runner.py:4466] Graph capturing finished in 7 secs, took 1.33 GiB
+[0;36m(EngineCore_DP0 pid=1972398)[0;0m INFO 01-10 16:35:57 [core.py:254] init engine (profile, create kv cache, warmup model) took 23.96 seconds
+INFO 01-10 16:35:58 [llm.py:343] Supported tasks: ['generate']
 Loading AIME 2024 dataset...
 Starting Evaluation on 30 examples. Seed=42. Samples per problem=5
 Generating responses for 150 prompts...
-[0;36m(Worker_TP1 pid=1920774)[0;0m INFO 01-10 16:10:38 [multiproc_executor.py:709] Parent process exited, terminating worker
-[0;36m(Worker_TP0 pid=1920773)[0;0m INFO 01-10 16:10:38 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP0 pid=1972439)[0;0m INFO 01-10 17:21:00 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP1 pid=1972440)[0;0m INFO 01-10 17:21:00 [multiproc_executor.py:709] Parent process exited, terminating worker
 
-Evaluation Complete. Accuracy: 50.00% (75/150)
-Results saved to: /project/6107991/golikovp/Linguistic_traps/experiments/split_indices/results/GAIR_LIMO-v2_split_indices_s42_20260110_161038.json
+Evaluation Complete. Accuracy: 50.67% (76/150)
+Results saved to: /project/6107991/golikovp/Linguistic_traps/experiments/split_indices/results/GAIR_LIMO-v2_split_indices_s42_20260110_172059.json
