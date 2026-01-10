@@ -133,28 +133,48 @@ There is one modification we need to make. At the end of each 60-character segme
 block identifying the problem it came from, i.e. "<Problem A>" or "<Problem B>".
 
 Substitutions:
-Please impelement the substitutions in the same way as it is done and the opposites_not technique in transformation.py file
-I.e. separately for each type of word - verbs, nouns, adjectives, adverbs, etc... create a list from problem A and 
-problem B, remove common words from each list, and then replace top k words of each type from problem A with words from problem B.
-As the default value for k let us use 1 for each type of word, i.e. if there is enough replacement candidates in problem B
-for each type of word from problem A, we replace every word of each type from problem A with a word from problem B.
-Write a defyn block for the remappings like we do for other substitutions.
-After both remapping and interleaving of 60-character segments is performed and we have a block of text 60-character wide,
-we split it horizontally roughly in half, give ample space, and insert defyn remappings block in between.
+Please impelement the substitutions in the same way as it is done and the opposites_not technique in transformation.py
+file I.e. separately for each type of word - verbs, nouns, adjectives, adverbs, etc... create a list from problem A and 
+problem B, remove common words from each list, and then replace top k words of each type from problem A with words from
+problem B.  As the default value for k let us use 1 for each type of word, i.e. if there is enough replacement
+candidates in problem B for each type of word from problem A, we replace every word of each type from problem A with a
+word from problem B. Write a defyn block for the remappings like we do for other substitutions.
+After both remapping and interleaving of 60-character segments is performed and we have a block of text 60-character
+wide, we split it horizontally roughly in half, give ample space, and insert defyn remappings block in between. 
 
 I already wrote the system prompt for the technique myself.
 
 8. Context rot.
-Each problem statement will have the entire dataset as context. The problems are going to appear in random order.
-System prompt below describes the technique. Use this system prompt for this technique.
+In context_rot folder, there is generate_systems.py script. In it there are functions to generate random
+mathematical system and ask the model to solve a question about this system. Let's call these sq_pairs - system-question
+pairs. Please take a look at the implementation.
+We will use these sq_pairs to create artificial problems that we will ask on top of the real problem. We will prompt the
+model with multiple sq_pairs, separated by spaces, together with one real problem from the dataset that needs to be
+solved. The problems are going to appear in random order. System prompt below (which is already written) describes the
+technique.
 
 system_prompt = """
 Problem index in the form [[ProblemK]] will be indicated in the problem statement itself, but will be split into 2 parts
 at random position. Each part will form its own sentence and will be placed in the problem statment at random position.
-For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The splits can be placed in inverse order,
-for example, "blemK]]" and "[[Pro". The problem you are to solve will be indicated at the end of user query.
+For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The splits can be placed in inverse
+order, for example, "blemK]]" and "[[Pro". The index of the problem you are to solve will be indicated at the end of
+user query.
+"""
+NOTE: when embedding problem index into the problem statement, make sure not to place it in the first 10% or the last
+10% of the problem statement (in terms of length). The index should be placed roughly in the middle range of the problem
+statement.
+
+user_query = """
+30 sq_pairs.
+...
+1 real problem at the end.
+
+You are to solve ProblemK.
 """
 
 Place the actual problem statement for the problem we are solving as the last problem in the prompt.
-The point is to make the model read the entire dataset as context.
+The point is to make the model read the entire context.
+We also place the index of the problem we are solving at the end of the user query.
+
+
 
