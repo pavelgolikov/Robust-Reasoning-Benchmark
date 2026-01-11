@@ -73,11 +73,11 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         else:
             user_prompt = apply_interleaved_substitutions(problem, extra_context)
         return user_prompt, system_prompt
-    elif name == 'numerical_wrappers':
+    elif name == 'wrappers':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
             There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' \
             block in the middle of the user query."
-        user_prompt = apply_numerical_wrappers(problem, k=1)
+        user_prompt = apply_wrappers(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'variables':
         # system_prompt = "\n\nPlease identify all variables, names, and symbols in the problem statement and \
