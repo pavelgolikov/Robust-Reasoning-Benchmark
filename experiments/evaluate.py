@@ -39,6 +39,10 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         user_prompt = problem
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. "
         return user_prompt, system_prompt
+    elif name == 'not_not_yot':
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}."
+        user_prompt = apply_not_not_yot(problem)
+        return user_prompt, system_prompt
     elif name == 'opposites':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
             There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
@@ -95,10 +99,6 @@ order in the problem statement, for example, "blemK]]" first and "[[Pro" second.
 will be indicated in the middle of user query. Problems are completely independent of each other.
 Please reason step by step, and put your final answer within \\boxed{}.""" 
         user_prompt = apply_split_indices(problem, num_distractors, seed=seed, problem_variables=variables)
-        return user_prompt, system_prompt
-    elif name == 'not_not_yot':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}."
-        user_prompt = apply_not_not_yot(problem)
         return user_prompt, system_prompt
     else:
         return 'Not Implemented', ''
