@@ -101,14 +101,21 @@ def embed_split_index(text, index_str):
     
     return " ".join(final_sents)
 
-def apply_split_indices(problem, seed=None):
+def apply_split_indices(problem, num_distractors, seed=None, problem_variables=None):
     if seed:
         random.seed(seed)
         
-    dummy_vars = ["x", "y", "n", "k", "A", "B", "S"]
-    distractors = generate_systems(dummy_vars, 30)
+    dummy_variables = ["x", "y", "n", "k", "A", "B", "S"]
+    if problem_variables and len(problem_variables) > 0:
+        variables_to_use = problem_variables
+        if len(problem_variables) < 2:
+            variables_to_use += dummy_variables
+    else:
+        variables_to_use = dummy_variables
+        
+    distractors = generate_systems(variables_to_use, num_distractors)
     
-    all_ids = random.sample(range(100, 999), 31)
+    all_ids = random.sample(range(100, 999), num_distractors + 1)
     target_id = all_ids[-1]
     distractor_ids = all_ids[:-1]
     
@@ -121,10 +128,10 @@ def apply_split_indices(problem, seed=None):
     target_pid = f"[[Problem{target_id}]]"
     processed_real = embed_split_index(problem, target_pid)
     
-    block1 = " ".join(processed_distractors[:15])
-    block2 = " ".join(processed_distractors[15:])
+    block1 = " ".join(processed_distractors[:(num_distractors // 2)])
+    block2 = " ".join(processed_distractors[(num_distractors // 2):])
     
-    instruction = f"\n\nYou are to solve Problem{target_id} using standard mathematical system.\n\n"
+    instruction = f"\n\nYou are to solve Problem{target_id} using standard mathematical operations.\n\n"
     
     final_prompt = block1 + instruction + block2 + "\n\n" + processed_real
     

@@ -33,7 +33,7 @@ try:
 except Exception as e:
     print(f"Warning: Failed to download NLTK data: {e}")
 
-def get_prompts(problem, name, extra_context=None):
+def get_prompts(problem, name, extra_context=None, variables=None, seed=None, num_distractors=None):
     # modify problem according to experiment name
     if name == 'baseline':
         user_prompt = problem
@@ -79,7 +79,8 @@ def get_prompts(problem, name, extra_context=None):
         return user_prompt, system_prompt
     elif name == 'numerical_wrappers':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of the user query."
+            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' \
+            block in the middle of the user query."
         user_prompt = apply_numerical_wrappers(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'variables':
@@ -97,7 +98,7 @@ For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]
 order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve 
 will be indicated in the middle of user query. Problems are completely independent of each other.
 Please reason step by step, and put your final answer within \\boxed{}.""" 
-        user_prompt = apply_split_indices(problem)
+        user_prompt = apply_split_indices(problem, num_distractors, seed=seed, problem_variables=variables)
         return user_prompt, system_prompt
     else:
         return 'Not Implemented', ''
@@ -137,7 +138,22 @@ def main():
     parser.add_argument("--output_dir", type=str, default="results")
     parser.add_argument("--name", type=str, default='baseline', help="Name of the experiment")
     parser.add_argument("--dry", action="store_true", help="Dry run - do not evaluate, only produce prompts")
+    parser.add_argument("--num_distractors", type=int, default=30, help="Number of distractors for split_indices")
     args = parser.parse_args()
+
+    # Load extracted variables if needed
+    extracted_vars = {}
+    if args.name == 'split_indices':
+        try:
+            vars_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'variables', 'extracted_terms_by_problem.json')
+            with open(vars_path, 'r') as f:
+                extracted_vars = json.load(f)
+            # replace all spaces with underscores in each variable name
+            for k, v in extracted_vars.items():
+                extracted_vars[k] = [x.replace(" ", "_") for x in v]
+            print("Variables loaded:", extracted_vars)
+        except Exception as e:
+            print(f"Warning: Failed to load extracted variables: {e}")
 
     if not args.dry:
         print(f"Initializing vLLM with model: {args.model}")
@@ -175,7 +191,11 @@ def main():
             next_idx = (i + 1) % len(dataset)
             extra_context = dataset[next_idx]['problem']
             
-        user_prompt, system_prompt = get_prompts(example['problem'], args.name, extra_context)
+        prob_id = str(example.get('id', i))
+        current_vars = extracted_vars.get(prob_id) if extracted_vars else None
+        
+        user_prompt, system_prompt = get_prompts(example['problem'], args.name, extra_context, variables=current_vars,
+                                                seed=args.seed, num_distractors=args.num_distractors)
         ground_truth = example['answer']
         
         messages = [
