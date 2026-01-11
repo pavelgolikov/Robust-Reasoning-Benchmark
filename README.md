@@ -185,3 +185,15 @@ Problem K problem statement.
 Place the actual problem statement for the problem we are solving as the last problem in the prompt.
 We place the explanation of the index of the problem to be solved (K in the example above) in the middle of the prompt
 The problem statement itself for this problem will be the last problem statement in the prompt.
+
+
+Full list of separate techniques so far:
+1. Not/Not/Yot insertion.
+2. Opposites.
+3. Wrappers.
+4. Interleaved context.
+5. Context rot.
+
+
+TODO: For each technique, we need to make sure:
+defyn blocks are inserted in the middle of the prompt, not at the beginning.

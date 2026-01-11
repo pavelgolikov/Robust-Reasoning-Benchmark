@@ -49,11 +49,6 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
             There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
         user_prompt = apply_opposites_not_yot(problem, k_opp=1)
         return user_prompt, system_prompt
-    elif name == 'wrappers':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
-        user_prompt = apply_wrapper(problem, k=2)
-        return user_prompt, system_prompt
     elif name == 'interleaved_context':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
             User query will consist of two problems - A and B, whose statements are interleaved. \
@@ -74,6 +69,7 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
             are remapped. The remappings are defined inside 'defyn{}' block in the middle of user query."
         if extra_context is None:
             user_prompt = "Error: Missing extra context for interleaved transformation"
+            exit(1)
         else:
             user_prompt = apply_interleaved_substitutions(problem, extra_context)
         return user_prompt, system_prompt
