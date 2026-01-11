@@ -9,7 +9,7 @@ except OSError:
     print("Spacy model not found. Please run 'python -m spacy download en_core_web_sm'")
     exit(1)
 
-def apply_numerical_wrappers_transformation(text, k=1, seed=None):
+def apply_wrappers(text, k=1, seed=None):
     if seed is not None:
         random.seed(seed)
         
@@ -157,4 +157,3 @@ def apply_numerical_wrappers_transformation(text, k=1, seed=None):
         
     return final_text
 
-apply_numerical_wrappers = apply_numerical_wrappers_transformation

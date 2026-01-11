@@ -4,12 +4,12 @@ import re
 import time
 from opposites.transformation import apply_opposite_semantic_remapping
 from opposites_not.transformation import apply_opposites_not_yot
-from wrappers.transformation import apply_wrapper
 from interleaved_context.transformation import apply_interleaved_context
 from interleaved_substitutions.transformation import apply_interleaved_substitutions
-from numerical_wrappers.transformation import apply_numerical_wrappers
+from wrappers.transformation import apply_wrappers
 from variables.transformation import apply_variables
 from split_indices.transformation import apply_split_indices
+from not_not_yot.transformation import apply_not_not_yot
 
 import multiprocessing
 import os
@@ -95,6 +95,10 @@ order in the problem statement, for example, "blemK]]" first and "[[Pro" second.
 will be indicated in the middle of user query. Problems are completely independent of each other.
 Please reason step by step, and put your final answer within \\boxed{}.""" 
         user_prompt = apply_split_indices(problem, num_distractors, seed=seed, problem_variables=variables)
+        return user_prompt, system_prompt
+    elif name == 'not_not_yot':
+        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}."
+        user_prompt = apply_not_not_yot(problem)
         return user_prompt, system_prompt
     else:
         return 'Not Implemented', ''
