@@ -10,6 +10,9 @@ from wrappers.transformation import apply_wrappers
 from variables.transformation import apply_variables
 from split_indices.transformation import apply_split_indices
 from not_not_yot.transformation import apply_not_not_yot
+from word_split_swap.transformation import apply_word_split_swap
+from word_reversal.transformation import apply_word_reversal
+from sentence_reversal.transformation import apply_sentence_reversal
 
 import multiprocessing
 import os
@@ -42,6 +45,24 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     elif name == 'not_not_yot':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}."
         user_prompt = apply_not_not_yot(problem)
+        return user_prompt, system_prompt
+    elif name == 'word_split_swap':
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within\
+        \\boxed{}. All words in user query have been modified as follows. Every word is first split into 2 parts. If the word has \
+        even number of characters, it is split into 2 equal parts in the middle. If the word has odd number of \
+        characters, the first part has one character less than the second part. After splitting, the 2 parts were swapped.\
+        This transformation was applied to numbers as well."
+        user_prompt = apply_word_split_swap(problem)
+        return user_prompt, system_prompt
+    elif name == 'word_reversal':
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
+            The order of words in each sentence of the user query has been reversed. Punctuation marks remain in their original positions."
+        user_prompt = apply_word_reversal(problem)
+        return user_prompt, system_prompt
+    elif name == 'sentence_reversal':
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
+            The order of sentences in the user query has been reversed. The last sentence is now first, and so on."
+        user_prompt = apply_sentence_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'opposites':
         system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
