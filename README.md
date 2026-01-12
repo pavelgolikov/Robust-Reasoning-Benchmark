@@ -207,7 +207,11 @@ swap the parts.
 
 TODO:
 0. What if we don't break words in interleaved context technique.
-1. Encourage the model to reverse the modifications.
-2. Split_indices is essentially two techniques combined - separate them.
+2. Make a script that reverses the modification back for each technique.
+
+1. Encourage the model to reverse the modifications in system prompt - repeat of log run - launch overnight.
+
+
+3. Split_indices is essentially two techniques combined - separate them.
 
 Try make script that reverses modification BACK.
