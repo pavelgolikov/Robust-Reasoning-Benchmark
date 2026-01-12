@@ -19,4 +19,6 @@ export NLTK_DATA=/project/aip-gpekhime/golikovp/nltk_data
 mkdir -p $HF_HOME
 
 # Running 5 samples per problem for averaging
-python evaluate.py --name not_not_yot --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
+# python evaluate.py --name sentence_reversal --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
+# python evaluate.py --name word_reversal --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
+python evaluate.py --name word_split_swap --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
