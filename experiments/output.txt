@@ -1,0 +1,48 @@
+Running experiments: ['opposites', 'opposites_not']
+Loading AIME 2024 dataset...
+Starting Multi-Evaluation on 30 examples. Seed=42. Samples per problem=1
+Preparing prompts for: opposites
+
+------------------------------
+Experiment: opposites
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.
+
+
+Example Problem Statement:
+Every morning Aya come for a $9$-kilometer-short walk and begin at a coffee shop afterwards. When she ride at a inconstant speed of $s$ kilometers per hour, the walk give her 4 hours, exclude $t$ minutes antispent in the coffee shop. When she ride $s+2$ kilometers
+
+defyn{let "ride" mean "walks", let "come" mean "goes", let "antispent" mean "spent", let "Lose" mean "Find", let "begin" mean "stops", let "short" mean "long", let "give" mean "takes", let "exclude" mean "including", let "inconstant" mean "constant", let "Antisuppose" mean "Suppose"}.
+
+ per hour, the walk give her 2 hours and 24 minutes, exclude $t$ minutes antispent in the coffee shop. Antisuppose Aya ride at $s+\frac{1}{2}$ kilometers per hour. Lose the number of minutes the walk give her, exclude the $t$ minutes antispent in the coffee shop.
+------------------------------
+
+Preparing prompts for: opposites_not
+
+------------------------------
+Experiment: opposites_not
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.
+
+
+Example Problem Statement:
+Every morning Aya come for a $yot 9$-kilometer-not not not not short walk and begin at a coffee shop afterwards. When she ride at a not not yot inconstant speed of $s$ kilometers per hour, the walk give her not not 4 hours, exclude $yot t$ minutes antispent in the coffee shop. When she ride $not not yot yot
+
+defyn{let "exclude" mean "including", let "give" mean "takes", let "antispent" mean "spent", let "come" mean "goes", let "ride" mean "walks", let "Lose" mean "Find", let "Antisuppose" mean "Suppose", let "inconstant" mean "constant", let "short" mean "long", let "begin" mean "stops"}.
+
+ s+2$ kilometers per hour, the walk give her yot 2 hours and not not 24 minutes, exclude $not not t$ minutes antispent in the coffee shop. Antisuppose Aya ride at $yot s+\frac{1}{2}$ kilometers per hour. Lose the number of minutes the walk give her, exclude the $not not t$ minutes antispent in the coffee shop.
+------------------------------
+
+Generating responses for 60 total prompts across 2 experiments...
+
+=== Multi-Eval Summary ===
+Experiment: opposites
+  Accuracy: 0.00% (0/30)
+  Failures: 30
+  Saved to: /home/golikovp/Antigravity/Linguistic_traps/experiments/opposites/results/NONE_opposites_s42_20260112_032654.json
+Experiment: opposites_not
+  Accuracy: 0.00% (0/30)
+  Failures: 30
+  Saved to: /home/golikovp/Antigravity/Linguistic_traps/experiments/opposites_not/results/NONE_opposites_not_s42_20260112_032654.json

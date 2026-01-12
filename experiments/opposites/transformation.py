@@ -105,8 +105,27 @@ def apply_opposite_semantic_remapping(text, k=2, seed=None):
     transformed_text = "".join(output_tokens)
     
     if definitions:
-        def_block = "defyn{" + ", ".join(definitions) + "}.\n\n"
-    else:
-        def_block = ""
+        def_block = "defyn{" + ", ".join(definitions) + "}."
         
-    return def_block + transformed_text
+        # Insert in the middle
+        mid = len(transformed_text) // 2
+        # Find nearest space
+        left_mid = transformed_text.rfind(' ', 0, mid)
+        right_mid = transformed_text.find(' ', mid)
+        
+        if left_mid == -1: split_idx = right_mid
+        elif right_mid == -1: split_idx = left_mid
+        else:
+            if (mid - left_mid) < (right_mid - mid): split_idx = left_mid
+            else: split_idx = right_mid
+            
+        if split_idx == -1: split_idx = mid
+        
+        top_half = transformed_text[:split_idx]
+        bottom_half = transformed_text[split_idx:]
+        
+        final_text = top_half + "\n\n" + def_block + "\n\n" + bottom_half
+    else:
+        final_text = transformed_text
+        
+    return final_text

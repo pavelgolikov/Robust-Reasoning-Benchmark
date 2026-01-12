@@ -213,8 +213,27 @@ def apply_opposites_not_yot(text, k_opp=1, k_not=3, seed=None):
     text_final = _apply_yot(text_not)
     
     if definitions:
-        def_block = "defyn{" + ", ".join(definitions) + "}.\n\n"
-    else:
-        def_block = ""
+        def_block = "defyn{" + ", ".join(definitions) + "}."
         
-    return def_block + text_final + "\n\n" + def_block
+        # Insert in the middle
+        mid = len(text_final) // 2
+        # Find nearest space
+        left_mid = text_final.rfind(' ', 0, mid)
+        right_mid = text_final.find(' ', mid)
+        
+        if left_mid == -1: split_idx = right_mid
+        elif right_mid == -1: split_idx = left_mid
+        else:
+            if (mid - left_mid) < (right_mid - mid): split_idx = left_mid
+            else: split_idx = right_mid
+            
+        if split_idx == -1: split_idx = mid
+        
+        top_half = text_final[:split_idx]
+        bottom_half = text_final[split_idx:]
+        
+        final_text = top_half + "\n\n" + def_block + "\n\n" + bottom_half
+    else:
+        final_text = text_final
+        
+    return final_text

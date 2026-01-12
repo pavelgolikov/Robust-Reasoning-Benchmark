@@ -186,8 +186,6 @@ Place the actual problem statement for the problem we are solving as the last pr
 We place the explanation of the index of the problem to be solved (K in the example above) in the middle of the prompt
 The problem statement itself for this problem will be the last problem statement in the prompt.
 
-TODO: For each technique, we need to make sure:
-defyn blocks are inserted in the middle of the prompt, not at the beginning.
 
 Full list of separate techniques so far:
 1. Not/Not/Yot insertion.
@@ -196,7 +194,6 @@ Full list of separate techniques so far:
 4. Interleaved context.
 5. Context rot.
 6. Permutations. TODO:
-
 
 Permutations can be of different things:
 - Permute letters in words according to some simple rule
