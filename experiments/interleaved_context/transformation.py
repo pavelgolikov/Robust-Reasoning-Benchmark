@@ -1,42 +1,41 @@
-
 import itertools
 
 def chunk_string(text, chunk_size):
-    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+    # Flatten newlines to spaces
+    flat = text.replace('\n', ' ').strip()
+    return [flat[i:i+chunk_size] for i in range(0, len(flat), chunk_size)]
 
-def apply_interleaved_context(problem_a, problem_b, chunk_size=60):
+def apply_interleaved_context(problem_a, problem_b, seed=None):
     """
-    Interleaves chunks of problem_a and problem_b.
-    Each chunk is `chunk_size` characters long.
-    If one problem is shorter in total chunks, it repeats from the beginning.
-    
-    Structure:
-    Chunk A1 (60 chars)
-    Chunk B1 (60 chars)
-    Chunk A2 (60 chars)
-    Chunk B2 (60 chars)
-    ...
+    Interleaves Problem A and Problem B (chunks of 60 chars).
+    Adds tags <Problem A> / <Problem B>.
+    Repeats shorter problem to match length of longer one.
     """
-    # Flatten newlines to spaces to ensure consistent filling of 60 chars
-    flat_a = problem_a.replace('\n', ' ').strip()
-    flat_b = problem_b.replace('\n', ' ').strip()
+    # 1. Chunking
+    chunk_size = 60
+    chunks_a = chunk_string(problem_a, chunk_size)
+    chunks_b = chunk_string(problem_b, chunk_size)
     
-    chunks_a = chunk_string(flat_a, chunk_size)
-    chunks_b = chunk_string(flat_b, chunk_size)
-    
-    # Ensure at least one chunk exists
+    # Ensure not empty
     if not chunks_a: chunks_a = [""]
     if not chunks_b: chunks_b = [""]
     
-    max_len = max(len(chunks_a), len(chunks_b))
+    # 2. Tag chunks
+    tagged_a = [c + " <Problem A>" for c in chunks_a]
+    tagged_b = [c + " <Problem B>" for c in chunks_b]
     
-    # Extend shorter list by repeating
-    extended_a = list(itertools.islice(itertools.cycle(chunks_a), max_len))
-    extended_b = list(itertools.islice(itertools.cycle(chunks_b), max_len))
+    max_len = max(len(tagged_a), len(tagged_b))
     
-    interleaved = []
-    for a, b in zip(extended_a, extended_b):
-        interleaved.append(a)
-        interleaved.append(b)
+    # 3. Cycle shorter to match max_len
+    input_a = list(itertools.islice(itertools.cycle(tagged_a), max_len))
+    input_b = list(itertools.islice(itertools.cycle(tagged_b), max_len))
+    
+    # 4. Interleave
+    interleaved_lines = []
+    for a, b in zip(input_a, input_b):
+        interleaved_lines.append(a)
+        interleaved_lines.append(b)
         
-    return "\n".join(interleaved)
+    final_text = "\n".join(interleaved_lines)
+    
+    return final_text

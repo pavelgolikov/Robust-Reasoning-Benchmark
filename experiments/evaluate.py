@@ -40,14 +40,14 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     # modify problem according to experiment name
     if name == 'baseline':
         user_prompt = problem
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. "
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}."
         return user_prompt, system_prompt
     elif name == 'not_not_yot':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}."
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}."
         user_prompt = apply_not_not_yot(problem)
         return user_prompt, system_prompt
     elif name == 'word_split_swap':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within\
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \
         \\boxed{}. All words in user query have been modified as follows. Every word is first split into 2 parts. If the word has \
         even number of characters, it is split into 2 equal parts in the middle. If the word has odd number of \
         characters, the first part has one character less than the second part. After splitting, the 2 parts were swapped.\
@@ -55,27 +55,28 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         user_prompt = apply_word_split_swap(problem)
         return user_prompt, system_prompt
     elif name == 'word_reversal':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
-            The order of words in each sentence of the user query has been reversed. Punctuation marks remain in their original positions."
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \
+        \\boxed{}. The order of words in each sentence of the user query has been reversed. Punctuation marks remain \
+        in their original positions."
         user_prompt = apply_word_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'sentence_reversal':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
-            The order of sentences in the user query has been reversed. The last sentence is now first, and so on."
+        The order of sentences in the user query has been reversed. The last sentence is now first, and so on."
         user_prompt = apply_sentence_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'opposites':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
             There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
         user_prompt = apply_opposite_semantic_remapping(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'opposites_not':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
             There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
         user_prompt = apply_opposites_not_yot(problem, k_opp=1)
         return user_prompt, system_prompt
     elif name == 'interleaved_context':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
             User query will consist of two problems - A and B, whose statements are interleaved. \
             You need to solve only problem A. If one problem statement is shorter than the other, \
             the empty lines resulting from the shorter problem statement will be filled with the \
@@ -86,7 +87,7 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
             user_prompt = apply_interleaved_context(problem, extra_context)
         return user_prompt, system_prompt
     elif name == 'interleaved_substitutions':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
             User query will consist of two problems - A and B, whose statements are interleaved. \
             You need to solve only problem A. If one problem statement is shorter than the other, \
             the empty lines resulting from the shorter problem statement will be filled with the \
@@ -99,7 +100,7 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
             user_prompt = apply_interleaved_substitutions(problem, extra_context)
         return user_prompt, system_prompt
     elif name == 'wrappers':
-        system_prompt = "Please reason step by step, and put your final answer within \\boxed{}. \
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
             There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' \
             block in the middle of the user query."
         user_prompt = apply_wrappers(problem, k=1)
@@ -118,7 +119,7 @@ problem statment at random position of string "ProblemK" and including at least 
 For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The splits can be placed in reverse
 order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve 
 will be indicated in the middle of user query. Problems are completely independent of each other.
-Please reason step by step, and put your final answer within \\boxed{}.""" 
+You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.""" 
         user_prompt = apply_split_indices(problem, num_distractors, seed=seed, problem_variables=variables)
         return user_prompt, system_prompt
     else:
