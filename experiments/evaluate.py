@@ -48,10 +48,10 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         return user_prompt, system_prompt
     elif name == 'word_split_swap':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-All words in user query have been modified as follows. Every word is first split into 2 parts. If the word has\n\
-even number of characters, it is split into 2 equal parts in the middle. If the word has odd number of\n\
-characters, the first part has one character less than the second part. After splitting, the 2 parts were swapped.\n\
-This transformation was applied to numbers. Punctuation marks adjacent to words are counted as word characters.\n"
+All words (words are defined as sequences of symbols separated by spaces) in user query have been modified as follows.\n\
+Every word is first split into 2 parts. If the word has even number of symbols, it is split into 2 equal parts in the middle. \n\
+If the word has odd number of symbols, the first part has one symbol less than the second part. \n\
+After splitting, the 2 parts were swapped. Punctuation marks adjacent to words are counted as word symbols.\n"
         user_prompt = apply_word_split_swap(problem)
         return user_prompt, system_prompt
     elif name == 'word_reversal':

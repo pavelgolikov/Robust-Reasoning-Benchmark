@@ -219,7 +219,7 @@ def generate_system(terms, cur_term_ind, sys_index):
     3. DEFINITION OF EQUALITY OPERATOR on elements of System-{sys_index}: "=":
     Formula: {def_var_1} = {def_var_2} if and only if {gen_eq}.\n\n
     """
-    verification_question = f"For system {sys_index} defined above, {verification_question}"
+    verification_question = f"For system {sys_index} defined above, {verification_question}\n\n\n"
     prompt = system_dynamic_template + verification_question
     return prompt
 

@@ -206,15 +206,12 @@ word has odd number of letters, the first part should have one letter less than 
 swap the parts.
 
 TODO:
-0. What if we don't break words in interleaved context technique. - TEST
-1. Make sure punctuation is covered correctly in word_split_swap - or modify the prompt.
 
-
-2. Make a script that reverses the modification back for each technique.
+0. Make a python script that reverses the modification back for each technique for sanity check.
 
 1. Encourage the model to reverse the modifications in system prompt - repeat of log run - launch overnight.
 
 
-3. Split_indices is essentially two techniques combined - separate them.
+2. In context saturation, add spaces between the systems better.
 
-Try make script that reverses modification BACK.
+3. Split_indices is essentially two techniques combined - separate them.
