@@ -205,3 +205,9 @@ Split every word into 2 parts. If the word has even number of letters, split it 
 word has odd number of letters, the first part should have one letter less than the second part. After splitting,
 swap the parts.
 
+TODO:
+0. What if we don't break words in interleaved context technique.
+1. Encourage the model to reverse the modifications.
+2. Split_indices is essentially two techniques combined - separate them.
+
+Try make script that reverses modification BACK.
