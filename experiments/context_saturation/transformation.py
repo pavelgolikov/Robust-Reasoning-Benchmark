@@ -15,12 +15,12 @@ try:
 except LookupError:
     nltk.download('punkt_tab', quiet=True)
 
-# Ensure experiments directory is in path to import context_rot
+# Ensure experiments directory is in path to import
 try:
-    from context_rot.generate_systems import generate_systems
+    from context_saturation.generate_systems import generate_systems
 except ImportError:
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-    from context_rot.generate_systems import generate_systems
+    from context_saturation.generate_systems import generate_systems
 
 def embed_split_index(text, index_str):
     """
@@ -101,7 +101,7 @@ def embed_split_index(text, index_str):
     
     return " ".join(final_sents)
 
-def apply_split_indices(problem, num_distractors, seed=None, problem_variables=None):
+def apply_context_saturation(problem, num_distractors, seed=None, problem_variables=None):
     if seed:
         random.seed(seed)
         

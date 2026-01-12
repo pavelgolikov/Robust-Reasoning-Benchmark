@@ -8,7 +8,7 @@ from interleaved_context.transformation import apply_interleaved_context
 from interleaved_substitutions.transformation import apply_interleaved_substitutions
 from wrappers.transformation import apply_wrappers
 from variables.transformation import apply_variables
-from split_indices.transformation import apply_split_indices
+from context_saturation.transformation import apply_context_saturation
 from not_not_yot.transformation import apply_not_not_yot
 from word_split_swap.transformation import apply_word_split_swap
 from word_reversal.transformation import apply_word_reversal
@@ -51,7 +51,7 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
 All words in user query have been modified as follows. Every word is first split into 2 parts. If the word has\n\
 even number of characters, it is split into 2 equal parts in the middle. If the word has odd number of\n\
 characters, the first part has one character less than the second part. After splitting, the 2 parts were swapped.\n\
-This transformation was applied to numbers as well."
+This transformation was applied to numbers. Punctuation marks adjacent to words are counted as word characters.\n"
         user_prompt = apply_word_split_swap(problem)
         return user_prompt, system_prompt
     elif name == 'word_reversal':

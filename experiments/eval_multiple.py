@@ -129,6 +129,7 @@ def main():
                     "id": example.get('id', i),
                     "sample_idx": sample_idx,
                     "original": user_prompt,
+                    "unmodified_original": example['problem'],
                     "system_prompt": system_prompt, # Capture system prompt too
                     "ground_truth": ground_truth
                 })
@@ -173,6 +174,7 @@ def main():
             "id": meta['id'],
             "system_prompt": meta['system_prompt'],
             "original": meta['original'],
+            "unmodified_original": meta['unmodified_original'],
             "ground_truth": meta['ground_truth'],
             "output": generated_text,
             "extracted": extracted,

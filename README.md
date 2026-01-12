@@ -207,7 +207,7 @@ swap the parts.
 
 TODO:
 0. What if we don't break words in interleaved context technique. - TEST
-1. Make sure punctuation is covered correctly in word_split_swap.
+1. Make sure punctuation is covered correctly in word_split_swap - or modify the prompt.
 
 
 2. Make a script that reverses the modification back for each technique.
