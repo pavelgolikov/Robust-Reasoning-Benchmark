@@ -206,7 +206,10 @@ word has odd number of letters, the first part should have one letter less than 
 swap the parts.
 
 TODO:
-0. What if we don't break words in interleaved context technique.
+0. What if we don't break words in interleaved context technique. - TEST
+1. Make sure punctuation is covered correctly in word_split_swap.
+
+
 2. Make a script that reverses the modification back for each technique.
 
 1. Encourage the model to reverse the modifications in system prompt - repeat of log run - launch overnight.
