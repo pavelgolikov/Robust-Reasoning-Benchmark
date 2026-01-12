@@ -48,39 +48,39 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         return user_prompt, system_prompt
     elif name == 'word_split_swap':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \
-        \\boxed{}. All words in user query have been modified as follows. Every word is first split into 2 parts. If the word has \
-        even number of characters, it is split into 2 equal parts in the middle. If the word has odd number of \
-        characters, the first part has one character less than the second part. After splitting, the 2 parts were swapped.\
-        This transformation was applied to numbers as well."
+\\boxed{}. All words in user query have been modified as follows. Every word is first split into 2 parts. If the word has \
+even number of characters, it is split into 2 equal parts in the middle. If the word has odd number of \
+characters, the first part has one character less than the second part. After splitting, the 2 parts were swapped.\
+This transformation was applied to numbers as well."
         user_prompt = apply_word_split_swap(problem)
         return user_prompt, system_prompt
     elif name == 'word_reversal':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \
-        \\boxed{}. The order of words in each sentence of the user query has been reversed. Punctuation marks remain \
-        in their original positions."
+\\boxed{}. The order of words in each sentence of the user query has been reversed. Punctuation marks remain \
+in their original positions."
         user_prompt = apply_word_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'sentence_reversal':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
-        The order of sentences in the user query has been reversed. The last sentence is now first, and so on."
+The order of sentences in the user query has been reversed. The last sentence is now first, and so on."
         user_prompt = apply_sentence_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'opposites':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
+There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
         user_prompt = apply_opposite_semantic_remapping(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'opposites_not':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
+There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block before user query."
         user_prompt = apply_opposites_not_yot(problem, k_opp=1)
         return user_prompt, system_prompt
     elif name == 'interleaved_context':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
-            User query will consist of two problems - A and B, whose statements are interleaved. \
-            You need to solve only problem A. If one problem statement is shorter than the other, \
-            the empty lines resulting from the shorter problem statement will be filled with the \
-            shorter problem statement repeated from the beginning."
+User query will consist of two problems - A and B, whose statements are interleaved. \
+You need to solve only problem A. If one problem statement is shorter than the other, \
+the empty lines resulting from the shorter problem statement will be filled with the \
+shorter problem statement repeated from the beginning."
         if extra_context is None:
             user_prompt = "Error: Missing extra context for interleaved transformation"
         else:
@@ -88,11 +88,11 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         return user_prompt, system_prompt
     elif name == 'interleaved_substitutions':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
-            User query will consist of two problems - A and B, whose statements are interleaved. \
-            You need to solve only problem A. If one problem statement is shorter than the other, \
-            the empty lines resulting from the shorter problem statement will be filled with the \
-            shorter problem statement repeated from the beginning. On top of that, some words in problem A \
-            are remapped. The remappings are defined inside 'defyn{}' block in the middle of user query."
+User query will consist of two problems - A and B, whose statements are interleaved. \
+You need to solve only problem A. If one problem statement is shorter than the other, \
+the empty lines resulting from the shorter problem statement will be filled with the \
+shorter problem statement repeated from the beginning. On top of that, some words in problem A \
+are remapped. The remappings are defined inside 'defyn{}' block in the middle of user query."
         if extra_context is None:
             user_prompt = "Error: Missing extra context for interleaved transformation"
             exit(1)
@@ -101,8 +101,8 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         return user_prompt, system_prompt
     elif name == 'wrappers':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}. \
-            There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' \
-            block in the middle of the user query."
+There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' \
+block in the middle of the user query."
         user_prompt = apply_wrappers(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'variables':
