@@ -56,7 +56,7 @@ After splitting, the 2 parts were swapped. Punctuation marks adjacent to words a
         return user_prompt, system_prompt
     elif name == 'word_reversal':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-The order of words in each sentence of the user query has been reversed. Punctuation marks remain in their original positions.\n"
+The order of words (words are defined as sequences of symbols separated by spaces) in each sentence of user query has been reversed.\n"
         user_prompt = apply_word_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'sentence_reversal':

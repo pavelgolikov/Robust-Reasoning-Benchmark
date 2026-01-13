@@ -204,5 +204,9 @@ Reversing transformations by technique:
 8. Word reversal - reverse the order of words in each sentence again to get back original order.
 
 
+
+
+NOTE: We have added pre-processing step to the dataset to remove all empty lines from the problem statements.
+
 TODO: technique to make an agent violate a previously given instruction.
 
