@@ -61,7 +61,7 @@ The order of words in each sentence of the user query has been reversed. Punctua
         return user_prompt, system_prompt
     elif name == 'sentence_reversal':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-The order of sentences in the user query has been reversed. The last sentence is now first, and so on.\n"
+The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.\n"
         user_prompt = apply_sentence_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'opposites':

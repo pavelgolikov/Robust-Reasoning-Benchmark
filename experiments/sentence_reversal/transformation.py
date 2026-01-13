@@ -1,22 +1,20 @@
-import spacy
+import re
 import random
-
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    print("Spacy model not found. Please run 'python -m spacy download en_core_web_sm'")
-    exit(1)
 
 def apply_sentence_reversal(text, seed=None):
     if seed:
         random.seed(seed)
         
-    doc = nlp(text)
-    
-    # Get sentences with their trailing whitespace
-    sentences = [sent.text_with_ws for sent in doc.sents]
-    
-    # Reverse
-    reversed_sentences = sentences[::-1]
-    
-    return "".join(reversed_sentences)
+    # User requested simple reversal on periods.
+    # This might split decimals or abbreviations (e.g. 3.14 -> 14.3), but satisfies the user's
+    # request for "easy transformation there and back" given messy LaTeX.
+    parts = text.split('.')
+    parts = parts[::-1]
+    return ".".join(parts)
+
+def reverse_sentence_reversal(text):
+    """
+    Reverses the sentence reversal transformation.
+    Applying reversal twice restores the original order.
+    """
+    return apply_sentence_reversal(text)

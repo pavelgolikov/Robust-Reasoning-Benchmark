@@ -59,7 +59,8 @@ def apply_word_reversal(text, seed=None):
                 # Be careful of "Mr." -> "Mr" + "." ? User asked for "Punctuation marks remain".
                 # "stops." -> "stops" + "."
                 # "world," -> "world" + ","
-                pm = re.match(r'^(.*?)([,.;:?!]*)$', other)
+                # Also include closing brackets/parens as punctuation to avoid moving them?
+                pm = re.match(r'^(.*?)([,.;:?!\]\)}]*)$', other)
                 if pm:
                     content, punct = pm.groups()
                 else:
@@ -93,3 +94,11 @@ def apply_word_reversal(text, seed=None):
         output_pieces.append(sent_str)
         
     return "".join(output_pieces)
+
+def reverse_word_reversal(text):
+    """
+    Reverses the word reversal transformation.
+    Since the transformation is symmetric (reversing a list twice yields the original),
+    we can simply re-apply the transformation logic.
+    """
+    return apply_word_reversal(text)
