@@ -68,3 +68,31 @@ def apply_word_split_swap(text, seed=None):
             output_tokens.append(part2 + part1)
             
     return "".join(output_tokens)
+
+def reverse_word_split_swap(text):
+    import re
+    # Match forward tokenizer: split by whitespace
+    tokens = re.split(r'(\s+)', text)
+    
+    output_tokens = []
+    for token in tokens:
+        if not token.strip(): # whitespace
+             output_tokens.append(token)
+             continue
+             
+        n = len(token)
+        if n < 2:
+            output_tokens.append(token)
+        else:
+            # Forward: p1 = token[:k], p2 = token[k:]. out = p2 + p1.
+            # k = n // 2.
+            # p1 part (length k) is now at the end.
+            # p2 part (length n-k) is now at the start.
+            
+            k = n // 2
+            p1 = token[-k:]
+            p2 = token[:-k]
+            
+            output_tokens.append(p1 + p2)
+            
+    return "".join(output_tokens)

@@ -61,3 +61,20 @@ def apply_interleaved_context(problem_a, problem_b, seed=None):
     final_text = "\n".join(interleaved_lines)
     
     return final_text
+
+def reverse_interleaved_context(text):
+    """
+    Reverses the interleaved_context transformation.
+    Extracts lines tagged with <Problem A> and rejoins them.
+    """
+    lines = text.split('\n')
+    reconstructed_parts = []
+    
+    for line in lines:
+        if line.endswith(" <Problem A>"):
+            # Remove tag (12 chars: " <Problem A>")
+            content = line[:-12]
+            reconstructed_parts.append(content)
+            
+    # Join with space as the original chunking flattened newlines to spaces
+    return " ".join(reconstructed_parts)
