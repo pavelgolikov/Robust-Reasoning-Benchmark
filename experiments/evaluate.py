@@ -26,7 +26,7 @@ os.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'
 import random
 import argparse
 from datasets import load_dataset
-from opposites.transformation import apply_opposite_semantic_remapping
+from opposites.transformation import apply_opposites
 import nltk
 
 # Ensure NLTK data (WordNet) is available
@@ -67,7 +67,7 @@ The order of sentences in the user query has been reversed. Sentences are define
     elif name == 'opposites':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
 There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n"
-        user_prompt = apply_opposite_semantic_remapping(problem, k=1)
+        user_prompt = apply_opposites(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'opposites_not':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\

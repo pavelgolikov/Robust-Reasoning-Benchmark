@@ -18,7 +18,7 @@ def main():
     parser = argparse.ArgumentParser(description="Test Reversibility of Transformations")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of techniques")
     parser.add_argument("--n", type=int, default=5, help="Number of examples to test per technique")
-    parser.add_argument("--output", type=str, default="reversibility_report.txt", help="Output report file")
+    parser.add_argument("--output", type=str, default="experiments/reversibility_report.txt", help="Output report file")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
