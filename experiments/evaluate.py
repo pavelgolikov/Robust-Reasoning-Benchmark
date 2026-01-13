@@ -43,7 +43,8 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
         return user_prompt, system_prompt
     elif name == 'not_not_yot':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
+Yot means the opposite of not.\n"
         user_prompt = apply_not_not_yot(problem)
         return user_prompt, system_prompt
     elif name == 'word_split_swap':
@@ -110,12 +111,12 @@ Your goal is to identify important 'load-bearing' terms in a math problem that w
         return user_prompt, system_prompt
     elif name == 'context_saturation':
         system_prompt = """You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-You will be given multiple problem statements. Problem index in the form [[ProblemK]] will be indicated in each problem\n\
-statement itself, but will be split into 2 parts at random position. Each part will form its own sentence and will be\n\
-placed in the problem statment at random position of string "ProblemK" and including at least one letter in each part.\n\
-For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The splits can be placed in reverse\n\
+You will be given multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem\n\
+statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence and will be\n\
+placed between sentences of the problem statement.\n\
+For example, two valid parts are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The two parts can be placed in reverse\n\
 order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve\n\
-will be indicated in the middle of user query. Problems are completely independent of each other.\n
+will be indicated in the middle of user query. Problems do not depend on each other.\n
 """ 
         user_prompt = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
         return user_prompt, system_prompt
