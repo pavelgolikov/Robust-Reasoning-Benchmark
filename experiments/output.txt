@@ -1,26 +1,93 @@
-Running experiments: ['word_split_swap']
+Running experiments: ['interleaved_context', 'word_split_swap']
+Initializing vLLM with model: GAIR/LIMO-v2
+INFO 01-12 19:20:45 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 32000, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'GAIR/LIMO-v2'}
+WARNING 01-12 19:20:45 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+INFO 01-12 19:20:45 [model.py:637] Resolved architecture: Qwen2ForCausalLM
+INFO 01-12 19:20:45 [model.py:1750] Using max model len 32000
+INFO 01-12 19:20:46 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
+[0;36m(EngineCore_DP0 pid=3188342)[0;0m INFO 01-12 19:20:56 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='GAIR/LIMO-v2', speculative_config=None, tokenizer='GAIR/LIMO-v2', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=GAIR/LIMO-v2, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=3188342)[0;0m WARNING 01-12 19:20:56 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+INFO 01-12 19:21:07 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:54871 backend=nccl
+INFO 01-12 19:21:07 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:54871 backend=nccl
+INFO 01-12 19:21:07 [pynccl.py:111] vLLM is using nccl==2.27.7
+INFO 01-12 19:21:08 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
+INFO 01-12 19:21:08 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:08 [gpu_model_runner.py:3467] Starting to load model GAIR/LIMO-v2...
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:09 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP1 pid=3188394)[0;0m INFO 01-12 19:21:09 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:19 [default_loader.py:308] Loading weights took 9.88 seconds
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:20 [gpu_model_runner.py:3549] Model loading took 30.7099 GiB memory and 10.557944 seconds
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:29 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/7ad2fd0971/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:29 [backends.py:715] Dynamo bytecode transform time: 9.07 s
+[0;36m(Worker_TP1 pid=3188394)[0;0m INFO 01-12 19:21:34 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.020 s
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:34 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.060 s
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:36 [monitor.py:34] torch.compile takes 13.13 s in total
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:38 [gpu_worker.py:359] Available KV cache memory: 34.23 GiB
+[0;36m(EngineCore_DP0 pid=3188342)[0;0m INFO 01-12 19:21:38 [kv_cache_utils.py:1286] GPU KV cache size: 280,432 tokens
+[0;36m(EngineCore_DP0 pid=3188342)[0;0m INFO 01-12 19:21:38 [kv_cache_utils.py:1291] Maximum concurrency for 32,000 tokens per request: 8.76x
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:45 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
+[0;36m(Worker_TP1 pid=3188394)[0;0m INFO 01-12 19:21:45 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 19:21:46 [gpu_model_runner.py:4466] Graph capturing finished in 8 secs, took 1.33 GiB
+[0;36m(EngineCore_DP0 pid=3188342)[0;0m INFO 01-12 19:21:46 [core.py:254] init engine (profile, create kv cache, warmup model) took 25.85 seconds
+INFO 01-12 19:21:47 [llm.py:343] Supported tasks: ['generate']
 Loading AIME 2024 dataset...
-Starting Multi-Evaluation on 30 examples. Seed=42. Samples per problem=1
+Starting Multi-Evaluation on 30 examples. Seed=42. Samples per problem=5
+Preparing prompts for: interleaved_context
+
+------------------------------
+Experiment: interleaved_context
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+User query will consist of two problems - A and B, whose statements are interleaved.
+You need to solve only problem A. If one problem statement is shorter than the other,
+the empty lines resulting from the shorter problem statement will be filled with the
+shorter problem statement repeated from the beginning.
+
+Example Problem Statement:
+Every morning Aya goes for a $9$-kilometer-long walk and stops <Problem A>
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the <Problem B>
+at a coffee shop afterwards. When she walks at a constant speed <Problem A>
+tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and <Problem B>
+of $s$ kilometers per hour, the walk takes her 4 hours, including <Problem A>
+let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, <Problem B>
+$t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers <Problem A>
+and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where <Problem B>
+per hour, the walk takes her 2 hours and 24 minutes, including <Problem A>
+$m$ and $n$ are relatively prime integers. Find $m + n$. <Problem B>
+$t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ <Problem A>
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the <Problem B>
+kilometers per hour. Find the number of minutes the walk takes <Problem A>
+tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and <Problem B>
+her, including the $t$ minutes spent in the coffee shop. <Problem A>
+let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, <Problem B>
+------------------------------
+
 Preparing prompts for: word_split_swap
 
 ------------------------------
 Experiment: word_split_swap
 System Prompt:
 You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
-All words in user query have been modified as follows. Every word is first split into 2 parts. If the word has
-even number of characters, it is split into 2 equal parts in the middle. If the word has odd number of
-characters, the first part has one character less than the second part. After splitting, the 2 parts were swapped.
-This transformation was applied to numbers. Punctuation marks adjacent to words are counted as word characters.
+All words (words are defined as sequences of symbols separated by spaces) in user query have been modified as follows.
+Every word is first split into 2 parts. If the word has even number of symbols, it is split into 2 equal parts in the middle. 
+If the word has odd number of symbols, the first part has one symbol less than the second part. 
+After splitting, the 2 parts were swapped. Punctuation marks adjacent to words are counted as word symbols.
 
 
 Example Problem Statement:
 eryEv ningmor yaA esgo orf a eter-long$9$-kilom lkwa nda opsst ta a feecof opsh wards.after enWh hes lkswa ta a tantcons eedsp fo s$$ eterskilom erp ur,ho het lkwa kesta erh 4 rs,hou udingincl t$$ utesmin entsp ni het feecof op.sh enWh hes lkswa +2$$s eterskilom erp ur,ho het lkwa kesta erh 2 ursho nda 42 tes,minu udingincl t$$ utesmin entsp ni het feecof op.sh poseSup yaA lkswa ta c{1}{2}$$s+\fra eterskilom erp ur.ho ndFi het bernum fo utesmin het lkwa kesta r,he udingincl het t$$ utesmin entsp ni het feecof op.sh
 ------------------------------
 
-Generating responses for 30 total prompts across 1 experiments...
+Generating responses for 300 total prompts across 2 experiments...
+[0;36m(Worker_TP1 pid=3188394)[0;0m INFO 01-12 21:24:17 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP0 pid=3188393)[0;0m INFO 01-12 21:24:17 [multiproc_executor.py:709] Parent process exited, terminating worker
 
 === Multi-Eval Summary ===
+Experiment: interleaved_context
+  Accuracy: 52.67% (79/150)
+  Failures: 0
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context/results/GAIR_LIMO-v2_interleaved_context_s42_20260112_212417.json
 Experiment: word_split_swap
-  Accuracy: 0.00% (0/30)
-  Failures: 30
-  Saved to: /home/golikovp/Antigravity/Linguistic_traps/experiments/word_split_swap/results/NONE_word_split_swap_s42_20260112_175321.json
+  Accuracy: 6.67% (10/150)
+  Failures: 5
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/word_split_swap/results/GAIR_LIMO-v2_word_split_swap_s42_20260112_212417.json

@@ -211,7 +211,20 @@ TODO:
 
 1. Encourage the model to reverse the modifications in system prompt - repeat of log run - launch overnight.
 
-
 2. In context saturation, add spaces between the systems better.
 
 3. Split_indices is essentially two techniques combined - separate them.
+
+
+Reversing transformations by technique:
+1. Not/Not/Yot insertion - remove all instances of 'not not ' and 'yot '.
+2. Opposites - use the definitions in defyn block to reverse the mappings.
+3. Wrappers - just expose the arguments of the trivial wrappers.
+4. Word split swap - for each word, split into 2 parts and swap back, taking care of odd/even length words.
+5. Interleaved context - remove all lines that belong to the other problem statement, i.e. that have <Problem B> tag.
+6. Sentence reversal - reverse the order of sentences in the problem statement again to get back original order.
+7. Context saturation - remove all except the last paragraph.
+8. Word reversal - reverse the order of words in each sentence again to get back original order.
+
+
+
