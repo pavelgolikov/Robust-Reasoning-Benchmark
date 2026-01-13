@@ -193,26 +193,12 @@ Full list of separate techniques so far:
 3. Wrappers.
 4. Interleaved context.
 5. Context rot.
-6. Permutations. TODO:
-
-Permutations can be of different things:
-- Permute letters in words according to some simple rule
-- Permute words in a sentence
-- Permute sentences in a problem statement
-
-
-Split every word into 2 parts. If the word has even number of letters, split it into 2 equal parts. If the
-word has odd number of letters, the first part should have one letter less than the second part. After splitting,
-swap the parts.
 
 TODO:
 
 0. Make a python script that reverses the modification back for each technique for sanity check.
-
 1. Encourage the model to reverse the modifications in system prompt - repeat of log run - launch overnight.
-
 2. In context saturation, add spaces between the systems better.
-
 3. Split_indices is essentially two techniques combined - separate them.
 
 
@@ -220,9 +206,6 @@ Reversing transformations by technique:
 1. Not/Not/Yot insertion - remove all instances of 'not not ' and 'yot '.
 2. Opposites - use the definitions in defyn block to reverse the mappings.
 3. Wrappers - just expose the arguments of the trivial wrappers.
-4. Word split swap - for each word, split into 2 parts and swap back, taking care of odd/even length words.
-5. Interleaved context - remove all lines that belong to the other problem statement, i.e. that have <Problem B> tag.
-6. Sentence reversal - reverse the order of sentences in the problem statement again to get back original order.
 7. Context saturation - remove all except the last paragraph.
 8. Word reversal - reverse the order of words in each sentence again to get back original order.
 

@@ -108,7 +108,7 @@ There will be terms remapped in the user query. The remappings are defined insid
 Your goal is to identify important 'load-bearing' terms in a math problem that we will later target for redefinition.\n"
         user_prompt = apply_variables(problem)
         return user_prompt, system_prompt
-    elif name == 'split_indices':
+    elif name == 'context_saturation':
         system_prompt = """You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
 You will be given multiple problem statements. Problem index in the form [[ProblemK]] will be indicated in each problem\n\
 statement itself, but will be split into 2 parts at random position. Each part will form its own sentence and will be\n\
@@ -117,7 +117,7 @@ For example, two valid splits are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]
 order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve\n\
 will be indicated in the middle of user query. Problems are completely independent of each other.\n
 """ 
-        user_prompt = apply_split_indices(problem, num_distractors, seed=seed, problem_variables=variables)
+        user_prompt = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
         return user_prompt, system_prompt
     else:
         return 'Not Implemented', ''

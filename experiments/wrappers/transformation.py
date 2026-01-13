@@ -157,3 +157,47 @@ def apply_wrappers(text, k=1, seed=None):
         
     return final_text
 
+def reverse_wrappers(text):
+    """
+    Reverses the wrapper transformation by parsing the defyn block 
+    and unwrapping the defined terms.
+    """
+    import re
+    
+    # 1. Find and Extract defyn block
+    # Pattern: defyn{ ... }.
+    # Using DOTALL to match across newlines (though usually it's one line)
+    
+    pattern = re.compile(r'defyn\{(.*?)\}\.', re.DOTALL)
+    match = pattern.search(text)
+    
+    if not match:
+        return text
+    
+    def_content = match.group(1)
+    
+    # 2. Parse definitions
+    def_pattern = re.compile(r'let "(.*?)" mean "(.*?)"')
+    mappings = {}
+    
+    for m in def_pattern.finditer(def_content):
+        wrapped_form = m.group(1) # e.g. "8(apple)"
+        original_form = m.group(2) # e.g. "apple"
+        mappings[wrapped_form] = original_form
+        
+    # 3. Remove the defyn block
+    text_clean = text.replace(match.group(0), "")
+    
+    # 4. Apply replacements
+    # Sort by length descending to handle potential overlaps
+    sorted_keys = sorted(mappings.keys(), key=len, reverse=True)
+    
+    for key in sorted_keys:
+        val = mappings[key]
+        text_clean = text_clean.replace(key, val)
+        
+    # 5. Clean up excessive whitespace
+    text_clean = re.sub(r'\n{3,}', '\n\n', text_clean)
+    
+    return text_clean.strip()
+
