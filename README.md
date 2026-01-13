@@ -192,17 +192,16 @@ Full list of separate techniques so far:
 2. Opposites.
 3. Wrappers.
 4. Interleaved context.
-5. Context rot.
+5. Context saturation.
+6. Word split swap.
+7. Sentence reversal.
 
-0. Make a python script that reverses the modification back for each technique for sanity check.
 1. Encourage the model to reverse the modifications in system prompt - repeat of log run - launch overnight.
-2. In context saturation, add spaces between the systems better.
 3. Split_indices is essentially two techniques combined - separate them.
 
 
 Reversing transformations by technique:
 1. Not/Not/Yot insertion - remove all instances of 'not not ' and 'yot '.
-2. Opposites - use the definitions in defyn block to reverse the mappings.
 7. Context saturation - remove all except the last paragraph.
 8. Word reversal - reverse the order of words in each sentence again to get back original order.
 

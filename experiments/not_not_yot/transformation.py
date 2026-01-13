@@ -73,3 +73,31 @@ def apply_not_not_yot(text, k_not=2, seed=None):
     text_final = _apply_yot(text_not)
     
     return text_final
+
+def reverse_not_not_yot(text):
+    """
+    Reverses the not-not-yot transformation by removing:
+    - 'not not '
+    - 'yot '
+    - 'yot yot '
+    
+    Order of operations:
+    Remove 'yot' patterns first (as they are unique to this transform).
+    Then remove 'not not' patterns.
+    """
+    import re
+    
+    # Remove 'yot ' and 'yot yot ' (and any potential multiple yots)
+    # Matches 'yot' followed by whitespace, one or more times
+    text = re.sub(r'(yot\s+)+', '', text)
+    
+    # Remove 'not not '
+    # Note: Matches 'not not' followed by whitespace.
+    text = re.sub(r'not\s+not\s+', '', text)
+    
+    return text
+
+# Alias for consistent naming schema expected by test scripts
+# (If the forward function is named differently in the test script map)
+# The test script maps 'not_not_yot' to ... let's check check test_reversibility.py
+
