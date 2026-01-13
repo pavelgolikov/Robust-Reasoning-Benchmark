@@ -78,16 +78,25 @@ def main():
             total += 1
             original_raw = dataset[i]['problem']
             
+            # Pre-processing: Remove empty lines (lines with only whitespace)
+            # This ensures that context_saturation (which splits on \n\n) doesn't fragment the real problem.
+            original_raw = "\n".join([line for line in original_raw.splitlines() if line.strip()])
+
+            
             # Prepare args for apply (some need context)
             kwargs = {}
             if exp_name in ['interleaved_context', 'interleaved_substitutions']:
                  next_idx = (i + 1) % len(dataset)
                  problem_b = dataset[next_idx]['problem']
                  kwargs = {'problem_b': problem_b}
+            elif exp_name == 'context_saturation':
+                 kwargs = {'num_distractors': 2}
                  
             try:
                 if 'problem_b' in kwargs:
                      transformed = apply_func(original_raw, kwargs['problem_b'], seed=args.seed)
+                elif 'num_distractors' in kwargs:
+                     transformed = apply_func(original_raw, kwargs['num_distractors'], seed=args.seed)
                 else:
                     transformed = apply_func(original_raw, seed=args.seed)
                     

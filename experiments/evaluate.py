@@ -205,6 +205,11 @@ def main():
 
     for i, example in enumerate(dataset):
         extra_context = None
+        
+        # Pre-process problem to remove empty lines
+        problem_text = example['problem']
+        problem_text = "\n".join([line for line in problem_text.splitlines() if line.strip()])
+        
         if args.name in ['interleaved_context', 'interleaved_substitutions']:
             # Use next problem as context, wrapping around to the first for the last problem
             next_idx = (i + 1) % len(dataset)
@@ -213,7 +218,7 @@ def main():
         prob_id = str(example.get('id', i))
         current_vars = extracted_vars.get(prob_id) if extracted_vars else None
         
-        user_prompt, system_prompt = get_prompts(example['problem'], args.name, extra_context, variables=current_vars,
+        user_prompt, system_prompt = get_prompts(problem_text, args.name, extra_context, variables=current_vars,
                                                 seed=args.seed, num_distractors=args.num_distractors)
         ground_truth = example['answer']
         

@@ -137,3 +137,37 @@ def apply_context_saturation(problem, num_distractors, seed=None, problem_variab
     
     return final_prompt
 
+def reverse_context_saturation(text):
+    """
+    Reverses context saturation by:
+    1. Extracting the last paragraph (the real problem).
+    2. Removing the embedded split index sentences (e.g., '[[Prob.' and 'lem123]].').
+    """
+    import re
+    
+    # 1. Extract last paragraph
+    # The transformation adds "\n\n" + processed_real at the end.
+    # However, inputs might contain \n\n naturally.
+    # But the saturation structure is [Distractors] \n\n [Processed Real].
+    # Distractors also don't contain \n\n (they are spaces-joined).
+    # So splitting by \n\n and taking the last part is safe.
+    
+    parts = text.split("\n\n")
+    real_problem_text = parts[-1]
+    
+    # 2. Remove embedded split ID parts
+    # Part 1: Starts with "[[P" (from "[[Problem..."), ends with dot.
+    # Since split index is random(3, 8), and "[[Problem" is 9 chars,
+    # Part 1 always contains at least "[[P".
+    # Regex: `\[\[P.*?\.\s*` matching "[[Prob." 
+    real_problem_text = re.sub(r'\[\[P.*?\.\s*', '', real_problem_text)
+    
+    # Part 2: Ends with "]]."
+    # It is the suffix of "[[ProblemID]]".
+    # It contains no spaces.
+    # Regex: `\S*\]\]\.\s*` 
+    real_problem_text = re.sub(r'\S*\]\]\.\s*', '', real_problem_text)
+    
+    return real_problem_text.strip()
+
+

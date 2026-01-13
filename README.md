@@ -201,8 +201,6 @@ Full list of separate techniques so far:
 
 
 Reversing transformations by technique:
-1. Not/Not/Yot insertion - remove all instances of 'not not ' and 'yot '.
-7. Context saturation - remove all except the last paragraph.
 8. Word reversal - reverse the order of words in each sentence again to get back original order.
 
 
