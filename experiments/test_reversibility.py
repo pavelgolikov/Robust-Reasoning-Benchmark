@@ -85,7 +85,7 @@ def main():
             
             # Prepare args for apply (some need context)
             kwargs = {}
-            if exp_name in ['interleaved_context', 'interleaved_substitutions']:
+            if exp_name in ['interleaved_context_line', 'interleaved_context_word', 'interleaved_substitutions']:
                  next_idx = (i + 1) % len(dataset)
                  problem_b = dataset[next_idx]['problem']
                  kwargs = {'problem_b': problem_b}
@@ -104,14 +104,14 @@ def main():
                 
                 # Normalize for comparison
                 norm_method = 'standard'
-                if exp_name == 'interleaved_context':
+                if exp_name in ['interleaved_context_line', 'interleaved_context_word']:
                     norm_method = 'interleaved_context'
                     
                 norm_orig = normalize_text(original_raw, norm_method)
                 norm_rev = normalize_text(reversed_text, norm_method)
                 
                 is_match = (norm_orig == norm_rev)
-                if exp_name == 'interleaved_context':
+                if exp_name in ['interleaved_context_line', 'interleaved_context_word']:
                     # interleaved_context cycles content, so reversed output may contain repetitions.
                     if norm_rev.startswith(norm_orig):
                          is_match = True

@@ -4,7 +4,8 @@ import re
 import time
 from opposites.transformation import apply_opposites
 from opposites_not.transformation import apply_opposites_not_yot
-from interleaved_context.transformation import apply_interleaved_context
+from interleaved_context_line.transformation import apply_interleaved_context_line
+from interleaved_context_word.transformation import apply_interleaved_context_word
 from interleaved_substitutions.transformation import apply_interleaved_substitutions
 from wrappers.transformation import apply_wrappers
 from variables.transformation import apply_variables
@@ -80,7 +81,18 @@ There will be terms remapped in the user query. The remappings are defined insid
 You need to decode the problem statement before solving it.\n"
         user_prompt = apply_opposites_not_yot(problem, k_opp=1)
         return user_prompt, system_prompt
-    elif name == 'interleaved_context':
+    elif name == 'interleaved_context_word':
+        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
+User query will consist of two problems - A and B, whose statements are interleaved word by word.\n\
+First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on.\n\
+Words are defined as sequences of symbols separated by spaces.\n\
+You need to identify and decode the problem statement before solving it.\n"
+        if extra_context is None:
+            user_prompt = "Error: Missing extra context for interleaved transformation"
+        else:
+            user_prompt = apply_interleaved_context_word(problem, extra_context)
+        return user_prompt, system_prompt
+    elif name == 'interleaved_context_line':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
 User query will consist of two problems - A and B, whose statements are interleaved.\n\
 You need to solve only problem A. If one problem statement is shorter than the other,\n\
@@ -90,7 +102,7 @@ You need to identify and decode the problem statement before solving it.\n"
         if extra_context is None:
             user_prompt = "Error: Missing extra context for interleaved transformation"
         else:
-            user_prompt = apply_interleaved_context(problem, extra_context)
+            user_prompt = apply_interleaved_context_line(problem, extra_context)
         return user_prompt, system_prompt
     elif name == 'interleaved_substitutions':
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\

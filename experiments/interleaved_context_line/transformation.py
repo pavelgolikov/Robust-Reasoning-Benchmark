@@ -27,7 +27,7 @@ def chunk_string(text, chunk_size):
         
     return lines
 
-def apply_interleaved_context(problem_a, problem_b, seed=None):
+def apply_interleaved_context_line(problem_a, problem_b, seed=None):
     """
     Interleaves Problem A and Problem B (chunks of 60 chars).
     Adds tags <Problem A> / <Problem B>.
@@ -62,7 +62,7 @@ def apply_interleaved_context(problem_a, problem_b, seed=None):
     
     return final_text
 
-def reverse_interleaved_context(text):
+def reverse_interleaved_context_line(text):
     """
     Reverses the interleaved_context transformation.
     Extracts lines tagged with <Problem A> and rejoins them.
