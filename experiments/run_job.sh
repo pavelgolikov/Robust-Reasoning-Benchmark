@@ -20,5 +20,4 @@ mkdir -p $HF_HOME
 
 # Running 5 samples per problem for averaging
 # python evaluate.py --name interleaved_context --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
-
-python eval_multiple.py --names context_saturation,interleaved_context,not_not_yot,opposites,sentence_reversal,word_reversal,word_split_swap,wrappers  --n_samples 5 --limit 30 --model "GAIR/LIMO-v2" > output.txt
+python eval_multiple.py --names context_saturation,interleaved_context,not_not_yot,opposites,sentence_reversal,word_reversal,word_split_swap,wrappers  --n_samples 5 --limit 30 --model "GAIR/LIMO-v2" > output_with_prompt_eng.txt
