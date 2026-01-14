@@ -2,7 +2,7 @@ import os
 import json
 import re
 import time
-from opposites.transformation import apply_opposite_semantic_remapping
+from opposites.transformation import apply_opposites
 from opposites_not.transformation import apply_opposites_not_yot
 from interleaved_context.transformation import apply_interleaved_context
 from interleaved_substitutions.transformation import apply_interleaved_substitutions
