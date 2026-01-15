@@ -85,7 +85,9 @@ You need to decode the problem statement before solving it.\n"
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
 User query will consist of two problems - A and B, whose statements are interleaved word by word.\n\
 First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on.\n\
-Words are defined as sequences of symbols separated by spaces.\n\
+You need to solve only problem A. Words are defined as sequences of symbols separated by spaces.\n\
+If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement\n\
+will be filled with the shorter problem statement repeated from the beginning.\n\
 You need to identify and decode the problem statement before solving it.\n"
         if extra_context is None:
             user_prompt = "Error: Missing extra context for interleaved transformation"
@@ -232,7 +234,7 @@ def main():
         problem_text = example['problem']
         problem_text = "\n".join([line for line in problem_text.splitlines() if line.strip()])
         
-        if args.name in ['interleaved_context', 'interleaved_substitutions']:
+        if args.name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
             # Use next problem as context, wrapping around to the first for the last problem
             next_idx = (i + 1) % len(dataset)
             extra_context = dataset[next_idx]['problem']

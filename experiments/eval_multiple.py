@@ -76,7 +76,7 @@ def main():
         
         for i, example in enumerate(dataset):
             extra_context = None
-            if exp_name in ['interleaved_context', 'interleaved_substitutions']:
+            if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
                 next_idx = (i + 1) % len(dataset)
                 extra_context = dataset[next_idx]['problem']
             
