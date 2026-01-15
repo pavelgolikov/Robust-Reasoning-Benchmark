@@ -1,61 +1,1061 @@
-Running experiments: ['interleaved_context_word']
+Running experiments: ['context_saturation']
 Initializing vLLM with model: GAIR/LIMO-v2
-INFO 01-14 19:48:51 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 32000, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'GAIR/LIMO-v2'}
-WARNING 01-14 19:48:51 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
-INFO 01-14 19:48:51 [model.py:637] Resolved architecture: Qwen2ForCausalLM
-INFO 01-14 19:48:51 [model.py:1750] Using max model len 32000
-INFO 01-14 19:48:51 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
-[0;36m(EngineCore_DP0 pid=3516525)[0;0m INFO 01-14 19:49:02 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='GAIR/LIMO-v2', speculative_config=None, tokenizer='GAIR/LIMO-v2', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=GAIR/LIMO-v2, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
-[0;36m(EngineCore_DP0 pid=3516525)[0;0m WARNING 01-14 19:49:02 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
-INFO 01-14 19:49:13 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:60373 backend=nccl
-INFO 01-14 19:49:13 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:60373 backend=nccl
-INFO 01-14 19:49:13 [pynccl.py:111] vLLM is using nccl==2.27.7
-INFO 01-14 19:49:14 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
-INFO 01-14 19:49:14 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:15 [gpu_model_runner.py:3467] Starting to load model GAIR/LIMO-v2...
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:15 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP1 pid=3516587)[0;0m INFO 01-14 19:49:15 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:25 [default_loader.py:308] Loading weights took 9.70 seconds
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:26 [gpu_model_runner.py:3549] Model loading took 30.7099 GiB memory and 10.392832 seconds
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:39 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/7ad2fd0971/rank_0_0/backbone for vLLM's torch.compile
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:39 [backends.py:715] Dynamo bytecode transform time: 12.10 s
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:43 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.811 s
-[0;36m(Worker_TP1 pid=3516587)[0;0m INFO 01-14 19:49:43 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.791 s
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:45 [monitor.py:34] torch.compile takes 15.91 s in total
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:47 [gpu_worker.py:359] Available KV cache memory: 34.23 GiB
-[0;36m(EngineCore_DP0 pid=3516525)[0;0m INFO 01-14 19:49:47 [kv_cache_utils.py:1286] GPU KV cache size: 280,432 tokens
-[0;36m(EngineCore_DP0 pid=3516525)[0;0m INFO 01-14 19:49:47 [kv_cache_utils.py:1291] Maximum concurrency for 32,000 tokens per request: 8.76x
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:54 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
-[0;36m(Worker_TP1 pid=3516587)[0;0m INFO 01-14 19:49:54 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 19:49:55 [gpu_model_runner.py:4466] Graph capturing finished in 7 secs, took 1.33 GiB
-[0;36m(EngineCore_DP0 pid=3516525)[0;0m INFO 01-14 19:49:55 [core.py:254] init engine (profile, create kv cache, warmup model) took 28.46 seconds
-INFO 01-14 19:49:56 [llm.py:343] Supported tasks: ['generate']
+INFO 01-15 01:09:21 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 32000, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'GAIR/LIMO-v2'}
+WARNING 01-15 01:09:21 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+INFO 01-15 01:09:22 [model.py:637] Resolved architecture: Qwen2ForCausalLM
+INFO 01-15 01:09:22 [model.py:1750] Using max model len 32000
+INFO 01-15 01:09:23 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
+[0;36m(EngineCore_DP0 pid=3309731)[0;0m INFO 01-15 01:09:33 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='GAIR/LIMO-v2', speculative_config=None, tokenizer='GAIR/LIMO-v2', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=GAIR/LIMO-v2, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=3309731)[0;0m WARNING 01-15 01:09:33 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+INFO 01-15 01:09:44 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:35031 backend=nccl
+INFO 01-15 01:09:44 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:35031 backend=nccl
+INFO 01-15 01:09:44 [pynccl.py:111] vLLM is using nccl==2.27.7
+INFO 01-15 01:09:45 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+INFO 01-15 01:09:45 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:09:45 [gpu_model_runner.py:3467] Starting to load model GAIR/LIMO-v2...
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:09:46 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP1 pid=3309830)[0;0m INFO 01-15 01:09:46 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:09:57 [default_loader.py:308] Loading weights took 10.48 seconds
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:09:58 [gpu_model_runner.py:3549] Model loading took 30.7099 GiB memory and 11.872832 seconds
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:10:10 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/7ad2fd0971/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:10:10 [backends.py:715] Dynamo bytecode transform time: 12.32 s
+[0;36m(Worker_TP1 pid=3309830)[0;0m INFO 01-15 01:10:15 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.925 s
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:10:15 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.933 s
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:10:16 [monitor.py:34] torch.compile takes 16.25 s in total
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:10:18 [gpu_worker.py:359] Available KV cache memory: 34.23 GiB
+[0;36m(EngineCore_DP0 pid=3309731)[0;0m INFO 01-15 01:10:19 [kv_cache_utils.py:1286] GPU KV cache size: 280,432 tokens
+[0;36m(EngineCore_DP0 pid=3309731)[0;0m INFO 01-15 01:10:19 [kv_cache_utils.py:1291] Maximum concurrency for 32,000 tokens per request: 8.76x
+[0;36m(Worker_TP1 pid=3309830)[0;0m INFO 01-15 01:10:25 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:10:25 [custom_all_reduce.py:216] Registering 13158 cuda graph addresses
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:10:26 [gpu_model_runner.py:4466] Graph capturing finished in 7 secs, took 1.33 GiB
+[0;36m(EngineCore_DP0 pid=3309731)[0;0m INFO 01-15 01:10:26 [core.py:254] init engine (profile, create kv cache, warmup model) took 28.19 seconds
+INFO 01-15 01:10:27 [llm.py:343] Supported tasks: ['generate']
 Loading AIME 2024 dataset...
 Starting Multi-Evaluation on 30 examples. Seed=42. Samples per problem=5
-Preparing prompts for: interleaved_context_word
+Preparing prompts for: context_saturation
 
 ------------------------------
-Experiment: interleaved_context_word
+Experiment: context_saturation
 System Prompt:
 You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
-User query will consist of two problems - A and B, whose statements are interleaved word by word.
-First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on.
-You need to solve only problem A. Words are defined as sequences of symbols separated by spaces.
-If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement
-will be filled with the shorter problem statement repeated from the beginning.
+You will be given multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem
+statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence and will be
+placed between sentences of the problem statement.
+For example, two valid parts are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The two parts can be placed in reverse
+order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve
+will be indicated in the middle of user query. Problems do not depend on each other.
+
 You need to identify and decode the problem statement before solving it.
+"
 
 
 Example Problem Statement:
-Every Let morning $ABC$ Aya be goes a for triangle a inscribed $9$-kilometer-long in walk circle and $\omega$. stops Let at the a tangents coffee to shop $\omega$ afterwards. at When $B$ she and walks $C$ at intersect a at constant point speed $D$, of and $s$ let kilometers $\overline{AD}$ per intersect hour, $\omega$ the at walk $P$. takes If her $AB=5$, 4 $BC=9$, hours, and including $AC=10$, $t$ $AP$ minutes can spent be in written the as coffee the shop. form When $\frac{m}{n}$, she where walks $m$ $s+2$ and kilometers $n$ per are hour, relatively the prime walk integers. takes Find her $m 2 + hours n$. and Let 24 $ABC$ minutes, be including a $t$ triangle minutes inscribed spent in in circle the $\omega$. coffee Let shop. the Suppose tangents Aya to walks $\omega$ at at $s+\frac{1}{2}$ $B$ kilometers and per $C$ hour. intersect Find at the point number $D$, of and minutes let the $\overline{AD}$ walk intersect takes $\omega$ her, at including $P$. the If $t$ $AB=5$, minutes $BC=9$, spent and in $AC=10$, the $AP$ coffee can shop. be
+
+    Let us define System-0. The variables (n, k) are defined as Matrices. [[Probl. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-0: "+":
+    For any two elements n and k:
+    Formula: n + k = (n*k) - k
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-0: "*":
+    For any two elements n and k:
+    Formula: n * k = min(n, n)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-0: "=":
+    Formula: n = k if and only if their squares are congruent modulo 8. For system 0 defined above, 
+    Task: Solve for Identity in System-0. Assume there is an unknown element 'E' such that n + E = n.
+    
+    Steps:
+    1. Write the algebraic equation for "n + E" using the formula defined for "+". 2. em373]]. Solve this equation for E in terms of n.
+    3. Does this value E work if we replace n with k? Prove it. 
+    Let us define System-1. The variables (A, B) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. [[Probl. DEFINITION OF ADDITION OPERATOR on elements of System-1: "+":
+    For any two elements A and B:
+    Formula: A + B = B - (A+B)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-1: "*":
+    For any two elements A and B:
+    Formula: A * B = (A*B) ^ A
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-1: "=":
+    Formula: A = B if and only if A and B are modular multiplicative inverses modulo 14. For system 1 defined above, 
+    Task: Calculate Sequence Expansion in System-1. Using variable A as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + B) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. em662]]. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-2. The variables (S, x) are defined as Numbers Modulo 55. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-2: "+":
+    For any two elements S and x:
+    Formula: S + x = x + (S*x)
+
+    2. [[Probl. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-2: "*":
+    For any two elements S and x:
+    Formula: S * x = (x^{1}) ^ (S^{1})
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-2: "=":
+    Formula: S = x if and only if the difference (S - x) is divisible by 2. For system 2 defined above, 
+    Task: Measure Commutativity violation in System-2. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. em234]]. Calculate Forward: X = S + x. 2. Calculate Reverse: Y = x + S.
+    3. Now, combine them: Result = X * Y. 
+    Let us define System-3. The variables (y, n) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-3: "+":
+    For any two elements y and n:
+    Formula: y + n = (y+n) ^ (y*n)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-3: "*":
+    For any two elements y and n:
+    Formula: y * n = (y*n) / n
+
+    3. oblem394]]. DEFINITION OF EQUALITY OPERATOR on elements of System-3: "=":
+    Formula: y = n if and only if the absolute value of y equals the absolute value of n.
+
+
+    For system 3 defined above, 
+    Task: Verify Associativity in System-3. Consider the specific variables y, n, and y_{0}. Using the definitions provided, determine if (y * n) * y_{0} = y * (n * y_{0}). Steps:
+    1. Calculate the LHS: First compute (y * n), then apply * with y_{0}. [[Pr. 2. Calculate the RHS: First compute (n * y_{0}), then apply * with y. 3. Compare the final results using the definition of "=". 
+    Let us define System-4. [[Pr. The variables (k, A) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-4: "+":
+    For any two elements k and A:
+    Formula: k + A = max((k+A), (k*A))
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-4: "*":
+    For any two elements k and A:
+    Formula: k * A = A * (k*A)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-4: "=":
+    Formula: k = A if and only if the difference (k - A) is divisible by 5. For system 4 defined above, 
+    Task: Calculate Sequence Expansion in System-4. Using variable k as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + A) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. oblem548]]. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-5. The variables (B, S) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-5: "+":
+    For any two elements B and S:
+    Formula: B + S = max(S, (S^{-1}))
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-5: "*":
+    For any two elements B and S:
+    Formula: B * S = min((B+S), (B+S))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-5: "=":
+    Formula: B = S if and only if their squares are congruent modulo 5. [[Proble. For system 5 defined above, 
+    Task: Verify Associativity in System-5. Consider the specific variables B, S, and B_{0}. Using the definitions provided, determine if (B * S) * B_{0} = B * (S * B_{0}). Steps:
+    1. Calculate the LHS: First compute (B * S), then apply * with B_{0}. m815]]. 2. Calculate the RHS: First compute (S * B_{0}), then apply * with B. 3. Compare the final results using the definition of "=". 
+    Let us define System-6. The variables (x, y) are defined as Numbers Modulo 93. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-6: "+":
+    For any two elements x and y:
+    Formula: x + y = (x^{2}) - y
+
+    2. lem596]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-6: "*":
+    For any two elements x and y:
+    Formula: x * y = max(sqrt(y), (x+y))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-6: "=":
+    Formula: x = y if and only if the distance between x and y is no greater than 0.1. For system 6 defined above, 
+    Task: Calculate Sequence Expansion in System-6. Using variable x as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + y) * Z_n
+
+    Steps:
+    1. [[Prob. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-7. [[Pr. The variables (n, k) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-7: "+":
+    For any two elements n and k:
+    Formula: n + k = (n*k) / (n^{4})
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-7: "*":
+    For any two elements n and k:
+    Formula: n * k = (n*k) * (k^{2})
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-7: "=":
+    Formula: n = k if and only if n and k are modular multiplicative inverses modulo 5. For system 7 defined above, 
+    Task: Verify Associativity in System-7. Consider the specific variables n, k, and n_{0}. Using the definitions provided, determine if (n * k) * n_{0} = n * (k * n_{0}). Steps:
+    1. oblem224]]. Calculate the LHS: First compute (n * k), then apply * with n_{0}. 2. Calculate the RHS: First compute (k * n_{0}), then apply * with n.
+    3. Compare the final results using the definition of "=". 
+    Let us define System-8. [[P. The variables (A, B) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-8: "+":
+    For any two elements A and B:
+    Formula: A + B = min(B, (A+B))
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-8: "*":
+    For any two elements A and B:
+    Formula: A * B = min((A+B), (A+B))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-8: "=":
+    Formula: A = B if and only if the difference (A - B) is divisible by 9. For system 8 defined above, 
+    Task: Verify Associativity in System-8. Consider the specific variables A, B, and A_{0}. Using the definitions provided, determine if (A * B) * A_{0} = A * (B * A_{0}). Steps:
+    1. Calculate the LHS: First compute (A * B), then apply * with A_{0}. 2. Calculate the RHS: First compute (B * A_{0}), then apply * with A. roblem129]]. 3. Compare the final results using the definition of "=". 
+    Let us define System-9. The variables (S, x) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-9: "+":
+    For any two elements S and x:
+    Formula: S + x = (S+x) + (S^{0})
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-9: "*":
+    For any two elements S and x:
+    Formula: S * x = max((x^{0}), x)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-9: "=":
+    Formula: S = x if and only if the distance between S and x is no greater than 1. [[Pr. For system 9 defined above, 
+    Task: Solve for Identity in System-9. Assume there is an unknown element 'E' such that S + E = S.
+    
+    Steps:
+    1. oblem745]]. Write the algebraic equation for "S + E" using the formula defined for "+". 2. Solve this equation for E in terms of S.
+    3. Does this value E work if we replace S with x? Prove it. 
+    Let us define System-10. The variables (y, n) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. [[P. DEFINITION OF ADDITION OPERATOR on elements of System-10: "+":
+    For any two elements y and n:
+    Formula: y + n = y ^ (y*n)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-10: "*":
+    For any two elements y and n:
+    Formula: y * n = n * n
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-10: "=":
+    Formula: y = n if and only if the difference (y - n) is divisible by 14. For system 10 defined above, 
+    Task: Measure Commutativity violation in System-10. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. roblem723]]. Calculate Forward: X = y + n.
+    2. Calculate Reverse: Y = n + y. 3. Now, combine them: Result = X * Y. 
+    Let us define System-11. The variables (k, A) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-11: "+":
+    For any two elements k and A:
+    Formula: k + A = (k*A) + A
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-11: "*":
+    For any two elements k and A:
+    Formula: k * A = k / k
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-11: "=":
+    Formula: k = A if and only if they are equidistant from the value 9. [[Probl. For system 11 defined above, 
+    Task: Measure Commutativity violation in System-11. em918]]. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. Calculate Forward: X = k + A. 2. Calculate Reverse: Y = A + k.
+    3. Now, combine them: Result = X * Y. 
+    Let us define System-12. The variables (B, S) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. [[Pro. DEFINITION OF ADDITION OPERATOR on elements of System-12: "+":
+    For any two elements B and S:
+    Formula: B + S = min((B+S), S)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-12: "*":
+    For any two elements B and S:
+    Formula: B * S = (B*S) / (B+S)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-12: "=":
+    Formula: B = S if and only if B and S are modular multiplicative inverses modulo 12. For system 12 defined above, 
+    Task: Calculate Sequence Expansion in System-12. Using variable B as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + S) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. blem345]]. 4. Check if Z_3 = Z_0. 
+    Let us define System-13. The variables (x, y) are defined as Numbers Modulo 46. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-13: "+":
+    For any two elements x and y:
+    Formula: x + y = min(|x-y||x/y|, sqrt(y))
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-13: "*":
+    For any two elements x and y:
+    Formula: x * y = x / y
+
+    3. [[Proble. DEFINITION OF EQUALITY OPERATOR on elements of System-13: "=":
+    Formula: x = y if and only if the difference (x - y) is divisible by 12. For system 13 defined above, 
+    Task: Verify Distributivity in System-13. m826]]. We must test if the operator "*" distributes over "+" for variables x, y, x_{0}. Steps:
+    1. LHS: Calculate x * (y + x_{0}). 2. RHS: Calculate (x * y) + (x * x_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-14. The variables (n, k) are defined as Polynomials. em262]]. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-14: "+":
+    For any two elements n and k:
+    Formula: n + k = max((n^{-1}), (n+k))
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-14: "*":
+    For any two elements n and k:
+    Formula: n * k = (n*k) / k
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-14: "=":
+    Formula: n = k if and only if the absolute value of n equals the absolute value of k.
+
+
+    For system 14 defined above, 
+    Task: Measure Commutativity violation in System-14. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. [[Probl. Calculate Forward: X = n + k.
+    2. Calculate Reverse: Y = k + n.
+    3. Now, combine them: Result = X * Y. 
+    Let us define System-15. The variables (A, B) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-15: "+":
+    For any two elements A and B:
+    Formula: A + B = max((A+B), (A*B))
+
+    2. oblem418]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-15: "*":
+    For any two elements A and B:
+    Formula: A * B = (A+B) / A
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-15: "=":
+    Formula: A = B if and only if their squares are congruent modulo 12. For system 15 defined above, 
+    Task: Verify Distributivity in System-15. [[Pr. We must test if the operator "*" distributes over "+" for variables A, B, A_{0}. Steps:
+    1. LHS: Calculate A * (B + A_{0}). 2. RHS: Calculate (A * B) + (A * A_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-16. The variables (S, x) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-16: "+":
+    For any two elements S and x:
+    Formula: S + x = min(x, x)
+
+    2. m664]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-16: "*":
+    For any two elements S and x:
+    Formula: S * x = x - (S+x)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-16: "=":
+    Formula: S = x if and only if their squares are congruent modulo 6. For system 16 defined above, 
+    Task: Solve for Identity in System-16. Assume there is an unknown element 'E' such that S + E = S.
+    
+    Steps:
+    1. [[Proble. Write the algebraic equation for "S + E" using the formula defined for "+". 2. Solve this equation for E in terms of S.
+    3. Does this value E work if we replace S with x? Prove it. 
+    Let us define System-17. [[Proble. The variables (y, n) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-17: "+":
+    For any two elements y and n:
+    Formula: y + n = y ^ y
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-17: "*":
+    For any two elements y and n:
+    Formula: y * n = max(n, (y+n))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-17: "=":
+    Formula: y = n if and only if their squares are congruent modulo 9. For system 17 defined above, 
+    Task: Verify Associativity in System-17. Consider the specific variables y, n, and y_{0}. m114]]. Using the definitions provided, determine if (y * n) * y_{0} = y * (n * y_{0}). Steps:
+    1. Calculate the LHS: First compute (y * n), then apply * with y_{0}. 2. Calculate the RHS: First compute (n * y_{0}), then apply * with y. 3. Compare the final results using the definition of "=". 
+    Let us define System-18. The variables (k, A) are defined as Numbers Modulo 66. The operators are redefined using standard mathematical operations as follows:
+
+    1. blem665]]. DEFINITION OF ADDITION OPERATOR on elements of System-18: "+":
+    For any two elements k and A:
+    Formula: k + A = (k^{3}) / (k*A)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-18: "*":
+    For any two elements k and A:
+    Formula: k * A = (k+A) - sqrt(k)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-18: "=":
+    Formula: k = A if and only if the difference (k - A) is divisible by 6. For system 18 defined above, 
+    Task: Verify Associativity in System-18. Consider the specific variables k, A, and k_{0}. Using the definitions provided, determine if (k * A) * k_{0} = k * (A * k_{0}). [[Pro. Steps:
+    1. Calculate the LHS: First compute (k * A), then apply * with k_{0}. 2. Calculate the RHS: First compute (A * k_{0}), then apply * with k.
+    3. Compare the final results using the definition of "=". 
+    Let us define System-19. The variables (B, S) are defined as Polynomials. [[Pro. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-19: "+":
+    For any two elements B and S:
+    Formula: B + S = (B*S) - (B*S)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-19: "*":
+    For any two elements B and S:
+    Formula: B * S = (B*S) ^ B
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-19: "=":
+    Formula: B = S if and only if the difference (B - S) is divisible by 4. For system 19 defined above, 
+    Task: Calculate Sequence Expansion in System-19. Using variable B as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + S) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". blem517]]. 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-20. The variables (x, y) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-20: "+":
+    For any two elements x and y:
+    Formula: x + y = max(x, x)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-20: "*":
+    For any two elements x and y:
+    Formula: x * y = (x*y) - (x*y)
+
+    3. [[Probl. DEFINITION OF EQUALITY OPERATOR on elements of System-20: "=":
+    Formula: x = y if and only if they are equidistant from the value 12. For system 20 defined above, 
+    Task: Calculate Sequence Expansion in System-20. Using variable x as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + y) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. em195]]. 4. Check if Z_3 = Z_0. 
+    Let us define System-21. The variables (n, k) are defined as Polynomials. oblem330]]. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-21: "+":
+    For any two elements n and k:
+    Formula: n + k = (k^{0}) ^ (n^{0})
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-21: "*":
+    For any two elements n and k:
+    Formula: n * k = min(n, (k^{-3}))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-21: "=":
+    Formula: n = k if and only if the absolute value of n equals the absolute value of k.
+
+
+    For system 21 defined above, 
+    Task: Calculate Sequence Expansion in System-21. Using variable n as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + k) * Z_n
+
+    Steps:
+    1. [[Pr. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-22. The variables (A, B) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-22: "+":
+    For any two elements A and B:
+    Formula: A + B = (A*B) - (A*B)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-22: "*":
+    For any two elements A and B:
+    Formula: A * B = (A*B) / A
+
+    3. [[Probl. DEFINITION OF EQUALITY OPERATOR on elements of System-22: "=":
+    Formula: A = B if and only if the difference (A - B) is divisible by 15. For system 22 defined above, 
+    Task: Calculate Sequence Expansion in System-22. Using variable A as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + B) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. em961]]. 4. Check if Z_3 = Z_0. 
+    Let us define System-23. The variables (S, x) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-23: "+":
+    For any two elements S and x:
+    Formula: S + x = x * (S*x)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-23: "*":
+    For any two elements S and x:
+    Formula: S * x = (S*x) / x
+
+    3. [[Pr. DEFINITION OF EQUALITY OPERATOR on elements of System-23: "=":
+    Formula: S = x if and only if S and x are modular multiplicative inverses modulo 12. For system 23 defined above, 
+    Task: Verify Associativity in System-23. Consider the specific variables S, x, and S_{0}. oblem216]]. Using the definitions provided, determine if (S * x) * S_{0} = S * (x * S_{0}). Steps:
+    1. Calculate the LHS: First compute (S * x), then apply * with S_{0}. 2. Calculate the RHS: First compute (x * S_{0}), then apply * with S.
+    3. Compare the final results using the definition of "=". 
+    Let us define System-24. The variables (y, n) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-24: "+":
+    For any two elements y and n:
+    Formula: y + n = (y^{2}) + y
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-24: "*":
+    For any two elements y and n:
+    Formula: y * n = n * (y+n)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-24: "=":
+    Formula: y = n if and only if the sum of y and n is exactly 50. [[Pr. For system 24 defined above, 
+    Task: Verify Associativity in System-24. Consider the specific variables y, n, and y_{0}. Using the definitions provided, determine if (y * n) * y_{0} = y * (n * y_{0}). Steps:
+    1. oblem572]]. Calculate the LHS: First compute (y * n), then apply * with y_{0}. 2. Calculate the RHS: First compute (n * y_{0}), then apply * with y. 3. Compare the final results using the definition of "=". 
+    Let us define System-25. The variables (k, A) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-25: "+":
+    For any two elements k and A:
+    Formula: k + A = (k*A) ^ k
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-25: "*":
+    For any two elements k and A:
+    Formula: k * A = (k*A) - (k*A)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-25: "=":
+    Formula: k = A if and only if the distance between k and A is no greater than 0.1. [[Prob. For system 25 defined above, 
+    Task: Verify Distributivity in System-25. lem220]]. We must test if the operator "*" distributes over "+" for variables k, A, k_{0}. Steps:
+    1. LHS: Calculate k * (A + k_{0}). 2. RHS: Calculate (k * A) + (k * k_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-26. The variables (B, S) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-26: "+":
+    For any two elements B and S:
+    Formula: B + S = S / S
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-26: "*":
+    For any two elements B and S:
+    Formula: B * S = min((B*S), (B+S))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-26: "=":
+    Formula: B = S if and only if the absolute value of B equals the absolute value of S.
+
+
+    For system 26 defined above, 
+    Task: Calculate Sequence Expansion in System-26. [[Prob. Using variable B as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + S) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. lem763]]. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-27. The variables (x, y) are defined as Numbers Modulo 98. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-27: "+":
+    For any two elements x and y:
+    Formula: x + y = sqrt(x) ^ (y^{-4})
+
+    2. oblem952]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-27: "*":
+    For any two elements x and y:
+    Formula: x * y = sqrt(y) - (x^{2})
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-27: "=":
+    Formula: x = y if and only if the sum of x and y is exactly 47. For system 27 defined above, 
+    Task: Measure Commutativity violation in System-27. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. [[Pr. Calculate Forward: X = x + y. 2. Calculate Reverse: Y = y + x. 3. Now, combine them: Result = X * Y. 
+    Let us define System-28. The variables (n, k) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-28: "+":
+    For any two elements n and k:
+    Formula: n + k = (n*k) ^ (n*k)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-28: "*":
+    For any two elements n and k:
+    Formula: n * k = k / n
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-28: "=":
+    Formula: n = k if and only if the distance between n and k is no greater than 0.5. [[Probl. For system 28 defined above, 
+    Task: Verify Associativity in System-28. Consider the specific variables n, k, and n_{0}. Using the definitions provided, determine if (n * k) * n_{0} = n * (k * n_{0}). Steps:
+    1. em257]]. Calculate the LHS: First compute (n * k), then apply * with n_{0}. 2. Calculate the RHS: First compute (k * n_{0}), then apply * with n.
+    3. Compare the final results using the definition of "=". 
+    Let us define System-29. The variables (A, B) are defined as Numbers Modulo 91. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-29: "+":
+    For any two elements A and B:
+    Formula: A + B = |A-B||A/B| / (A*B)
+
+    2. [[Proble. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-29: "*":
+    For any two elements A and B:
+    Formula: A * B = (B^{4}) + A
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-29: "=":
+    Formula: A = B if and only if the distance between A and B is no greater than 1. For system 29 defined above, 
+    Task: Verify Associativity in System-29. Consider the specific variables A, B, and A_{0}. Using the definitions provided, determine if (A * B) * A_{0} = A * (B * A_{0}). Steps:
+    1. m610]]. Calculate the LHS: First compute (A * B), then apply * with A_{0}. 2. Calculate the RHS: First compute (B * A_{0}), then apply * with A. 3. Compare the final results using the definition of "=". 
+    Let us define System-30. The variables (S, x) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-30: "+":
+    For any two elements S and x:
+    Formula: S + x = (S^{2}) ^ (S+x)
+
+    2. [[Pr. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-30: "*":
+    For any two elements S and x:
+    Formula: S * x = min((x^{1}), (S*x))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-30: "=":
+    Formula: S = x if and only if they are equidistant from the value 3. For system 30 defined above, 
+    Task: Measure Commutativity violation in System-30. oblem833]]. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. Calculate Forward: X = S + x. 2. Calculate Reverse: Y = x + S.
+    3. Now, combine them: Result = X * Y. 
+    Let us define System-31. The variables (y, n) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-31: "+":
+    For any two elements y and n:
+    Formula: y + n = (y+n) / (y+n)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-31: "*":
+    For any two elements y and n:
+    Formula: y * n = (y^{-1}) + (n^{-1})
+
+    3. [[Pr. DEFINITION OF EQUALITY OPERATOR on elements of System-31: "=":
+    Formula: y = n if and only if the distance between y and n is no greater than 1. For system 31 defined above, 
+    Task: Verify Associativity in System-31. Consider the specific variables y, n, and y_{0}. Using the definitions provided, determine if (y * n) * y_{0} = y * (n * y_{0}). Steps:
+    1. oblem398]]. Calculate the LHS: First compute (y * n), then apply * with y_{0}. 2. Calculate the RHS: First compute (n * y_{0}), then apply * with y. 3. Compare the final results using the definition of "=".
+
+You are to solve Problem701 using standard mathematical operations.
+
+
+    Let us define System-32. The variables (k, A) are defined as Numbers Modulo 88. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-32: "+":
+    For any two elements k and A:
+    Formula: k + A = (k^{4}) * (k*A)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-32: "*":
+    For any two elements k and A:
+    Formula: k * A = (k^{2}) - |k-A||k/A|
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-32: "=":
+    Formula: k = A if and only if the sum of k and A is exactly 29. [[Probl. For system 32 defined above, 
+    Task: Calculate Sequence Expansion in System-32. Using variable k as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + A) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. em621]]. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-33. The variables (B, S) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. [[P. DEFINITION OF ADDITION OPERATOR on elements of System-33: "+":
+    For any two elements B and S:
+    Formula: B + S = (S^{0}) ^ (B*S)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-33: "*":
+    For any two elements B and S:
+    Formula: B * S = (B^{-4}) - (B^{-4})
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-33: "=":
+    Formula: B = S if and only if the distance between B and S is no greater than 1. For system 33 defined above, 
+    Task: Measure Commutativity violation in System-33. roblem822]]. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. Calculate Forward: X = B + S.
+    2. Calculate Reverse: Y = S + B. 3. Now, combine them: Result = X * Y. 
+    Let us define System-34. The variables (x, y) are defined as Numbers Modulo 70. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-34: "+":
+    For any two elements x and y:
+    Formula: x + y = |x-y||x/y| ^ (x+y)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-34: "*":
+    For any two elements x and y:
+    Formula: x * y = min(y, (x^{-2}))
+
+    3. em379]]. DEFINITION OF EQUALITY OPERATOR on elements of System-34: "=":
+    Formula: x = y if and only if the distance between x and y is no greater than 1. For system 34 defined above, 
+    Task: Verify Associativity in System-34. Consider the specific variables x, y, and x_{0}. Using the definitions provided, determine if (x * y) * x_{0} = x * (y * x_{0}). Steps:
+    1. Calculate the LHS: First compute (x * y), then apply * with x_{0}. 2. Calculate the RHS: First compute (y * x_{0}), then apply * with x. [[Probl. 3. Compare the final results using the definition of "=". 
+    Let us define System-35. The variables (n, k) are defined as Matrices. [[Prob. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-35: "+":
+    For any two elements n and k:
+    Formula: n + k = k - k
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-35: "*":
+    For any two elements n and k:
+    Formula: n * k = max(n, k)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-35: "=":
+    Formula: n = k if and only if the sum of n and k is exactly 7. For system 35 defined above, 
+    Task: Solve for Identity in System-35. Assume there is an unknown element 'E' such that n + E = n.
+    
+    Steps:
+    1. Write the algebraic equation for "n + E" using the formula defined for "+". 2. Solve this equation for E in terms of n.
+    3. lem525]]. Does this value E work if we replace n with k? Prove it. 
+    Let us define System-36. The variables (A, B) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-36: "+":
+    For any two elements A and B:
+    Formula: A + B = (B^{2}) - (B^{2})
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-36: "*":
+    For any two elements A and B:
+    Formula: A * B = (A+B) + (A+B)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-36: "=":
+    Formula: A = B if and only if they are equidistant from the value 14. blem954]]. For system 36 defined above, 
+    Task: Solve for Identity in System-36. Assume there is an unknown element 'E' such that A + E = A. Steps:
+    1. [[Pro. Write the algebraic equation for "A + E" using the formula defined for "+". 2. Solve this equation for E in terms of A. 3. Does this value E work if we replace A with B? Prove it. 
+    Let us define System-37. The variables (S, x) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-37: "+":
+    For any two elements S and x:
+    Formula: S + x = max(x, S)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-37: "*":
+    For any two elements S and x:
+    Formula: S * x = (S+x) ^ (S*x)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-37: "=":
+    Formula: S = x if and only if the sum of S and x is exactly 42. [[Probl. For system 37 defined above, 
+    Task: Solve for Identity in System-37. Assume there is an unknown element 'E' such that S + E = S.
+    
+    Steps:
+    1. em594]]. Write the algebraic equation for "S + E" using the formula defined for "+". 2. Solve this equation for E in terms of S.
+    3. Does this value E work if we replace S with x? Prove it. 
+    Let us define System-38. The variables (y, n) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-38: "+":
+    For any two elements y and n:
+    Formula: y + n = (y+n) ^ (y*n)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-38: "*":
+    For any two elements y and n:
+    Formula: y * n = (y*n) / (y+n)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-38: "=":
+    Formula: y = n if and only if the difference (y - n) is divisible by 5. m583]]. For system 38 defined above, 
+    Task: Calculate Sequence Expansion in System-38. Using variable y as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + n) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. [[Proble. 4. Check if Z_3 = Z_0. 
+    Let us define System-39. The variables (k, A) are defined as Numbers Modulo 59. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-39: "+":
+    For any two elements k and A:
+    Formula: k + A = |k-A||k/A| - A
+
+    2. [[P. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-39: "*":
+    For any two elements k and A:
+    Formula: k * A = sqrt(A) / (k*A)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-39: "=":
+    Formula: k = A if and only if their squares are congruent modulo 4. For system 39 defined above, 
+    Task: Verify Distributivity in System-39. roblem349]]. We must test if the operator "*" distributes over "+" for variables k, A, k_{0}. Steps:
+    1. LHS: Calculate k * (A + k_{0}). 2. RHS: Calculate (k * A) + (k * k_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-40. The variables (B, S) are defined as Numbers Modulo 76. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-40: "+":
+    For any two elements B and S:
+    Formula: B + S = B ^ sqrt(S)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-40: "*":
+    For any two elements B and S:
+    Formula: B * S = (B*S) ^ B
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-40: "=":
+    Formula: B = S if and only if B and S are modular multiplicative inverses modulo 14. [[Probl. For system 40 defined above, 
+    Task: Verify Distributivity in System-40. We must test if the operator "*" distributes over "+" for variables B, S, B_{0}. em567]]. Steps:
+    1. LHS: Calculate B * (S + B_{0}). 2. RHS: Calculate (B * S) + (B * B_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-41. The variables (x, y) are defined as Numbers Modulo 61. The operators are redefined using standard mathematical operations as follows:
+
+    1. [[P. DEFINITION OF ADDITION OPERATOR on elements of System-41: "+":
+    For any two elements x and y:
+    Formula: x + y = |x-y||x/y| ^ |x-y||x/y|
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-41: "*":
+    For any two elements x and y:
+    Formula: x * y = (x+y) * sqrt(y)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-41: "=":
+    Formula: x = y if and only if x and y are modular multiplicative inverses modulo 8. For system 41 defined above, 
+    Task: Measure Commutativity violation in System-41. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. Calculate Forward: X = x + y. 2. Calculate Reverse: Y = y + x. roblem248]]. 3. Now, combine them: Result = X * Y. 
+    Let us define System-42. The variables (n, k) are defined as Matrices. lem492]]. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-42: "+":
+    For any two elements n and k:
+    Formula: n + k = max(k, n)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-42: "*":
+    For any two elements n and k:
+    Formula: n * k = n - (n+k)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-42: "=":
+    Formula: n = k if and only if their squares are congruent modulo 15. For system 42 defined above, 
+    Task: Verify Distributivity in System-42. We must test if the operator "*" distributes over "+" for variables n, k, n_{0}. [[Prob. Steps:
+    1. LHS: Calculate n * (k + n_{0}). 2. RHS: Calculate (n * k) + (n * n_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-43. The variables (A, B) are defined as Numbers Modulo 55. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-43: "+":
+    For any two elements A and B:
+    Formula: A + B = (B^{1}) * (A*B)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-43: "*":
+    For any two elements A and B:
+    Formula: A * B = max((A^{2}), B)
+
+    3. [[Probl. DEFINITION OF EQUALITY OPERATOR on elements of System-43: "=":
+    Formula: A = B if and only if the difference (A - B) is divisible by 2. For system 43 defined above, 
+    Task: Verify Distributivity in System-43. We must test if the operator "*" distributes over "+" for variables A, B, A_{0}. Steps:
+    1. LHS: Calculate A * (B + A_{0}). 2. em295]]. RHS: Calculate (A * B) + (A * A_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-44. The variables (S, x) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. blem713]]. DEFINITION OF ADDITION OPERATOR on elements of System-44: "+":
+    For any two elements S and x:
+    Formula: S + x = (S+x) ^ S
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-44: "*":
+    For any two elements S and x:
+    Formula: S * x = x ^ x
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-44: "=":
+    Formula: S = x if and only if they are equidistant from the value 2. For system 44 defined above, 
+    Task: Verify Associativity in System-44. Consider the specific variables S, x, and S_{0}. Using the definitions provided, determine if (S * x) * S_{0} = S * (x * S_{0}). Steps:
+    1. [[Pro. Calculate the LHS: First compute (S * x), then apply * with S_{0}. 2. Calculate the RHS: First compute (x * S_{0}), then apply * with S.
+    3. Compare the final results using the definition of "=". 
+    Let us define System-45. The variables (y, n) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-45: "+":
+    For any two elements y and n:
+    Formula: y + n = (y*n) - (y*n)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-45: "*":
+    For any two elements y and n:
+    Formula: y * n = n + (y*n)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-45: "=":
+    Formula: y = n if and only if y and n are modular multiplicative inverses modulo 11. For system 45 defined above, 
+    Task: Calculate Sequence Expansion in System-45. [[Pro. Using variable y as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + n) * Z_n
+
+    Steps:
+    1. blem620]]. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-46. The variables (k, A) are defined as Polynomials. lem864]]. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-46: "+":
+    For any two elements k and A:
+    Formula: k + A = k ^ (k+A)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-46: "*":
+    For any two elements k and A:
+    Formula: k * A = (k+A) ^ (k*A)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-46: "=":
+    Formula: k = A if and only if the distance between k and A is no greater than 0.1. For system 46 defined above, 
+    Task: Solve for Identity in System-46. Assume there is an unknown element 'E' such that k + E = k.
+    
+    Steps:
+    1. [[Prob. Write the algebraic equation for "k + E" using the formula defined for "+". 2. Solve this equation for E in terms of k.
+    3. Does this value E work if we replace k with A? Prove it. 
+    Let us define System-47. The variables (B, S) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-47: "+":
+    For any two elements B and S:
+    Formula: B + S = B / (B*S)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-47: "*":
+    For any two elements B and S:
+    Formula: B * S = B ^ (S^{1})
+
+    3. [[Proble. DEFINITION OF EQUALITY OPERATOR on elements of System-47: "=":
+    Formula: B = S if and only if the distance between B and S is no greater than 0.5. For system 47 defined above, 
+    Task: Measure Commutativity violation in System-47. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. m239]]. Calculate Forward: X = B + S.
+    2. Calculate Reverse: Y = S + B. 3. Now, combine them: Result = X * Y. 
+    Let us define System-48. [[P. The variables (x, y) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-48: "+":
+    For any two elements x and y:
+    Formula: x + y = min(y, (x*y))
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-48: "*":
+    For any two elements x and y:
+    Formula: x * y = max((x+y), (x+y))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-48: "=":
+    Formula: x = y if and only if the distance between x and y is no greater than 1. For system 48 defined above, 
+    Task: Verify Distributivity in System-48. We must test if the operator "*" distributes over "+" for variables x, y, x_{0}. Steps:
+    1. roblem984]]. LHS: Calculate x * (y + x_{0}). 2. RHS: Calculate (x * y) + (x * x_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-49. The variables (n, k) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-49: "+":
+    For any two elements n and k:
+    Formula: n + k = (n*k) - (n+k)
+
+    2. em171]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-49: "*":
+    For any two elements n and k:
+    Formula: n * k = (n+k) + (n*k)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-49: "=":
+    Formula: n = k if and only if n and k are modular multiplicative inverses modulo 9. For system 49 defined above, 
+    Task: Verify Distributivity in System-49. We must test if the operator "*" distributes over "+" for variables n, k, n_{0}. Steps:
+    1. [[Probl. LHS: Calculate n * (k + n_{0}). 2. RHS: Calculate (n * k) + (n * n_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-50. The variables (A, B) are defined as Numbers Modulo 63. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-50: "+":
+    For any two elements A and B:
+    Formula: A + B = min(|A-B||A/B|, A)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-50: "*":
+    For any two elements A and B:
+    Formula: A * B = B / sqrt(B)
+
+    3. [[Proble. DEFINITION OF EQUALITY OPERATOR on elements of System-50: "=":
+    Formula: A = B if and only if the absolute value of A equals the absolute value of B. For system 50 defined above, 
+    Task: Measure Commutativity violation in System-50. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. Calculate Forward: X = A + B. m382]]. 2. Calculate Reverse: Y = B + A. 3. Now, combine them: Result = X * Y. 
+    Let us define System-51. [[Proble. The variables (S, x) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-51: "+":
+    For any two elements S and x:
+    Formula: S + x = max((S*x), x)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-51: "*":
+    For any two elements S and x:
+    Formula: S * x = max((S*x), (S*x))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-51: "=":
+    Formula: S = x if and only if the sum of S and x is exactly 36. For system 51 defined above, 
+    Task: Solve for Identity in System-51. Assume there is an unknown element 'E' such that S + E = S.
+    
+    Steps:
+    1. m891]]. Write the algebraic equation for "S + E" using the formula defined for "+". 2. Solve this equation for E in terms of S.
+    3. Does this value E work if we replace S with x? Prove it. 
+    Let us define System-52. The variables (y, n) are defined as Numbers Modulo 63. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-52: "+":
+    For any two elements y and n:
+    Formula: y + n = (y^{3}) * (y^{3})
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-52: "*":
+    For any two elements y and n:
+    Formula: y * n = n * sqrt(n)
+
+    3. lem908]]. DEFINITION OF EQUALITY OPERATOR on elements of System-52: "=":
+    Formula: y = n if and only if they are equidistant from the value 3. For system 52 defined above, 
+    Task: Measure Commutativity violation in System-52. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. Calculate Forward: X = y + n.
+    2. Calculate Reverse: Y = n + y. [[Prob. 3. Now, combine them: Result = X * Y. 
+    Let us define System-53. The variables (k, A) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-53: "+":
+    For any two elements k and A:
+    Formula: k + A = (k*A) + (k^{4})
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-53: "*":
+    For any two elements k and A:
+    Formula: k * A = (k^{-1}) * A
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-53: "=":
+    Formula: k = A if and only if they are equidistant from the value 4. blem974]]. For system 53 defined above, 
+    Task: Verify Associativity in System-53. [[Pro. Consider the specific variables k, A, and k_{0}. Using the definitions provided, determine if (k * A) * k_{0} = k * (A * k_{0}). Steps:
+    1. Calculate the LHS: First compute (k * A), then apply * with k_{0}. 2. Calculate the RHS: First compute (A * k_{0}), then apply * with k.
+    3. Compare the final results using the definition of "=". 
+    Let us define System-54. The variables (B, S) are defined as Numbers Modulo 77. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-54: "+":
+    For any two elements B and S:
+    Formula: B + S = (B+S) ^ S
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-54: "*":
+    For any two elements B and S:
+    Formula: B * S = max((B^{-4}), (B+S))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-54: "=":
+    Formula: B = S if and only if their squares are congruent modulo 9. [[Proble. For system 54 defined above, 
+    Task: Measure Commutativity violation in System-54. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+    1. m524]]. Calculate Forward: X = B + S.
+    2. Calculate Reverse: Y = S + B. 3. Now, combine them: Result = X * Y. 
+    Let us define System-55. [[Proble. The variables (x, y) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-55: "+":
+    For any two elements x and y:
+    Formula: x + y = min((x+y), x)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-55: "*":
+    For any two elements x and y:
+    Formula: x * y = y ^ y
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-55: "=":
+    Formula: x = y if and only if they are equidistant from the value 11. For system 55 defined above, 
+    Task: Measure Commutativity violation in System-55. Calculate the difference between doing the operation "+" in forward vs reverse order. m448]]. Steps:
+    1. Calculate Forward: X = x + y. 2. Calculate Reverse: Y = y + x. 3. Now, combine them: Result = X * Y. 
+    Let us define System-56. The variables (n, k) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. roblem906]]. DEFINITION OF ADDITION OPERATOR on elements of System-56: "+":
+    For any two elements n and k:
+    Formula: n + k = max((n*k), (k^{-1}))
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-56: "*":
+    For any two elements n and k:
+    Formula: n * k = max((n^{3}), (n*k))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-56: "=":
+    Formula: n = k if and only if the difference (n - k) is divisible by 6. For system 56 defined above, 
+    Task: Verify Associativity in System-56. Consider the specific variables n, k, and n_{0}. Using the definitions provided, determine if (n * k) * n_{0} = n * (k * n_{0}). Steps:
+    1. [[P. Calculate the LHS: First compute (n * k), then apply * with n_{0}. 2. Calculate the RHS: First compute (k * n_{0}), then apply * with n.
+    3. Compare the final results using the definition of "=". 
+    Let us define System-57. The variables (A, B) are defined as Matrices. roblem619]]. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-57: "+":
+    For any two elements A and B:
+    Formula: A + B = (A*B) - A
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-57: "*":
+    For any two elements A and B:
+    Formula: A * B = B - A
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-57: "=":
+    Formula: A = B if and only if A and B are modular multiplicative inverses modulo 2. For system 57 defined above, 
+    Task: Calculate Sequence Expansion in System-57. Using variable A as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + B) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. [[P. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-58. The variables (S, x) are defined as Polynomials. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-58: "+":
+    For any two elements S and x:
+    Formula: S + x = (S+x) + (x^{0})
+
+    2. [[Pr. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-58: "*":
+    For any two elements S and x:
+    Formula: S * x = min((S^{-1}), (S+x))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-58: "=":
+    Formula: S = x if and only if the difference (S - x) is divisible by 12. For system 58 defined above, 
+    Task: Calculate Sequence Expansion in System-58. Using variable S as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + x) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. oblem940]]. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+    Let us define System-59. The variables (y, n) are defined as Numbers Modulo 100. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-59: "+":
+    For any two elements y and n:
+    Formula: y + n = n - y
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-59: "*":
+    For any two elements y and n:
+    Formula: y * n = (y^{0}) + (y+n)
+
+    3. [[Proble. DEFINITION OF EQUALITY OPERATOR on elements of System-59: "=":
+    Formula: y = n if and only if the sum of y and n is exactly 47. For system 59 defined above, 
+    Task: Solve for Identity in System-59. Assume there is an unknown element 'E' such that y + E = y. Steps:
+    1. Write the algebraic equation for "y + E" using the formula defined for "+". 2. Solve this equation for E in terms of y. 3. m102]]. Does this value E work if we replace y with n? Prove it. 
+    Let us define System-60. The variables (k, A) are defined as Numbers Modulo 76. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-60: "+":
+    For any two elements k and A:
+    Formula: k + A = max(A, k)
+
+    2. m389]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-60: "*":
+    For any two elements k and A:
+    Formula: k * A = (k^{1}) + k
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-60: "=":
+    Formula: k = A if and only if the difference (k - A) is divisible by 5. For system 60 defined above, 
+    Task: Verify Distributivity in System-60. We must test if the operator "*" distributes over "+" for variables k, A, k_{0}. Steps:
+    1. LHS: Calculate k * (A + k_{0}). 2. RHS: Calculate (k * A) + (k * k_{0}). [[Proble. 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-61. The variables (B, S) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-61: "+":
+    For any two elements B and S:
+    Formula: B + S = (B+S) * (B+S)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-61: "*":
+    For any two elements B and S:
+    Formula: B * S = (B+S) + (B+S)
+
+    3. [[P. DEFINITION OF EQUALITY OPERATOR on elements of System-61: "=":
+    Formula: B = S if and only if the distance between B and S is no greater than 0.5. For system 61 defined above, 
+    Task: Verify Distributivity in System-61. We must test if the operator "*" distributes over "+" for variables B, S, B_{0}. Steps:
+    1. LHS: Calculate B * (S + B_{0}). roblem843]]. 2. RHS: Calculate (B * S) + (B * B_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-62. The variables (x, y) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-62: "+":
+    For any two elements x and y:
+    Formula: x + y = (x*y) / (x+y)
+
+    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-62: "*":
+    For any two elements x and y:
+    Formula: x * y = (x*y) ^ (x+y)
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-62: "=":
+    Formula: x = y if and only if x and y are modular multiplicative inverses modulo 14. blem405]]. For system 62 defined above, 
+    Task: Verify Distributivity in System-62. We must test if the operator "*" distributes over "+" for variables x, y, x_{0}. Steps:
+    1. [[Pro. LHS: Calculate x * (y + x_{0}). 2. RHS: Calculate (x * y) + (x * x_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+    Let us define System-63. The variables (n, k) are defined as Matrices. The operators are redefined using standard mathematical operations as follows:
+
+    1. DEFINITION OF ADDITION OPERATOR on elements of System-63: "+":
+    For any two elements n and k:
+    Formula: n + k = max(n, (n+k))
+
+    2. [[Pr. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-63: "*":
+    For any two elements n and k:
+    Formula: n * k = min(k, (n*k))
+
+    3. DEFINITION OF EQUALITY OPERATOR on elements of System-63: "=":
+    Formula: n = k if and only if the sum of n and k is exactly 34. For system 63 defined above, 
+    Task: Calculate Sequence Expansion in System-63. Using variable n as the starting seed Z_0, define a sequence:
+    Z_{n+1} = (Z_n + k) * Z_n
+
+    Steps:
+    1. Calculate Z_1 explicitly using the formulas for "+" and "*". oblem957]]. 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0.
+
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. blem701]]. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. [[Pro. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
 ------------------------------
 
 Generating responses for 150 total prompts across 1 experiments...
-[0;36m(Worker_TP0 pid=3516586)[0;0m INFO 01-14 21:03:52 [multiproc_executor.py:709] Parent process exited, terminating worker
-[0;36m(Worker_TP1 pid=3516587)[0;0m INFO 01-14 21:03:52 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP1 pid=3309830)[0;0m INFO 01-15 01:38:31 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP0 pid=3309829)[0;0m INFO 01-15 01:38:31 [multiproc_executor.py:709] Parent process exited, terminating worker
 
 === Multi-Eval Summary ===
-Experiment: interleaved_context_word
-  Accuracy: 13.33% (20/150)
-  Failures: 12
-  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_word/results/GAIR_LIMO-v2_interleaved_context_word_s42_20260114_210352.json
+Experiment: context_saturation
+  Accuracy: 52.00% (78/150)
+  Failures: 10
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/context_saturation/results/GAIR_LIMO-v2_context_saturation_s42_20260115_013831.json
