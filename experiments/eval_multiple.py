@@ -14,7 +14,8 @@ def main():
     parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--dry", action="store_true", help="Dry run - do not evaluate, only produce prompts")
-    parser.add_argument("--num_distractors", type=int, default=30, help="Number of distractors for split_indices")
+    parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
+    parser.add_argument("--model_parallel", type=int, default=3, help="Num GPUs.")
     args = parser.parse_args()
 
     experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
@@ -43,10 +44,10 @@ def main():
     if not args.dry:
         print(f"Initializing vLLM with model: {args.model}")
         from vllm import LLM, SamplingParams
-        max_model_length = 32000
+        max_model_length = 48000
         llm = LLM(
             model=args.model,
-            tensor_parallel_size=2,
+            tensor_parallel_size=3,
             trust_remote_code=True,
             max_model_len=max_model_length,
             dtype="bfloat16"

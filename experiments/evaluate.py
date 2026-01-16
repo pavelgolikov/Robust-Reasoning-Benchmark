@@ -201,10 +201,10 @@ def main():
     if not args.dry:
         print(f"Initializing vLLM with model: {args.model}")
         from vllm import LLM, SamplingParams
-        max_model_length = 32000
+        max_model_length = 48000
         llm = LLM(
             model=args.model,
-            tensor_parallel_size=2,
+            tensor_parallel_size=3,
             trust_remote_code=True,
             max_model_len=max_model_length,
             dtype="bfloat16"
