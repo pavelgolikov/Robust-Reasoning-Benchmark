@@ -131,7 +131,7 @@ def apply_context_saturation(problem, num_distractors, seed=None, problem_variab
     block1 = " ".join(processed_distractors[:(num_distractors // 2)])
     block2 = " ".join(processed_distractors[(num_distractors // 2):])
     
-    instruction = f"\n\nYou are to solve Problem{target_id} using standard mathematical operations.\n\n"
+    instruction = f"\n\n\nYou are to solve Problem{target_id} using standard mathematical operations."
     
     final_prompt = block1 + instruction + block2 + "\n\n" + processed_real
     

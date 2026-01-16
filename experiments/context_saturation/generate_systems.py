@@ -127,61 +127,56 @@ def pick_verification_question(domain, terms, sys_index):
     questions = [
     # Q1: Associativity Verification
     f"""
-    Task: Verify Associativity in System-{sys_index}.
-    Consider the specific variables {terms[0]}, {terms[1]}, and {terms[2]}.
-    Using the definitions provided, determine if ({terms[0]} * {terms[1]}) * {terms[2]} = {terms[0]} * ({terms[1]} * {terms[2]}).
-    
-    Steps:
-    1. Calculate the LHS: First compute ({terms[0]} * {terms[1]}), then apply * with {terms[2]}.
-    2. Calculate the RHS: First compute ({terms[1]} * {terms[2]}), then apply * with {terms[0]}.
-    3. Compare the final results using the definition of "=".
-    """,
+Verify Associativity in System-{sys_index}.
+Consider the specific variables {terms[0]}, {terms[1]}, and {terms[2]}.
+Using the definitions provided, determine if ({terms[0]} * {terms[1]}) * {terms[2]} = {terms[0]} * ({terms[1]} * {terms[2]}).
+Steps:
+1. Calculate the LHS: First compute ({terms[0]} * {terms[1]}), then apply * with {terms[2]}.
+2. Calculate the RHS: First compute ({terms[1]} * {terms[2]}), then apply * with {terms[0]}.
+3. Compare the final results using the definition of "=".
+""",
 
     # Q2: Sequence Expansion
     f"""
-    Task: Calculate Sequence Expansion in System-{sys_index}.
-    Using variable {terms[0]} as the starting seed Z_0, define a sequence:
-    Z_{{n+1}} = (Z_n + {terms[1]}) * Z_n
-
-    Steps:
-    1. Calculate Z_1 explicitly using the formulas for "+" and "*".
-    2. Calculate Z_2 using the result of Z_1.
-    3. Calculate Z_3 using the result of Z_2.
-    4. Check if Z_3 = Z_0.
-    """,
+Calculate Sequence Expansion in System-{sys_index}.
+Using variable {terms[0]} as the starting seed Z_0, define a sequence:
+Z_{{n+1}} = (Z_n + {terms[1]}) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*".
+2. Calculate Z_2 using the result of Z_1.
+3. Calculate Z_3 using the result of Z_2.
+4. Check if Z_3 = Z_0.
+""",
 
     # Q3: Distributivity Check
     f"""
-    Task: Verify Distributivity in System-{sys_index}.
-    We must test if the operator "*" distributes over "+" for variables {terms[0]}, {terms[1]}, {terms[2]}.
-    
-    Steps:
-    1. LHS: Calculate {terms[0]} * ({terms[1]} + {terms[2]}).
-    2. RHS: Calculate ({terms[0]} * {terms[1]}) + ({terms[0]} * {terms[2]}).
-    3. Explain any discrepancy between LHS and RHS based on the definitions.
-    """,
+Verify Distributivity in System-{sys_index}.
+We must test if the operator "*" distributes over "+" for variables {terms[0]}, {terms[1]}, {terms[2]}.
+Steps:
+1. LHS: Calculate {terms[0]} * ({terms[1]} + {terms[2]}).
+2. RHS: Calculate ({terms[0]} * {terms[1]}) + ({terms[0]} * {terms[2]}).
+3. Explain any discrepancy between LHS and RHS based on the definitions.
+""",
 
     # Q4: Commutativity Violation Test
     f"""
-    Task: Measure Commutativity violation in System-{sys_index}.
-    Calculate the difference between doing the operation "+" in forward vs reverse order.
-    
-    Steps:
-    1. Calculate Forward: X = {terms[0]} + {terms[1]}.
-    2. Calculate Reverse: Y = {terms[1]} + {terms[0]}.
-    3. Now, combine them: Result = X * Y.
-    """,
+Measure Commutativity violation in System-{sys_index}.
+Calculate the difference between doing the operation "+" in forward vs reverse order.
+Steps:
+1. Calculate Forward: X = {terms[0]} + {terms[1]}.
+2. Calculate Reverse: Y = {terms[1]} + {terms[0]}.
+3. Now, combine them: Result = X * Y.
+""",
 
     # Q5: Identity Element Search
     f"""
-    Task: Solve for Identity in System-{sys_index}.
-    Assume there is an unknown element 'E' such that {terms[0]} + E = {terms[0]}.
-    
-    Steps:
-    1. Write the algebraic equation for "{terms[0]} + E" using the formula defined for "+".
-    2. Solve this equation for E in terms of {terms[0]}.
-    3. Does this value E work if we replace {terms[0]} with {terms[1]}? Prove it.
-    """]
+Solve for Identity in System-{sys_index}.
+Assume there is an unknown element 'E' such that {terms[0]} + E = {terms[0]}.
+Steps:
+1. Write the algebraic equation for "{terms[0]} + E" using the formula defined for "+".
+2. Solve this equation for E in terms of {terms[0]}.
+3. Does this value E work if we replace {terms[0]} with {terms[1]}? Prove it.
+"""]
     return random.choice(questions)
 
 
@@ -202,24 +197,20 @@ def generate_system(terms, cur_term_ind, sys_index):
     def_var_1, def_var_2 = terms_list[0], terms_list[1]
     verification_question = pick_verification_question(domain, terms_list, sys_index)
     
-    system_dynamic_template = f"""
-    Let us define System-{sys_index}.
-    The variables ({def_var_1}, {def_var_2}) are defined as {domain}.
-
-    The operators are redefined using standard mathematical operations as follows:
-
-    1. DEFINITION OF ADDITION OPERATOR on elements of System-{sys_index}: "+":
-    For any two elements {def_var_1} and {def_var_2}:
-    Formula: {def_var_1} + {def_var_2} = {gen_bin_add}
-
-    2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-{sys_index}: "*":
-    For any two elements {def_var_1} and {def_var_2}:
-    Formula: {def_var_1} * {def_var_2} = {gen_bin_mul}
-
-    3. DEFINITION OF EQUALITY OPERATOR on elements of System-{sys_index}: "=":
-    Formula: {def_var_1} = {def_var_2} if and only if {gen_eq}.\n\n
+    system_dynamic_template = f"""\n\n
+Let us define System-{sys_index}.
+The variables ({def_var_1}, {def_var_2}) are defined as {domain}.
+The operations on elements of System-{sys_index} are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-{sys_index}: "+":
+For any two elements {def_var_1} and {def_var_2}:
+Formula: {def_var_1} + {def_var_2} = {gen_bin_add}
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-{sys_index}: "*":
+For any two elements {def_var_1} and {def_var_2}:
+Formula: {def_var_1} * {def_var_2} = {gen_bin_mul}
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-{sys_index}: "=":
+Formula: {def_var_1} = {def_var_2} if and only if {gen_eq}.
     """
-    verification_question = f"For system {sys_index} defined above, {verification_question}\n\n\n"
+    verification_question = f"{verification_question}\n\n"
     prompt = system_dynamic_template + verification_question
     return prompt
 

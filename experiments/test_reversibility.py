@@ -20,6 +20,7 @@ def main():
     parser.add_argument("--n", type=int, default=5, help="Number of examples to test per technique")
     parser.add_argument("--output", type=str, default="experiments/reversibility_report.txt", help="Output report file")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--num_distractors", type=int, default=2, help="Number of distractors for context_saturation")
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -90,7 +91,7 @@ def main():
                  problem_b = dataset[next_idx]['problem']
                  kwargs = {'problem_b': problem_b}
             elif exp_name == 'context_saturation':
-                 kwargs = {'num_distractors': 2}
+                 kwargs = {'num_distractors': args.num_distractors}
                  
             try:
                 if 'problem_b' in kwargs:
