@@ -1,327 +1,216 @@
+import argparse
 import os
 import json
-import re
 import time
-from opposites.transformation import apply_opposites
-from opposites_not.transformation import apply_opposites_not_yot
-from interleaved_context_line.transformation import apply_interleaved_context_line
-from interleaved_context_word.transformation import apply_interleaved_context_word
-from interleaved_substitutions.transformation import apply_interleaved_substitutions
-from wrappers.transformation import apply_wrappers
-from variables.transformation import apply_variables
-from context_saturation.transformation import apply_context_saturation
-from not_not_yot.transformation import apply_not_not_yot
-from word_split_swap.transformation import apply_word_split_swap
-from word_reversal.transformation import apply_word_reversal
-from sentence_reversal.transformation import apply_sentence_reversal
-
-import multiprocessing
-import os
-# Force 'spawn' to avoid CUDA re-initialization errors
-try:
-    multiprocessing.set_start_method('spawn', force=True)
-except RuntimeError:
-    pass
-os.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'
-
 import random
-import argparse
 from datasets import load_dataset
-from opposites.transformation import apply_opposites
-import nltk
-
-# Ensure NLTK data (WordNet) is available
-try:
-    nltk.download('wordnet', quiet=True)
-    nltk.download('omw-1.4', quiet=True)
-except Exception as e:
-    print(f"Warning: Failed to download NLTK data: {e}")
-
-def get_prompts(problem, name, extra_context=None, variables=None, seed=None, num_distractors=None):
-    # modify problem according to experiment name
-    if name == 'baseline':
-        user_prompt = problem
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
-        return user_prompt, system_prompt
-    elif name == 'not_not_yot':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-Yot means the opposite of not. You need to decode the problem statement before solving it.\n"
-        user_prompt = apply_not_not_yot(problem)
-        return user_prompt, system_prompt
-    elif name == 'word_split_swap':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-All words (words are defined as sequences of symbols separated by spaces) in user query have been modified as follows.\n\
-Every word is first split into 2 parts. If the word has even number of symbols, it is split into 2 equal parts in the middle. \n\
-If the word has odd number of symbols, the first part has one symbol less than the second part. \n\
-After splitting, the 2 parts were swapped. Punctuation marks adjacent to words are counted as word symbols.\n\
-You need to decode the problem statement before solving it.\n"
-        user_prompt = apply_word_split_swap(problem)
-        return user_prompt, system_prompt
-    elif name == 'word_reversal':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-The order of words (words are defined as sequences of symbols separated by spaces) in each sentence of user query has been reversed.\n\
-You need to decode the problem statement before solving it.\n"
-        user_prompt = apply_word_reversal(problem)
-        return user_prompt, system_prompt
-    elif name == 'sentence_reversal':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.\n\
-You need to decode the problem statement before solving it.\n"
-        user_prompt = apply_sentence_reversal(problem)
-        return user_prompt, system_prompt
-    elif name == 'opposites':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
-You need to decode the problem statement before solving it.\n"
-        user_prompt = apply_opposites(problem, k=1)
-        return user_prompt, system_prompt
-    elif name == 'opposites_not':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
-You need to decode the problem statement before solving it.\n"
-        user_prompt = apply_opposites_not_yot(problem, k_opp=1)
-        return user_prompt, system_prompt
-    elif name == 'interleaved_context_word':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-User query will consist of two problems - A and B, whose statements are interleaved word by word.\n\
-First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on.\n\
-You need to solve only problem A. Words are defined as sequences of symbols separated by spaces.\n\
-If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement\n\
-will be filled with the shorter problem statement repeated from the beginning.\n\
-You need to identify and decode the problem statement before solving it.\n"
-        if extra_context is None:
-            user_prompt = "Error: Missing extra context for interleaved transformation"
-        else:
-            user_prompt = apply_interleaved_context_word(problem, extra_context)
-        return user_prompt, system_prompt
-    elif name == 'interleaved_context_line':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-User query will consist of two problems - A and B, whose statements are interleaved.\n\
-You need to solve only problem A. If one problem statement is shorter than the other,\n\
-the empty lines resulting from the shorter problem statement will be filled with the\n\
-shorter problem statement repeated from the beginning.\n\
-You need to identify and decode the problem statement before solving it.\n"
-        if extra_context is None:
-            user_prompt = "Error: Missing extra context for interleaved transformation"
-        else:
-            user_prompt = apply_interleaved_context_line(problem, extra_context)
-        return user_prompt, system_prompt
-    elif name == 'interleaved_substitutions':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-User query will consist of two problems - A and B, whose statements are interleaved.\n\
-You need to solve only problem A. If one problem statement is shorter than the other,\n\
-the empty lines resulting from the shorter problem statement will be filled with the\n\
-shorter problem statement repeated from the beginning. On top of that, some words in problem A\n\
-are remapped. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
-You need to identify and decode the problem statement before solving it.\n"
-        if extra_context is None:
-            user_prompt = "Error: Missing extra context for interleaved transformation"
-            exit(1)
-        else:
-            user_prompt = apply_interleaved_substitutions(problem, extra_context, k=1)
-        return user_prompt, system_prompt
-    elif name == 'wrappers':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of the user query.\n\
-You need to decode the problem statement before solving it.\n"
-        user_prompt = apply_wrappers(problem, k=1)
-        return user_prompt, system_prompt
-    elif name == 'variables':
-        system_prompt = "You are a helpful math assistant.\n\
-Your goal is to identify important 'load-bearing' terms in a math problem that we will later target for redefinition.\n"
-        user_prompt = apply_variables(problem)
-        return user_prompt, system_prompt
-    elif name == 'context_saturation':
-        system_prompt = """You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-You will be given multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem\n\
-statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence and will be\n\
-placed between sentences of the problem statement.\n\
-For example, two valid parts are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The two parts can be placed in reverse\n\
-order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve\n\
-will be indicated in the middle of user query. Problems do not depend on each other.\n
-You need to identify and decode the problem statement before solving it.\n"
-""" 
-        user_prompt = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
-        return user_prompt, system_prompt
-    else:
-        return 'Not Implemented', ''
-
-def extract_answer(text):
-    if not text:
-        return None
-    
-    # Priority 1: Boxed
-    boxed_pattern = r"\\boxed\s*\{([^}]+)\}"
-    matches = re.findall(boxed_pattern, text)
-    if matches:
-        return matches[-1].strip()
-        
-    # Priority 2: Explicit answer statement
-    answer_pattern = r"(?:The answer is|result is|so|equals)\s*[:=]?\s*(\d{1,4})(?:\.|,|\s|$)"
-    matches = re.findall(answer_pattern, text, re.IGNORECASE)
-    if matches:
-        return matches[-1]
-    
-    return None
-
-def normalize_answer(ans):
-    if ans is None:
-        return ""
-    digits = "".join(filter(str.isdigit, str(ans)))
-    if not digits:
-        return ""
-    return str(int(digits))
+from util import get_prompts, extract_answer, normalize_answer
 
 def main():
-    parser = argparse.ArgumentParser(description="Evaluate model on AIME dataset (Killarney/vLLM)")
+    parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset (Efficiency Optimized)")
     parser.add_argument("--model", type=str, default="NONE", help="Path/Name of the model to evaluate")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
-    parser.add_argument("--output_dir", type=str, default="results")
-    parser.add_argument("--name", type=str, default='baseline', help="Name of the experiment")
+    parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--dry", action="store_true", help="Dry run - do not evaluate, only produce prompts")
-    parser.add_argument("--num_distractors", type=int, default=30, help="Number of distractors for split_indices")
+    parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
+    parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
+    parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
+    parser.add_argument("--decode_find_only", action="store_true", help="Only identify and decode the problem statement.")
     args = parser.parse_args()
+    if args.names == 'all':
+        experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
+        'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers' ]
+    else:
+        experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 
-    # Load extracted variables if needed
+    # experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
+    print(f"Running experiments: {experiment_names}")
+
+    # Load extracted variables if needed (if split_indices is in list)
     extracted_vars = {}
-    if args.name == 'split_indices':
+    if 'split_indices' in experiment_names:
         try:
-            vars_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'variables', 'extracted_terms_by_problem.json')
+            # Assume evaluate.py is in the same dir, so variables is in ./variables/
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            vars_path = os.path.join(base_dir, 'variables', 'extracted_terms_by_problem.json')
             with open(vars_path, 'r') as f:
                 extracted_vars = json.load(f)
-            # replace all spaces with underscores in each variable name
+            # replace spaces with underscores
             for k, v in extracted_vars.items():
                 extracted_vars[k] = [x.replace(" ", "_") for x in v]
-            print("Variables loaded:", extracted_vars)
+            print("Variables loaded for split_indices.")
         except Exception as e:
             print(f"Warning: Failed to load extracted variables: {e}")
 
+    # Initialize vLLM if not dry
+    llm = None
+    sampling_params = None
+    tokenizer = None
     if not args.dry:
         print(f"Initializing vLLM with model: {args.model}")
         from vllm import LLM, SamplingParams
-        max_model_length = 48000
         llm = LLM(
             model=args.model,
-            tensor_parallel_size=3,
+            tensor_parallel_size=args.num_gpus,
             trust_remote_code=True,
-            max_model_len=max_model_length,
+            max_model_len=args.max_model_length,
             dtype="bfloat16"
         )
-        sampling_params = SamplingParams(temperature=0.7, max_tokens=max_model_length)
+        sampling_params = SamplingParams(temperature=0.7, max_tokens=args.max_model_length)
+        tokenizer = llm.get_tokenizer()
 
     random.seed(args.seed)
-    
+
     # Load Dataset
     print("Loading AIME 2024 dataset...")
     dataset = load_dataset("HuggingFaceH4/aime_2024", split="train")
     if args.limit:
         dataset = dataset.select(range(min(args.limit, len(dataset))))
-        
-    print(f"Starting Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
-    prompts = []
-    metadata = []
+    print(f"Starting Multi-Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
-    if not args.dry:
-        tokenizer = llm.get_tokenizer()
+    all_prompts = []
+    # prompt_metadata will store info to map back to specific experiment/problem
+    # Structure: list of dicts corresponding to all_prompts indices
+    prompt_metadata = [] 
 
-    for i, example in enumerate(dataset):
-        extra_context = None
+    for exp_name in experiment_names:
+        print(f"Preparing prompts for: {exp_name}")
+        # Identify next_idx context if needed
+        # We process dataset again for each experiment
         
-        # Pre-process problem to remove empty lines
-        problem_text = example['problem']
-        problem_text = "\n".join([line for line in problem_text.splitlines() if line.strip()])
-        
-        if args.name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
-            # Use next problem as context, wrapping around to the first for the last problem
-            next_idx = (i + 1) % len(dataset)
-            extra_context = dataset[next_idx]['problem']
+        for i, example in enumerate(dataset):
+            extra_context = None
+            if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
+                next_idx = (i + 1) % len(dataset)
+                extra_context = dataset[next_idx]['problem']
             
-        prob_id = str(example.get('id', i))
-        current_vars = extracted_vars.get(prob_id) if extracted_vars else None
-        
-        user_prompt, system_prompt = get_prompts(problem_text, args.name, extra_context, variables=current_vars,
-                                                seed=args.seed, num_distractors=args.num_distractors)
-        ground_truth = example['answer']
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        
-        if not args.dry:
-            # Format prompt
-            formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        else:
-            formatted_prompt = messages
-        
-        # Create n independent samples for this problem
-        for sample_idx in range(args.n_samples):
-            prompts.append(formatted_prompt)
-            metadata.append({
-                "id": example.get('id', i),
-                "sample_idx": sample_idx,
-                "original": user_prompt,
-                "ground_truth": ground_truth
-            })
+            prob_id = str(example.get('id', i))
+            current_vars = extracted_vars.get(prob_id) if extracted_vars else None
+            
+            # get_prompts handles the seed internally mostly? 
+            # evaluate.py passes args.seed. But get_prompts has a seed arg.
+            # If we reuse seed for every experiment, they get same random sequence?
+            # Ideally each experiment/problem instance is seeded deterministically.
+            # evaluate.py does `random.seed(args.seed)` at start of main.
+            # But `apply_*` functions often take `seed`.
+            # If we don't pass seed to `get_prompts`, some transformations rely on global random?
+            # `split_indices` takes seed. `evaluate` passes `args.seed`.
+            # If we pass same seed to `split_indices` for problem X, it generates same result.
+            # That is desired.
+            
+            user_prompt, system_prompt = get_prompts(
+                example['problem'], 
+                exp_name, 
+                extra_context, 
+                variables=current_vars,
+                seed=args.seed, 
+                num_distractors=args.num_distractors,
+                decode_find_only=args.decode_find_only
+            )
+            ground_truth = example['answer']
+
+            if i == 0:
+                print("\n" + "-"*30)
+                print(f"Experiment: {exp_name}")
+                print(f"System Prompt:\n{system_prompt}")
+                print(f"\nExample Problem Statement:\n{user_prompt}")
+                print("-" * 30 + "\n")
+            
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+            
+            if not args.dry:
+                formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            else:
+                formatted_prompt = messages # Stored as list for dry run inspection
+                
+            # Create n samples
+            for sample_idx in range(args.n_samples):
+                all_prompts.append(formatted_prompt)
+                prompt_metadata.append({
+                    "experiment": exp_name,
+                    "id": example.get('id', i),
+                    "sample_idx": sample_idx,
+                    "original": user_prompt,
+                    "unmodified_original": example['problem'],
+                    "system_prompt": system_prompt, # Capture system prompt too
+                    "ground_truth": ground_truth
+                })
 
     # Generate
-    print(f"Generating responses for {len(prompts)} prompts...")
+    print(f"Generating responses for {len(all_prompts)} total prompts across {len(experiment_names)} experiments...")
+    
     if not args.dry:
-        outputs = llm.generate(prompts, sampling_params)
+        # vLLM batch generation
+        outputs = llm.generate(all_prompts, sampling_params)
     else:
-        outputs = [''] * len(prompts)
+        outputs = [''] * len(all_prompts)
 
     # Process Results
-    results = []
-    correct_count = 0
-    total = 0
+    # We need to bucket results by experiment
+    results_by_experiment = {name: [] for name in experiment_names}
+    stats_by_experiment = {name: {"correct": 0, "total": 0, "failures": 0} for name in experiment_names}
     
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    safe_name = args.model.replace('/', '_').replace(' ', '_')
-    run_id = f"{safe_name}_{args.name}_s{args.seed}_{timestamp}"
+    safe_model_name = args.model.replace('/', '_').replace(' ', '_')
     
-    # Save to [experiment_name]/results logic
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    experiment_dir = os.path.join(base_dir, args.name)
-    final_output_dir = os.path.join(experiment_dir, "results")
-    
-    os.makedirs(final_output_dir, exist_ok=True)
-    json_file = os.path.join(final_output_dir, f"{run_id}.json")
-
     for i, output in enumerate(outputs):
         if not args.dry:
             generated_text = output.outputs[0].text
         else:
-            generated_text = 'placeholder output from dry run'
-        meta = metadata[i]
+            generated_text = "placeholder output from dry run"
+            
+        meta = prompt_metadata[i]
+        exp = meta['experiment']
         
         extracted = extract_answer(generated_text)
         is_correct = normalize_answer(extracted) == normalize_answer(meta['ground_truth'])
         
+        # Update stats
+        stats_by_experiment[exp]["total"] += 1
         if is_correct:
-            correct_count += 1
+            stats_by_experiment[exp]["correct"] += 1
+        if extracted is None:
+            stats_by_experiment[exp]["failures"] += 1
             
         result_entry = {
             "id": meta['id'],
-            "system_prompt": system_prompt,
+            "system_prompt": meta['system_prompt'],
             "original": meta['original'],
+            "unmodified_original": meta['unmodified_original'],
             "ground_truth": meta['ground_truth'],
             "output": generated_text,
             "extracted": extracted,
             "correct": is_correct
         }
-        results.append(result_entry)
-        total += 1
-        
-    accuracy = correct_count / total if total > 0 else 0
-    print(f"\nEvaluation Complete. Accuracy: {accuracy:.2%} ({correct_count}/{total})")
-    print(f"Results saved to: {json_file}")
+        results_by_experiment[exp].append(result_entry)
+
+    # Save Results
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     
-    with open(json_file, "w") as f:
-        json.dump(results, f, indent=2)
+    print("\n=== Multi-Eval Summary ===")
+    for exp_name in experiment_names:
+        stats = stats_by_experiment[exp_name]
+        acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
+        print(f"Experiment: {exp_name}")
+        print(f"  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
+        print(f"  Failures: {stats['failures']}")
+        
+        # Save to file
+        run_id = f"{safe_model_name}_{exp_name}_s{args.seed}_{timestamp}"
+        experiment_dir = os.path.join(base_dir, exp_name)
+        final_output_dir = os.path.join(experiment_dir, "results")
+        os.makedirs(final_output_dir, exist_ok=True)
+        
+        json_file = os.path.join(final_output_dir, f"{run_id}.json")
+        with open(json_file, "w") as f:
+            json.dump(results_by_experiment[exp_name], f, indent=2)
+        print(f"  Saved to: {json_file}")
 
 if __name__ == "__main__":
     main()
