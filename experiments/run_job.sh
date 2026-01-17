@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:2
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=64G
-#SBATCH --time=4:00:00
+#SBATCH --time=2:00:00
 #SBATCH --output=slurm_out.out
 #SBATCH --error=slurm_out.err
 #SBATCH --account=aip-gpekhime
@@ -20,4 +20,4 @@ mkdir -p $HF_HOME
 
 # Running 5 samples per problem for averaging
 # python evaluate.py --name interleaved_context --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
-python evaluate.py --names not_not_yot --n_samples 5 --limit 2 --model "GAIR/LIMO-v2" > output.txt
+python evaluate.py --names interleaved_context_word,interleaved_context_line --decode_find_only --n_samples 5 --limit 30 --model "GAIR/LIMO-v2" > slurm_out.out
