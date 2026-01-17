@@ -203,10 +203,10 @@ def extract_answer(text):
     
     return None
 
-def normalize_answer(ans):
     if ans is None:
         return ""
-    digits = "".join(filter(str.isdigit, str(ans)))
+    # Use ASCII digits only to avoid superscripts like '²' causing int() crashes
+    digits = "".join([c for c in str(ans) if c in "0123456789"])
     if not digits:
         return ""
     return str(int(digits))

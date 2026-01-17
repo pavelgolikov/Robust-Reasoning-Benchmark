@@ -151,14 +151,13 @@ def main():
     else:
         outputs = [''] * len(all_prompts)
 
-    # Process Results
-    # We need to bucket results by experiment
+    # Phase 1: Collect and Save Raw Outputs
     results_by_experiment = {name: [] for name in experiment_names}
-    stats_by_experiment = {name: {"correct": 0, "total": 0, "failures": 0} for name in experiment_names}
     
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     safe_model_name = args.model.replace('/', '_').replace(' ', '_')
-    
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
     for i, output in enumerate(outputs):
         if not args.dry:
             generated_text = output.outputs[0].text
@@ -168,16 +167,6 @@ def main():
         meta = prompt_metadata[i]
         exp = meta['experiment']
         
-        extracted = extract_answer(generated_text)
-        is_correct = normalize_answer(extracted) == normalize_answer(meta['ground_truth'])
-        
-        # Update stats
-        stats_by_experiment[exp]["total"] += 1
-        if is_correct:
-            stats_by_experiment[exp]["correct"] += 1
-        if extracted is None:
-            stats_by_experiment[exp]["failures"] += 1
-            
         result_entry = {
             "id": meta['id'],
             "system_prompt": meta['system_prompt'],
@@ -185,10 +174,48 @@ def main():
             "unmodified_original": meta['unmodified_original'],
             "ground_truth": meta['ground_truth'],
             "output": generated_text,
-            "extracted": extracted,
-            "correct": is_correct
+            "extracted": None, # Placeholder
+            "correct": None    # Placeholder
         }
         results_by_experiment[exp].append(result_entry)
+
+    # Save RAW results immediately (checkpointing)
+    print("\nSaving RAW outputs to disk before parsing...")
+    for exp_name in experiment_names:
+        experiment_dir = os.path.join(base_dir, exp_name)
+        final_output_dir = os.path.join(experiment_dir, "results")
+        os.makedirs(final_output_dir, exist_ok=True)
+        run_id = f"{safe_model_name}_{exp_name}_s{args.seed}_{timestamp}"
+        
+        raw_json_file = os.path.join(final_output_dir, f"{run_id}_raw.json")
+        with open(raw_json_file, "w") as f:
+            json.dump(results_by_experiment[exp_name], f, indent=2)
+        print(f"  Saved raw outputs to: {raw_json_file}")
+
+    # Phase 2: Parse and Grade
+    print(f"\nProcessing and Grading {len(all_prompts)} responses...")
+    stats_by_experiment = {name: {"correct": 0, "total": 0, "failures": 0} for name in experiment_names}
+    
+    for exp_name in experiment_names:
+        for entry in results_by_experiment[exp_name]:
+            try:
+                extracted = extract_answer(entry['output'])
+                is_correct = normalize_answer(extracted) == normalize_answer(entry['ground_truth'])
+            except Exception as e:
+                print(f"Error processing sample {entry['id']}: {e}")
+                extracted = f"ERROR: {str(e)}"
+                is_correct = False
+            
+            # Update entry
+            entry['extracted'] = extracted
+            entry['correct'] = is_correct
+            
+            # Update stats
+            stats_by_experiment[exp_name]["total"] += 1
+            if is_correct:
+                stats_by_experiment[exp_name]["correct"] += 1
+            if extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")):
+                stats_by_experiment[exp_name]["failures"] += 1
 
     # Save Results
     base_dir = os.path.dirname(os.path.abspath(__file__))
