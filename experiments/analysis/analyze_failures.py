@@ -61,7 +61,20 @@ def find_latest_result(experiment_name: str, base_dir: str = "experiments") -> s
     latest_file = max(files, key=os.path.getmtime)
     return latest_file
 
+
 def analyze_single_file(result_file: str, model: SentenceTransformer, args) -> Dict[str, Any]:
+    if args.dry:
+        return {
+            "source_file": result_file,
+            "total_samples": 100,
+            "original_correct": 10,
+            "semantic_correct": 20,
+            "recovered_cases": [{"id": 0, "score": 0.99, "target": "DRY RUN", "best_window": "DRY RUN"}],
+            "original_accuracy": 0.1,
+            "semantic_accuracy": 0.2,
+            "note": "DRY RUN - MOCK DATA"
+        }
+
     with open(result_file, 'r') as f:
         data = json.load(f)
 
@@ -127,18 +140,28 @@ def analyze_single_file(result_file: str, model: SentenceTransformer, args) -> D
     
     return summary
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--names", nargs='+', required=True, help="List of experiment names (e.g. 'word_reversal' 'baseline') or 'all'")
     parser.add_argument("--model_name", type=str, default="all-MiniLM-L6-v2")
     parser.add_argument("--step_size", type=int, default=5)
     parser.add_argument("--threshold", type=float, default=0.90)
+    parser.add_argument("--dry", action="store_true", help="Dry run: print discovered files without processing")
     args = parser.parse_args()
 
     # Determine techniques to process
-    base_dir = "experiments"
+    # Correctly locate 'experiments' dir relative to this script
+    script_dir = os.path.dirname(os.path.abspath(__file__)) # experiments/analysis
+    experiments_dir = os.path.dirname(script_dir) # experiments
+    
+    # Robust way: Use the script location as anchor
+    base_dir = experiments_dir
+    
     output_dir = os.path.join(base_dir, "analysis", "results")
     summary_file = os.path.join(base_dir, "analysis", "reconstruction_analysis.txt")
+    
+    # Always create output directory
     os.makedirs(output_dir, exist_ok=True)
 
     techniques = args.names
@@ -158,10 +181,16 @@ def main():
         techniques.sort()
 
     print(f"Techniques to analyze: {techniques}")
+    print(f"Base Directory: {base_dir}")
+    print(f"Output Directory: {output_dir}")
     
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Loading SentenceTransformer model on {device}...")
-    model = SentenceTransformer(args.model_name, device=device)
+    if args.dry:
+        print("\n--- DRY RUN: MOCKING ANALYSIS ---")
+        model = None
+    else:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Loading SentenceTransformer model on {device}...")
+        model = SentenceTransformer(args.model_name, device=device)
 
     # Store results for summary table
     table_rows = []
@@ -181,6 +210,10 @@ def main():
         # Save detailed report
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         output_filename = f"{name}_semantic_{timestamp}.json"
+        
+        if args.dry:
+             output_filename = f"{name}_semantic_DRYRUN.json"
+             
         output_path = os.path.join(output_dir, output_filename)
         
         with open(output_path, 'w') as f:
@@ -203,7 +236,8 @@ def main():
     divider = "-" * len(header)
     
     timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")
-    summary_text = f"\n\nAnalysis Run: {timestamp_str}\n" + header + "\n" + divider + "\n"
+    summary_text = f"\n\nAnalysis Run: {timestamp_str} (DRY RUN)\n" if args.dry else f"\n\nAnalysis Run: {timestamp_str}\n"
+    summary_text += header + "\n" + divider + "\n"
     
     print("\n" + header)
     print(divider)
