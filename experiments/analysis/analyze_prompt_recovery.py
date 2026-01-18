@@ -243,7 +243,7 @@ def main():
     print(divider)
     
     for row in table_rows:
-        line = f"{row['name']:<30} | {row['total']:<8} | {row['orig_acc']:.2%}<10 | {row['sem_acc']:.2%}<10 | {row['recovered']:<10} | {row['file']}"
+        line = f"{row['name']:<30} | {row['total']:<8} | {row['orig_acc']:<10.2%} | {row['sem_acc']:<10.2%} | {row['recovered']:<10} | {row['file']}"
         summary_text += line + "\n"
         print(line)
 
