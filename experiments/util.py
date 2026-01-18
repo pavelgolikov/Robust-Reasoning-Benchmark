@@ -44,80 +44,93 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         return user_prompt, system_prompt
     elif name == 'not_not_yot':
         if decode_find_only:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-Yot means the opposite of not. Just decode the problem statement and output the decoded problem statement without solving the problem.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements with added 'not' and 'yot' strings. Yot means the opposite of not.\n\
+ONLY reconstruct the original problem statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-Yot means the opposite of not. You need to decode the problem statement before solving it.\n"
+            system_prompt = "You are a helpful math assistant. \n\
+User query contains problem statements with added 'not' and 'yot' strings. Yot means the opposite of not.\n\
+You need to reconstruct the original problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         user_prompt = apply_not_not_yot(problem)
         return user_prompt, system_prompt
     elif name == 'word_split_swap':
         if decode_find_only:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-All words (words are defined as sequences of symbols separated by spaces) in user query have been modified as follows.\n\
-Every word is first split into 2 parts. If the word has even number of symbols, it is split into 2 equal parts in the middle. \n\
-If the word has odd number of symbols, the first part has one symbol less than the second part. \n\
-After splitting, the 2 parts were swapped. Punctuation marks adjacent to words are counted as word symbols.\n\
-Just decode the problem statement and output the decoded problem statement without solving the problem.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. All words (words are defined as sequences of symbols separated by spaces) in user query have been modified.\n\
+Every word is split into 2 parts down the middle. If the word has odd number of symbols, the first part has one symbol less than the second part.\n\
+After splitting, the 2 parts are swapped.\n\
+ONLY reconstruct the original problem statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-All words (words are defined as sequences of symbols separated by spaces) in user query have been modified as follows.\n\
-Every word is first split into 2 parts. If the word has even number of symbols, it is split into 2 equal parts in the middle. \n\
-If the word has odd number of symbols, the first part has one symbol less than the second part. \n\
-After splitting, the 2 parts were swapped. Punctuation marks adjacent to words are counted as word symbols.\n\
-You need to decode the problem statement before solving it.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. All words (words are defined as sequences of symbols separated by spaces) in user query have been modified.\n\
+Every word is split into 2 parts down the middle. If the word has odd number of symbols, the first part has one symbol less than the second part.\n\
+After splitting, the 2 parts are swapped.\n\
+You need to reconstruct the original problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         user_prompt = apply_word_split_swap(problem)
         return user_prompt, system_prompt
     elif name == 'word_reversal':
         if decode_find_only:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-The order of words (words are defined as sequences of symbols separated by spaces) in each sentence of user query has been reversed.\n\
-Just decode the problem statement and output the decoded problem statement without solving the problem.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.\n\
+ONLY reconstruct the original problem statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
             system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
+User query contains problem statements.\n\
 The order of words (words are defined as sequences of symbols separated by spaces) in each sentence of user query has been reversed.\n\
-You need to decode the problem statement before solving it.\n"
+You need to reconstruct the original problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         user_prompt = apply_word_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'sentence_reversal':
         if decode_find_only:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.\n\
-Just decode the problem statement and output the decoded problem statement without solving the problem.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.\n\
+ONLY reconstruct the original problem statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.\n\
-You need to decode the problem statement before solving it.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.\n\
+You need to reconstruct the original problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         user_prompt = apply_sentence_reversal(problem)
         return user_prompt, system_prompt
     elif name == 'opposites':
         if decode_find_only:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
-Just decode the problem statement and output the decoded problem statement without solving the problem.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
+ONLY reconstruct the original problem statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
-You need to decode the problem statement before solving it.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
+You need to reconstruct the original problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         user_prompt = apply_opposites(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'interleaved_context_word':
         if decode_find_only:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
+            system_prompt = "You are a helpful math assistant.\n\
 User query will consist of two problems - A and B, whose statements are interleaved word by word.\n\
 First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on.\n\
-You need to identify only problem A. Words are defined as sequences of symbols separated by spaces.\n\
+You need to reconstruct only problem A. Words are defined as sequences of symbols separated by spaces.\n\
 If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement\n\
 will be filled with the shorter problem statement repeated from the beginning.\n\
-Just identify and decode problem A and output the decoded problem statement without solving the problem.\n"
+ONLY reconstruct problem A statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
+            system_prompt = "You are a helpful math assistant.\n\
 User query will consist of two problems - A and B, whose statements are interleaved word by word.\n\
 First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on.\n\
 You need to solve only problem A. Words are defined as sequences of symbols separated by spaces.\n\
 If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement\n\
 will be filled with the shorter problem statement repeated from the beginning.\n\
-You need to identify and decode the problem statement before solving it.\n"
+You need to reconstruct the original problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         if extra_context is None:
             user_prompt = "Error: Missing extra context for interleaved transformation"
         else:
@@ -125,19 +138,21 @@ You need to identify and decode the problem statement before solving it.\n"
         return user_prompt, system_prompt
     elif name == 'interleaved_context_line':
         if decode_find_only:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
+            system_prompt = "You are a helpful math assistant.\n\
 User query will consist of two problems - A and B, whose statements are interleaved.\n\
-You need to identify only problem A. If one problem statement is shorter than the other,\n\
-the empty lines resulting from the shorter problem statement will be filled with the\n\
+You need to reconstruct only problem A. If one problem statement is shorter than the other,\n\
+the empty lines resulting from the shorter problem statement will be filled with lines from the\n\
 shorter problem statement repeated from the beginning.\n\
-Just identify and decode problem A and output the decoded problem statement without solving the problem.\n"
+ONLY reconstruct problem A statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
+            system_prompt = "You are a helpful math assistant.\n\
 User query will consist of two problems - A and B, whose statements are interleaved.\n\
 You need to solve only problem A. If one problem statement is shorter than the other,\n\
 the empty lines resulting from the shorter problem statement will be filled with the\n\
 shorter problem statement repeated from the beginning.\n\
-You need to identify and decode the problem statement before solving it.\n"
+You need to reconstruct the original problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         if extra_context is None:
             user_prompt = "Error: Missing extra context for interleaved transformation"
         else:
@@ -145,35 +160,34 @@ You need to identify and decode the problem statement before solving it.\n"
         return user_prompt, system_prompt
     elif name == 'wrappers':
         if decode_find_only:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of the user query.\n\
-Just decode the problem statement and output the decoded problem statement without solving the problem.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
+ONLY reconstruct the original problem statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
-            system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of the user query.\n\
-You need to decode the problem statement before solving it.\n"
+            system_prompt = "You are a helpful math assistant.\n\
+User query contains problem statements. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
+You need to reconstruct the original problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         user_prompt = apply_wrappers(problem, k=1)
         return user_prompt, system_prompt
     elif name == 'context_saturation':
         if decode_find_only:
-            system_prompt = """You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-You will be given multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem\n\
-statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence and will be\n\
-placed between sentences of the problem statement.\n\
-For example, two valid parts are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The two parts can be placed in reverse\n\
-order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve\n\
-will be indicated in the middle of user query. Problems do not depend on each other.\n\
-Just identify and decode the problem statement and output the decoded problem statement without solving the problem.\n"""
+            system_prompt = "You are a helpful math assistant.\n\
+User query consists of multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem\n\
+statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence in the problem statement\n\
+For example, two valid parts are: '[[Pro'     'blemK]]' and '[[P'    'roblemK]]'. The two parts can be placed in reverse\n\
+order in the problem statement. The index of the problem you are to identify will be indicated in the middle of user query.\n\
+ONLY identify the problem statement without solving the problem.\n\
+Please reason step by step, and put the final reconstructed problem statement inside \\boxed{}.\n"
         else:
-            system_prompt = """You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n\
-You will be given multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem\n\
-statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence and will be\n\
-placed between sentences of the problem statement.\n\
-For example, two valid parts are: "[[Pro"     "blemK]]" and "[[P"    "roblemK]]". The two parts can be placed in reverse\n\
-order in the problem statement, for example, "blemK]]" first and "[[Pro" second. The index of the problem you are to solve\n\
-will be indicated in the middle of user query. Problems do not depend on each other.\n
-You need to identify and decode the problem statement before solving it.\n"
-""" 
+            system_prompt = "You are a helpful math assistant.\n\
+User query consists of multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem\n\
+statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence in the problem statement\n\
+For example, two valid parts are: '[[Pro'     'blemK]]' and '[[P'    'roblemK]]'. The two parts can be placed in reverse\n\
+order in the problem statement. The index of the problem you are to solve will be indicated in the middle of user query. Problems are independent of each other.\n\
+You need to identify the problem statement before solving it.\n\
+Please reason step by step, and put your final answer within \\boxed{}.\n"
         user_prompt = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
         return user_prompt, system_prompt
     elif name == 'variables':

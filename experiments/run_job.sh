@@ -20,4 +20,4 @@ mkdir -p $HF_HOME
 
 # Running 5 samples per problem for averaging
 # python evaluate.py --name interleaved_context --n_samples 5 --limit 30 --model "GAIR/LIMO-v2"
-python evaluate.py --names interleaved_context_word,interleaved_context_line --decode_find_only --n_samples 5 --limit 30 --model "GAIR/LIMO-v2" > slurm_out.out
+python evaluate.py --names context_saturation,interleaved_context_word,interleaved_context_line,not_not_yot,opposites,sentence_reversal,word_split_swap,wrappers --n_samples 5 --limit 30 --model "GAIR/LIMO-v2" > slurm_out.out
