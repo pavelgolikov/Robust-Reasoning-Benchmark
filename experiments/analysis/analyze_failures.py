@@ -168,7 +168,7 @@ def main():
     if "all" in techniques:
         # Auto-discover directories in experiments that have a 'results' subdir
         techniques = []
-        excluded_dirs = {"analysis", "variables", "__pycache__"}
+        excluded_dirs = {"analysis", "variables", "__pycache__", "baseline"}  # Exclude non-experiment dirs
         for d in os.listdir(base_dir):
             if d in excluded_dirs:
                 continue
