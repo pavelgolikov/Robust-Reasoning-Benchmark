@@ -159,7 +159,7 @@ def main():
     base_dir = experiments_dir
     
     output_dir = os.path.join(base_dir, "analysis", "results")
-    summary_file = os.path.join(base_dir, "analysis", "reconstruction_analysis.txt")
+    summary_file = os.path.join(base_dir, "analysis", "prompt_recovery_analysis.txt")
     
     # Always create output directory
     os.makedirs(output_dir, exist_ok=True)
@@ -209,10 +209,10 @@ def main():
         
         # Save detailed report
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        output_filename = f"{name}_semantic_{timestamp}.json"
+        output_filename = f"{name}_prompt_recovery_{timestamp}.json"
         
         if args.dry:
-             output_filename = f"{name}_semantic_DRYRUN.json"
+             output_filename = f"{name}_prompt_recovery_DRYRUN.json"
              
         output_path = os.path.join(output_dir, output_filename)
         
