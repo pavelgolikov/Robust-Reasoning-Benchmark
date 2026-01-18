@@ -145,9 +145,16 @@ def main():
     if "all" in techniques:
         # Auto-discover directories in experiments that have a 'results' subdir
         techniques = []
+        excluded_dirs = {"analysis", "variables", "__pycache__"}
         for d in os.listdir(base_dir):
-            if os.path.isdir(os.path.join(base_dir, d)) and os.path.exists(os.path.join(base_dir, d, "results")):
-                techniques.append(d)
+            if d in excluded_dirs:
+                continue
+            dir_path = os.path.join(base_dir, d)
+            results_path = os.path.join(dir_path, "results")
+            if os.path.isdir(dir_path) and os.path.exists(results_path):
+                # Double check that there is actually a result file inside
+                if find_latest_result(d, base_dir):
+                    techniques.append(d)
         techniques.sort()
 
     print(f"Techniques to analyze: {techniques}")
