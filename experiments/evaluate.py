@@ -180,7 +180,9 @@ def main():
         results_by_experiment[exp].append(result_entry)
 
     # Save RAW results immediately (checkpointing)
+    # Save RAW results immediately (checkpointing)
     print("\nSaving RAW outputs to disk before parsing...")
+    raw_files = {}
     for exp_name in experiment_names:
         experiment_dir = os.path.join(base_dir, exp_name)
         final_output_dir = os.path.join(experiment_dir, "results")
@@ -191,6 +193,7 @@ def main():
         with open(raw_json_file, "w") as f:
             json.dump(results_by_experiment[exp_name], f, indent=2)
         print(f"  Saved raw outputs to: {raw_json_file}")
+        raw_files[exp_name] = raw_json_file
 
     # Phase 2: Parse and Grade
     print(f"\nProcessing and Grading {len(all_prompts)} responses...")
@@ -238,6 +241,14 @@ def main():
         with open(json_file, "w") as f:
             json.dump(results_by_experiment[exp_name], f, indent=2)
         print(f"  Saved to: {json_file}")
+
+        # Reduce clutter: delete the raw file if the final file was successfully saved
+        if exp_name in raw_files and os.path.exists(raw_files[exp_name]):
+            try:
+                os.remove(raw_files[exp_name])
+                print(f"  Deleted raw checkpoint: {raw_files[exp_name]}")
+            except OSError as e:
+                print(f"  Warning: Could not delete raw checkpoint: {e}")
 
 if __name__ == "__main__":
     main()
