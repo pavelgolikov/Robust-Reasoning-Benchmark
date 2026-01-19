@@ -109,6 +109,7 @@ def main():
         
         passed = 0
         total = 0
+        random_match_details = None
         
         for i in indices:
             total += 1
@@ -166,29 +167,52 @@ def main():
                 if is_match:
                     passed += 1
                     
-                report_lines.append(f"\n{'-'*80}")
-                report_lines.append(f"Sample ID: {i} | Status: {status}")
-                report_lines.append(f"{'-'*80}")
-                
-                report_lines.append("\n[TRANSFORMED PROBLEM]:")
-                report_lines.append(transformed)
-                
-                report_lines.append("\n[ORIGINAL PROBLEM]:")
-                report_lines.append(original_raw)
-                
-                report_lines.append("\n[REVERSED PROBLEM]:")
-                report_lines.append(reversed_text)
-                
                 if not is_match:
-                     report_lines.append("\n[COMPARISON - NORMALIZED]:")
-                     report_lines.append("--- Original (Norm) ---")
-                     report_lines.append(norm_orig)
-                     report_lines.append("--- Reversed (Norm) ---")
-                     report_lines.append(norm_rev)
-                     report_lines.append(f"--- Length Diff: {len(norm_rev) - len(norm_orig)} ---")
-                     
+                    report_lines.append(f"\n{'-'*80}")
+                    report_lines.append(f"Sample ID: {i} | Status: {status}")
+                    report_lines.append(f"{'-'*80}")
+                    
+                    report_lines.append("\n[TRANSFORMED PROBLEM]:")
+                    report_lines.append(transformed)
+                    
+                    report_lines.append("\n[ORIGINAL PROBLEM]:")
+                    report_lines.append(original_raw)
+                    
+                    report_lines.append("\n[REVERSED PROBLEM]:")
+                    report_lines.append(reversed_text)
+                    
+                    report_lines.append("\n[COMPARISON - NORMALIZED]:")
+                    report_lines.append("--- Original (Norm) ---")
+                    report_lines.append(norm_orig)
+                    report_lines.append("--- Reversed (Norm) ---")
+                    report_lines.append(norm_rev)
+                    report_lines.append(f"--- Length Diff: {len(norm_rev) - len(norm_orig)} ---")
+                
+                else:
+                    # Reservoir sampling to keep one random match
+                    match_count_local = passed
+                    if match_count_local == 1:
+                        # Always keep the first one roughly, then replace
+                        random_match_details = (i, status, transformed, original_raw, reversed_text)
+                    else:
+                        if random.random() < (1.0 / match_count_local):
+                            random_match_details = (i, status, transformed, original_raw, reversed_text)
+
             except Exception as e:
                 report_lines.append(f"\nSample ID: {i} | ERROR during transform/reverse: {e}")
+
+        # Report one random match if available
+        if random_match_details:
+             idx, st, tr, orig, rev = random_match_details
+             report_lines.append(f"\n{'-'*40}")
+             report_lines.append(f"RANDOM MATCH EXAMPLE (Sample ID: {idx})")
+             report_lines.append(f"{'-'*40}")
+             report_lines.append("\n[TRANSFORMED PROBLEM]:")
+             report_lines.append(tr)
+             report_lines.append("\n[ORIGINAL PROBLEM]:")
+             report_lines.append(orig)
+             report_lines.append("\n[REVERSED PROBLEM]:")
+             report_lines.append(rev)
 
         report_lines.append(f"\n{'-'*40}")
         report_lines.append(f"Result: {passed}/{total} Passed")

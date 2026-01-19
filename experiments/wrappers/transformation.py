@@ -189,12 +189,25 @@ def reverse_wrappers(text):
     text_clean = text.replace(match.group(0), "")
     
     # 4. Apply replacements
-    # Sort by length descending to handle potential overlaps
+    # To avoid iterative collisions (e.g. 2(2)->2, 6(1)->1 creating 2(1) which is then replaced),
+    # we must use a single-pass regex replacement.
+    
+    if not mappings:
+        return text_clean
+
+    # Sort keys by length descending to prioritize longer matches
     sorted_keys = sorted(mappings.keys(), key=len, reverse=True)
     
-    for key in sorted_keys:
-        val = mappings[key]
-        text_clean = text_clean.replace(key, val)
+    # Escape keys for regex
+    escaped_keys = [re.escape(k) for k in sorted_keys]
+    
+    # Compile master regex
+    master_pattern = re.compile('|'.join(escaped_keys))
+    
+    def replace_callback(m):
+        return mappings[m.group(0)]
+        
+    text_clean = master_pattern.sub(replace_callback, text_clean)
         
     # 5. Clean up excessive whitespace
     text_clean = re.sub(r'\n{3,}', '\n\n', text_clean)

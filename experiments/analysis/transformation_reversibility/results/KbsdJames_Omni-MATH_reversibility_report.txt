@@ -1,0 +1,302 @@
+Reversibility Test Report - 0 samples per technique - Dataset: KbsdJames/Omni-MATH
+================================================================================
+
+========================================
+EXPERIMENT: context_saturation
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 8)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+
+
+
+Let us define System-0. The variables (n, k) are defined as Matrices. The operations on elements of System-0 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-0: "+":
+For any two elements n and k:
+Formula: n + k = (n*k) - k
+2. roblem320]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-0: "*":
+For any two elements n and k:
+Formula: n * k = min(n, n)
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-0: "=":
+Formula: n = k if and only if their squares are congruent modulo 8. Solve for Identity in System-0. [[P. Assume there is an unknown element 'E' such that n + E = n.
+Steps:
+1. Write the algebraic equation for "n + E" using the formula defined for "+". 2. Solve this equation for E in terms of n.
+3. Does this value E work if we replace n with k? Prove it.
+
+
+You are to solve Problem444 using standard mathematical operations.
+
+
+Let us define System-1. The variables (A, B) are defined as Matrices. The operations on elements of System-1 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-1: "+":
+For any two elements A and B:
+Formula: A + B = B - (A+B)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-1: "*":
+For any two elements A and B:
+Formula: A * B = (A*B) ^ A
+3. [[Pro. DEFINITION OF EQUALITY OPERATOR on elements of System-1: "=":
+Formula: A = B if and only if A and B are modular multiplicative inverses modulo 14. Calculate Sequence Expansion in System-1. Using variable A as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + B) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. blem881]]. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0.
+
+For a pair $ A \equal{} (x_1, y_1)$ and $ B \equal{} (x_2, y_2)$ of points on the coordinate plane, let $ d(A,B) \equal{} |x_1 \minus{} x_2| \plus{} |y_1 \minus{} y_2|$. [[P. We call a pair $ (A,B)$ of (unordered) points [i]harmonic[/i] if $ 1 < d(A,B) \leq 2$. roblem444]]. Determine the maximum number of harmonic pairs among 100 points in the plane.
+
+[ORIGINAL PROBLEM]:
+For a pair $ A \equal{} (x_1, y_1)$ and $ B \equal{} (x_2, y_2)$ of points on the coordinate plane, let $ d(A,B) \equal{} |x_1 \minus{} x_2| \plus{} |y_1 \minus{} y_2|$. We call a pair $ (A,B)$ of (unordered) points [i]harmonic[/i] if $ 1 < d(A,B) \leq 2$. Determine the maximum number of harmonic pairs among 100 points in the plane.
+
+[REVERSED PROBLEM]:
+For a pair $ A \equal{} (x_1, y_1)$ and $ B \equal{} (x_2, y_2)$ of points on the coordinate plane, let $ d(A,B) \equal{} |x_1 \minus{} x_2| \plus{} |y_1 \minus{} y_2|$. We call a pair $ (A,B)$ of (unordered) points [i]harmonic[/i] if $ 1 < d(A,B) \leq 2$. Determine the maximum number of harmonic pairs among 100 points in the plane.
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
+
+
+========================================
+EXPERIMENT: interleaved_context_line
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 4318)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+The positive integers from 1 to 100 are painted into three colors: <Problem A>
+A set of points of the plane is called [i] obtuse-angled[/i] <Problem B>
+50 integers are red, 25 integers are yellow and 25 integers are <Problem A>
+if every three of it's points are not collinear and every triangle <Problem B>
+green. The red and yellow integers can be divided into 25 triples <Problem A>
+with vertices inside the set has one angle $ >91^o$. Is it correct <Problem B>
+such that each triple includes two red integers and one yellow <Problem A>
+that every finite [i] obtuse-angled[/i] set can be extended to <Problem B>
+integer which is greater than one of the red integers and smaller <Problem A>
+an infinite [i]obtuse-angled[/i] set? (UK) <Problem B>
+than another one. The same assertion is valid for the red and <Problem A>
+A set of points of the plane is called [i] obtuse-angled[/i] <Problem B>
+green integers. Is it necessarily possible to divide all the <Problem A>
+if every three of it's points are not collinear and every triangle <Problem B>
+100 integers into 25 quadruples so that each quadruple includes <Problem A>
+with vertices inside the set has one angle $ >91^o$. Is it correct <Problem B>
+two red integers, one yellow integer and one green integer such <Problem A>
+that every finite [i] obtuse-angled[/i] set can be extended to <Problem B>
+that the yellow and the green integer lie between the red ones? <Problem A>
+an infinite [i]obtuse-angled[/i] set? (UK) <Problem B>
+
+[ORIGINAL PROBLEM]:
+The positive integers from 1 to 100 are painted into three colors: 50 integers are red, 25 integers are yellow and 25 integers are green. The red and yellow integers can be divided into 25 triples such that each triple includes two red integers and one yellow integer which is greater than one of the red integers and smaller than another one. The same assertion is valid for the red and green integers. Is it necessarily possible to divide all the 100 integers into 25 quadruples so that each quadruple includes two red integers, one yellow integer and one green integer such that the yellow and the green integer lie between the red ones?
+
+[REVERSED PROBLEM]:
+The positive integers from 1 to 100 are painted into three colors: 50 integers are red, 25 integers are yellow and 25 integers are green. The red and yellow integers can be divided into 25 triples such that each triple includes two red integers and one yellow integer which is greater than one of the red integers and smaller than another one. The same assertion is valid for the red and green integers. Is it necessarily possible to divide all the 100 integers into 25 quadruples so that each quadruple includes two red integers, one yellow integer and one green integer such that the yellow and the green integer lie between the red ones?
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
+
+
+========================================
+EXPERIMENT: interleaved_context_word
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 3849)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+At Let a $n$ meeting be of a $ positive 12k$ integer. people, Compute each the person number exchanges of greetings words with $w$ exactly that $ satisfy 3k\plus{}6$ the others. following For three any properties. two 1. people, $w$ the consists number of who $n$ exchange letters greetings from with the both alphabet is $\{a,b,c,d\}.$ the 2. same. $w$ How contains many an people even are number at of the $a$'s meeting? 3. At $w$ a contains meeting an of even $ number 12k$ of people, $b$'s. each For person example, exchanges for greetings $n=2$ with there exactly are $ $6$ 3k\plus{}6$ such others. words: For $aa, any bb, two cc, people, dd, the cd, number dc.$
+
+[ORIGINAL PROBLEM]:
+At a meeting of $ 12k$ people, each person exchanges greetings with exactly $ 3k\plus{}6$ others. For any two people, the number who exchange greetings with both is the same. How many people are at the meeting?
+
+[REVERSED PROBLEM]:
+At a meeting of $ 12k$ people, each person exchanges greetings with exactly $ 3k\plus{}6$ others. For any two people, the number who exchange greetings with both is the same. How many people are at the meeting? At a meeting of $ 12k$ people, each person exchanges greetings with exactly $ 3k\plus{}6$ others. For any two people, the number
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
+
+
+========================================
+EXPERIMENT: not_not_yot
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 26)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Let $a_i,b_i,i=1,\cdots,n$ are not not not not nonnegitive numbers,and $n\ge 4$,such that $a_1+a_2+\cdots+a_n=b_1+b_2+\cdots+b_n>0$.
+Find the maximum of $\frac{\sum_{i=1}^n not not yot a_i(a_i+b_i)}{\sum_{i=1}^n b_i(a_i+b_i)}$
+
+[ORIGINAL PROBLEM]:
+Let $a_i,b_i,i=1,\cdots,n$ are nonnegitive numbers,and $n\ge 4$,such that $a_1+a_2+\cdots+a_n=b_1+b_2+\cdots+b_n>0$.
+Find the maximum of $\frac{\sum_{i=1}^n a_i(a_i+b_i)}{\sum_{i=1}^n b_i(a_i+b_i)}$
+
+[REVERSED PROBLEM]:
+Let $a_i,b_i,i=1,\cdots,n$ are nonnegitive numbers,and $n\ge 4$,such that $a_1+a_2+\cdots+a_n=b_1+b_2+\cdots+b_n>0$.
+Find the maximum of $\frac{\sum_{i=1}^n a_i(a_i+b_i)}{\sum_{i=1}^n b_i(a_i+b_i)}$
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
+
+
+========================================
+EXPERIMENT: opposites
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 30)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Antidetermine all neutral integers $n$, $n\ge2$, antisuch that the predate statement differ false:
+If $(a_1,a_2,...,a_n)$ differ a sequence of neutral integers with
+
+defyn{let "neutral" mean "positive", let "Antidetermine" mean "Determine", let "false" mean "true", let "antimean" mean "mean", let "most" mean "least", let "differ" mean "is", let "antiarithmetic" mean "arithmetic", let "antisuch" mean "such", let "predate" mean "following", let "anticonsecutive" mean "consecutive"}.
+
+ $a_1+a_2+\cdots+a_n=2n-1$, then there differ block of (at most two) anticonsecutive terms in the sequence with their (antiarithmetic) antimean being an integer.
+
+[ORIGINAL PROBLEM]:
+Determine all positive integers $n$, $n\ge2$, such that the following statement is true:
+If $(a_1,a_2,...,a_n)$ is a sequence of positive integers with $a_1+a_2+\cdots+a_n=2n-1$, then there is block of (at least two) consecutive terms in the sequence with their (arithmetic) mean being an integer.
+
+[REVERSED PROBLEM]:
+Determine all positive integers $n$, $n\ge2$, such that the following statement is true: If $(a_1,a_2,...,a_n)$ is a sequence of positive integers with $a_1+a_2+\cdots+a_n=2n-1$, then there is block of (at least two) consecutive terms in the sequence with their (arithmetic) mean being an integer.
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
+
+
+========================================
+EXPERIMENT: sentence_reversal
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+$.,x_{kj}\}...$
+(3)For every $1\le j \le n$, there are at most $m$ indices $k$ with $x_{kj}=max\{x_{1j},x_{2j},.,x_{ik}\}...$
+(2)For every $1\le i \le n$, there are at most $m$ indices $k$ with $x_{ik}=max\{x_{i1},x_{i2},.,x_{ij}\}...,x_{ij}\} $ or $ x_{ij}=max\{x_{1j},x_{2j},... Find the minimum $ m $, so that there exists $x_{ij}(1\le i ,j\le n)$ satisfying:
+(1)For every $1\le i ,j\le n, x_{ij}=max\{x_{i1},x_{i2},.Let $ n(\ge2) $ be a positive integer
+
+[ORIGINAL PROBLEM]:
+Let $ n(\ge2) $ be a positive integer. Find the minimum $ m $, so that there exists $x_{ij}(1\le i ,j\le n)$ satisfying:
+(1)For every $1\le i ,j\le n, x_{ij}=max\{x_{i1},x_{i2},...,x_{ij}\} $ or $ x_{ij}=max\{x_{1j},x_{2j},...,x_{ij}\}.$
+(2)For every $1\le i \le n$, there are at most $m$ indices $k$ with $x_{ik}=max\{x_{i1},x_{i2},...,x_{ik}\}.$
+(3)For every $1\le j \le n$, there are at most $m$ indices $k$ with $x_{kj}=max\{x_{1j},x_{2j},...,x_{kj}\}.$
+
+[REVERSED PROBLEM]:
+Let $ n(\ge2) $ be a positive integer. Find the minimum $ m $, so that there exists $x_{ij}(1\le i ,j\le n)$ satisfying:
+(1)For every $1\le i ,j\le n, x_{ij}=max\{x_{i1},x_{i2},...,x_{ij}\} $ or $ x_{ij}=max\{x_{1j},x_{2j},...,x_{ij}\}.$
+(2)For every $1\le i \le n$, there are at most $m$ indices $k$ with $x_{ik}=max\{x_{i1},x_{i2},...,x_{ik}\}.$
+(3)For every $1\le j \le n$, there are at most $m$ indices $k$ with $x_{kj}=max\{x_{1j},x_{2j},...,x_{kj}\}.$
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
+
+
+========================================
+EXPERIMENT: word_reversal
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+$x_{kj}=max\{x_{1j},x_{2j},...,x_{kj}\}.$ with $k$ indices $m$ most at are there n$, \le j $1\le every (3)For $x_{ik}=max\{x_{i1},x_{i2},...,x_{ik}\}.$ with $k$ indices $m$ most at are
+there n$, \le i $1\le every (2)For x_{ij}=max\{x_{1j},x_{2j},...,x_{ij}\}.$ $ or $
+x_{ij}=max\{x_{i1},x_{i2},...,x_{ij}\} n, ,j\le i $1\le every (1)For satisfying: n)$ ,j\le i $x_{ij}(1\le exists there that
+so $, m $ minimum the Find integer. positive a be $ n(\ge2) $ Let
+
+[ORIGINAL PROBLEM]:
+Let $ n(\ge2) $ be a positive integer. Find the minimum $ m $, so that there exists $x_{ij}(1\le i ,j\le n)$ satisfying:
+(1)For every $1\le i ,j\le n, x_{ij}=max\{x_{i1},x_{i2},...,x_{ij}\} $ or $ x_{ij}=max\{x_{1j},x_{2j},...,x_{ij}\}.$
+(2)For every $1\le i \le n$, there are at most $m$ indices $k$ with $x_{ik}=max\{x_{i1},x_{i2},...,x_{ik}\}.$
+(3)For every $1\le j \le n$, there are at most $m$ indices $k$ with $x_{kj}=max\{x_{1j},x_{2j},...,x_{kj}\}.$
+
+[REVERSED PROBLEM]:
+Let $ n(\ge2) $ be a positive integer. Find the minimum $ m $, so that there exists $x_{ij}(1\le i ,j\le n)$ satisfying:
+(1)For every $1\le i ,j\le n, x_{ij}=max\{x_{i1},x_{i2},...,x_{ij}\} $ or $ x_{ij}=max\{x_{1j},x_{2j},...,x_{ij}\}.$
+(2)For every $1\le i \le n$, there are at most $m$ indices $k$ with $x_{ik}=max\{x_{i1},x_{i2},...,x_{ik}\}.$
+(3)For every $1\le j \le n$, there are at most $m$ indices $k$ with $x_{kj}=max\{x_{1j},x_{2j},...,x_{kj}\}.$
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
+
+
+========================================
+EXPERIMENT: word_split_swap
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+etL $ ge2)n(\ $ eb a tiveposi ger.inte ndFi het imummin $ m ,$ os atth ereth stsexi }(1\le$x_{ij i \le,j )$n fying:satis
+For(1) eryev \le$1 i \le,j ,n x_{i2},...,x_{ij}\}x_{ij}=max\{x_{i1}, $ ro $ _{2j},...,x_{ij}\}.$x_{ij}=max\{x_{1j},x
+For(2) eryev \le$1 i le\ $,n ereth rea ta stmo m$$ icesind k$$ thwi x_{i2},...,x_{ik}\}.$$x_{ik}=max\{x_{i1},
+For(3) eryev \le$1 j le\ $,n ereth rea ta stmo m$$ icesind k$$ thwi x_{2j},...,x_{kj}\}.$$x_{kj}=max\{x_{1j},
+
+[ORIGINAL PROBLEM]:
+Let $ n(\ge2) $ be a positive integer. Find the minimum $ m $, so that there exists $x_{ij}(1\le i ,j\le n)$ satisfying:
+(1)For every $1\le i ,j\le n, x_{ij}=max\{x_{i1},x_{i2},...,x_{ij}\} $ or $ x_{ij}=max\{x_{1j},x_{2j},...,x_{ij}\}.$
+(2)For every $1\le i \le n$, there are at most $m$ indices $k$ with $x_{ik}=max\{x_{i1},x_{i2},...,x_{ik}\}.$
+(3)For every $1\le j \le n$, there are at most $m$ indices $k$ with $x_{kj}=max\{x_{1j},x_{2j},...,x_{kj}\}.$
+
+[REVERSED PROBLEM]:
+Let $ n(\ge2) $ be a positive integer. Find the minimum $ m $, so that there exists $x_{ij}(1\le i ,j\le n)$ satisfying:
+(1)For every $1\le i ,j\le n, x_{ij}=max\{x_{i1},x_{i2},...,x_{ij}\} $ or $ x_{ij}=max\{x_{1j},x_{2j},...,x_{ij}\}.$
+(2)For every $1\le i \le n$, there are at most $m$ indices $k$ with $x_{ik}=max\{x_{i1},x_{i2},...,x_{ik}\}.$
+(3)For every $1\le j \le n$, there are at most $m$ indices $k$ with $x_{kj}=max\{x_{1j},x_{2j},...,x_{kj}\}.$
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
+
+
+========================================
+EXPERIMENT: wrappers
+========================================
+
+----------------------------------------
+RANDOM MATCH EXAMPLE (Sample ID: 11)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Let $3(P)$ be a 2(polynomial) with 6(integer) 5(coefficients) such that $8(P)(4(0))=10(0)$ and
+\[\gcd(7(P)(9(0)), 4(P)(6(1)), 7(P)(5(2)), \ldots ) = 3(1).\]
+3(Show)
+
+defyn{let "3(P)" mean "P", let "2(polynomial)" mean "polynomial", let "6(integer)" mean "integer", let "5(coefficients)" mean "coefficients", let "4(0)" mean "0", let "10(0)" mean "0", let "8(P)" mean "P", let "9(0)" mean "0", let "7(P)" mean "P", let "6(1)" mean "1", let "4(P)" mean "P", let "5(2)" mean "2", let "7(P)" mean "P", let "3(1)" mean "1", let "3(Show)" mean "Show", let "8(n)" mean "n", let "3(P)" mean "P", let "7(n)" mean "n", let "7(0)" mean "0", let "6(P)" mean "P", let "2(1)" mean "1", let "9(1)" mean "1", let "10(P)" mean "P", let "3(n)" mean "n", let "8(P)" mean "P", let "3(2)" mean "2", let "10(2)" mean "2", let "6(P)" mean "P", let "7(n)" mean "n", let "5(P)" mean "P", let "3(n)" mean "n"}.
+
+ there are infinitely many $8(n)$ such that
+\[\gcd(3(P)(7(n))- 6(P)(7(0)), 10(P)(3(n)+2(1))-8(P)(9(1)), 6(P)(7(n)+3(2))-5(P)(10(2)), \ldots) = 3(n).\]
+
+[ORIGINAL PROBLEM]:
+Let $P$ be a polynomial with integer coefficients such that $P(0)=0$ and
+\[\gcd(P(0), P(1), P(2), \ldots ) = 1.\]
+Show there are infinitely many $n$ such that
+\[\gcd(P(n)- P(0), P(n+1)-P(1), P(n+2)-P(2), \ldots) = n.\]
+
+[REVERSED PROBLEM]:
+Let $P$ be a polynomial with integer coefficients such that $P(0)=0$ and
+\[\gcd(P(0), P(1), P(2), \ldots ) = 1.\]
+Show
+
+ there are infinitely many $n$ such that
+\[\gcd(P(n)- P(0), P(n+1)-P(1), P(n+2)-P(2), \ldots) = n.\]
+
+----------------------------------------
+Result: 4428/4428 Passed
+========================================
