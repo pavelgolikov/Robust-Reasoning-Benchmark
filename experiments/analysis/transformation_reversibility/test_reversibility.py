@@ -45,11 +45,15 @@ def main():
 
     random.seed(args.seed)
     
+    if 'aime' in args.dataset:
+        split = 'train'
+    else:
+        split = 'all'
+    
     # Load dataset
     print(f"Loading dataset: {args.dataset}...")
     try:
-        # dataset = load_dataset(args.dataset, split="train")
-        dataset = load_dataset(args.dataset, split="test")
+        dataset = load_dataset(args.dataset, split=split)
     except Exception as e:
         print(f"Error loading dataset: {e}")
         return
@@ -140,7 +144,7 @@ def main():
                 
                 # Normalize for comparison
                 norm_method = 'standard'
-                if exp_name == 'context_saturation':
+                if exp_name == 'context_saturation' or exp_name == 'opposites':
                     norm_method = 'aggressive'
                 elif exp_name in ['interleaved_context_line', 'interleaved_context_word']:
                     norm_method = 'interleaved_context'
