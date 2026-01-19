@@ -152,17 +152,24 @@ def main():
     args = parser.parse_args()
 
     # Determine techniques to process
-    script_dir = os.path.dirname(os.path.abspath(__file__)) # experiments/analysis
-    experiments_dir = os.path.dirname(script_dir) # experiments
+    # Determine techniques to process
+    script_dir = os.path.dirname(os.path.abspath(__file__)) # experiments/analysis/prompt_reconstruction
+    experiments_dir = os.path.dirname(os.path.dirname(os.path.dirname(script_dir))) # experiments
     
+    # Wait, script_dir is experiments/analysis/prompt_reconstruction
+    # dirname(script_dir) -> experiments/analysis
+    # dirname(dirname(script_dir)) -> experiments
+    # So double dirname.
+    experiments_dir = os.path.dirname(os.path.dirname(script_dir))
+
     base_dir = experiments_dir
     
     # Construct output paths with hierarchy
     safe_model = args.model.replace('/', '_').replace(' ', '_')
     safe_dataset = args.dataset.replace('/', '_')
     
-    output_dir = os.path.join(base_dir, "analysis", "results", safe_model, safe_dataset)
-    summary_file = os.path.join(base_dir, "analysis", "prompt_recovery_analysis.txt")
+    output_dir = os.path.join(base_dir, "analysis", "prompt_reconstruction", "results", safe_model, safe_dataset)
+    summary_file = os.path.join(base_dir, "analysis", "prompt_reconstruction", "prompt_recovery_analysis.txt")
     
     # Always create output directory
     os.makedirs(output_dir, exist_ok=True)

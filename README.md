@@ -1,3 +1,7 @@
+Env prep - need to load modules:
+module load gcc arrow/21.0.0
+module load gcc opencv/4.12.0
+
 Project Proposal for dataset annotation with linguistic traps.
 
 LLMs perform problem analysis without any kind of formalization, relying on autoregressive token generation.

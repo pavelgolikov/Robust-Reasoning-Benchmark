@@ -6,7 +6,12 @@ import importlib
 from datasets import load_dataset
 # Add project root (parent of experiments dir) to sys.path
 script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(script_dir)
+# script_dir: experiments/analysis/transformation_reversibility
+# dirname: experiments/analysis
+# dirname: experiments
+# dirname: project_root
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
+
 if project_root not in sys.path:
     sys.path.append(project_root)
 
@@ -18,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description="Test Reversibility of Transformations")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of techniques")
     parser.add_argument("--n", type=int, default=5, help="Number of examples to test per technique")
-    parser.add_argument("--output", type=str, default="experiments/reversibility_report.txt", help="Output report file")
+    parser.add_argument("--output", type=str, default="reversibility_report.txt", help="Output report file")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num_distractors", type=int, default=2, help="Number of distractors for context_saturation")
     args = parser.parse_args()
