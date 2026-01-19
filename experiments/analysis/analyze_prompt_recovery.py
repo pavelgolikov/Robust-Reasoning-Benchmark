@@ -36,28 +36,27 @@ def make_windows(tokens: List[str], window_size: int, step_size: int = 10) -> Li
         
     return list(set(windows))
 
-def find_latest_result(experiment_name: str, base_dir: str = "experiments") -> str:
-    """Finds the latest JSON result file for a given experiment."""
-    # Handle baseline case separately if needed, or assume standard structure
-    # Standard structure: experiments/{name}/results/GAIR_LIMO-v2_{name}_s42_{timestamp}.json
+
+def find_latest_result(experiment_name: str, model_name: str, dataset_name: str, base_dir: str = "experiments") -> str:
+    """Finds the latest JSON result file for a given experiment/model/dataset."""
     
-    # Try standard pattern
-    results_dir = os.path.join(base_dir, experiment_name, "results")
+    safe_model = model_name.replace('/', '_').replace(' ', '_')
+    safe_dataset = dataset_name.replace('/', '_')
+    
+    # Path: experiments/{technique}/results/{model}/{dataset}/*.json
+    results_dir = os.path.join(base_dir, experiment_name, "results", safe_model, safe_dataset)
+    
     if not os.path.exists(results_dir):
-        # Fallback for baseline if it's just in experiments/baseline/results/ without complicated name match?
-        # Or maybe the user didn't create the folder yet.
         return None
         
-    # Pattern matching
     # We want files that look like results JSONs.
     files = glob.glob(os.path.join(results_dir, "*.json"))
     # Filter out *semantic_analysis.json or _raw.json if any exist
-    files = [f for f in files if not f.endswith("_semantic_analysis.json") and "semantic" not in f and not f.endswith("_raw.json")]
+    files = [f for f in files if not f.endswith("_prompt_recovery.json") and "semantic" not in f and not f.endswith("_raw.json")]
     
     if not files:
         return None
         
-    # Sort by modification time (or filename timestamp if robust, but mtime is easier)
     latest_file = max(files, key=os.path.getmtime)
     return latest_file
 
@@ -144,21 +143,25 @@ def analyze_single_file(result_file: str, model: SentenceTransformer, args) -> D
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--names", nargs='+', required=True, help="List of experiment names (e.g. 'word_reversal' 'baseline') or 'all'")
-    parser.add_argument("--model_name", type=str, default="all-MiniLM-L6-v2")
+    parser.add_argument("--model", type=str, required=True, help="Target Model Name (e.g. GAIR/LIMO-v2)")
+    parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="Dataset Name")
+    parser.add_argument("--embedding_model", type=str, default="all-MiniLM-L6-v2", help="Sentence Transformer model for analysis")
     parser.add_argument("--step_size", type=int, default=5)
     parser.add_argument("--threshold", type=float, default=0.90)
     parser.add_argument("--dry", action="store_true", help="Dry run: print discovered files without processing")
     args = parser.parse_args()
 
     # Determine techniques to process
-    # Correctly locate 'experiments' dir relative to this script
     script_dir = os.path.dirname(os.path.abspath(__file__)) # experiments/analysis
     experiments_dir = os.path.dirname(script_dir) # experiments
     
-    # Robust way: Use the script location as anchor
     base_dir = experiments_dir
     
-    output_dir = os.path.join(base_dir, "analysis", "results")
+    # Construct output paths with hierarchy
+    safe_model = args.model.replace('/', '_').replace(' ', '_')
+    safe_dataset = args.dataset.replace('/', '_')
+    
+    output_dir = os.path.join(base_dir, "analysis", "results", safe_model, safe_dataset)
     summary_file = os.path.join(base_dir, "analysis", "prompt_recovery_analysis.txt")
     
     # Always create output directory
@@ -174,11 +177,14 @@ def main():
                 continue
             dir_path = os.path.join(base_dir, d)
             results_path = os.path.join(dir_path, "results")
+            # We don't strictly check for existence of the specific model/dataset subfolder here 
+            # to keep discovery lightweight, find_latest_result will return None if not found.
             if os.path.isdir(dir_path) and os.path.exists(results_path):
-                # Double check that there is actually a result file inside
-                if find_latest_result(d, base_dir):
-                    techniques.append(d)
+                techniques.append(d)
         techniques.sort()
+        # Ensure baseline is included if it exists and we asked for 'all'
+        if os.path.exists(os.path.join(base_dir, "baseline", "results")):
+             techniques.insert(0, "baseline")
 
     print(f"Techniques to analyze: {techniques}")
     print(f"Base Directory: {base_dir}")
@@ -190,17 +196,17 @@ def main():
     else:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Loading SentenceTransformer model on {device}...")
-        model = SentenceTransformer(args.model_name, device=device)
+        model = SentenceTransformer(args.embedding_model, device=device)
 
     # Store results for summary table
     table_rows = []
 
     for name in techniques:
         print(f"\nProcessing: {name}")
-        latest_file = find_latest_result(name, base_dir)
+        latest_file = find_latest_result(name, args.model, args.dataset, base_dir)
         
         if not latest_file:
-            print(f"  No result file found for {name}. Skipping.")
+            print(f"  No result file found for {name} (Model: {args.model}, Dataset: {args.dataset}). Skipping.")
             continue
             
         print(f"  Latest file: {os.path.basename(latest_file)}")
@@ -236,7 +242,10 @@ def main():
     divider = "-" * len(header)
     
     timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")
-    summary_text = f"\n\nAnalysis Run: {timestamp_str} (DRY RUN)\n" if args.dry else f"\n\nAnalysis Run: {timestamp_str}\n"
+    summary_text = f"\n\nAnalysis Run: {timestamp_str} (Model: {args.model}, Dataset: {args.dataset})\n"
+    if args.dry:
+        summary_text = f"\n\nAnalysis Run: {timestamp_str} (DRY RUN - Model: {args.model})\n"
+        
     summary_text += header + "\n" + divider + "\n"
     
     print("\n" + header)
