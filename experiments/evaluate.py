@@ -18,6 +18,7 @@ def main():
     parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
     parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
     parser.add_argument("--decode_find_only", action="store_true", help="Only identify and decode the problem statement.")
+    parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     args = parser.parse_args()
     if args.names == 'all':
         experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
@@ -64,8 +65,8 @@ def main():
     random.seed(args.seed)
 
     # Load Dataset
-    print("Loading AIME 2024 dataset...")
-    dataset = load_dataset("HuggingFaceH4/aime_2024", split="train")
+    print(f"Loading dataset: {args.dataset}...")
+    dataset = load_dataset(args.dataset, split="train")
     if args.limit:
         dataset = dataset.select(range(min(args.limit, len(dataset))))
 
@@ -156,6 +157,7 @@ def main():
     
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     safe_model_name = args.model.replace('/', '_').replace(' ', '_')
+    safe_dataset_name = args.dataset.replace('/', '_')
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
     for i, output in enumerate(outputs):
@@ -185,9 +187,10 @@ def main():
     raw_files = {}
     for exp_name in experiment_names:
         experiment_dir = os.path.join(base_dir, exp_name)
-        final_output_dir = os.path.join(experiment_dir, "results")
+        # New hierarchy: results/<model>/<dataset>/
+        final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
         os.makedirs(final_output_dir, exist_ok=True)
-        run_id = f"{safe_model_name}_{exp_name}_s{args.seed}_{timestamp}"
+        run_id = f"{safe_model_name}_{safe_dataset_name}_{exp_name}_s{args.seed}_{timestamp}"
         
         raw_json_file = os.path.join(final_output_dir, f"{run_id}_raw.json")
         with open(raw_json_file, "w") as f:
@@ -232,9 +235,10 @@ def main():
         print(f"  Failures: {stats['failures']}")
         
         # Save to file
-        run_id = f"{safe_model_name}_{exp_name}_s{args.seed}_{timestamp}"
+        run_id = f"{safe_model_name}_{safe_dataset_name}_{exp_name}_s{args.seed}_{timestamp}"
         experiment_dir = os.path.join(base_dir, exp_name)
-        final_output_dir = os.path.join(experiment_dir, "results")
+        # New hierarchy: results/<model>/<dataset>/
+        final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
         os.makedirs(final_output_dir, exist_ok=True)
         
         json_file = os.path.join(final_output_dir, f"{run_id}.json")
