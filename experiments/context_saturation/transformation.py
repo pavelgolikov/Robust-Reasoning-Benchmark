@@ -17,10 +17,15 @@ except LookupError:
 
 # Ensure experiments directory is in path to import
 try:
-    from context_saturation.generate_systems import generate_systems
+    from .generate_systems import generate_systems
 except ImportError:
-    sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-    from context_saturation.generate_systems import generate_systems
+    # Fallback if run as script or path issues, though typically . works in package
+    try:
+        from experiments.context_saturation.generate_systems import generate_systems
+    except ImportError:
+         # Last resort for standalone (if sys.path not set)
+         sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+         from experiments.context_saturation.generate_systems import generate_systems
 
 def embed_split_index(text, index_str):
     """

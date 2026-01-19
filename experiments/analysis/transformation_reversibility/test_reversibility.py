@@ -22,26 +22,49 @@ def normalize_text(text, method='standard'):
 def main():
     parser = argparse.ArgumentParser(description="Test Reversibility of Transformations")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of techniques")
-    parser.add_argument("--n", type=int, default=5, help="Number of examples to test per technique")
-    parser.add_argument("--output", type=str, default="reversibility_report.txt", help="Output report file")
+    parser.add_argument("--num_samples", type=int, default=5, help="Number of examples to test per technique")
+    parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="Dataset to test on")
+    parser.add_argument("--output", type=str, help="Output report file (default: results/<dataset>_reversibility_report.txt)")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num_distractors", type=int, default=2, help="Number of distractors for context_saturation")
     args = parser.parse_args()
 
+    # helper for safe name
+    safe_dataset_name = args.dataset.replace('/', '_')
+    
+    # Determine output path
+    if args.output:
+        output_path = args.output
+    else:
+        # Default: results/<dataset>_reversibility_report.txt inside script dir
+        results_dir = os.path.join(script_dir, "results")
+        output_path = os.path.join(results_dir, f"{safe_dataset_name}_reversibility_report.txt")
+
     random.seed(args.seed)
     
     # Load dataset
-    print("Loading dataset...")
+    print(f"Loading dataset: {args.dataset}...")
     try:
-        dataset = load_dataset("HuggingFaceH4/aime_2024", split="train")
+        dataset = load_dataset(args.dataset, split="train")
     except Exception as e:
         print(f"Error loading dataset: {e}")
         return
 
-    experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
+    if args.names == 'all':
+        experiment_names = ['context_saturation',
+                            'interleaved_context_line',
+                            'interleaved_context_word',
+                            'not_not_yot',
+                            'opposites',
+                            'sentence_reversal',
+                            'word_reversal',
+                            'word_split_swap',
+                            'wrappers']
+    else:
+        experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
     
     report_lines = []
-    report_lines.append(f"Reversibility Test Report - {args.n} samples per technique")
+    report_lines.append(f"Reversibility Test Report - {args.num_samples} samples per technique - Dataset: {args.dataset}")
     report_lines.append("="*80)
     
     for exp_name in experiment_names:
@@ -75,7 +98,7 @@ def main():
             continue
 
         # Select random samples
-        indices = random.sample(range(len(dataset)), min(args.n, len(dataset)))
+        indices = random.sample(range(len(dataset)), min(args.num_samples, len(dataset)))
         
         passed = 0
         total = 0
@@ -160,14 +183,14 @@ def main():
         report_lines.append(f"{'='*40}\n")
     
     # Ensure output directory exists (experiments/ usually exists)
-    out_dir = os.path.dirname(args.output)
+    out_dir = os.path.dirname(output_path)
     if out_dir and not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
     # Write output
-    with open(args.output, 'w') as f:
+    with open(output_path, 'w') as f:
         f.write("\n".join(report_lines))
-    print(f"Report written to {args.output}")
+    print(f"Report written to {output_path}")
 
 if __name__ == "__main__":
     main()
