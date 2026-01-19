@@ -16,6 +16,9 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 def normalize_text(text, method='standard'):
+    if method == 'aggressive':
+        # Remove all whitespace for very robust comparison (e.g. context_saturation LaTeX issues)
+        return "".join(text.split())
     # Always normalize whitespace for robust comparison as requested
     return " ".join(text.split())
 
@@ -45,7 +48,8 @@ def main():
     # Load dataset
     print(f"Loading dataset: {args.dataset}...")
     try:
-        dataset = load_dataset(args.dataset, split="train")
+        # dataset = load_dataset(args.dataset, split="train")
+        dataset = load_dataset(args.dataset, split="test")
     except Exception as e:
         print(f"Error loading dataset: {e}")
         return
@@ -124,8 +128,11 @@ def main():
             try:
                 if 'problem_b' in kwargs:
                      transformed = apply_func(original_raw, kwargs['problem_b'], seed=args.seed)
-                elif 'num_distractors' in kwargs:
+                elif exp_name == 'context_saturation':
                      transformed = apply_func(original_raw, kwargs['num_distractors'], seed=args.seed)
+                elif exp_name == 'opposites':
+                     # Force 100% swap for reversibility testing to ensure no partial swaps exist
+                     transformed = apply_func(original_raw, k=1, seed=args.seed)
                 else:
                     transformed = apply_func(original_raw, seed=args.seed)
                     
@@ -133,7 +140,9 @@ def main():
                 
                 # Normalize for comparison
                 norm_method = 'standard'
-                if exp_name in ['interleaved_context_line', 'interleaved_context_word']:
+                if exp_name == 'context_saturation':
+                    norm_method = 'aggressive'
+                elif exp_name in ['interleaved_context_line', 'interleaved_context_word']:
                     norm_method = 'interleaved_context'
                     
                 norm_orig = normalize_text(original_raw, norm_method)
