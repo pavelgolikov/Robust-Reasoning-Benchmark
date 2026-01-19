@@ -25,11 +25,12 @@ def normalize_text(text, method='standard'):
 def main():
     parser = argparse.ArgumentParser(description="Test Reversibility of Transformations")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of techniques")
-    parser.add_argument("--num_samples", type=int, default=5, help="Number of examples to test per technique")
+    parser.add_argument("--num_samples", type=int, default=0, help="Number of examples to test per technique. 0 means all.")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="Dataset to test on")
     parser.add_argument("--output", type=str, help="Output report file (default: results/<dataset>_reversibility_report.txt)")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num_distractors", type=int, default=2, help="Number of distractors for context_saturation")
+    parser.add_argument("--split", type=str, default="all", help="Split to use for testing")
     args = parser.parse_args()
 
     # helper for safe name
@@ -45,15 +46,10 @@ def main():
 
     random.seed(args.seed)
     
-    if 'aime' in args.dataset:
-        split = 'train'
-    else:
-        split = 'all'
-    
     # Load dataset
     print(f"Loading dataset: {args.dataset}...")
     try:
-        dataset = load_dataset(args.dataset, split=split)
+        dataset = load_dataset(args.dataset, split=args.split)
     except Exception as e:
         print(f"Error loading dataset: {e}")
         return
@@ -106,7 +102,10 @@ def main():
             continue
 
         # Select random samples
-        indices = random.sample(range(len(dataset)), min(args.num_samples, len(dataset)))
+        if args.num_samples == 0:
+            indices = list(range(len(dataset)))
+        else:
+            indices = random.sample(range(len(dataset)), min(args.num_samples, len(dataset)))
         
         passed = 0
         total = 0

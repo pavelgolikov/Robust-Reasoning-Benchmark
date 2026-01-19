@@ -236,10 +236,11 @@ def reverse_opposites(text):
     # Note: If antonym contains spaces, \b works at ends.
     # "fall apart" -> \bfall apart\b matches "fall apart".
     
-    # Create master regex: (?:\b|(?<=\d))(Key1|Key2|...)\b
+    # Create master regex: (?:\b|(?<=\d))(Key1|Key2|...)(?:\b|(?=n't))
     # Sample 175 Fix: Use lookbehind (?<=\d) to match words attached to numbers (e.g. 3m)
+    # Sample 1059 Fix: Allow matching if followed by "n't" (e.g. "don't" -> "unmaken't")
     
-    master_pattern = re.compile(r'(?:\b|(?<=\d))(' + '|'.join(escaped_keys) + r')\b')
+    master_pattern = re.compile(r'(?:\b|(?<=\d))(' + '|'.join(escaped_keys) + r')(?:(?=n\'t)|\b)')
     
     def replace_callback(m):
         key = m.group(1)
