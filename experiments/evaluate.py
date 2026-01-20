@@ -22,7 +22,7 @@ def main():
     args = parser.parse_args()
     if args.names == 'all':
         experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
-        'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers' ]
+        'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'reversal' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 
@@ -90,17 +90,6 @@ def main():
             
             prob_id = str(example.get('id', i))
             current_vars = extracted_vars.get(prob_id) if extracted_vars else None
-            
-            # get_prompts handles the seed internally mostly? 
-            # evaluate.py passes args.seed. But get_prompts has a seed arg.
-            # If we reuse seed for every experiment, they get same random sequence?
-            # Ideally each experiment/problem instance is seeded deterministically.
-            # evaluate.py does `random.seed(args.seed)` at start of main.
-            # But `apply_*` functions often take `seed`.
-            # If we don't pass seed to `get_prompts`, some transformations rely on global random?
-            # `split_indices` takes seed. `evaluate` passes `args.seed`.
-            # If we pass same seed to `split_indices` for problem X, it generates same result.
-            # That is desired.
             
             user_prompt, system_prompt = get_prompts(
                 example['problem'], 

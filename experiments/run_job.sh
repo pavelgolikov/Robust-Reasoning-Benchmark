@@ -19,4 +19,4 @@ export NLTK_DATA=/project/aip-gpekhime/golikovp/nltk_data
 mkdir -p $HF_HOME
 
 # Running 5 samples per problem for averaging
-python evaluate.py --names baseline --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
+python evaluate.py --names reverse --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
