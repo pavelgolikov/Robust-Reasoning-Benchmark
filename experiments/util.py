@@ -197,7 +197,7 @@ User query contains problem statement. User query string was split on space as s
 The symbols of each substring were then reversed and concatenated back with the separators in the same positions.\n\
 You need to reconstruct the original problem statement before solving it.\n\
 Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_reversal(problem, separator=" ", func_name="reverse_string", seed=seed):
+        user_prompt = apply_reversal(problem, separator=" ", func_name="reverse_string", seed=seed)
         return user_prompt, system_prompt
     elif name == 'variables':
         system_prompt = "You are a helpful math assistant.\n\
