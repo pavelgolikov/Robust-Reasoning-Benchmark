@@ -64,7 +64,7 @@ def main():
                             'word_reversal',
                             'word_split_swap',
                             'wrappers',
-                            'reversal']
+                            'split_reversal']
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
     

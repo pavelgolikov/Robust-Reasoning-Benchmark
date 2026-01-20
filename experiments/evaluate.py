@@ -22,7 +22,7 @@ def main():
     args = parser.parse_args()
     if args.names == 'all':
         experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
-        'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'reversal' ]
+        'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'split_reversal' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 

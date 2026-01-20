@@ -12,7 +12,7 @@ from not_not_yot.transformation import apply_not_not_yot
 from word_split_swap.transformation import apply_word_split_swap
 from word_reversal.transformation import apply_word_reversal
 from sentence_reversal.transformation import apply_sentence_reversal
-from reversal.transformation import apply_reversal
+from split_reversal.transformation import apply_split_reversal
 
 import multiprocessing
 # Force 'spawn' to avoid CUDA re-initialization errors
@@ -191,13 +191,13 @@ You need to identify the correct problem statement before solving it.\n\
 Please reason step by step, and put your final answer within \\boxed{}.\n"
         user_prompt = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
         return user_prompt, system_prompt
-    elif name == 'reversal':
+    elif name == 'split_reversal':
         system_prompt = "You are a helpful math assistant.\n\
 User query contains problem statement. User query string was split on space as separator into substrings.\n\
 The symbols of each substring were then reversed and concatenated back with the separators in the same positions.\n\
 You need to reconstruct the original problem statement before solving it.\n\
 Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_reversal(problem, separator=" ", func_name="reverse_string", seed=seed)
+        user_prompt = apply_split_reversal(problem, separator=" ", func_name="reverse_string", seed=seed)
         return user_prompt, system_prompt
     elif name == 'variables':
         system_prompt = "You are a helpful math assistant.\n\
