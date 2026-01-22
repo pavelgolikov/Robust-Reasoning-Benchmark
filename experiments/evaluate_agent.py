@@ -36,7 +36,7 @@ def chat_loop(agent):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset using SmolAgents")
-    parser.add_argument("--model", type=str, default="GAIR/LIMO-v2", help="Path/Name of the model to evaluate")
+    parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B", help="Path/Name of the model to evaluate")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
@@ -159,7 +159,7 @@ def main():
             # Run Agent
             # CodeAgent takes the task (prompt).
             # It usually returns the final answer directly as the result of run().
-            full_prompt = f"{system_prompt_text}\n\nTask:\n{user_prompt}"
+            # full_prompt = f"{system_prompt_text}\n\nTask:\n{user_prompt}"
             
             print(f"  Sample {i} (ID: {prob_id})...", end="", flush=True)
             try:
@@ -176,7 +176,7 @@ def main():
                         pre_saturate_context(agent, example['problem'])
 
                     # Run the agent
-                    output = agent.run(full_prompt)
+                    output = agent.run(user_prompt)
                     generated_text = str(output)
                 else:
                     if args.pre_saturate:
