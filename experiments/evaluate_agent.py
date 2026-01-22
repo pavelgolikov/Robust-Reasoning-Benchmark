@@ -36,12 +36,12 @@ def chat_loop(agent):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset using SmolAgents")
-    parser.add_argument("--model", type=str, default="Qwen/Qwen2.5-Coder-32B-Instruct", help="Path/Name of the model to evaluate")
+    parser.add_argument("--model", type=str, default="GAIR/LIMO-v2", help="Path/Name of the model to evaluate")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
-    parser.add_argument("--num_gpus", type=int, default=1, help="Num GPUs.")
+    parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
     parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     parser.add_argument("--dry", action="store_true", help="Dry run - do not load model")
@@ -165,7 +165,12 @@ def main():
             try:
                 if not args.dry:
                     # Initialize Fresh Agent per sample
-                    agent = CodeAgent(tools=[], model=model_engine, add_base_tools=True)
+                    agent = CodeAgent(
+                        tools=[],
+                        model=model_engine,
+                        system_prompt=system_prompt_text,
+                        add_base_tools=True
+                    )
                     
                     if args.pre_saturate:
                         pre_saturate_context(agent, example['problem'])
