@@ -9,6 +9,7 @@ from util import get_prompts, extract_answer, normalize_answer
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset (Efficiency Optimized)")
     parser.add_argument("--model", type=str, default="NONE", help="Path/Name of the model to evaluate")
+    parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
@@ -18,7 +19,6 @@ def main():
     parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
     parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
     parser.add_argument("--decode_find_only", action="store_true", help="Only identify and decode the problem statement.")
-    parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     args = parser.parse_args()
     if args.names == 'all':
         experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
@@ -170,7 +170,6 @@ def main():
         }
         results_by_experiment[exp].append(result_entry)
 
-    # Save RAW results immediately (checkpointing)
     # Save RAW results immediately (checkpointing)
     print("\nSaving RAW outputs to disk before parsing...")
     raw_files = {}
