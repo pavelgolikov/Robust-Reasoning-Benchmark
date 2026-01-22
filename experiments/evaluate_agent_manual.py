@@ -74,7 +74,7 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
     agent_memory = {}
     final_response = ""
     # Run for up to 5 steps
-    for step in range(0, 1):
+    for step in range(0, 6):
         # A. CALL THE MODEL
         if not dry_run:
             formatted_prompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)
@@ -86,14 +86,14 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
         # Add AI response to history
         history.append({"role": "assistant", "content": model_msg})
 
-        # # Check for Final Answer
-        # if "Final Answer" in model_msg:
-        #      final_response = model_msg
-        #      # print("--- AGENT FINISHED ---")
-        #      break
+        # Check for Final Answer
+        if "Final Answer" in model_msg:
+             final_response = model_msg
+             # print("--- AGENT FINISHED ---")
+             break
 
-        # # B. PARSE: Is there code?
-        # code_block = extract_python_code(model_msg)
+        # B. PARSE: Is there code?
+        code_block = extract_python_code(model_msg)
         
         if code_block:
             # print(f"\n[Extracted Code]: {code_block[:50]}...")
@@ -116,6 +116,43 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
         
     return final_response
 
+def run_agent_turn_chat(llm, tokenizer, sampling_params, dry_run=False):
+    print("--- Entering Chat Mode (type 'exit' to quit) ---")
+    
+    # System Prompt
+#     system_prompt = """You are a Python-Equipped Math Agent.
+# 1. If the problem is obfuscated, write Python to decode it first.
+# 2. Once decoded, write Python to solve the math.
+# 3. Output your code in markdown: ```python ... ```
+# 4. You MUST print() your results to see them.
+# 5. When done, output "Final Answer: [value]".
+# """
+    _, system_prompt = get_prompts(None, "baseline")
+    history = [{"role": "system", "content": system_prompt}]
+    agent_memory = {}
+    
+    while True:
+        try:
+            user_input = input("\nUser: ")
+            if user_input.strip().lower() in ["exit", "quit"]:
+                break
+            
+            history.append({"role": "user", "content": user_input})
+            
+            # Simple Chat Turn
+            formatted_prompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)
+            outputs = llm.generate([formatted_prompt], sampling_params)
+            model_msg = outputs[0].outputs[0].text
+            
+            print(f"\nAgent: {model_msg}")
+            history.append({"role": "assistant", "content": model_msg})
+                    
+        except KeyboardInterrupt:
+            print("\nExiting chat...")
+            break
+        except Exception as e:
+            print(f"Error: {e}")
+            traceback.print_exc()
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate manual agent implementation")
@@ -175,24 +212,10 @@ def main():
 
     random.seed(args.seed)
 
-    # # Chat Mode Logic
-    # if args.chat:
-    #     if args.dry:
-    #         print("Chat mode requires a loaded model. Dry run is not useful here (agent is None).")
-    #         # We can mock it for testing flow though
-    #         class MockAgent:
-    #             def run(self, x): return f"Mock Response to: {x}"
-    #         agent = MockAgent()
-    #     else:
-    #          # Initialize a single Global Agent for Chat
-    #         try:
-    #             agent = CodeAgent(tools=[], model=model_engine, add_base_tools=True)
-    #         except Exception as e:
-    #             print(f"Failed to initialize Agent for chat: {e}")
-    #             exit(1)
-        
-    #     chat_loop(agent)
-    #     return # Exit after chat
+    # Chat Mode Logic
+    if args.chat:
+        run_agent_turn_chat(llm, tokenizer, sampling_params, args.dry)
+        return
 
     # Load Dataset
     print(f"Loading dataset: {args.dataset}...")
@@ -220,15 +243,8 @@ def main():
     safe_dataset_name = args.dataset.replace('/', '_')
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # System Prompt Template
-#     BASE_SYSTEM_PROMPT = """You are a Python-Equipped Math Agent.
-# 1. If the problem is obfuscated, write Python to decode it first.
-# 2. Once decoded, write Python to solve the math.
-# 3. Output your code in markdown: ```python ... ```
-# 4. You MUST print() your results to see them.
-# 5. When done, output "Final Answer: [value]".
-# """
-    BASE_SYSTEM_PROMPT = get_system_prompt("base")
+    # System Prompt Template (REMOVED BASE_SYSTEM_PROMPT constant as requested)
+    # BASE_SYSTEM_PROMPT = """..."""
 
     for exp_name in experiment_names:
         print(f"\nEvaluating Experiment: {exp_name}")
@@ -246,48 +262,31 @@ def main():
             prob_id = str(example.get('id', i))
             current_vars = extracted_vars.get(prob_id) if extracted_vars else None
             
-            user_prompt_content, _ = get_prompts(
-                example['problem'], 
-                exp_name, 
-                extra_context, 
-                variables=current_vars,
-                seed=args.seed, 
-                num_distractors=args.num_distractors,
-                decode_find_only=False
-            )
             ground_truth = example['answer']
 
             print(f"  Sample {i} (ID: {prob_id})...", end="", flush=True)
             
             try:
-                # Combine our base system prompt with specific instructions if needed, 
-                # or just use our base system prompt and append the specific prompt as user context?
-                # The get_prompts returns a system prompt too. 
-                # ReAct agent needs specific instructions on HOW to behave (the 5 rules).
-                # So we should combine them.
-                
-                # We will ignore the system prompt from get_prompts for the agent's behavior instructions,
-                # BUT we might need the specific decoding instructions if they were in the system prompt.
-                # However, looking at util.py, the system prompts are usually: "You are a helpful math assistant... User query contains..."
-                # We should append that context to the user prompt or merge it.
-                # Let's append the technique description to the user prompt to ensure the agent knows what to look for,
-                # but keep the Base System Prompt as the main system instruction.
-                
-                _, technique_system_prompt = get_prompts(
-                     example['problem'], exp_name, extra_context, current_vars, args.seed, args.num_distractors, False
+                # Use the system prompt and user prompt directly from get_prompts as requested.
+                user_prompt_content, technique_system_prompt = get_prompts(
+                    example['problem'], 
+                    exp_name, 
+                    extra_context, 
+                    variables=current_vars,
+                    seed=args.seed, 
+                    num_distractors=args.num_distractors,
+                    decode_find_only=False
                 )
                 
-                # Extract the description part from technique_system_prompt (remove "You are a helpful math assistant.")
-                technique_description = technique_system_prompt.replace("You are a helpful math assistant.", "").strip()
-                
-                full_user_input = f"{technique_description}\n\nTask:\n{user_prompt_content}"
-
-                final_output = run_agent_turn(BASE_SYSTEM_PROMPT, full_user_input, llm, tokenizer, sampling_params, args.dry)
+                # If we want to restore Agent behavior later, we would append ReAct instructions here.
+                # For now, we use the provided prompts strictly.
+                final_output = run_agent_turn(technique_system_prompt, user_prompt_content, llm, tokenizer, sampling_params, args.dry)
                 
                 print(" Done.")
 
             except Exception as e:
                 print(f" Error: {e}")
+                traceback.print_exc()
                 final_output = f"ERROR: {e}"
 
             # Grade
@@ -300,8 +299,8 @@ def main():
             
             entry = {
                 "id": example.get('id', i),
-                "system_prompt": BASE_SYSTEM_PROMPT,
-                "user_prompt": full_user_input,
+                "system_prompt": technique_system_prompt,
+                "user_prompt": user_prompt_content,
                 "original_transformed": user_prompt_content,
                 "unmodified_original": example['problem'],
                 "ground_truth": ground_truth,
@@ -331,11 +330,7 @@ def main():
         with open(json_file, "w") as f:
             json.dump(results, f, indent=2)
         print(f"Saved results to: {json_file}")
-
-
-def get_system_prompt(exp_name):
-    return "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
-
+        
 
 if __name__ == "__main__":
     main()
