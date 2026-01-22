@@ -68,23 +68,13 @@ def execute_python_code(code_str, state_dict):
 # PART 3: THE AGENT LOOP
 # ======================================================
 def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, dry_run=False):
-    
     # 1. Initialize History
-    history = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_input}
-    ]
-    
+    history = [ {"role": "system", "content": system_prompt}, {"role": "user", "content": user_input} ]
     # 2. Initialize Memory
     agent_memory = {}
-    
-    # print(f"\n--- PROMPT: {user_input[:50]}... ---")
-
     final_response = ""
-    
     # Run for up to 5 steps
-    for step in range(1, 6):
-        
+    for step in range(0, 1):
         # A. CALL THE MODEL
         if not dry_run:
             formatted_prompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)
@@ -92,33 +82,27 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
             model_msg = outputs[0].outputs[0].text
         else:
             model_msg = "Final Answer: 42"
-        
         # print(f"\n[AI Step {step}]: {model_msg[:100]}...")
-        
         # Add AI response to history
         history.append({"role": "assistant", "content": model_msg})
-        
-        # Check for Final Answer
-        if "Final Answer" in model_msg:
-             final_response = model_msg
-             # print("--- AGENT FINISHED ---")
-             break
 
-        # B. PARSE: Is there code?
-        code_block = extract_python_code(model_msg)
+        # # Check for Final Answer
+        # if "Final Answer" in model_msg:
+        #      final_response = model_msg
+        #      # print("--- AGENT FINISHED ---")
+        #      break
+
+        # # B. PARSE: Is there code?
+        # code_block = extract_python_code(model_msg)
         
         if code_block:
             # print(f"\n[Extracted Code]: {code_block[:50]}...")
-            
             # C. EXECUTE
             execution_result = execute_python_code(code_block, agent_memory)
-            
             # print(f"[Execution Output]: {execution_result[:50]}...")
-            
             # D. FEEDBACK
             tool_output_msg = f"Observation:\n{execution_result}"
             history.append({"role": "user", "content": tool_output_msg})
-            
         else:
             # If no code and no Final Answer, we might stop or continue. 
             # The loop continues to give it a chance to do something else, 
@@ -135,7 +119,7 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate manual agent implementation")
-    parser.add_argument("--model", type=str, default="GAIR/LIMO-v2", help="Path/Name of the model")
+    parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B", help="Path/Name of the model")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
@@ -144,6 +128,7 @@ def main():
     parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
     parser.add_argument("--dry", action="store_true", help="Dry run - do not load model")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
+    parser.add_argument("--chat", action="store_true", help="Run in chat mode")
 
     args = parser.parse_args()
 
@@ -190,6 +175,25 @@ def main():
 
     random.seed(args.seed)
 
+    # # Chat Mode Logic
+    # if args.chat:
+    #     if args.dry:
+    #         print("Chat mode requires a loaded model. Dry run is not useful here (agent is None).")
+    #         # We can mock it for testing flow though
+    #         class MockAgent:
+    #             def run(self, x): return f"Mock Response to: {x}"
+    #         agent = MockAgent()
+    #     else:
+    #          # Initialize a single Global Agent for Chat
+    #         try:
+    #             agent = CodeAgent(tools=[], model=model_engine, add_base_tools=True)
+    #         except Exception as e:
+    #             print(f"Failed to initialize Agent for chat: {e}")
+    #             exit(1)
+        
+    #     chat_loop(agent)
+    #     return # Exit after chat
+
     # Load Dataset
     print(f"Loading dataset: {args.dataset}...")
     dataset = load_dataset(args.dataset, split="train")
@@ -217,13 +221,14 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
     # System Prompt Template
-    BASE_SYSTEM_PROMPT = """You are a Python-Equipped Math Agent.
-1. If the problem is obfuscated, write Python to decode it first.
-2. Once decoded, write Python to solve the math.
-3. Output your code in markdown: ```python ... ```
-4. You MUST print() your results to see them.
-5. When done, output "Final Answer: [value]".
-"""
+#     BASE_SYSTEM_PROMPT = """You are a Python-Equipped Math Agent.
+# 1. If the problem is obfuscated, write Python to decode it first.
+# 2. Once decoded, write Python to solve the math.
+# 3. Output your code in markdown: ```python ... ```
+# 4. You MUST print() your results to see them.
+# 5. When done, output "Final Answer: [value]".
+# """
+    BASE_SYSTEM_PROMPT = get_system_prompt("base")
 
     for exp_name in experiment_names:
         print(f"\nEvaluating Experiment: {exp_name}")
@@ -326,6 +331,11 @@ def main():
         with open(json_file, "w") as f:
             json.dump(results, f, indent=2)
         print(f"Saved results to: {json_file}")
+
+
+def get_system_prompt(exp_name):
+    return "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
+
 
 if __name__ == "__main__":
     main()
