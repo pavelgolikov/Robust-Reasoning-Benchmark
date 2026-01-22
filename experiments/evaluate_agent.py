@@ -16,6 +16,24 @@ from util import get_prompts, extract_answer, normalize_answer
 def pre_saturate_context(agent, question):
     print(f"pre_saturation not implemented. Question: {question[:50]}...")
 
+def chat_loop(agent):
+    print("--- Starting Interactive Chat with Agent (type 'exit' to quit) ---")
+    while True:
+        try:
+            user_input = input("\nUser: ")
+            if user_input.strip().lower() in ['exit', 'quit']:
+                break
+            
+            # Run agent
+            # Note: agent.run() accumulates history automatically.
+            response = agent.run(user_input)
+            print(f"Agent: {response}")
+        except KeyboardInterrupt:
+            print("\nExiting chat...")
+            break
+        except Exception as e:
+            print(f"Error during chat: {e}")
+
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset using SmolAgents")
     parser.add_argument("--model", type=str, default="Qwen/Qwen2.5-Coder-32B-Instruct", help="Path/Name of the model to evaluate")
@@ -28,6 +46,7 @@ def main():
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     parser.add_argument("--dry", action="store_true", help="Dry run - do not load model")
     parser.add_argument("--pre_saturate", action="store_true", help="If set, run pre-saturation routine on agent before prompt.")
+    parser.add_argument("--chat", action="store_true", help="Enter interactive chat mode with the agent.")
     
     args = parser.parse_args()
 
@@ -61,6 +80,25 @@ def main():
         model_engine = None
 
     random.seed(args.seed)
+
+    # Chat Mode Logic
+    if args.chat:
+        if args.dry:
+            print("Chat mode requires a loaded model. Dry run is not useful here (agent is None).")
+            # We can mock it for testing flow though
+            class MockAgent:
+                def run(self, x): return f"Mock Response to: {x}"
+            agent = MockAgent()
+        else:
+             # Initialize a single Global Agent for Chat
+            try:
+                agent = CodeAgent(tools=[], model=model_engine, add_base_tools=True)
+            except Exception as e:
+                print(f"Failed to initialize Agent for chat: {e}")
+                exit(1)
+        
+        chat_loop(agent)
+        return # Exit after chat
 
     # Load Dataset
     print(f"Loading dataset: {args.dataset}...")
