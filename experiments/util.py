@@ -6,7 +6,7 @@ from opposites.transformation import apply_opposites
 from interleaved_context_line.transformation import apply_interleaved_context_line
 from interleaved_context_word.transformation import apply_interleaved_context_word
 from wrappers.transformation import apply_wrappers
-from variables.transformation import apply_variables
+# from variables.transformation import apply_variables
 from context_saturation.transformation import apply_context_saturation
 from not_not_yot.transformation import apply_not_not_yot
 from word_split_swap.transformation import apply_word_split_swap

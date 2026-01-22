@@ -32,7 +32,10 @@ decode and solve.
 0.1. Need a script to analyze the output to see if the model is failing at decoding or solving after decoding.
 0.2. Need a script to analyze the output to see how well the model performs decoding only.
 1. Figure out if the model can't decode or can't solve after decoding?
-2. Try see if the model is able to perform simple python scripts. Scalability here can come from a million-sized list of values.
+2. Try see if the model is able to perform simple python scripts. Scalability here can come from a million-sized list of
+   values.
+
+This repo contains a machine learning project. The point of the project is to try and confuse LLMs or agents with linguistic tricks to reduce their performance on math reasoning tasks. Tricks that would have no effect on human (or general reasoner) performance. Please analyze the repository for structure and implementations of various techniques to confuse language models. Analysis is a utility folder. Tell me when you have taken a look at the repo and ready to proceed.
 
 
 PAPER OUTLINE:
