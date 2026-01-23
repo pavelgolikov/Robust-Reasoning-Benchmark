@@ -86,28 +86,26 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
         # Add AI response to history
         history.append({"role": "assistant", "content": model_msg})
 
-        # Check for Final Answer
-        if "Final Answer" in model_msg:
-             final_response = model_msg
-             # print("--- AGENT FINISHED ---")
-             break
-
-        # B. PARSE: Is there code?
+        # B. Check for Final Answer OR Python Code
+        
+        # 1. Check for Code (First priority as requested)
         code_block = extract_python_code(model_msg)
         
         if code_block:
-            # print(f"\n[Extracted Code]: {code_block[:50]}...")
-            # C. EXECUTE
+            # Execute Code
             execution_result = execute_python_code(code_block, agent_memory)
-            # print(f"[Execution Output]: {execution_result[:50]}...")
-            # D. FEEDBACK
+            
+            # Feedback
             tool_output_msg = f"Observation:\n{execution_result}"
             history.append({"role": "user", "content": tool_output_msg})
+            
         else:
-            # If no code and no Final Answer, we might stop or continue. 
-            # The loop continues to give it a chance to do something else, 
-            # or we could force a stop if we assume it must output code or answer.
-            # For now, let's treat it as a potential continuation/reasoning step unless we hit max steps.
+            # 2. Check for Final Answer
+            if "\\boxed{" in model_msg: 
+                 final_response = model_msg
+                 break
+            
+            # 3. Neither Code nor Final Answer -> Continue Loop
             pass
             
     # If loop finishes without break, take the last message
@@ -278,9 +276,31 @@ def main():
                     decode_find_only=False
                 )
                 
-                # If we want to restore Agent behavior later, we would append ReAct instructions here.
-                # For now, we use the provided prompts strictly.
-                final_output = run_agent_turn(technique_system_prompt, user_prompt_content, llm, tokenizer, sampling_params, args.dry)
+                # Protocol Prompt
+                PROTOCOL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
+You are participating in a robustness evaluation where math problems have been transformed.
+
+YOUR PROTOCOL (Follow Strictly):
+
+PHASE 1: RECONSTRUCTION
+1. Read the "TRANSFORMATION RULE" provided by the user.
+2. Analyze the "TRANSFORMED INPUT".
+3. WRITE and EXECUTE a Python script to programmatically reverse the transformation.
+   - You must manipulate the string/text using Python logic.
+   - Do NOT just guess the original text.
+   - You MUST print the final reconstructed problem statement.
+
+PHASE 2: SOLUTION
+1. Examine the output of your Python script (the reconstructed text).
+2. Solve the math problem.
+3. You may use Python for calculations.
+4. Output the final result in the format: "\\boxed{Answer}".
+
+IMPORTANT:
+- Output Python code inside markdown blocks: ```python ... ```
+- The system will execute it and return the output."""
+                
+                final_output = run_agent_turn(PROTOCOL_SYSTEM_PROMPT, user_prompt_content, llm, tokenizer, sampling_params, args.dry)
                 
                 print(" Done.")
 
