@@ -74,15 +74,18 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
     agent_memory = {}
     final_response = ""
     # Run for up to 5 steps
-    for step in range(0, 6):
+    f = open("debug_agent_log.txt", "a")
+    for step in range(0, 20):
         # A. CALL THE MODEL
         if not dry_run:
             formatted_prompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)
             outputs = llm.generate([formatted_prompt], sampling_params)
             model_msg = outputs[0].outputs[0].text
+            # save model message to a file for debugging
+            f.write(model_msg)
         else:
             model_msg = "Final Answer: 42"
-        # print(f"\n[AI Step {step}]: {model_msg[:100]}...")
+        print(f"\n[AI Step {step}]: {model_msg}...")
         # Add AI response to history
         history.append({"role": "assistant", "content": model_msg})
 
@@ -97,6 +100,7 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
             
             # Feedback
             tool_output_msg = f"Observation:\n{execution_result}"
+            f.write(f"\n[Execution Result]: {execution_result}\n")
             history.append({"role": "user", "content": tool_output_msg})
             
         else:
@@ -112,6 +116,7 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
     if not final_response:
         final_response = history[-1]['content']
         
+    f.close()
     return final_response
 
 def run_agent_turn_chat(llm, tokenizer, sampling_params, dry_run=False):
@@ -284,23 +289,32 @@ YOUR PROTOCOL (Follow Strictly):
 
 PHASE 1: RECONSTRUCTION
 1. Read the "TRANSFORMATION RULE" provided by the user.
-2. Analyze the "TRANSFORMED INPUT".
-3. WRITE and EXECUTE a Python script to programmatically reverse the transformation.
+2. Analyze the "TRANSFORMED INPUT" which is provided for you in the user query. Use this TRANSFORMED INPUT as input to your Python script.
+3. WRITE a Python script to programmatically reverse the transformation.
    - You must manipulate the string/text using Python logic.
    - Do NOT just guess the original text.
-   - You MUST print the final reconstructed problem statement.
+   - Do NOT simulate the execution.
+4. Output your Python code in a markdown code block:
+```python ... Your code here ... ```
+5. The system will execute your code and provide the output back to you.
 
 PHASE 2: SOLUTION
 1. Examine the output of your Python script (the reconstructed text).
-2. Solve the math problem.
-3. You may use Python for calculations.
-4. Output the final result in the format: "\\boxed{Answer}".
+You do not need to reconstruct symbol by symbol; if some spaces or newlines are off, that's acceptable as long as the main content is correct.
+2. If there was an error during execution, analyze the error message and fix your code accordingly.
+3. Solve the math problem.
+4. You may use Python for calculations.
+5. Output the final result in the format: '\\boxed{Answer}'.
+"""
+                USER_PROMPT =  """
+TRANSFORMATION RULE:
+User query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions.
 
-IMPORTANT:
-- Output Python code inside markdown blocks: ```python ... ```
-- The system will execute it and return the output."""
+TRANSFORMED INPUT:
+teL eg\b(\ )\2 eb na .regetni llaC a evitisop regetni )\n(\ )\}lufituae{titxet\-txet\b(\ fi ti sah yltcaxe owt stigid nehw desserpxe ni esab )\b(\  dna eseht owt stigid mus ot trqs\(\ .)n roF ,elpmaxe )\18(\ si )\}lufituae{titxet\-txet\31(\ esuaceb 18(\  = }6{enilrednu\ \ }31{_}3{enilrednu\ )\ dna 6(\ + 3 =  .)\}18{trqs\ dniF eht tsael regetni eg\b(\ )\2 rof hcihw ereht era erom naht net )\}lufituae{titxet\-txet\b(\ .sregetni
+"""
                 
-                final_output = run_agent_turn(PROTOCOL_SYSTEM_PROMPT, user_prompt_content, llm, tokenizer, sampling_params, args.dry)
+                final_output = run_agent_turn(PROTOCOL_SYSTEM_PROMPT, USER_PROMPT, llm, tokenizer, sampling_params, args.dry)
                 
                 print(" Done.")
 
