@@ -116,31 +116,24 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
         
         print(f"\n[Batch Step] Generating for {len(current_batch_agents)} agents...")
         
-        # 2. Batch Generation
+        # 2. Batch Generation with Retry/Recovery Logic
         try:
-            # IMPORTANT: llm.generate can fail if ONE prompt is too long.
-            # vLLM usually handles this by filtering, but if it raises, we lose the batch.
-            # To be absolutely safe, we should probably check prompt lengths here or rely on vLLM not crashing.
-            # If vLLM raises an error for the whole batch, we must catch it.
+            # Atomic call. If one prompt is invalid, this raises ValueError/IndexError.
             outputs = llm.generate(prompts, sampling_params)
             
-            # If successful, map outputs back to agents
-            # Note: vLLM returns a list of RequestOutput objects in the same order as input prompts
+            # If successful, map outputs
             for agent, out_obj in zip(current_batch_agents, outputs):
-                # Check if vLLM reported an error for this specific request
-                # (vLLM might return empty or error text if filtered)
                 if not out_obj.outputs:
-                    agent.final_output = "ERROR: vLLM returned no output (possibly filtered)"
+                    agent.final_output = "ERROR: vLLM returned no output"
                     agent.is_done = True
-                    print(f"  [Agent {agent.id}] Failed: No output from model.")
+                    print(f"  [Agent {agent.id}] Failed: No output.")
                     continue
                     
                 response_text = out_obj.outputs[0].text
-                
-                # Update Agent Logic
                 agent.step_count += 1
                 agent.history.append({"role": "assistant", "content": response_text})
                 
+                # Check for Code
                 code_block = extract_python_code(response_text)
                 if code_block:
                     execution_result = execute_python_code(code_block, agent.memory)
@@ -154,19 +147,46 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                         agent.final_output = response_text
                         agent.is_done = True
                     else:
-                        pass
+                        pass # Implicit continue
 
-        except Exception as e:
-            # If the ENTIRE batch fails (e.g. OOM or massive context error that vLLM didn't filter),
-            # we try to salvage. But llm.generate is atomic.
-            print(f"\n[CRITICAL ERROR] Batch generation failed: {e}")
-            print("Marking current batch as active-failed and trying to move on (if possible).")
-            # In a real batch failure, we might lose these agents. 
-            # We will mark them as failed so the loop terminates for them.
-            for agent in current_batch_agents:
-                agent.final_output = f"SYSTEM ERROR during generation: {e}"
-                agent.is_done = True
-                
+        except BaseException as e:
+            # Catch Validation/Context Errors (ValueError) or others
+            print(f"\n[BATCH ERROR] Generation failed: {e}")
+            
+            # 1. Identify which agent(s) caused the error (e.g. prompt too long)
+            # We must token-check to find the culprit(s).
+            try:
+                max_len = llm.llm_engine.model_config.max_model_len
+            except:
+                max_len = 32000
+
+            agents_marked_failed = 0
+            for agent, prompt in zip(current_batch_agents, prompts):
+                try:
+                    toks = tokenizer.encode(prompt)
+                    if len(toks) > max_len:
+                        print(f"  [Error Handler] KILLED Agent {agent.id}: Prompt length {len(toks)} > {max_len}")
+                        agent.final_output = f"ERROR: Prompt length {len(toks)} > {max_len}"
+                        agent.is_done = True
+                        agents_marked_failed += 1
+                except Exception:
+                    # If tokenization itself fails, kill it too
+                    agent.final_output = "ERROR: Tokenization check failed"
+                    agent.is_done = True
+                    agents_marked_failed += 1
+            
+            # 2. If NO specific agents were found to be 'bad' by length check, 
+            # implies the error was something else affecting the whole batch or engine.
+            # In this case, we MUST stop everyone to prevent infinite loop of crashing.
+            if agents_marked_failed == 0:
+                print("  [Error Handler] Could not identify specific bad agents (lengths ok). Stopping THIS batch to prevent infinite loop.")
+                for agent in current_batch_agents:
+                    if not agent.is_done:
+                        agent.final_output = f"CRITICAL BATCH ERROR: {e}"
+                        agent.is_done = True
+            else:
+                print(f"  [Error Handler] Killed {agents_marked_failed} agents. Survivors will continue in next loop iteration.")
+
         # Filter active for next loop
         active_agents = [a for a in agents if not a.is_done]
 
