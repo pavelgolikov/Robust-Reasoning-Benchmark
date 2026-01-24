@@ -100,7 +100,7 @@ class AgentState:
 # PART 3: BATCHED EXECUTION LOOP
 # ======================================================
 
-def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, dry_run=False):
+def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params):
     """
     Runs the agent loop for multiple agents in parallel (batched inference).
     """
@@ -117,52 +117,56 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
         print(f"\n[Batch Step] Generating for {len(current_batch_agents)} agents...")
         
         # 2. Batch Generation
-        if not dry_run:
+        try:
+            # IMPORTANT: llm.generate can fail if ONE prompt is too long.
+            # vLLM usually handles this by filtering, but if it raises, we lose the batch.
+            # To be absolutely safe, we should probably check prompt lengths here or rely on vLLM not crashing.
+            # If vLLM raises an error for the whole batch, we must catch it.
             outputs = llm.generate(prompts, sampling_params)
-            model_responses = [out.outputs[0].text for out in outputs]
-        else:
-            model_responses = ["Final Answer: 42 (Dry Run)"] * len(current_batch_agents)
             
-        # 3. Process Responses
-        for agent, response_text in zip(current_batch_agents, model_responses):
-            agent.step_count += 1
-            
-            # Append Assistant Response
-            agent.history.append({"role": "assistant", "content": response_text})
-            
-            # --- LOGIC CHECK (Priority: Code > Final Answer > Continue) ---
-            
-            # A. Check for Code
-            code_block = extract_python_code(response_text)
-            
-            if code_block:
-                # Execute Code (Sequential on CPU, but fast)
-                # print(f"  [Agent {agent.id}] Executing Code...")
-                execution_result = execute_python_code(code_block, agent.memory)
-                
-                # Feedback
-                tool_msg = f"Observation:\n{execution_result}"
-                agent.history.append({"role": "user", "content": tool_msg})
-                
-                # Do NOT mark as done; loop continues for next reasoning step
-            
-            else:
-                # B. Check for Final Answer
-                if "\\boxed{" in response_text:
-                    agent.final_output = response_text
+            # If successful, map outputs back to agents
+            # Note: vLLM returns a list of RequestOutput objects in the same order as input prompts
+            for agent, out_obj in zip(current_batch_agents, outputs):
+                # Check if vLLM reported an error for this specific request
+                # (vLLM might return empty or error text if filtered)
+                if not out_obj.outputs:
+                    agent.final_output = "ERROR: vLLM returned no output (possibly filtered)"
                     agent.is_done = True
-                    # print(f"  [Agent {agent.id}] Finished (Boxed Answer Found).")
+                    print(f"  [Agent {agent.id}] Failed: No output from model.")
+                    continue
+                    
+                response_text = out_obj.outputs[0].text
                 
-                # C. Check Max Steps
-                elif agent.step_count >= agent.max_steps:
-                    agent.final_output = response_text
-                    agent.is_done = True
-                    # print(f"  [Agent {agent.id}] Finished (Max Steps Reached).")
+                # Update Agent Logic
+                agent.step_count += 1
+                agent.history.append({"role": "assistant", "content": response_text})
                 
-                # D. Else -> Implicit Continue (Model thinking/talking)
+                code_block = extract_python_code(response_text)
+                if code_block:
+                    execution_result = execute_python_code(code_block, agent.memory)
+                    tool_msg = f"Observation:\n{execution_result}"
+                    agent.history.append({"role": "user", "content": tool_msg})
                 else:
-                    pass 
+                    if "\\boxed{" in response_text:
+                        agent.final_output = response_text
+                        agent.is_done = True
+                    elif agent.step_count >= agent.max_steps:
+                        agent.final_output = response_text
+                        agent.is_done = True
+                    else:
+                        pass
 
+        except Exception as e:
+            # If the ENTIRE batch fails (e.g. OOM or massive context error that vLLM didn't filter),
+            # we try to salvage. But llm.generate is atomic.
+            print(f"\n[CRITICAL ERROR] Batch generation failed: {e}")
+            print("Marking current batch as active-failed and trying to move on (if possible).")
+            # In a real batch failure, we might lose these agents. 
+            # We will mark them as failed so the loop terminates for them.
+            for agent in current_batch_agents:
+                agent.final_output = f"SYSTEM ERROR during generation: {e}"
+                agent.is_done = True
+                
         # Filter active for next loop
         active_agents = [a for a in agents if not a.is_done]
 
@@ -180,7 +184,6 @@ def main():
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
     parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
-    parser.add_argument("--dry", action="store_true", help="Dry run - do not load model")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
 
     args = parser.parse_args()
@@ -199,34 +202,26 @@ def main():
     sampling_params = None
     tokenizer = None
     
-    if not args.dry:
-        print(f"Initializing vLLM with model: {args.model}")
-        try:
-            from vllm import LLM, SamplingParams
-            llm = LLM(
-                model=args.model,
-                tensor_parallel_size=args.num_gpus,
-                trust_remote_code=True,
-                max_model_len=args.max_model_length,
-                dtype="bfloat16"
-            )
-            # Use same params as before
-            sampling_params = SamplingParams(
-                temperature=0.0, 
-                max_tokens=4096,
-                stop=["Observation:"]
-            )
-            tokenizer = llm.get_tokenizer()
-        except Exception as e:
-            print(f"Failed to initialize vLLM: {e}")
-            exit(1)
-    else:
-        print("Dry run: Skipping vLLM initialization.")
-        # Mock tokenizer for dry run to avoid getattr errors
-        class MockTokenizer:
-            def apply_chat_template(self, history, tokenize=False, add_generation_prompt=True):
-                return str(history)
-        tokenizer = MockTokenizer()
+    print(f"Initializing vLLM with model: {args.model}")
+    try:
+        from vllm import LLM, SamplingParams
+        llm = LLM(
+            model=args.model,
+            tensor_parallel_size=args.num_gpus,
+            trust_remote_code=True,
+            max_model_len=args.max_model_length,
+            dtype="bfloat16"
+        )
+        # Use same params as before
+        sampling_params = SamplingParams(
+            temperature=0.0, 
+            max_tokens=4096,
+            stop=["Observation:"]
+        )
+        tokenizer = llm.get_tokenizer()
+    except Exception as e:
+        print(f"Failed to initialize vLLM: {e}")
+        exit(1)
 
     # Load Dataset
     print(f"Loading dataset: {args.dataset}...")
@@ -358,7 +353,7 @@ TRANSFORMED INPUT:
         print(f"Initialized {len(agents)} agents. Starting Batch Execution...")
         
         # 2. Run Batch
-        run_batch_execution(agents, llm, tokenizer, sampling_params, args.dry)
+        run_batch_execution(agents, llm, tokenizer, sampling_params)
         
         # 3. Collect Results
         results = []
