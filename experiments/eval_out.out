@@ -1,38 +1,38 @@
 Running experiments: ['split_reversal']
 Initializing vLLM with model: tiiuae/Falcon-H1R-7B
-INFO 01-24 11:07:29 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 32000, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'tiiuae/Falcon-H1R-7B'}
-WARNING 01-24 11:07:29 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
-INFO 01-24 11:07:30 [model.py:637] Resolved architecture: FalconH1ForCausalLM
-INFO 01-24 11:07:30 [model.py:1750] Using max model len 32000
-INFO 01-24 11:07:31 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
-INFO 01-24 11:07:31 [config.py:315] Disabling cascade attention since it is not supported for hybrid models.
-INFO 01-24 11:07:32 [config.py:439] Setting attention block size to 1568 tokens to ensure that attention page size is >= mamba page size.
-INFO 01-24 11:07:32 [config.py:463] Padding mamba page size by 0.51% to ensure that mamba page size and attention page size are exactly equal.
-[0;36m(EngineCore_DP0 pid=3114238)[0;0m INFO 01-24 11:07:44 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='tiiuae/Falcon-H1R-7B', speculative_config=None, tokenizer='tiiuae/Falcon-H1R-7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=tiiuae/Falcon-H1R-7B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
-[0;36m(EngineCore_DP0 pid=3114238)[0;0m WARNING 01-24 11:07:44 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
-INFO 01-24 11:07:55 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:53277 backend=nccl
-INFO 01-24 11:07:55 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:53277 backend=nccl
-INFO 01-24 11:07:56 [pynccl.py:111] vLLM is using nccl==2.27.7
-INFO 01-24 11:07:59 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
-INFO 01-24 11:07:59 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:07:59 [gpu_model_runner.py:3467] Starting to load model tiiuae/Falcon-H1R-7B...
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:08:00 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP1 pid=3114314)[0;0m INFO 01-24 11:08:00 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:08:43 [default_loader.py:308] Loading weights took 41.98 seconds
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:08:43 [gpu_model_runner.py:3549] Model loading took 7.2526 GiB memory and 43.233824 seconds
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:08:57 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/8695709d02/rank_0_0/backbone for vLLM's torch.compile
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:08:57 [backends.py:715] Dynamo bytecode transform time: 13.44 s
-[0;36m(Worker_TP1 pid=3114314)[0;0m INFO 01-24 11:09:02 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.746 s
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:09:02 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.774 s
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:09:04 [monitor.py:34] torch.compile takes 18.22 s in total
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:09:05 [gpu_worker.py:359] Available KV cache memory: 58.56 GiB
-[0;36m(EngineCore_DP0 pid=3114238)[0;0m INFO 01-24 11:09:06 [kv_cache_utils.py:1286] GPU KV cache size: 1,395,520 tokens
-[0;36m(EngineCore_DP0 pid=3114238)[0;0m INFO 01-24 11:09:06 [kv_cache_utils.py:1291] Maximum concurrency for 32,000 tokens per request: 80.91x
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:09:17 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
-[0;36m(Worker_TP1 pid=3114314)[0;0m INFO 01-24 11:09:17 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:09:18 [gpu_model_runner.py:4466] Graph capturing finished in 12 secs, took 1.63 GiB
-[0;36m(EngineCore_DP0 pid=3114238)[0;0m INFO 01-24 11:09:18 [core.py:254] init engine (profile, create kv cache, warmup model) took 34.42 seconds
-INFO 01-24 11:09:19 [llm.py:343] Supported tasks: ['generate']
+INFO 01-24 12:57:25 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 32000, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'tiiuae/Falcon-H1R-7B'}
+WARNING 01-24 12:57:25 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+INFO 01-24 12:57:26 [model.py:637] Resolved architecture: FalconH1ForCausalLM
+INFO 01-24 12:57:26 [model.py:1750] Using max model len 32000
+INFO 01-24 12:57:27 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
+INFO 01-24 12:57:27 [config.py:315] Disabling cascade attention since it is not supported for hybrid models.
+INFO 01-24 12:57:27 [config.py:439] Setting attention block size to 1568 tokens to ensure that attention page size is >= mamba page size.
+INFO 01-24 12:57:27 [config.py:463] Padding mamba page size by 0.51% to ensure that mamba page size and attention page size are exactly equal.
+[0;36m(EngineCore_DP0 pid=1621343)[0;0m INFO 01-24 12:57:36 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='tiiuae/Falcon-H1R-7B', speculative_config=None, tokenizer='tiiuae/Falcon-H1R-7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=tiiuae/Falcon-H1R-7B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=1621343)[0;0m WARNING 01-24 12:57:36 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+INFO 01-24 12:57:46 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:56601 backend=nccl
+INFO 01-24 12:57:46 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:56601 backend=nccl
+INFO 01-24 12:57:46 [pynccl.py:111] vLLM is using nccl==2.27.7
+INFO 01-24 12:57:47 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+INFO 01-24 12:57:47 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:57:47 [gpu_model_runner.py:3467] Starting to load model tiiuae/Falcon-H1R-7B...
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:57:48 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP1 pid=1621381)[0;0m INFO 01-24 12:57:48 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:57:51 [default_loader.py:308] Loading weights took 2.54 seconds
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:57:52 [gpu_model_runner.py:3549] Model loading took 7.2526 GiB memory and 3.651728 seconds
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:58:01 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/8695709d02/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:58:01 [backends.py:715] Dynamo bytecode transform time: 8.63 s
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:58:06 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.208 s
+[0;36m(Worker_TP1 pid=1621381)[0;0m INFO 01-24 12:58:06 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.208 s
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:58:08 [monitor.py:34] torch.compile takes 12.84 s in total
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:58:09 [gpu_worker.py:359] Available KV cache memory: 58.56 GiB
+[0;36m(EngineCore_DP0 pid=1621343)[0;0m INFO 01-24 12:58:10 [kv_cache_utils.py:1286] GPU KV cache size: 1,395,520 tokens
+[0;36m(EngineCore_DP0 pid=1621343)[0;0m INFO 01-24 12:58:10 [kv_cache_utils.py:1291] Maximum concurrency for 32,000 tokens per request: 80.91x
+[0;36m(Worker_TP1 pid=1621381)[0;0m INFO 01-24 12:58:21 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:58:21 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 12:58:22 [gpu_model_runner.py:4466] Graph capturing finished in 12 secs, took 1.63 GiB
+[0;36m(EngineCore_DP0 pid=1621343)[0;0m INFO 01-24 12:58:22 [core.py:254] init engine (profile, create kv cache, warmup model) took 29.27 seconds
+INFO 01-24 12:58:23 [llm.py:343] Supported tasks: ['generate']
 Loading dataset: HuggingFaceH4/aime_2024...
 
 Evaluating Experiment: split_reversal
@@ -42,19 +42,89 @@ Initialized 150 agents. Starting Batch Execution...
 
 [Batch Step] Generating for 150 agents...
 
-[Batch Step] Generating for 125 agents...
+[Batch Step] Generating for 120 agents...
 
-[Batch Step] Generating for 105 agents...
+[Batch Step] Generating for 93 agents...
 
-[Batch Step] Generating for 75 agents...
+[Batch Step] Generating for 73 agents...
 
-[Batch Step] Generating for 66 agents...
-
-[Batch Step] Generating for 51 agents...
+[Batch Step] Generating for 55 agents...
 
 [Batch Step] Generating for 39 agents...
 
-[Batch Step] Generating for 35 agents...
-[0;36m(Worker_TP1 pid=3114314)[0;0m INFO 01-24 11:23:00 [multiproc_executor.py:709] Parent process exited, terminating worker
-[0;36m(Worker_TP0 pid=3114313)[0;0m INFO 01-24 11:23:00 [multiproc_executor.py:709] Parent process exited, terminating worker
-ERROR 01-24 11:23:05 [core_client.py:600] Engine core proc EngineCore_DP0 died unexpectedly, shutting down client.
+[Batch Step] Generating for 36 agents...
+
+[Batch Step] Generating for 30 agents...
+
+[BATCH ERROR] Generation failed: The decoder prompt (length 32007) is longer than the maximum model length of 32000. Make sure that `max_model_len` is no smaller than the number of text tokens.
+  [Error Handler] KILLED Agent 76_s0: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 76_s1: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 81_s4: Prompt length 32006 > 32000
+  [Error Handler] KILLED Agent 85_s3: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 89_s0: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 89_s2: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 89_s3: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 89_s4: Prompt length 32007 > 32000
+  [Error Handler] Killed 8 agents. Survivors will continue in next loop iteration.
+
+[Batch Step] Generating for 22 agents...
+
+[Batch Step] Generating for 22 agents...
+
+[BATCH ERROR] Generation failed: The decoder prompt (length 32007) is longer than the maximum model length of 32000. Make sure that `max_model_len` is no smaller than the number of text tokens.
+  [Error Handler] KILLED Agent 62_s0: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 70_s2: Prompt length 32104 > 32000
+  [Error Handler] KILLED Agent 73_s0: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 79_s1: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 81_s0: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 85_s1: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 85_s2: Prompt length 32010 > 32000
+  [Error Handler] KILLED Agent 85_s4: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 89_s1: Prompt length 32007 > 32000
+  [Error Handler] Killed 9 agents. Survivors will continue in next loop iteration.
+
+[Batch Step] Generating for 13 agents...
+
+[Batch Step] Generating for 12 agents...
+
+[BATCH ERROR] Generation failed: The decoder prompt (length 32006) is longer than the maximum model length of 32000. Make sure that `max_model_len` is no smaller than the number of text tokens.
+  [Error Handler] KILLED Agent 73_s1: Prompt length 32006 > 32000
+  [Error Handler] KILLED Agent 73_s2: Prompt length 32007 > 32000
+  [Error Handler] Killed 2 agents. Survivors will continue in next loop iteration.
+
+[Batch Step] Generating for 10 agents...
+
+[Batch Step] Generating for 10 agents...
+
+[BATCH ERROR] Generation failed: The decoder prompt (length 32007) is longer than the maximum model length of 32000. Make sure that `max_model_len` is no smaller than the number of text tokens.
+  [Error Handler] KILLED Agent 71_s0: Prompt length 32007 > 32000
+  [Error Handler] KILLED Agent 71_s1: Prompt length 32007 > 32000
+  [Error Handler] Killed 2 agents. Survivors will continue in next loop iteration.
+
+[Batch Step] Generating for 8 agents...
+
+[Batch Step] Generating for 6 agents...
+
+[BATCH ERROR] Generation failed: The decoder prompt (length 32007) is longer than the maximum model length of 32000. Make sure that `max_model_len` is no smaller than the number of text tokens.
+  [Error Handler] KILLED Agent 85_s0: Prompt length 32007 > 32000
+  [Error Handler] Killed 1 agents. Survivors will continue in next loop iteration.
+
+[Batch Step] Generating for 5 agents...
+
+[Batch Step] Generating for 5 agents...
+
+[Batch Step] Generating for 5 agents...
+
+[Batch Step] Generating for 5 agents...
+
+[Batch Step] Generating for 5 agents...
+
+[Batch Step] Generating for 5 agents...
+
+[Batch Step] Generating for 5 agents...
+
+[Batch Step] Generating for 5 agents...
+[0;36m(Worker_TP0 pid=1621380)[0;0m INFO 01-24 13:16:19 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP1 pid=1621381)[0;0m INFO 01-24 13:16:19 [multiproc_executor.py:709] Parent process exited, terminating worker
+Results for split_reversal: Accuracy 70.00% (105/150)
+Saved results to: /project/6107991/golikovp/Linguistic_traps/experiments/split_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_split_reversal_s42_20260124_125824_MANUAL_AGENT.json
