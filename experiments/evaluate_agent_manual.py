@@ -310,8 +310,8 @@ PHASE 2: SOLUTION
 3. You may use Python for calculations.
 4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 """
-                transformed_input = r"""teL eg\b(\ )\2 eb na .regetni llaC a evitisop regetni )\n(\ )\}lufituae{titxet\-txet\b(\ fi ti sah yltcaxe owt stigid nehw desserpxe ni esab )\b(\  dna eseht owt stigid mus ot trqs\(\ .)n roF ,elpmaxe )\18(\ si )\}lufituae{titxet\-txet\31(\ esuaceb 18(\  = }6{enilrednu\ \ }31{_}3{enilrednu\ )\ dna 6(\ + 3 =  .)\}18{trqs\ dniF eht tsael regetni eg\b(\ )\2 rof hcihw ereht era erom naht net )\}lufituae{titxet\-txet\b(\ .sregetni"""
-                input_bytes = transformed_input.encode('utf-8')
+                # transformed_input = r"""{user_prompt_content}""".format(user_prompt_content)
+                input_bytes = user_prompt_content.encode('utf-8')
                 base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
                 USER_PROMPT =  f"""
 TRANSFORMATION RULE:
