@@ -1,7 +1,9 @@
 import argparse
+import time
 import os
 import sys
 import os
+import base64
 
 # Fix path to include 'analysis' so 'variables' can be imported by util
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -74,7 +76,7 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
     agent_memory = {}
     final_response = ""
     # Run for up to 5 steps
-    f = open("debug_agent_log.txt", "a")
+    f = open(f"debug_agent_log_{int(time.time())}.txt", "a")
     for step in range(0, 20):
         # A. CALL THE MODEL
         if not dry_run:
@@ -203,7 +205,7 @@ def main():
             # Qwen uses specific template, but "Observation:" is the standard ReAct stop.
             sampling_params = SamplingParams(
                 temperature=0.0, 
-                max_tokens=2048,
+                max_tokens=4096,
                 stop=["Observation:"]
             )
             tokenizer = llm.get_tokenizer()
@@ -288,30 +290,35 @@ You are participating in a robustness evaluation where math problems have been t
 YOUR PROTOCOL (Follow Strictly):
 
 PHASE 1: RECONSTRUCTION
-1. Read the "TRANSFORMATION RULE" provided by the user.
-2. Analyze the "TRANSFORMED INPUT" which is provided for you in the user query. Use this TRANSFORMED INPUT as input to your Python script.
-3. WRITE a Python script to programmatically reverse the transformation.
-   - You must manipulate the string/text using Python logic.
-   - Do NOT just guess the original text.
+1. Read the "TRANSFORMATION RULE" provided by the user. "TRANSFORMED INPUT" is given as a base64-encoded string.
+2. Write and output a Python script to programmatically decode from base 64 into raw text and then reverse the transformation.
+   - YOU MUST DECODE IN PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
+   - Do NOT guess or anticipate the original text.
    - Do NOT simulate the execution.
+   - ONLY generate and output Python code to both decode base64 and reverse the transformation.
+   - In your Python code you must print the `repr()` of the reconstructed text.
+    - INCORRECT: print(text)  <-- Do not do this.
+    - CORRECT:   print(repr(text)) <-- DO THIS.
+
 4. Output your Python code in a markdown code block:
 ```python ... Your code here ... ```
 5. The system will execute your code and provide the output back to you.
 
 PHASE 2: SOLUTION
 1. Examine the output of your Python script (the reconstructed text).
-You do not need to reconstruct symbol by symbol; if some spaces or newlines are off, that's acceptable as long as the main content is correct.
-2. If there was an error during execution, analyze the error message and fix your code accordingly.
-3. Solve the math problem.
-4. You may use Python for calculations.
-5. Output the final result in the format: '\\boxed{Answer}'.
+2. Once Python ran succesfully and you have the reconstructed problem statement, proceed to solve the math problem.
+3. You may use Python for calculations.
+4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 """
-                USER_PROMPT =  """
+                transformed_input = r"""teL eg\b(\ )\2 eb na .regetni llaC a evitisop regetni )\n(\ )\}lufituae{titxet\-txet\b(\ fi ti sah yltcaxe owt stigid nehw desserpxe ni esab )\b(\  dna eseht owt stigid mus ot trqs\(\ .)n roF ,elpmaxe )\18(\ si )\}lufituae{titxet\-txet\31(\ esuaceb 18(\  = }6{enilrednu\ \ }31{_}3{enilrednu\ )\ dna 6(\ + 3 =  .)\}18{trqs\ dniF eht tsael regetni eg\b(\ )\2 rof hcihw ereht era erom naht net )\}lufituae{titxet\-txet\b(\ .sregetni"""
+                input_bytes = transformed_input.encode('utf-8')
+                base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
+                USER_PROMPT =  f"""
 TRANSFORMATION RULE:
 User query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions.
 
 TRANSFORMED INPUT:
-teL eg\b(\ )\2 eb na .regetni llaC a evitisop regetni )\n(\ )\}lufituae{titxet\-txet\b(\ fi ti sah yltcaxe owt stigid nehw desserpxe ni esab )\b(\  dna eseht owt stigid mus ot trqs\(\ .)n roF ,elpmaxe )\18(\ si )\}lufituae{titxet\-txet\31(\ esuaceb 18(\  = }6{enilrednu\ \ }31{_}3{enilrednu\ )\ dna 6(\ + 3 =  .)\}18{trqs\ dniF eht tsael regetni eg\b(\ )\2 rof hcihw ereht era erom naht net )\}lufituae{titxet\-txet\b(\ .sregetni
+{base64_input_safe}
 """
                 
                 final_output = run_agent_turn(PROTOCOL_SYSTEM_PROMPT, USER_PROMPT, llm, tokenizer, sampling_params, args.dry)

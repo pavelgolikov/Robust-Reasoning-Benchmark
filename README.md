@@ -106,12 +106,15 @@ Gemini 3 Pro
 
 
 
-
-
-
-
 Conclusion:
 
 
+Observations:
+1. Temperature and max response length both need to be adjustable for each individual task the model performs.
+2. Since we want the model to perform complex tasks, we need to teach the model to adjust these parameters based on the task at hand.
+Otherwise:
+If temp too high, model starts exploring during mechanical tasks - instead of writing Python, it decides to solve manually AGAINST explicit instructions.
+If temp is set too low, then model might be too conservative and not explore enough to find the solution.
 
+Model length needs to be kept shorter for the agent compared to the model itself because the reasoning chain itself is done in steps.
 
