@@ -1,14 +1,7 @@
 import argparse
-import time
 import os
 import sys
-import os
 import base64
-
-# Fix path to include 'analysis' so 'variables' can be imported by util
-base_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_dir, 'analysis'))
-
 import json
 import time
 import random
@@ -16,12 +9,20 @@ import re
 import io
 import contextlib
 import traceback
+from dataclasses import dataclass, field
+from typing import List, Dict, Optional, Any
+
+# Fix path to include 'analysis' so 'variables' can be imported by util
+base_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(base_dir, 'analysis'))
+
 from datasets import load_dataset
 from util import get_prompts, extract_answer, normalize_answer
 
 # ======================================================
-# PART 1: THE PARSER (Identification)
+# PART 1: HELPER FUNCTIONS (Parser & Executor)
 # ======================================================
+
 def extract_python_code(response_text):
     """
     Uses Regex to find content between ```python and ``` tags.
@@ -34,9 +35,6 @@ def extract_python_code(response_text):
         return match.group(1) # Return just the code inside
     return None
 
-# ======================================================
-# PART 2: THE EXECUTOR (Running on CPU)
-# ======================================================
 def execute_python_code(code_str, state_dict):
     """
     Executes code. Captures stdout. 
@@ -67,115 +65,127 @@ def execute_python_code(code_str, state_dict):
         return f"{partial_output}\n\n--- EXECUTION ERROR ---\n{error_trace}"
 
 # ======================================================
-# PART 3: THE AGENT LOOP
+# PART 2: AGENT STATE MANAGEMENT
 # ======================================================
-def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, dry_run=False):
-    # 1. Initialize History
-    history = [ {"role": "system", "content": system_prompt}, {"role": "user", "content": user_input} ]
-    # 2. Initialize Memory
-    agent_memory = {}
-    final_response = ""
-    # Run for up to 5 steps
-    # f = open(f"debug_agent_log_{int(time.time())}.txt", "a")
-    for step in range(0, 20):
-        # A. CALL THE MODEL
-        if not dry_run:
-            formatted_prompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)
-            outputs = llm.generate([formatted_prompt], sampling_params)
-            model_msg = outputs[0].outputs[0].text
-            # save model message to a file for debugging
-            # f.write(model_msg)
-        else:
-            model_msg = "Final Answer: 42"
-        # print(f"\n[AI Step {step}]: {model_msg}...")
-        # Add AI response to history
-        history.append({"role": "assistant", "content": model_msg})
 
-        # B. Check for Final Answer OR Python Code
-        
-        # 1. Check for Code (First priority as requested)
-        code_block = extract_python_code(model_msg)
-        
-        if code_block:
-            # Execute Code
-            execution_result = execute_python_code(code_block, agent_memory)
-            
-            # Feedback
-            tool_output_msg = f"Observation:\n{execution_result}"
-            # f.write(f"\n[Execution Result]: {execution_result}\n")
-            history.append({"role": "user", "content": tool_output_msg})
-            
-        else:
-            # 2. Check for Final Answer
-            if "\\boxed{" in model_msg: 
-                 final_response = model_msg
-                 break
-            
-            # 3. Neither Code nor Final Answer -> Continue Loop
-            pass
-            
-    # If loop finishes without break, take the last message
-    if not final_response:
-        final_response = history[-1]['content']
-        
-    # f.close()
-    return final_response
+@dataclass
+class AgentState:
+    id: str  # Unique ID (e.g., "60_sample_0")
+    problem_id: str
+    sample_idx: int
+    experiment_name: str
+    
+    # Prompts & Data
+    original_problem: str
+    ground_truth: str
+    system_prompt_static: str # The Protocol Prompt
+    user_prompt_content: str  # The Transformed Input (for logging)
+    
+    # Dynamic State
+    history: List[Dict[str, str]]
+    memory: Dict[str, Any] = field(default_factory=dict)
+    
+    # Status
+    is_done: bool = False
+    final_output: str = ""
+    extracted_answer: str = ""
+    is_correct: bool = False
+    step_count: int = 0
+    max_steps: int = 20
 
-def run_agent_turn_chat(llm, tokenizer, sampling_params, dry_run=False):
-    print("--- Entering Chat Mode (type 'exit' to quit) ---")
+    def get_vllm_prompt(self, tokenizer):
+        return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
+
+# ======================================================
+# PART 3: BATCHED EXECUTION LOOP
+# ======================================================
+
+def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, dry_run=False):
+    """
+    Runs the agent loop for multiple agents in parallel (batched inference).
+    """
+    active_agents = [a for a in agents if not a.is_done]
     
-    # System Prompt
-#     system_prompt = """You are a Python-Equipped Math Agent.
-# 1. If the problem is obfuscated, write Python to decode it first.
-# 2. Once decoded, write Python to solve the math.
-# 3. Output your code in markdown: ```python ... ```
-# 4. You MUST print() your results to see them.
-# 5. When done, output "Final Answer: [value]".
-# """
-    _, system_prompt = get_prompts(None, "baseline")
-    history = [{"role": "system", "content": system_prompt}]
-    agent_memory = {}
-    
-    while True:
-        try:
-            user_input = input("\nUser: ")
-            if user_input.strip().lower() in ["exit", "quit"]:
-                break
-            
-            history.append({"role": "user", "content": user_input})
-            
-            # Simple Chat Turn
-            formatted_prompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)
-            outputs = llm.generate([formatted_prompt], sampling_params)
-            model_msg = outputs[0].outputs[0].text
-            
-            print(f"\nAgent: {model_msg}")
-            history.append({"role": "assistant", "content": model_msg})
-                    
-        except KeyboardInterrupt:
-            print("\nExiting chat...")
+    while active_agents and any(not a.is_done for a in active_agents):
+        # 1. Prepare Prompts
+        current_batch_agents = [a for a in active_agents if not a.is_done]
+        if not current_batch_agents:
             break
-        except Exception as e:
-            print(f"Error: {e}")
-            traceback.print_exc()
+            
+        prompts = [a.get_vllm_prompt(tokenizer) for a in current_batch_agents]
+        
+        print(f"\n[Batch Step] Generating for {len(current_batch_agents)} agents...")
+        
+        # 2. Batch Generation
+        if not dry_run:
+            outputs = llm.generate(prompts, sampling_params)
+            model_responses = [out.outputs[0].text for out in outputs]
+        else:
+            model_responses = ["Final Answer: 42 (Dry Run)"] * len(current_batch_agents)
+            
+        # 3. Process Responses
+        for agent, response_text in zip(current_batch_agents, model_responses):
+            agent.step_count += 1
+            
+            # Append Assistant Response
+            agent.history.append({"role": "assistant", "content": response_text})
+            
+            # --- LOGIC CHECK (Priority: Code > Final Answer > Continue) ---
+            
+            # A. Check for Code
+            code_block = extract_python_code(response_text)
+            
+            if code_block:
+                # Execute Code (Sequential on CPU, but fast)
+                # print(f"  [Agent {agent.id}] Executing Code...")
+                execution_result = execute_python_code(code_block, agent.memory)
+                
+                # Feedback
+                tool_msg = f"Observation:\n{execution_result}"
+                agent.history.append({"role": "user", "content": tool_msg})
+                
+                # Do NOT mark as done; loop continues for next reasoning step
+            
+            else:
+                # B. Check for Final Answer
+                if "\\boxed{" in response_text:
+                    agent.final_output = response_text
+                    agent.is_done = True
+                    # print(f"  [Agent {agent.id}] Finished (Boxed Answer Found).")
+                
+                # C. Check Max Steps
+                elif agent.step_count >= agent.max_steps:
+                    agent.final_output = response_text
+                    agent.is_done = True
+                    # print(f"  [Agent {agent.id}] Finished (Max Steps Reached).")
+                
+                # D. Else -> Implicit Continue (Model thinking/talking)
+                else:
+                    pass 
+
+        # Filter active for next loop
+        active_agents = [a for a in agents if not a.is_done]
+
+# ======================================================
+# PART 4: MAIN SETUP
+# ======================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="Evaluate manual agent implementation")
+    parser = argparse.ArgumentParser(description="Evaluate manual agent implementation (Batched)")
     parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B", help="Path/Name of the model")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
+    parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
     parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
     parser.add_argument("--dry", action="store_true", help="Dry run - do not load model")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
-    parser.add_argument("--chat", action="store_true", help="Run in chat mode")
 
     args = parser.parse_args()
 
-    # Determine experiment names
+    # Prep Experiments
     if args.names == 'all':
         experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
         'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'split_reversal' ]
@@ -200,10 +210,7 @@ def main():
                 max_model_len=args.max_model_length,
                 dtype="bfloat16"
             )
-            # Stop tokens are crucial for ReAct to stop generating after producing code block or before user role
-            # The user snippet used stop=["Observation:"].
-            # We should probably also stop at "Observation:" and maybe user role tokens.
-            # Qwen uses specific template, but "Observation:" is the standard ReAct stop.
+            # Use same params as before
             sampling_params = SamplingParams(
                 temperature=0.0, 
                 max_tokens=4096,
@@ -215,13 +222,11 @@ def main():
             exit(1)
     else:
         print("Dry run: Skipping vLLM initialization.")
-
-    random.seed(args.seed)
-
-    # Chat Mode Logic
-    if args.chat:
-        run_agent_turn_chat(llm, tokenizer, sampling_params, args.dry)
-        return
+        # Mock tokenizer for dry run to avoid getattr errors
+        class MockTokenizer:
+            def apply_chat_template(self, history, tokenize=False, add_generation_prompt=True):
+                return str(history)
+        tokenizer = MockTokenizer()
 
     # Load Dataset
     print(f"Loading dataset: {args.dataset}...")
@@ -229,11 +234,10 @@ def main():
     if args.limit:
         dataset = dataset.select(range(min(args.limit, len(dataset))))
 
-    # Load Variables (Copied logic from evaluate.py)
+    # Load Variables
     extracted_vars = {}
     if 'split_indices' in experiment_names:
         try:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
             vars_path = os.path.join(base_dir, 'variables', 'extracted_terms_by_problem.json')
             if os.path.exists(vars_path):
                 with open(vars_path, 'r') as f:
@@ -247,46 +251,11 @@ def main():
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     safe_model_name = args.model.replace('/', '_').replace(' ', '_')
     safe_dataset_name = args.dataset.replace('/', '_')
-    base_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # System Prompt Template (REMOVED BASE_SYSTEM_PROMPT constant as requested)
-    # BASE_SYSTEM_PROMPT = """..."""
-
-    for exp_name in experiment_names:
-        print(f"\nEvaluating Experiment: {exp_name}")
-        
-        results = []
-        stats = {"correct": 0, "total": 0, "failures": 0}
-
-        for i, example in enumerate(dataset):
-            # Prepare Prompt
-            extra_context = None
-            if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
-                next_idx = (i + 1) % len(dataset)
-                extra_context = dataset[next_idx]['problem']
-            
-            prob_id = str(example.get('id', i))
-            current_vars = extracted_vars.get(prob_id) if extracted_vars else None
-            
-            ground_truth = example['answer']
-
-            for sample_idx in range(args.n_samples):
-                print(f"  Sample {i} (ID: {prob_id}) [Run {sample_idx+1}/{args.n_samples}]...", end="", flush=True)
-                
-                try:
-                    # Use the system prompt and user prompt directly from get_prompts as requested.
-                    user_prompt_content, technique_system_prompt = get_prompts(
-                        example['problem'], 
-                        exp_name, 
-                        extra_context, 
-                        variables=current_vars,
-                        seed=args.seed,
-                        num_distractors=args.num_distractors,
-                        decode_find_only=False
-                    )
-                    
-                    # Protocol Prompt
-                    PROTOCOL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
+    # ------------------------------------------------------
+    # PROTOCOL PROMPT (Static)
+    # ------------------------------------------------------
+    PROTOCOL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
 You are participating in a robustness evaluation where math problems have been transformed.
 
 YOUR PROTOCOL (Follow Strictly):
@@ -312,55 +281,119 @@ PHASE 2: SOLUTION
 3. You may use Python for calculations.
 4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 """
-                    # transformed_input = r"""{user_prompt_content}""".format(user_prompt_content)
+
+    # ------------------------------------------------------
+    # MAIN LOOP: Iterate Experiments -> Create Agents -> Batch Run
+    # ------------------------------------------------------
+    for exp_name in experiment_names:
+        print(f"\nEvaluating Experiment: {exp_name}")
+        
+        # 1. Initialize ALL Agents for this experiment
+        agents = []
+        random.seed(args.seed) # Reset seed for consistency per experiment
+        
+        for i, example in enumerate(dataset):
+            prob_id = str(example.get('id', i))
+            
+            # Prepare Prompt components
+            extra_context = None
+            if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
+                next_idx = (i + 1) % len(dataset)
+                extra_context = dataset[next_idx]['problem']
+            
+            current_vars = extracted_vars.get(prob_id) if extracted_vars else None
+            
+            # Create K samples
+            for sample_idx in range(args.n_samples):
+                # Generate specific prompt for this sample (distractors/vars might have randomness if utilized)
+                # Note: get_prompts uses random.sample if num_distractors > ... so we should ideally control seed.
+                # We can set global seed or pass seed. get_prompts has a seed arg.
+                
+                try:
+                    user_prompt_content, _ = get_prompts(
+                        example['problem'], 
+                        exp_name, 
+                        extra_context, 
+                        variables=current_vars,
+                        seed=args.seed + sample_idx + (i * 1000), # Ensure distinct seed per sample/problem
+                        num_distractors=args.num_distractors,
+                        decode_find_only=False
+                    )
+                    
+                    # Construct User Message with Base64 encoding
                     input_bytes = user_prompt_content.encode('utf-8')
                     base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
-                    USER_PROMPT =  f"""
+                    
+                    technique_description = "User query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions."
+                    
+                    FINAL_USER_PROMPT = f"""
 TRANSFORMATION RULE:
-User query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions.
+{technique_description}
 
 TRANSFORMED INPUT:
 {base64_input_safe}
 """
                     
-                    final_output = run_agent_turn(PROTOCOL_SYSTEM_PROMPT, USER_PROMPT, llm, tokenizer, sampling_params, args.dry)
+                    # Create Agent
+                    agent = AgentState(
+                        id=f"{prob_id}_s{sample_idx}",
+                        problem_id=prob_id,
+                        sample_idx=sample_idx,
+                        experiment_name=exp_name,
+                        original_problem=example['problem'],
+                        ground_truth=example['answer'],
+                        system_prompt_static=PROTOCOL_SYSTEM_PROMPT,
+                        user_prompt_content=user_prompt_content,
+                        history=[
+                            {"role": "system", "content": PROTOCOL_SYSTEM_PROMPT},
+                            {"role": "user", "content": FINAL_USER_PROMPT}
+                        ]
+                    )
+                    agents.append(agent)
                     
-                    print(" Done.")
-
                 except Exception as e:
-                    print(f" Error: {e}")
+                    print(f"Skipping Problem {prob_id} Sample {sample_idx} due to error: {e}")
                     traceback.print_exc()
-                    final_output = f"ERROR: {e}"
 
-                # Grade
-                try:
-                    extracted = extract_answer(final_output)
-                    is_correct = normalize_answer(extracted) == normalize_answer(ground_truth)
-                except Exception:
-                    extracted = "ERROR_PARSING"
-                    is_correct = False
+        print(f"Initialized {len(agents)} agents. Starting Batch Execution...")
+        
+        # 2. Run Batch
+        run_batch_execution(agents, llm, tokenizer, sampling_params, args.dry)
+        
+        # 3. Collect Results
+        results = []
+        stats = {"correct": 0, "total": 0, "failures": 0}
+        
+        for agent in agents:
+            # Grade
+            try:
+                extracted = extract_answer(agent.final_output)
+                is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
+            except Exception:
+                extracted = "ERROR_PARSING"
+                is_correct = False
+            
+            agent.is_correct = is_correct
+            agent.extracted_answer = extracted
+            
+            stats["total"] += 1
+            if is_correct:
+                stats["correct"] += 1
+            else:
+                stats["failures"] += 1
                 
-                entry = {
-                    "id": example.get('id', i),
-                    "sample_idx": sample_idx,
-                    "system_prompt": technique_system_prompt,
-                    "user_prompt": user_prompt_content,
-                    "original_transformed": user_prompt_content,
-                    "unmodified_original": example['problem'],
-                    "ground_truth": ground_truth,
-                    "output": final_output,
-                    "extracted": extracted,
-                    "correct": is_correct
-                }
-                results.append(entry)
-                
-                stats["total"] += 1
-                if is_correct:
-                    stats["correct"] += 1
-                else:
-                    stats["failures"] += 1
+            results.append({
+                "id": agent.problem_id,
+                "sample_idx": agent.sample_idx,
+                "output": agent.final_output,
+                "extracted": extracted,
+                "correct": is_correct,
+                "original_problem": agent.original_problem,
+                "ground_truth": agent.ground_truth,
+                "history_dump": [h['content'] for h in agent.history] # Optional: save full history
+            })
 
-        # Save Results per experiment
+        # 4. Save
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
         print(f"Results for {exp_name}: Accuracy {acc:.2%} ({stats['correct']}/{stats['total']})")
         
@@ -374,7 +407,6 @@ TRANSFORMED INPUT:
         with open(json_file, "w") as f:
             json.dump(results, f, indent=2)
         print(f"Saved results to: {json_file}")
-        
 
 if __name__ == "__main__":
     main()
