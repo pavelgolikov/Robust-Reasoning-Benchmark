@@ -164,6 +164,7 @@ def main():
     parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B", help="Path/Name of the model")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
@@ -269,22 +270,23 @@ def main():
             
             ground_truth = example['answer']
 
-            print(f"  Sample {i} (ID: {prob_id})...", end="", flush=True)
-            
-            try:
-                # Use the system prompt and user prompt directly from get_prompts as requested.
-                user_prompt_content, technique_system_prompt = get_prompts(
-                    example['problem'], 
-                    exp_name, 
-                    extra_context, 
-                    variables=current_vars,
-                    seed=args.seed, 
-                    num_distractors=args.num_distractors,
-                    decode_find_only=False
-                )
+            for sample_idx in range(args.n_samples):
+                print(f"  Sample {i} (ID: {prob_id}) [Run {sample_idx+1}/{args.n_samples}]...", end="", flush=True)
                 
-                # Protocol Prompt
-                PROTOCOL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
+                try:
+                    # Use the system prompt and user prompt directly from get_prompts as requested.
+                    user_prompt_content, technique_system_prompt = get_prompts(
+                        example['problem'], 
+                        exp_name, 
+                        extra_context, 
+                        variables=current_vars,
+                        seed=args.seed,
+                        num_distractors=args.num_distractors,
+                        decode_find_only=False
+                    )
+                    
+                    # Protocol Prompt
+                    PROTOCOL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
 You are participating in a robustness evaluation where math problems have been transformed.
 
 YOUR PROTOCOL (Follow Strictly):
@@ -310,52 +312,53 @@ PHASE 2: SOLUTION
 3. You may use Python for calculations.
 4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 """
-                # transformed_input = r"""{user_prompt_content}""".format(user_prompt_content)
-                input_bytes = user_prompt_content.encode('utf-8')
-                base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
-                USER_PROMPT =  f"""
+                    # transformed_input = r"""{user_prompt_content}""".format(user_prompt_content)
+                    input_bytes = user_prompt_content.encode('utf-8')
+                    base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
+                    USER_PROMPT =  f"""
 TRANSFORMATION RULE:
 User query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions.
 
 TRANSFORMED INPUT:
 {base64_input_safe}
 """
-                
-                final_output = run_agent_turn(PROTOCOL_SYSTEM_PROMPT, USER_PROMPT, llm, tokenizer, sampling_params, args.dry)
-                
-                print(" Done.")
+                    
+                    final_output = run_agent_turn(PROTOCOL_SYSTEM_PROMPT, USER_PROMPT, llm, tokenizer, sampling_params, args.dry)
+                    
+                    print(" Done.")
 
-            except Exception as e:
-                print(f" Error: {e}")
-                traceback.print_exc()
-                final_output = f"ERROR: {e}"
+                except Exception as e:
+                    print(f" Error: {e}")
+                    traceback.print_exc()
+                    final_output = f"ERROR: {e}"
 
-            # Grade
-            try:
-                extracted = extract_answer(final_output)
-                is_correct = normalize_answer(extracted) == normalize_answer(ground_truth)
-            except Exception:
-                extracted = "ERROR_PARSING"
-                is_correct = False
-            
-            entry = {
-                "id": example.get('id', i),
-                "system_prompt": technique_system_prompt,
-                "user_prompt": user_prompt_content,
-                "original_transformed": user_prompt_content,
-                "unmodified_original": example['problem'],
-                "ground_truth": ground_truth,
-                "output": final_output,
-                "extracted": extracted,
-                "correct": is_correct
-            }
-            results.append(entry)
-            
-            stats["total"] += 1
-            if is_correct:
-                stats["correct"] += 1
-            else:
-                stats["failures"] += 1
+                # Grade
+                try:
+                    extracted = extract_answer(final_output)
+                    is_correct = normalize_answer(extracted) == normalize_answer(ground_truth)
+                except Exception:
+                    extracted = "ERROR_PARSING"
+                    is_correct = False
+                
+                entry = {
+                    "id": example.get('id', i),
+                    "sample_idx": sample_idx,
+                    "system_prompt": technique_system_prompt,
+                    "user_prompt": user_prompt_content,
+                    "original_transformed": user_prompt_content,
+                    "unmodified_original": example['problem'],
+                    "ground_truth": ground_truth,
+                    "output": final_output,
+                    "extracted": extracted,
+                    "correct": is_correct
+                }
+                results.append(entry)
+                
+                stats["total"] += 1
+                if is_correct:
+                    stats["correct"] += 1
+                else:
+                    stats["failures"] += 1
 
         # Save Results per experiment
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
