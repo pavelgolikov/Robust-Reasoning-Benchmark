@@ -76,7 +76,7 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
     agent_memory = {}
     final_response = ""
     # Run for up to 5 steps
-    f = open(f"debug_agent_log_{int(time.time())}.txt", "a")
+    # f = open(f"debug_agent_log_{int(time.time())}.txt", "a")
     for step in range(0, 20):
         # A. CALL THE MODEL
         if not dry_run:
@@ -84,10 +84,10 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
             outputs = llm.generate([formatted_prompt], sampling_params)
             model_msg = outputs[0].outputs[0].text
             # save model message to a file for debugging
-            f.write(model_msg)
+            # f.write(model_msg)
         else:
             model_msg = "Final Answer: 42"
-        print(f"\n[AI Step {step}]: {model_msg}...")
+        # print(f"\n[AI Step {step}]: {model_msg}...")
         # Add AI response to history
         history.append({"role": "assistant", "content": model_msg})
 
@@ -102,7 +102,7 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
             
             # Feedback
             tool_output_msg = f"Observation:\n{execution_result}"
-            f.write(f"\n[Execution Result]: {execution_result}\n")
+            # f.write(f"\n[Execution Result]: {execution_result}\n")
             history.append({"role": "user", "content": tool_output_msg})
             
         else:
@@ -118,7 +118,7 @@ def run_agent_turn(system_prompt, user_input, llm, tokenizer, sampling_params, d
     if not final_response:
         final_response = history[-1]['content']
         
-    f.close()
+    # f.close()
     return final_response
 
 def run_agent_turn_chat(llm, tokenizer, sampling_params, dry_run=False):
