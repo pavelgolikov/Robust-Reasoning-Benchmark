@@ -6,7 +6,6 @@ from opposites.transformation import apply_opposites
 from interleaved_context_line.transformation import apply_interleaved_context_line
 from interleaved_context_word.transformation import apply_interleaved_context_word
 from wrappers.transformation import apply_wrappers
-# from variables.transformation import apply_variables
 from context_saturation.transformation import apply_context_saturation
 from not_not.transformation import apply_not_not
 from word_split_swap.transformation import apply_word_split_swap
@@ -34,109 +33,124 @@ try:
     nltk.download('omw-1.4', quiet=True)
 except Exception as e:
     print(f"Warning: Failed to download NLTK data: {e}")
-    
 
+import base64
 
-def get_prompts(problem, name, extra_context=None, variables=None, seed=None, num_distractors=None):
-    # modify problem according to experiment name
+# Python Agent System Prompt
+AGENTIC_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
+You are participating in a robustness evaluation where math problems have been transformed.
+
+YOUR PROTOCOL (Follow Strictly):
+
+PHASE 1: RECONSTRUCTION
+1. Read the "TRANSFORMATION RULE" provided by the user. "TRANSFORMED INPUT" is given as a base64-encoded string.
+2. Write and output a Python script to programmatically decode from base 64 into raw text and then reverse the transformation.
+   - YOU MUST DECODE IN PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
+   - Do NOT guess or anticipate the original text.
+   - Do NOT simulate the execution.
+   - ONLY generate and output Python code to both decode base64 and reverse the transformation.
+   - In your Python code you must print the `repr()` of the reconstructed text.
+    - INCORRECT: print(text)  <-- Do not do this.
+    - CORRECT:   print(repr(text)) <-- DO THIS.
+
+4. Output your Python code in a markdown code block:
+```python ... Your code here ... ```
+5. The system will execute your code and provide the output back to you.
+
+PHASE 2: SOLUTION
+1. Examine the output of your Python script (the reconstructed text).
+2. Once Python ran succesfully and you have the reconstructed problem statement, proceed to solve the math problem.
+3. You may use Python for calculations.
+4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
+"""
+
+MODEL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent.
+You are participating in a robustness evaluation where math problems have been transformed.
+
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to
+obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
+"""
+
+TECHNIQUE_DESCRIPTIONS = {
+    'not_not': "User query contains problem statement with added 'not' strings.",
+    'word_split_swap': "User query contains problem statement. All words (words are defined as sequences of symbols separated by spaces) in user query have been modified. Every word is split into 2 parts down the middle. If the word has odd number of symbols, the first part has one symbol less than the second part. After splitting, the 2 parts are swapped.",
+    'word_reversal': "User query contains problem statement. The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.",
+    'sentence_reversal': "User query contains problem statement. The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.",
+    'opposites': "User query contains problem statement. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
+    'interleaved_context_word': "User query will consist of two problems - A and B, whose statements are interleaved word by word. First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on. You need to solve only problem A. Words are defined as sequences of symbols separated by spaces. If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
+    'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the empty lines resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
+    'wrappers': "User query contains problem statement. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
+    'context_saturation': "User query contains multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence in the problem statement. For example, two valid parts are: '[[Pro' 'blemK]]' and '[[P' 'roblemK]]'. The two parts can be placed in reverse order in the problem statement. The index of the problem you are to solve will be indicated in the middle of user query. Problems are independent of each other.",
+    'split_reversal': "User query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions.",
+}
+
+def get_prompts(problem, name, extra_context=None, variables=None, seed=None, num_distractors=None, agentic=False):
+    # 1. Apply Transformation
     if name == 'baseline':
-        user_prompt = problem
+        user_prompt_content = problem
         system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
-        return user_prompt, system_prompt
+        return user_prompt_content, system_prompt
     elif name == 'not_not':
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_not_not(problem)
-        return user_prompt, system_prompt
+        user_prompt_content = apply_not_not(problem)
     elif name == 'word_split_swap':
-        system_prompt = "You are a helpful math assistant.\n\
-User query contains problem statement. All words (words are defined as sequences of symbols separated by spaces) in user query have been modified.\n\
-Every word is split into 2 parts down the middle. If the word has odd number of symbols, the first part has one symbol less than the second part.\n\
-After splitting, the 2 parts are swapped.\n\
-You need to reconstruct the original problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_word_split_swap(problem)
-        return user_prompt, system_prompt
+        user_prompt_content = apply_word_split_swap(problem)
     elif name == 'word_reversal':
-        system_prompt = "You are a helpful math assistant.\n\
-User query contains problem statement. The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.\n\
-You need to reconstruct the original problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_word_reversal(problem)
-        return user_prompt, system_prompt
+        user_prompt_content = apply_word_reversal(problem)
     elif name == 'sentence_reversal':
-        system_prompt = "You are a helpful math assistant.\n\
-User query contains problem statement. The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.\n\
-You need to reconstruct the original problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_sentence_reversal(problem)
-        return user_prompt, system_prompt
+        user_prompt_content = apply_sentence_reversal(problem)
     elif name == 'opposites':
-        system_prompt = "You are a helpful math assistant.\n\
-User query contains problem statement. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
-You need to reconstruct the original problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_opposites(problem, k=1)
-        return user_prompt, system_prompt
+        user_prompt_content = apply_opposites(problem, k=1)
     elif name == 'interleaved_context_word':
-        system_prompt = "You are a helpful math assistant.\n\
-User query will consist of two problems - A and B, whose statements are interleaved word by word.\n\
-First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on.\n\
-You need to solve only problem A. Words are defined as sequences of symbols separated by spaces.\n\
-If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement\n\
-will be filled with the shorter problem statement repeated from the beginning.\n\
-You need to reconstruct the original problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
         if extra_context is None:
-            user_prompt = "Error: Missing extra context for interleaved transformation"
+            user_prompt_content = "Error: Missing extra context for interleaved transformation"
+            print(user_prompt_content)
+            exit(1)
         else:
-            user_prompt = apply_interleaved_context_word(problem, extra_context)
-        return user_prompt, system_prompt
+            user_prompt_content = apply_interleaved_context_word(problem, extra_context)
     elif name == 'interleaved_context_line':
-        system_prompt = "You are a helpful math assistant.\n\
-User query will consist of two problems - A and B, whose statements are interleaved.\n\
-You need to solve only problem A. If one problem statement is shorter than the other,\n\
-the empty lines resulting from the shorter problem statement will be filled with the\n\
-shorter problem statement repeated from the beginning.\n\
-You need to reconstruct the original problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
         if extra_context is None:
-            user_prompt = "Error: Missing extra context for interleaved transformation"
+            user_prompt_content = "Error: Missing extra context for interleaved transformation"
+            print(user_prompt_content)
+            exit(1)
         else:
-            user_prompt = apply_interleaved_context_line(problem, extra_context)
-        return user_prompt, system_prompt
+            user_prompt_content = apply_interleaved_context_line(problem, extra_context)
     elif name == 'wrappers':
-        system_prompt = "You are a helpful math assistant.\n\
-User query contains problem statement. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.\n\
-You need to reconstruct the original problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_wrappers(problem, k=1)
-        return user_prompt, system_prompt
+        user_prompt_content = apply_wrappers(problem, k=1)
     elif name == 'context_saturation':
-        system_prompt = "You are a helpful math assistant.\n\
-User query contains multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem\n\
-statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence in the problem statement\n\
-For example, two valid parts are: '[[Pro'     'blemK]]' and '[[P'    'roblemK]]'. The two parts can be placed in reverse\n\
-order in the problem statement. The index of the problem you are to solve will be indicated in the middle of user query. \n\
-Problems are independent of each other.\n\
-You need to identify the correct problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
-        return user_prompt, system_prompt
+        user_prompt_content = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
     elif name == 'split_reversal':
-        system_prompt = "You are a helpful math assistant.\n\
-User query contains problem statement. User query string was split on space as separator into substrings.\n\
-The symbols of each substring were then reversed and concatenated back with the separators in the same positions.\n\
-You need to reconstruct the original problem statement before solving it.\n\
-Please reason step by step, and put your final answer within \\boxed{}.\n"
-        user_prompt = apply_split_reversal(problem, separator=" ", func_name="reverse_string", seed=seed)
-        return user_prompt, system_prompt
-    elif name == 'variables':
-        system_prompt = "You are a helpful math assistant.\n\
-Your goal is to identify important 'load-bearing' terms in a math problem that we will later target for redefinition.\n"
-        user_prompt = apply_variables(problem)
-        return user_prompt, system_prompt
+        user_prompt_content = apply_split_reversal(problem, separator=" ", func_name="reverse_string", seed=seed)
     else:
         return 'Not Implemented', ''
+
+    # 2. Construct Protocol Prompt (Base64 + Rule)
+    transform_rule = TECHNIQUE_DESCRIPTIONS.get(name, "Unknown Transformation")
+    
+    if agentic:
+        # Base64 Encode
+        input_bytes = user_prompt_content.encode('utf-8')
+        base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
+        final_user_prompt = f"""
+TRANSFORMATION RULE:
+{transform_rule}
+
+TRANSFORMED INPUT:
+{base64_input_safe}
+"""
+        return final_user_prompt, AGENTIC_SYSTEM_PROMPT
+    else:   # Non-Agentic
+        final_user_prompt = f"""
+TRANSFORMATION RULE:
+{transform_rule}
+
+TRANSFORMED INPUT:
+{user_prompt_content}
+"""
+        return final_user_prompt, MODEL_SYSTEM_PROMPT
 
 
 def extract_answer(text):

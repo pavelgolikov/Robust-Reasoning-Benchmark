@@ -12,6 +12,7 @@ import traceback
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any
 
+
 # Fix path to include 'analysis' so 'variables' can be imported by util
 base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_dir, 'analysis'))
@@ -268,35 +269,6 @@ def main():
     safe_model_name = args.model.replace('/', '_').replace(' ', '_')
     safe_dataset_name = args.dataset.replace('/', '_')
 
-    # ------------------------------------------------------
-    # PROTOCOL PROMPT (Static)
-    # ------------------------------------------------------
-    PROTOCOL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
-You are participating in a robustness evaluation where math problems have been transformed.
-
-YOUR PROTOCOL (Follow Strictly):
-
-PHASE 1: RECONSTRUCTION
-1. Read the "TRANSFORMATION RULE" provided by the user. "TRANSFORMED INPUT" is given as a base64-encoded string.
-2. Write and output a Python script to programmatically decode from base 64 into raw text and then reverse the transformation.
-   - YOU MUST DECODE IN PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
-   - Do NOT guess or anticipate the original text.
-   - Do NOT simulate the execution.
-   - ONLY generate and output Python code to both decode base64 and reverse the transformation.
-   - In your Python code you must print the `repr()` of the reconstructed text.
-    - INCORRECT: print(text)  <-- Do not do this.
-    - CORRECT:   print(repr(text)) <-- DO THIS.
-
-4. Output your Python code in a markdown code block:
-```python ... Your code here ... ```
-5. The system will execute your code and provide the output back to you.
-
-PHASE 2: SOLUTION
-1. Examine the output of your Python script (the reconstructed text).
-2. Once Python ran succesfully and you have the reconstructed problem statement, proceed to solve the math problem.
-3. You may use Python for calculations.
-4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
-"""
 
     # ------------------------------------------------------
     # MAIN LOOP: Iterate Experiments -> Create Agents -> Batch Run
@@ -326,7 +298,7 @@ PHASE 2: SOLUTION
                 # We can set global seed or pass seed. get_prompts has a seed arg.
                 
                 try:
-                    user_prompt_content, _ = get_prompts(
+                    final_user_prompt, system_prompt = get_prompts(
                         example['problem'], 
                         exp_name, 
                         extra_context, 
@@ -334,20 +306,6 @@ PHASE 2: SOLUTION
                         seed=args.seed + sample_idx + (i * 1000), # Ensure distinct seed per sample/problem
                         num_distractors=args.num_distractors
                     )
-                    
-                    # Construct User Message with Base64 encoding
-                    input_bytes = user_prompt_content.encode('utf-8')
-                    base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
-                    
-                    technique_description = "User query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions."
-                    
-                    FINAL_USER_PROMPT = f"""
-TRANSFORMATION RULE:
-{technique_description}
-
-TRANSFORMED INPUT:
-{base64_input_safe}
-"""
                     
                     # Create Agent
                     agent = AgentState(
@@ -357,11 +315,11 @@ TRANSFORMED INPUT:
                         experiment_name=exp_name,
                         original_problem=example['problem'],
                         ground_truth=example['answer'],
-                        system_prompt_static=PROTOCOL_SYSTEM_PROMPT,
-                        user_prompt_content=user_prompt_content,
+                        system_prompt_static=system_prompt,
+                        user_prompt_content=final_user_prompt,
                         history=[
-                            {"role": "system", "content": PROTOCOL_SYSTEM_PROMPT},
-                            {"role": "user", "content": FINAL_USER_PROMPT}
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": final_user_prompt}
                         ]
                     )
                     agents.append(agent)
