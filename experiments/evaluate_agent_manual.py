@@ -156,9 +156,10 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
             # 1. Identify which agent(s) caused the error (e.g. prompt too long)
             # We must token-check to find the culprit(s).
             try:
-                max_len = llm.llm_engine.model_config.max_model_len
+                # max_len = llm.llm_engine.model_config.max_model_len
+                max_len = 65536
             except:
-                max_len = 32000
+                max_len = 65536
 
             agents_marked_failed = 0
             for agent, prompt in zip(current_batch_agents, prompts):
@@ -203,7 +204,7 @@ def main():
     parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
-    parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
+    parser.add_argument("--max_model_length", type=int, default=65536, help="Max model length for vLLM")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
 
     args = parser.parse_args()
