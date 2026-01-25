@@ -68,11 +68,9 @@ MODEL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent.
 You are participating in a robustness evaluation where math problems have been transformed.
 
 YOUR PROTOCOL:
-1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to
-obtain the original problem statement.
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
 2. Once you have the original problem statement, proceed to solve the math problem.
-
-IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
+3. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 """
 
 TECHNIQUE_DESCRIPTIONS = {
