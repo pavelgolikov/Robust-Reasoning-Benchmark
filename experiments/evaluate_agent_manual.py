@@ -212,7 +212,7 @@ def main():
     # Prep Experiments
     if args.names == 'all':
         experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
-        'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'split_reversal' ]
+        'not_not', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'split_reversal' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 
@@ -332,8 +332,7 @@ PHASE 2: SOLUTION
                         extra_context, 
                         variables=current_vars,
                         seed=args.seed + sample_idx + (i * 1000), # Ensure distinct seed per sample/problem
-                        num_distractors=args.num_distractors,
-                        decode_find_only=False
+                        num_distractors=args.num_distractors
                     )
                     
                     # Construct User Message with Base64 encoding
