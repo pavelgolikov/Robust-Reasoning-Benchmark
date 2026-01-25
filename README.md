@@ -29,12 +29,11 @@ NOTE: Technique to make an agent violate a previously given instruction - this e
 decode and solve.
 
 0. Try to see if the degradation is more or less with text other than auto-generated math systems.
-0.1. Need a script to analyze the output to see if the model is failing at decoding or solving after decoding.
-0.2. Need a script to analyze the output to see how well the model performs decoding only.
 1. Figure out if the model can't decode or can't solve after decoding?
 2. Try see if the model is able to perform simple python scripts. Scalability here can come from a million-sized list of
-   values.
+   values. (?)
 
+Repo description for agent.
 This repo contains a machine learning project. The point of the project is to try and confuse LLMs or agents with linguistic tricks to reduce their performance on math reasoning tasks. Tricks that would have no effect on human (or general reasoner) performance. Please analyze the repository for structure and implementations of various techniques to confuse language models. Analysis is a utility folder. Tell me when you have taken a look at the repo and ready to proceed.
 
 
@@ -161,5 +160,10 @@ Otherwise:
 If temp too high, model starts exploring during mechanical tasks - instead of writing Python, it decides to solve manually AGAINST explicit instructions.
 If temp is set too low, then model might be too conservative and not explore enough to find the solution.
 
-Model length needs to be kept shorter for the agent compared to the model itself because the reasoning chain itself is done in steps.
+Model length needs to be kept shorter for the agent compared to the model itself because the reasoning chain itself is
+done in steps.
+
+Idea:
+Confuse the model by introducing multiple block boundaries in the text? Like multiple defyn blocks scattered across the text?
+
 
