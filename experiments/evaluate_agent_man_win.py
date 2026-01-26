@@ -127,18 +127,13 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     prompts.append(prompt_str)
                     break
                 
-                # Truncation needed
+                # Truncation
                 # Strategy: Keep System (0) and Original Task (1). Remove oldest history (2).
                 if len(agent.history) > 2:
                     # Remove the oldest message after the initial setup
-                    # We remove one by one. Ideally pairs, but one by one is safe enough for length reduction
                     removed = agent.history.pop(2)
                     # print(f"  [Truncation] Agent {agent.id} removed old message ({len(removed['content'])} chars) to fit context.")
                 else:
-                    # If we are down to just System + User and it still doesn't fit, we are in trouble.
-                    # We can't prune anymore without losing the task.
-                    # This implies the user prompt itself is massive.
-                    # Fallback: Just let it fail in the try/catch block or hard truncate the prompt?
                     # For now, let's break and let the existing error handler catch the length error.
                     prompts.append(prompt_str)
                     break
@@ -159,6 +154,7 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     continue
                     
                 response_text = out_obj.outputs[0].text
+                print(response_text)
                 agent.step_count += 1
                 agent.history.append({"role": "assistant", "content": response_text})
                 
@@ -387,6 +383,7 @@ def main():
             results.append({
                 "id": agent.problem_id,
                 "sample_idx": agent.sample_idx,
+                "system_prompt": agent.system_prompt_static,
                 "output": agent.final_output,
                 "extracted": extracted,
                 "correct": is_correct,
