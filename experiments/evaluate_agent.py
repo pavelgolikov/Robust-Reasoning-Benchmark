@@ -237,7 +237,7 @@ def main():
         # Use same params as before
         sampling_params = SamplingParams(
             temperature=0.0, 
-            max_tokens=8096,
+            max_tokens=4096,
             stop=["Observation:"]
         )
         tokenizer = llm.get_tokenizer()

@@ -1,31 +1,11 @@
 import itertools
 
 def chunk_string(text, chunk_size):
-    # Flatten newlines to spaces
-    words = text.replace('\n', ' ').strip().split()
-    lines = []
-    current_line = []
-    current_len = 0
+    # Escape control characters so they appear as literals (e.g. \n)
+    text = text.encode('unicode_escape').decode('utf-8')
     
-    for word in words:
-        # If we have content and adding another word (or just being over limit already)
-        # The rule is: "if word goes over, just keep the word as is and break after it"
-        # This implies we keep adding until we exceed 60, then the NEXT word starts a new line.
-        
-        if current_line and current_len >= chunk_size:
-            lines.append(" ".join(current_line))
-            current_line = [word]
-            current_len = len(word)
-        else:
-            if current_line:
-                current_len += 1 # space
-            current_line.append(word)
-            current_len += len(word)
-            
-    if current_line:
-        lines.append(" ".join(current_line))
-        
-    return lines
+    # Strict splitting at chunk_size (60)
+    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
 
 def apply_interleaved_context_line(problem_a, problem_b, seed=None):
     """
