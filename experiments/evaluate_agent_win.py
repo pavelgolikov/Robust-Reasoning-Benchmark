@@ -236,7 +236,7 @@ def main():
 
     # Prep Experiments
     if args.names == 'all':
-        experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
+        experiment_names = [ 'interleaved_context_line', 'interleaved_context_word',
         'not_not', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'split_reversal' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
@@ -389,7 +389,7 @@ def main():
                 "correct": is_correct,
                 "original_problem": agent.original_problem,
                 "ground_truth": agent.ground_truth,
-                "history_dump": [h['content'] for h in agent.history] # Optional: save full history
+                # "history_dump": [h['content'] for h in agent.history] # Optional: save full history
             })
 
         # 4. Save

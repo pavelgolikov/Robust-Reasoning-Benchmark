@@ -36,6 +36,9 @@ except Exception as e:
 
 import base64
 
+#
+BASELINE_SYSTEM_PROMPT = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
+
 # Python Agent System Prompt
 AGENTIC_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
 You are participating in a robustness evaluation where math problems have been transformed.
@@ -74,7 +77,6 @@ YOUR PROTOCOL:
 """
 
 TECHNIQUE_DESCRIPTIONS = {
-    'not_not': "User query contains problem statement with added 'not' strings.",
     'word_split_swap': "User query contains problem statement. All words (words are defined as sequences of symbols separated by spaces) in user query have been modified. Every word is split into 2 parts down the middle. If the word has odd number of symbols, the first part has one symbol less than the second part. After splitting, the 2 parts are swapped.",
     'word_reversal': "User query contains problem statement. The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.",
     'sentence_reversal': "User query contains problem statement. The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.",
@@ -90,7 +92,6 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     # 1. Apply Transformation
     if name == 'baseline':
         user_prompt_content = problem
-        system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
         return user_prompt_content, system_prompt
     elif name == 'not_not':
         user_prompt_content = apply_not_not(problem)
@@ -139,7 +140,11 @@ TRANSFORMATION RULE:
 TRANSFORMED INPUT:
 {base64_input_safe}
 """
-        return final_user_prompt, AGENTIC_SYSTEM_PROMPT
+        if name == 'baseline' or name == 'not_not':
+            return final_user_prompt, BASELINE_SYSTEM_PROMPT
+        else:
+            return final_user_prompt, AGENTIC_SYSTEM_PROMPT
+
     else:   # Non-Agentic
         final_user_prompt = f"""
 TRANSFORMATION RULE:
@@ -148,7 +153,10 @@ TRANSFORMATION RULE:
 TRANSFORMED INPUT:
 {user_prompt_content}
 """
-        return final_user_prompt, MODEL_SYSTEM_PROMPT
+        if name == 'baseline' or name == 'not_not':
+            return final_user_prompt, BASELINE_SYSTEM_PROMPT
+        else:
+            return final_user_prompt, MODEL_SYSTEM_PROMPT
 
 
 def extract_answer(text):
