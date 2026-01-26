@@ -237,7 +237,7 @@ def main():
         # Use same params as before
         sampling_params = SamplingParams(
             temperature=0.0, 
-            max_tokens=4096,
+            max_tokens=8096,
             stop=["Observation:"]
         )
         tokenizer = llm.get_tokenizer()
@@ -304,7 +304,8 @@ def main():
                         extra_context, 
                         variables=current_vars,
                         seed=args.seed + sample_idx + (i * 1000), # Ensure distinct seed per sample/problem
-                        num_distractors=args.num_distractors
+                        num_distractors=args.num_distractors,
+                        agentic=True
                     )
                     
                     # Create Agent
