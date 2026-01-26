@@ -39,9 +39,8 @@ import base64
 #
 BASELINE_SYSTEM_PROMPT = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
 
-# Python Agent System Prompt
-AGENTIC_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent equipped with a Python interpreter.
-You are participating in a robustness evaluation where math problems have been transformed.
+# Python Agent Protocol Prefix (formerly AGENTIC_SYSTEM_PROMPT)
+USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interpreter.
 
 YOUR PROTOCOL (Follow Strictly):
 
@@ -67,10 +66,8 @@ PHASE 2: SOLUTION
 4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 """
 
-MODEL_SYSTEM_PROMPT = """You are an expert Mathematical Reasoning Agent.
-You are participating in a robustness evaluation where math problems have been transformed.
-
-YOUR PROTOCOL:
+# Model Protocol Prefix (formerly MODEL_SYSTEM_PROMPT)
+USER_PROMPT_PROTOCOL_PREFIX_MODEL = """YOUR PROTOCOL:
 1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
 2. Once you have the original problem statement, proceed to solve the math problem.
 3. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
@@ -92,7 +89,9 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     # 1. Apply Transformation
     if name == 'baseline':
         user_prompt_content = problem
-        return user_prompt_content, system_prompt
+        return user_prompt_content, BASELINE_SYSTEM_PROMPT
+    
+    # ... (Keep transformations same) ...
     elif name == 'not_not':
         user_prompt_content = apply_not_not(problem)
     elif name == 'word_split_swap':
@@ -129,34 +128,45 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     # 2. Construct Protocol Prompt (Base64 + Rule)
     transform_rule = TECHNIQUE_DESCRIPTIONS.get(name, "Unknown Transformation")
     
+    # Check if we should skip protocol wrapping (legacy behavior for baseline/not_not?) 
+    # Current code says: "if name == 'baseline' or name == 'not_not'". 
+    # Baseline returns early above.
+    # not_not logic below:
+    
     if agentic:
         # Base64 Encode
         input_bytes = user_prompt_content.encode('utf-8')
         base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
-        final_user_prompt = f"""
+        
+        # Wrapped Prompt
+        wrapped_prompt = f"""
 TRANSFORMATION RULE:
 {transform_rule}
 
 TRANSFORMED INPUT:
 {base64_input_safe}
 """
-        if name == 'baseline' or name == 'not_not':
-            return final_user_prompt, BASELINE_SYSTEM_PROMPT
-        else:
-            return final_user_prompt, AGENTIC_SYSTEM_PROMPT
+        prefix = USER_PROMPT_PROTOCOL_PREFIX_AGENT
 
-    else:   # Non-Agentic
-        final_user_prompt = f"""
+    else:   # Non-Agentic (Model)
+        wrapped_prompt = f"""
 TRANSFORMATION RULE:
 {transform_rule}
 
 TRANSFORMED INPUT:
 {user_prompt_content}
 """
-        if name == 'baseline' or name == 'not_not':
-            return final_user_prompt, BASELINE_SYSTEM_PROMPT
-        else:
-            return final_user_prompt, MODEL_SYSTEM_PROMPT
+        prefix = USER_PROMPT_PROTOCOL_PREFIX_MODEL
+    
+    if name == 'not_not' or name == 'baseline':
+        final_user_prompt = wrapped_prompt # Just the wrapper, no protocol prefix?
+        # Actually original returned "final_user_prompt" which was the wrapper.
+        # So yes, NO prefix.
+        return final_user_prompt.strip(), BASELINE_SYSTEM_PROMPT
+
+    # Combine
+    final_user_prompt = f"{prefix}\n\n{wrapped_prompt}"
+    return final_user_prompt.strip(), BASELINE_SYSTEM_PROMPT
 
 
 def extract_answer(text):

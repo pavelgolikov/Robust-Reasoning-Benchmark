@@ -97,8 +97,7 @@ def main():
                 extra_context, 
                 variables=current_vars,
                 seed=args.seed, 
-                num_distractors=args.num_distractors,
-                decode_find_only=args.decode_find_only
+                num_distractors=args.num_distractors
             )
             ground_truth = example['answer']
 

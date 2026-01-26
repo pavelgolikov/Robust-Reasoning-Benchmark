@@ -1,0 +1,12 @@
+[
+  {
+    "id": 60,
+    "system_prompt": "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n",
+    "original": "You are an expert Mathematical Reasoning Agent.\nYou are participating in a robustness evaluation where math problems have been transformed.\n\nYOUR PROTOCOL:\n1. Read the \"TRANSFORMATION RULE\" provided by the user and reverse the transformation on the \"TRANSFORMED INPUT\" to obtain the original problem statement.\n2. Once you have the original problem statement, proceed to solve the math problem.\n3. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.\n\n\n\nTRANSFORMATION RULE:\nUser query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions.\n\nTRANSFORMED INPUT:\nyrevE gninrom ayA seog rof a gnol-retemolik-$9$ klaw dna spots ta a eeffoc pohs .sdrawretfa nehW ehs sklaw ta a tnatsnoc deeps fo $s$ sretemolik rep ,ruoh eht klaw sekat reh 4 ,sruoh gnidulcni $t$ setunim tneps ni eht eeffoc .pohs nehW ehs sklaw $2+s$ sretemolik rep ,ruoh eht klaw sekat reh 2 sruoh dna 42 ,setunim gnidulcni $t$ setunim tneps ni eht eeffoc .pohs esoppuS ayA sklaw ta $}2{}1{carf\\+s$ sretemolik rep .ruoh dniF eht rebmun fo setunim eht klaw sekat ,reh gnidulcni eht $t$ setunim tneps ni eht eeffoc .pohs",
+    "unmodified_original": "Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.",
+    "ground_truth": "204",
+    "output": "placeholder output from dry run",
+    "extracted": null,
+    "correct": false
+  }
+]
