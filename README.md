@@ -167,3 +167,9 @@ Idea:
 Confuse the model by introducing multiple block boundaries in the text? Like multiple defyn blocks scattered across the text?
 
 
+Notes:
+1. Split reversal and word_split_swap are invalid as is because special characters (like \b) can appear as a result of reversal.
+    This can erase information; this is not fair to the model. Need to figure something out for these.
+2. Interleaved context line is not valid because the model doesn't know how many characters there are in segments into
+    which the problem statements are broken into and overlapped. Fix in system prompt to tell the model about this.
+
