@@ -154,7 +154,7 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     continue
                     
                 response_text = out_obj.outputs[0].text
-                print(response_text)
+                # print(response_text)
                 agent.step_count += 1
                 agent.history.append({"role": "assistant", "content": response_text})
                 
