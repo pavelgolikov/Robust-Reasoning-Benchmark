@@ -19,6 +19,12 @@ sys.path.append(os.path.join(base_dir, 'analysis'))
 
 from datasets import load_dataset
 from util import get_prompts, extract_answer, normalize_answer
+try:
+    from experiments.context_saturation.generate_systems import generate_systems
+except ImportError:
+    # Fallback/Hack for path
+    sys.path.append(os.path.join(base_dir, 'context_saturation'))
+    from generate_systems import generate_systems
 
 # ======================================================
 # PART 1: HELPER FUNCTIONS (Parser & Executor)
@@ -86,13 +92,18 @@ class AgentState:
     history: List[Dict[str, str]]
     memory: Dict[str, Any] = field(default_factory=dict)
     
+    # Saturation State
+    is_saturating: bool = False
+    distractors_queue: List[str] = field(default_factory=list)
+    real_problem_pending: str = ""
+    
     # Status
     is_done: bool = False
     final_output: str = ""
     extracted_answer: str = ""
     is_correct: bool = False
     step_count: int = 0
-    max_steps: int = 20
+    max_steps: int = 10
 
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
@@ -113,7 +124,61 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
         if not current_batch_agents:
             break
             
-        prompts = [a.get_vllm_prompt(tokenizer) for a in current_batch_agents]
+        prompts = []
+        # 1. Prepare Prompts & Truncate
+        max_input_tokens = 65536 - 4096 - 200 # Leave room for generation + small buffer
+        
+        for agent in current_batch_agents:
+            # === SATURATION LOGIC ===
+            if agent.is_saturating:
+                # Check current length
+                prompt_str = agent.get_vllm_prompt(tokenizer)
+                token_ids = tokenizer.encode(prompt_str)
+                
+                # If nearly full OR no more distractors -> Switch to Real Problem
+                if len(token_ids) > (max_input_tokens - 1000) or not agent.distractors_queue:
+                    # Switch to Real Problem
+                    agent.is_saturating = False
+                    agent.history.append({"role": "user", "content": agent.real_problem_pending})
+                    print(f"  [Saturation] Agent {agent.id} saturated (len {len(token_ids)}) or queue empty. Switching to Real Problem.")
+                    
+                    # Add prompt for Real Problem immediately
+                    prompt_str = agent.get_vllm_prompt(tokenizer)
+                    # Use standard truncation logic (below) recursively if needed, OR just append
+                    # We fall through to standard logic? No, let's just append and let next loop handle truncation if needed?
+                    # Actually, if we just appended Real Problem, we might be OVER limit.
+                    # We should let the standard logic handle the prompt generation/truncation validly.
+                    # So we break this 'if' and let the 'while True' loop below handle it?
+                    # The 'while True' loop below is for standard truncation.
+                    # Let's just fall through to the logic below.
+                else:
+                    # Add next distractor
+                    distractor = agent.distractors_queue.pop(0)
+                    agent.history.append({"role": "user", "content": distractor})
+                    # Add prompt
+                    prompts.append(agent.get_vllm_prompt(tokenizer))
+                    continue # Skip standard truncation/logic for this agent this turn
+
+            # === STANDARD LOGIC (Solving or Saturated) ===
+            # Recursive truncation loop
+            while True:
+                prompt_str = agent.get_vllm_prompt(tokenizer)
+                token_ids = tokenizer.encode(prompt_str)
+                
+                if len(token_ids) <= max_input_tokens:
+                    prompts.append(prompt_str)
+                    break
+                
+                # Truncation
+                # Strategy: Keep System (0) and Original Task (1). Remove oldest history (2).
+                if len(agent.history) > 2:
+                    # Remove the oldest message after the initial setup
+                    removed = agent.history.pop(2)
+                    # print(f"  [Truncation] Agent {agent.id} removed old message ({len(removed['content'])} chars) to fit context.")
+                else:
+                    # For now, let's break and let the existing error handler catch the length error.
+                    prompts.append(prompt_str)
+                    break
         
         print(f"\n[Batch Step] Generating for {len(current_batch_agents)} agents...")
         
@@ -131,24 +196,33 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     continue
                     
                 response_text = out_obj.outputs[0].text
-                agent.step_count += 1
-                agent.history.append({"role": "assistant", "content": response_text})
+                # print(response_text)
                 
-                # Check for Code
-                code_block = extract_python_code(response_text)
-                if code_block:
-                    execution_result = execute_python_code(code_block, agent.memory)
-                    tool_msg = f"Observation:\n{execution_result}"
-                    agent.history.append({"role": "user", "content": tool_msg})
+                if agent.is_saturating:
+                    # In saturation mode, we just add response and continue
+                    agent.history.append({"role": "assistant", "content": response_text})
+                    # Do NOT increment step_count for solving limits
+                    # Output is irrelevant for final score, but we keep it in history
                 else:
-                    if "\\boxed{" in response_text:
-                        agent.final_output = response_text
-                        agent.is_done = True
-                    elif agent.step_count >= agent.max_steps:
-                        agent.final_output = response_text
-                        agent.is_done = True
+                    # Standard Solving Mode
+                    agent.step_count += 1
+                    agent.history.append({"role": "assistant", "content": response_text})
+                    
+                    # Check for Code
+                    code_block = extract_python_code(response_text)
+                    if code_block:
+                        execution_result = execute_python_code(code_block, agent.memory)
+                        tool_msg = f"Observation:\n{execution_result}"
+                        agent.history.append({"role": "user", "content": tool_msg})
                     else:
-                        pass # Implicit continue
+                        if "\\boxed{" in response_text:
+                            agent.final_output = response_text
+                            agent.is_done = True
+                        elif agent.step_count >= agent.max_steps:
+                            agent.final_output = response_text
+                            agent.is_done = True
+                        else:
+                            pass # Implicit continue
 
         except BaseException as e:
             # Catch Validation/Context Errors (ValueError) or others
@@ -298,14 +372,20 @@ def main():
                 # We can set global seed or pass seed. get_prompts has a seed arg.
                 
                 try:
-                    final_user_prompt, system_prompt = get_prompts(
-                        example['problem'], 
-                        exp_name, 
-                        extra_context, 
-                        variables=current_vars,
-                        seed=args.seed + sample_idx + (i * 1000), # Ensure distinct seed per sample/problem
-                        num_distractors=args.num_distractors
-                    )
+                    # 1. Baseline System Prompt (Regular)
+                    system_prompt = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}."
+                    
+                    # 2. Generate Massive Amount of Distractors
+                    dist_vars = ["x", "y", "n", "k"]
+                    if current_vars and len(current_vars) > 0:
+                        dist_vars = current_vars
+                    
+                    # Generate enough to overflow 64k tokens. 
+                    # Live generation takes time, but we want to ensure full context.
+                    # 1000 distractors should be plenty. The loop stops when context is full.
+                    distractors = generate_systems(dist_vars, count=1000)
+                    
+                    final_user_prompt = example['problem']
                     
                     # Create Agent
                     agent = AgentState(
@@ -317,10 +397,11 @@ def main():
                         ground_truth=example['answer'],
                         system_prompt_static=system_prompt,
                         user_prompt_content=final_user_prompt,
-                        history=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": final_user_prompt}
-                        ]
+                        history=[{"role": "system", "content": system_prompt}],
+                        # Saturation Config
+                        is_saturating=True,
+                        distractors_queue=distractors,
+                        real_problem_pending=final_user_prompt
                     )
                     agents.append(agent)
                     
@@ -358,6 +439,7 @@ def main():
             results.append({
                 "id": agent.problem_id,
                 "sample_idx": agent.sample_idx,
+                "system_prompt": agent.system_prompt_static,
                 "output": agent.final_output,
                 "extracted": extracted,
                 "correct": is_correct,
