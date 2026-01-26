@@ -92,7 +92,7 @@ class AgentState:
     extracted_answer: str = ""
     is_correct: bool = False
     step_count: int = 0
-    max_steps: int = 20
+    max_steps: int = 10
 
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
@@ -331,8 +331,9 @@ def main():
                         exp_name, 
                         extra_context, 
                         variables=current_vars,
-                        seed=args.seed + sample_idx + (i * 1000), # Ensure distinct seed per sample/problem
-                        num_distractors=args.num_distractors
+                        seed=args.seed, # Ensure distinct seed per sample/problem
+                        num_distractors=args.num_distractors,
+                        agentic=True
                     )
                     
                     # Create Agent
