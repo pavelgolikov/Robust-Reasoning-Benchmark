@@ -18,7 +18,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_dir, 'analysis'))
 
 from datasets import load_dataset
-from util import get_prompts, extract_answer, normalize_answer
+from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments
 
 # ======================================================
 # PART 1: HELPER FUNCTIONS (Parser & Executor)
@@ -287,9 +287,11 @@ def main():
             extra_context = None
             if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
                 next_idx = (i + 1) % len(dataset)
-                extra_context = dataset[next_idx]['problem']
+                extra_context = remove_latex_comments(dataset[next_idx]['problem'])
             
             current_vars = extracted_vars.get(prob_id) if extracted_vars else None
+            
+            cleaned_problem = remove_latex_comments(example['problem'])
             
             # Create K samples
             for sample_idx in range(args.n_samples):
@@ -299,7 +301,7 @@ def main():
                 
                 try:
                     final_user_prompt, system_prompt = get_prompts(
-                        example['problem'], 
+                        cleaned_problem, 
                         exp_name, 
                         extra_context, 
                         variables=current_vars,

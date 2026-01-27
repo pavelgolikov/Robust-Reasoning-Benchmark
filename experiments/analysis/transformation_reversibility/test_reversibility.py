@@ -4,6 +4,7 @@ import sys
 import random
 import importlib
 from datasets import load_dataset
+from experiments.util import remove_latex_comments
 # Add project root (parent of experiments dir) to sys.path
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # script_dir: experiments/analysis/transformation_reversibility
@@ -125,12 +126,15 @@ def main():
             kwargs = {}
             if exp_name in ['interleaved_context_line', 'interleaved_context_word', 'interleaved_substitutions']:
                  next_idx = (i + 1) % len(dataset)
-                 problem_b = dataset[next_idx]['problem']
+                 problem_b = remove_latex_comments(dataset[next_idx]['problem'])
                  kwargs = {'problem_b': problem_b}
             elif exp_name == 'context_saturation':
                  kwargs = {'num_distractors': args.num_distractors}
                  
             try:
+                # 0. Global Sanitization
+                original_raw = remove_latex_comments(original_raw)
+
                 if 'problem_b' in kwargs:
                      transformed = apply_func(original_raw, kwargs['problem_b'], seed=args.seed)
                 elif exp_name == 'context_saturation':

@@ -1,11 +1,12 @@
 import itertools
 
 def chunk_string(text, chunk_size):
-    # Escape control characters so they appear as literals (e.g. \n)
-    text = text.encode('unicode_escape').decode('utf-8')
+    # Flatten newlines to spaces
+    flat = text.replace('\n', ' ').strip()
+    return [flat[i:i+chunk_size] for i in range(0, len(flat), chunk_size)]
     
     # Strict splitting at chunk_size (60)
-    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+    # return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
 
 def apply_interleaved_context_line(problem_a, problem_b, seed=None):
     """
@@ -46,6 +47,7 @@ def reverse_interleaved_context_line(text):
     """
     Reverses the interleaved_context transformation.
     Extracts lines tagged with <Problem A> and rejoins them.
+    Unescapes the control characters.
     """
     lines = text.split('\n')
     reconstructed_parts = []
@@ -56,5 +58,8 @@ def reverse_interleaved_context_line(text):
             content = line[:-12]
             reconstructed_parts.append(content)
             
-    # Join with space as the original chunking flattened newlines to spaces
-    return " ".join(reconstructed_parts)
+    # Join parts
+    full_text = "".join(reconstructed_parts)
+    
+    
+    return full_text

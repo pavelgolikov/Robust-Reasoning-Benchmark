@@ -4,7 +4,7 @@ import json
 import time
 import random
 from datasets import load_dataset
-from util import get_prompts, extract_answer, normalize_answer
+from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset (Efficiency Optimized)")
@@ -86,13 +86,15 @@ def main():
             extra_context = None
             if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
                 next_idx = (i + 1) % len(dataset)
-                extra_context = dataset[next_idx]['problem']
+                extra_context = remove_latex_comments(dataset[next_idx]['problem'])
             
             prob_id = str(example.get('id', i))
             current_vars = extracted_vars.get(prob_id) if extracted_vars else None
             
+            cleaned_problem = remove_latex_comments(example['problem'])
+
             user_prompt, system_prompt = get_prompts(
-                example['problem'], 
+                cleaned_problem, 
                 exp_name, 
                 extra_context, 
                 variables=current_vars,

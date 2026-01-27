@@ -18,7 +18,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_dir, 'analysis'))
 
 from datasets import load_dataset
-from util import get_prompts, extract_answer, normalize_answer
+from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments
 try:
     from experiments.context_saturation.generate_systems import generate_systems
 except ImportError:
@@ -381,11 +381,9 @@ def main():
                         dist_vars = current_vars
                     
                     # Generate enough to overflow 64k tokens. 
-                    # Live generation takes time, but we want to ensure full context.
-                    # 1000 distractors should be plenty. The loop stops when context is full.
-                    distractors = generate_systems(dist_vars, count=1000)
+                    distractors = generate_systems(dist_vars, count=100)
                     
-                    final_user_prompt = example['problem']
+                    final_user_prompt = remove_latex_comments(example['problem'])
                     
                     # Create Agent
                     agent = AgentState(

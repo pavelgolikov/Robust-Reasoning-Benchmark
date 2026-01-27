@@ -74,18 +74,52 @@ USER_PROMPT_PROTOCOL_PREFIX_MODEL = """YOUR PROTOCOL:
 """
 
 TECHNIQUE_DESCRIPTIONS = {
-    'word_split_swap': "User query contains problem statement. All words (words are defined as sequences of symbols separated by spaces) in user query have been modified. Every word is split into 2 parts down the middle. If the word has odd number of symbols, the first part has one symbol less than the second part. After splitting, the 2 parts are swapped.",
     'word_reversal': "User query contains problem statement. The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.",
     'sentence_reversal': "User query contains problem statement. The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.",
     'interleaved_context_word': "User query will consist of two problems - A and B, whose statements are interleaved word by word. First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on. You need to solve only problem A. Words are defined as sequences of symbols separated by spaces. If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
     'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is followed by a space and a problem tag (e.g. problem A or B). The segments are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the empty lines resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
     'wrappers': "User query contains problem statement. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
-    'split_reversal': "User query string was split on space as separator into substrings. The symbols of each substring were then reversed and concatenated back with the separators in the same positions.",
+    'word_split_swap': "User query contains problem statement. All words (words are defined as sequences of symbols separated by spaces) in user query have been modified. Every word is split into 2 parts down the middle. If the word has odd number of symbols, the first part has one symbol less than the second part. After splitting, the 2 parts are swapped.",
+    'split_reversal': "User query string was split into substrings on space as separator. The symbols of each substring were then reversed and concatenated back with the separators in the same positions.",
     'context_saturation': "User query contains multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence in the problem statement. For example, two valid parts are: '[[Pro' 'blemK]]' and '[[P' 'roblemK]]'. The two parts can be placed in reverse order in the problem statement. The index of the problem you are to solve will be indicated in the middle of user query. Problems are independent of each other.",
     'opposites': "User query contains problem statement. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
 }
 
+def remove_latex_comments(text):
+    """
+    Removes LaTeX comments (starting with %, unless escaped as \%) from the text.
+    Handles lines individually.
+    """
+    lines = text.split('\n')
+    clean_lines = []
+    for line in lines:
+        # Robust regex to handle escaping:
+        # Match either:
+        # 1. (\\\\) : Double backslash (newline or literal backslash) -> Keep
+        # 2. (\\%)  : Escaped percent -> Keep
+        # 3. (%.*)  : Comment start -> Remove
+        # Use a callback to decide replacement.
+        
+        def replacer(match):
+            if match.group(1):
+                return match.group(1) # It was an escaped sequence, keep it
+            else:
+                return "" # It was a comment, remove it
+                
+        # Pattern:
+        # Group 1: (\\\\|\\%) -> Match double backslash OR escaped percent
+        # Group 2: (%.*)      -> Match percent and rest of line
+        clean_line = re.sub(r'(\\\\|\\%)|(%.*)', replacer, line)
+        clean_lines.append(clean_line)
+        
+    return "\n".join(clean_lines)
+
 def get_prompts(problem, name, extra_context=None, variables=None, seed=None, num_distractors=None, agentic=False):
+    # 0. Global Sanitization: Remove LaTeX comments from the main problem
+    problem = remove_latex_comments(problem)
+    if extra_context:
+        extra_context = remove_latex_comments(extra_context)
+
     # 1. Apply Transformation
     if name == 'baseline':
         user_prompt_content = problem
