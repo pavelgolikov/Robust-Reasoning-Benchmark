@@ -70,15 +70,12 @@ USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interprete
 YOUR PROTOCOL (Follow Strictly):
 
 PHASE 1: RECONSTRUCTION
-1. Read the "TRANSFORMATION RULE" provided by the user and "TRANSFORMED INPUT".
+1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT".
 2. Write and output a Python script to programmatically reverse the transformation.
    - YOU MUST DECODE IN PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
    - Do NOT guess or anticipate the original text.
    - Do NOT simulate the execution.
    - ONLY generate and output Python code to reverse the transformation.
-   - In your Python code you must print the `repr()` of the reconstructed text.
-    - INCORRECT: print(text)  <-- Do not do this.
-    - CORRECT:   print(repr(text)) <-- DO THIS.
 
 4. Output your Python code in a markdown code block:
 ```python ... Your code here ... ```
