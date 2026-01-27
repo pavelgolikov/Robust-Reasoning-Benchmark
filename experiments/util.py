@@ -139,11 +139,38 @@ def remove_latex_comments(text):
         
     return "\n".join(clean_lines)
 
+def sanitize_inverted_escapes(text):
+    """
+    Inserts a space between specific characters and a backslash to prevent
+    accidental escape formation when text is reversed.
+    Targets: b\\, n\\, t\\, a\\, f\\, r\\ -> b \\, n \\, etc.
+    """
+    # Pattern: a single character from the set [bntaffr] followed by a backslash
+    # Note: Using raw string for regex. Backslash needs to be escaped in regex (\\)
+    # So looking for [bntafr]\\
+    return re.sub(r'([bntafr])\\', r'\1 \\', text)
+
+def flatten_text(text):
+    """
+    Standardizes text by replacing newlines with '; '.
+    This ensures consistent single-line input for all transformations.
+    """
+    if text is None: return ""
+    return text.replace('\n', '; ')
+
 def get_prompts(problem, name, extra_context=None, variables=None, seed=None, num_distractors=None, agentic=False):
-    # 0. Global Sanitization: Remove LaTeX comments from the main problem
+    # 0. Global Sanitization: Remove LaTeX comments and sanitize inverted escapes
     problem = remove_latex_comments(problem)
+    problem = sanitize_inverted_escapes(problem)
+    
+    # Global Standardization: Flatten newlines
+    problem = flatten_text(problem)
+
     if extra_context:
         extra_context = remove_latex_comments(extra_context)
+        extra_context = sanitize_inverted_escapes(extra_context)
+        extra_context = flatten_text(extra_context)
+
 
     # 1. Apply Transformation
     if name == 'baseline':

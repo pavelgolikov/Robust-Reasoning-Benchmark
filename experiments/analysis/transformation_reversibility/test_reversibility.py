@@ -21,7 +21,7 @@ experiments_dir = os.path.join(project_root, 'experiments')
 if experiments_dir not in sys.path:
     sys.path.append(experiments_dir)
 
-from experiments.util import remove_latex_comments
+from experiments.util import remove_latex_comments, sanitize_inverted_escapes, flatten_text
 
 def normalize_text(text, method='standard'):
     if method == 'aggressive':
@@ -67,7 +67,7 @@ def main():
         experiment_names = ['context_saturation',
                             'interleaved_context_line',
                             'interleaved_context_word',
-                            'not_not_yot',
+                            'not_not',
                             'opposites',
                             'sentence_reversal',
                             'word_reversal',
@@ -135,6 +135,8 @@ def main():
             if exp_name in ['interleaved_context_line', 'interleaved_context_word', 'interleaved_substitutions']:
                  next_idx = (i + 1) % len(dataset)
                  problem_b = remove_latex_comments(dataset[next_idx]['problem'])
+                 problem_b = sanitize_inverted_escapes(problem_b)
+                 problem_b = flatten_text(problem_b)
                  kwargs = {'problem_b': problem_b}
             elif exp_name == 'context_saturation':
                  kwargs = {'num_distractors': args.num_distractors}
@@ -142,6 +144,8 @@ def main():
             try:
                 # 0. Global Sanitization
                 original_raw = remove_latex_comments(original_raw)
+                original_raw = sanitize_inverted_escapes(original_raw)
+                original_raw = flatten_text(original_raw)
 
                 if 'problem_b' in kwargs:
                      transformed = apply_func(original_raw, kwargs['problem_b'], seed=args.seed)
