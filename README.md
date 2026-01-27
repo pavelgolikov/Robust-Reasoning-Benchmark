@@ -167,11 +167,11 @@ Idea:
 Confuse the model by introducing multiple block boundaries in the text? Like multiple defyn blocks scattered across the text?
 
 
-Notes:
-1. Split reversal and word_split_swap are invalid as is because special characters (like \b) can appear as a result of reversal.
-    This can erase information; this is not fair to the model. Need to figure something out for these.
+WARNING: Split reversal and word_split_swap are invalid as is because special characters (like \b) can appear as a
+result of reversal. This can erase information; this is not fair to the model. Need to figure something out for these.
 
 WARNING:
 Interleaved context line can run into problems if we don't remove the newline characters from the problem statements.
-NOTE: We removed all latex comments from problem statements before querying the model.
+Otherwise some lines will not have tags and the input will look messy.
+NOTE: We removed all latex comments from problem statements and then we replaced newlines with spaces.
 

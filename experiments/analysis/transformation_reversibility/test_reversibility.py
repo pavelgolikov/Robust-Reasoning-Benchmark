@@ -4,7 +4,7 @@ import sys
 import random
 import importlib
 from datasets import load_dataset
-from experiments.util import remove_latex_comments
+
 # Add project root (parent of experiments dir) to sys.path
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # script_dir: experiments/analysis/transformation_reversibility
@@ -15,6 +15,13 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
 
 if project_root not in sys.path:
     sys.path.append(project_root)
+
+# Also add experiments dir for util.py internal imports
+experiments_dir = os.path.join(project_root, 'experiments')
+if experiments_dir not in sys.path:
+    sys.path.append(experiments_dir)
+
+from experiments.util import remove_latex_comments
 
 def normalize_text(text, method='standard'):
     if method == 'aggressive':
@@ -32,6 +39,7 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num_distractors", type=int, default=2, help="Number of distractors for context_saturation")
     parser.add_argument("--split", type=str, default="all", help="Split to use for testing")
+    parser.add_argument("--num_print_samples", type=int, default=1, help="Number of matching samples to print in the report.")
     args = parser.parse_args()
 
     # helper for safe name
@@ -111,7 +119,7 @@ def main():
         
         passed = 0
         total = 0
-        random_match_details = None
+        saved_matches = []
         
         for i in indices:
             total += 1
@@ -171,6 +179,9 @@ def main():
                     
                 if is_match:
                     passed += 1
+                    # Collect matches up to limit
+                    if len(saved_matches) < args.num_print_samples:
+                        saved_matches.append((i, status, transformed, original_raw, reversed_text))
                     
                 if not is_match:
                     report_lines.append(f"\n{'-'*80}")
@@ -193,24 +204,14 @@ def main():
                     report_lines.append(norm_rev)
                     report_lines.append(f"--- Length Diff: {len(norm_rev) - len(norm_orig)} ---")
                 
-                else:
-                    # Reservoir sampling to keep one random match
-                    match_count_local = passed
-                    if match_count_local == 1:
-                        # Always keep the first one roughly, then replace
-                        random_match_details = (i, status, transformed, original_raw, reversed_text)
-                    else:
-                        if random.random() < (1.0 / match_count_local):
-                            random_match_details = (i, status, transformed, original_raw, reversed_text)
-
             except Exception as e:
                 report_lines.append(f"\nSample ID: {i} | ERROR during transform/reverse: {e}")
 
-        # Report one random match if available
-        if random_match_details:
-             idx, st, tr, orig, rev = random_match_details
+        # Report collected matches
+        for match_details in saved_matches:
+             idx, st, tr, orig, rev = match_details
              report_lines.append(f"\n{'-'*40}")
-             report_lines.append(f"RANDOM MATCH EXAMPLE (Sample ID: {idx})")
+             report_lines.append(f"MATCH EXAMPLE (Sample ID: {idx})")
              report_lines.append(f"{'-'*40}")
              report_lines.append("\n[TRANSFORMED PROBLEM]:")
              report_lines.append(tr)
