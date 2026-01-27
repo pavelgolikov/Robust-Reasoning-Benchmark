@@ -8,7 +8,7 @@ from util import get_prompts, extract_answer, normalize_answer, remove_latex_com
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset (Efficiency Optimized)")
-    parser.add_argument("--model", type=str, default="NONE", help="Path/Name of the model to evaluate")
+    parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B", help="Path/Name of the model to evaluate")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
@@ -22,7 +22,7 @@ def main():
     args = parser.parse_args()
     if args.names == 'all':
         experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
-        'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'split_reversal' ]
+        'not_not', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'split_reversal' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 

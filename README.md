@@ -104,6 +104,51 @@ GPT-5.1
 Gemini 3 Pro
 
 
+# Methodology:
+# Dataset Preprocessing:
+We preprocess the datasets to remove the possibilities of escape sequences interfering with our transformations.
+For example, we observed in some problem statements, a variable, for example "b" can be surrounded by escaped brackets like "\(b\)".
+If the transformation involves reversing the symbols in the problem statement, the snippet becomes ")\b(\".
+Since \b is a backspace escape sequence, if text gets rendered or interpreted, the character before \b gets erased,
+which is unfair to the model as there is loss of information.
+We perform 3 preprocessing steps to avoid such issues:
+1. Remove all empty lines from problem statements and replace them with "; " - a semicolon followed by a space.
+   This ensures that the model sees a break in the text without having to deal with newlines.
+2. Remove all LaTeX comments from problem statements. LaTeX comments start with a "%" symbol and continue until the end of the line.
+   Since we have removed all newlines, we remove the comments to avoid any unintended consequences. That being said, we
+   have not observed comments in any of the problem sets.
+3. Inserts a space between specific characters (n, t, b, r, a, f) and a backslash to prevent accidental escape sequence
+   formation if text is reversed.
+We argue that these preprocessing steps do not change the problem statements in any meaningful way.
+Moreover, when presented to a human, these preprocessing steps are trivial to ignore or decode.
+
+# Linguistic Trap Implementations:
+When implementing the linguistic trap techniques, we follow these general guidelines to ensure consistency and fairness
+to the model during evaluation:
+1. Each technique should not remove or add any information from the original problem statement or introduce any ambiguities
+    that would confuse an actual general reasoner (human or AI).
+2. Each technique needs to be easily reversible/defeatable by a human with minimal effort and without any specialized tools.
+    We verify this by writing a simple python script for each technique that can reverse/defeat the transformation and
+    restore the original problem statement.
+3. Each technique should be simple enough that a human can decode/defeat it without losing performance on the 
+    reasoning task at hand (e.g., solving a math problem itself).
+4. Model is informed of the transformation and given its detailed description in the user prompt. Model is instructed
+    to first defeat the transformation, recover the original problem statement, and only then solve the problem.
+Description of each technique implementation is given in Section 3.
+
+# Evaluation Setup:
+We evaluate each model in two configurations:
+1. Direct Prompting. We directly prompt the model to solve the modified problem statement by first defeating the transformation
+    and then solving the problem.
+2. Agentic Python Interpreter. We setup an agentic loop where the model can use a python interpreter to defeat the
+    transformation and solve the problem after recovering the original problem statement. Our agentic loop follows the ReAct
+    paradigm (Yao et al., 2023) where the model can interleave reasoning steps (Thoughts) with actions (code execution).
+    We use the same prompt structure as in direct prompting, except the model is informed in the user query that it has
+    access to a python interpreter to help defeat the transformation. We use a custom loop instead of frameworks like
+    smolagents to exercise direct control over the prompt structures.
+
+
+
 Methodology justification for manual loop and markdown:
 Yes, this is a very strong, scientifically valid position. In the research community (specifically regarding Code LLMs and Mathematical Reasoning), the **Markdown/Free-Text Code approach** is often preferred over **Structured JSON/Tool-Use** for complex reasoning tasks.
 
@@ -165,13 +210,3 @@ done in steps.
 
 Idea:
 Confuse the model by introducing multiple block boundaries in the text? Like multiple defyn blocks scattered across the text?
-
-
-WARNING: Split reversal and word_split_swap are invalid as is because special characters (like \b) can appear as a
-result of reversal. This can erase information; this is not fair to the model. Need to figure something out for these.
-
-WARNING:
-Interleaved context line can run into problems if we don't remove the newline characters from the problem statements.
-Otherwise some lines will not have tags and the input will look messy.
-NOTE: We removed all latex comments from problem statements and then we replaced newlines with spaces.
-

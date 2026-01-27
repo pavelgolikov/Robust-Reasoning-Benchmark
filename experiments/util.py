@@ -155,11 +155,9 @@ def flatten_text(text):
     return text.replace('\n', '; ')
 
 def get_prompts(problem, name, extra_context=None, variables=None, seed=None, num_distractors=None, agentic=False):
-    # 0. Global Sanitization: Remove LaTeX comments and sanitize inverted escapes
+    # 0. Global Sanitization: Remove LaTeX comments and sanitize inverted escapes and flatten newlines
     problem = remove_latex_comments(problem)
     problem = sanitize_inverted_escapes(problem)
-    
-    # Global Standardization: Flatten newlines
     problem = flatten_text(problem)
 
     if extra_context:

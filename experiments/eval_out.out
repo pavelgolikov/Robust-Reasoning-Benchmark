@@ -1,112 +1,771 @@
-Running experiments: ['split_reversal']
+Running experiments: ['context_saturation', 'interleaved_context_line', 'interleaved_context_word', 'not_not_yot', 'opposites', 'sentence_reversal', 'word_reversal', 'word_split_swap', 'wrappers', 'split_reversal']
 Initializing vLLM with model: tiiuae/Falcon-H1R-7B
-INFO 01-27 02:33:34 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 65536, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'tiiuae/Falcon-H1R-7B'}
-WARNING 01-27 02:33:34 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
-INFO 01-27 02:33:35 [model.py:637] Resolved architecture: FalconH1ForCausalLM
-INFO 01-27 02:33:35 [model.py:1750] Using max model len 65536
-INFO 01-27 02:33:36 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
-INFO 01-27 02:33:36 [config.py:315] Disabling cascade attention since it is not supported for hybrid models.
-INFO 01-27 02:33:37 [config.py:439] Setting attention block size to 1568 tokens to ensure that attention page size is >= mamba page size.
-INFO 01-27 02:33:37 [config.py:463] Padding mamba page size by 0.51% to ensure that mamba page size and attention page size are exactly equal.
-[0;36m(EngineCore_DP0 pid=1941207)[0;0m INFO 01-27 02:33:48 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='tiiuae/Falcon-H1R-7B', speculative_config=None, tokenizer='tiiuae/Falcon-H1R-7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=65536, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=tiiuae/Falcon-H1R-7B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
-[0;36m(EngineCore_DP0 pid=1941207)[0;0m WARNING 01-27 02:33:48 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
-INFO 01-27 02:33:59 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:54373 backend=nccl
-INFO 01-27 02:33:59 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:54373 backend=nccl
-INFO 01-27 02:34:00 [pynccl.py:111] vLLM is using nccl==2.27.7
-INFO 01-27 02:34:01 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
-INFO 01-27 02:34:01 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:02 [gpu_model_runner.py:3467] Starting to load model tiiuae/Falcon-H1R-7B...
-[0;36m(Worker_TP1 pid=1942769)[0;0m INFO 01-27 02:34:02 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:02 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:13 [default_loader.py:308] Loading weights took 10.12 seconds
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:14 [gpu_model_runner.py:3549] Model loading took 7.2526 GiB memory and 11.296821 seconds
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:29 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/1c62165b61/rank_0_0/backbone for vLLM's torch.compile
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:29 [backends.py:715] Dynamo bytecode transform time: 14.76 s
-[0;36m(Worker_TP1 pid=1942769)[0;0m INFO 01-27 02:34:34 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.960 s
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:34 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.972 s
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:36 [monitor.py:34] torch.compile takes 19.74 s in total
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:38 [gpu_worker.py:359] Available KV cache memory: 58.56 GiB
-[0;36m(EngineCore_DP0 pid=1941207)[0;0m INFO 01-27 02:34:38 [kv_cache_utils.py:1286] GPU KV cache size: 1,395,520 tokens
-[0;36m(EngineCore_DP0 pid=1941207)[0;0m INFO 01-27 02:34:38 [kv_cache_utils.py:1291] Maximum concurrency for 65,536 tokens per request: 41.40x
-[0;36m(Worker_TP1 pid=1942769)[0;0m INFO 01-27 02:34:51 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:51 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:34:52 [gpu_model_runner.py:4466] Graph capturing finished in 13 secs, took 1.63 GiB
-[0;36m(EngineCore_DP0 pid=1941207)[0;0m INFO 01-27 02:34:52 [core.py:254] init engine (profile, create kv cache, warmup model) took 38.12 seconds
-INFO 01-27 02:34:53 [llm.py:343] Supported tasks: ['generate']
+INFO 01-27 14:32:45 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 32000, 'tensor_parallel_size': 2, 'disable_log_stats': True, 'model': 'tiiuae/Falcon-H1R-7B'}
+WARNING 01-27 14:32:45 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+INFO 01-27 14:32:45 [model.py:637] Resolved architecture: FalconH1ForCausalLM
+INFO 01-27 14:32:45 [model.py:1750] Using max model len 32000
+INFO 01-27 14:32:46 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
+INFO 01-27 14:32:46 [config.py:315] Disabling cascade attention since it is not supported for hybrid models.
+INFO 01-27 14:32:47 [config.py:439] Setting attention block size to 1568 tokens to ensure that attention page size is >= mamba page size.
+INFO 01-27 14:32:47 [config.py:463] Padding mamba page size by 0.51% to ensure that mamba page size and attention page size are exactly equal.
+[0;36m(EngineCore_DP0 pid=842954)[0;0m INFO 01-27 14:32:56 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='tiiuae/Falcon-H1R-7B', speculative_config=None, tokenizer='tiiuae/Falcon-H1R-7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=tiiuae/Falcon-H1R-7B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=842954)[0;0m WARNING 01-27 14:32:56 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+INFO 01-27 14:33:07 [parallel_state.py:1200] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:37017 backend=nccl
+INFO 01-27 14:33:07 [parallel_state.py:1200] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:37017 backend=nccl
+INFO 01-27 14:33:07 [pynccl.py:111] vLLM is using nccl==2.27.7
+INFO 01-27 14:33:08 [parallel_state.py:1408] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+INFO 01-27 14:33:08 [parallel_state.py:1408] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:09 [gpu_model_runner.py:3467] Starting to load model tiiuae/Falcon-H1R-7B...
+[0;36m(Worker_TP1 pid=843008)[0;0m INFO 01-27 14:33:09 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:09 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:13 [default_loader.py:308] Loading weights took 2.97 seconds
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:14 [gpu_model_runner.py:3549] Model loading took 7.2526 GiB memory and 4.308439 seconds
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:27 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/8695709d02/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:27 [backends.py:715] Dynamo bytecode transform time: 13.09 s
+[0;36m(Worker_TP1 pid=843008)[0;0m INFO 01-27 14:33:32 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.702 s
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:32 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 4.781 s
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:34 [monitor.py:34] torch.compile takes 17.87 s in total
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:36 [gpu_worker.py:359] Available KV cache memory: 58.56 GiB
+[0;36m(EngineCore_DP0 pid=842954)[0;0m INFO 01-27 14:33:36 [kv_cache_utils.py:1286] GPU KV cache size: 1,395,520 tokens
+[0;36m(EngineCore_DP0 pid=842954)[0;0m INFO 01-27 14:33:36 [kv_cache_utils.py:1291] Maximum concurrency for 32,000 tokens per request: 80.91x
+[0;36m(Worker_TP1 pid=843008)[0;0m INFO 01-27 14:33:47 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:47 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 14:33:48 [gpu_model_runner.py:4466] Graph capturing finished in 12 secs, took 1.63 GiB
+[0;36m(EngineCore_DP0 pid=842954)[0;0m INFO 01-27 14:33:48 [core.py:254] init engine (profile, create kv cache, warmup model) took 34.41 seconds
+INFO 01-27 14:33:49 [llm.py:343] Supported tasks: ['generate']
 Loading dataset: HuggingFaceH4/aime_2024...
+Starting Multi-Evaluation on 30 examples. Seed=42. Samples per problem=5
+Preparing prompts for: context_saturation
 
-Evaluating Experiment: split_reversal
-Initialized 30 agents. Starting Batch Execution...
+------------------------------
+Experiment: context_saturation
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
 
-[Batch Step] Generating for 30 agents...
 
-[Batch Step] Generating for 30 agents...
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
 
-[Batch Step] Generating for 27 agents...
 
-[Batch Step] Generating for 25 agents...
 
-[Batch Step] Generating for 20 agents...
+TRANSFORMATION RULE:
+User query contains multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence in the problem statement. For example, two valid parts are: '[[Pro' 'blemK]]' and '[[P' 'roblemK]]'. The two parts can be placed in reverse order in the problem statement. The index of the problem you are to solve will be indicated in the middle of user query. Problems are independent of each other.
 
-[Batch Step] Generating for 17 agents...
+TRANSFORMED INPUT:
 
-[Batch Step] Generating for 16 agents...
 
-[Batch Step] Generating for 15 agents...
 
-[Batch Step] Generating for 15 agents...
+Let us define System-0. The variables (n, k) are defined as Matrices. The operations on elements of System-0 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-0: "+":
+For any two elements n and k:
+Formula: n + k = (n*k) - k
+2. [[Proble. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-0: "*":
+For any two elements n and k:
+Formula: n * k = min(n, n)
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-0: "=":
+Formula: n = k if and only if their squares are congruent modulo 8. Solve for Identity in System-0. Assume there is an unknown element 'E' such that n + E = n.
+Steps:
+1. Write the algebraic equation for "n + E" using the formula defined for "+". 2. m837]]. Solve this equation for E in terms of n.
+3. Does this value E work if we replace n with k? Prove it. 
 
-[Batch Step] Generating for 13 agents...
 
-[Batch Step] Generating for 12 agents...
+Let us define System-1. The variables (A, B) are defined as Matrices. The operations on elements of System-1 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-1: "+":
+For any two elements A and B:
+Formula: A + B = B - (A+B)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-1: "*":
+For any two elements A and B:
+Formula: A * B = (A*B) ^ A
+3. lem407]]. DEFINITION OF EQUALITY OPERATOR on elements of System-1: "=":
+Formula: A = B if and only if A and B are modular multiplicative inverses modulo 14. Calculate Sequence Expansion in System-1. Using variable A as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + B) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. [[Prob. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
 
-[Batch Step] Generating for 12 agents...
 
-[Batch Step] Generating for 12 agents...
+Let us define System-2. The variables (S, x) are defined as Numbers Modulo 55. The operations on elements of System-2 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-2: "+":
+For any two elements S and x:
+Formula: S + x = x + (S*x)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-2: "*":
+For any two elements S and x:
+Formula: S * x = (x^{1}) ^ (S^{1})
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-2: "=":
+Formula: S = x if and only if the difference (S - x) is divisible by 2. m619]]. Measure Commutativity violation in System-2. [[Proble. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+1. Calculate Forward: X = S + x. 2. Calculate Reverse: Y = x + S.
+3. Now, combine them: Result = X * Y. 
 
-[Batch Step] Generating for 12 agents...
 
-[Batch Step] Generating for 11 agents...
+Let us define System-3. [[Pro. The variables (y, n) are defined as Polynomials. The operations on elements of System-3 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-3: "+":
+For any two elements y and n:
+Formula: y + n = (y+n) ^ (y*n)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-3: "*":
+For any two elements y and n:
+Formula: y * n = (y*n) / n
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-3: "=":
+Formula: y = n if and only if the absolute value of y equals the absolute value of n.
+    
+Verify Associativity in System-3. Consider the specific variables y, n, and y_{0}. Using the definitions provided, determine if (y * n) * y_{0} = y * (n * y_{0}). blem416]]. Steps:
+1. Calculate the LHS: First compute (y * n), then apply * with y_{0}. 2. Calculate the RHS: First compute (n * y_{0}), then apply * with y. 3. Compare the final results using the definition of "=". 
 
-[Batch Step] Generating for 11 agents...
 
-[Batch Step] Generating for 11 agents...
+Let us define System-4. The variables (k, A) are defined as Matrices. [[Proble. The operations on elements of System-4 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-4: "+":
+For any two elements k and A:
+Formula: k + A = max((k+A), (k*A))
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-4: "*":
+For any two elements k and A:
+Formula: k * A = A * (k*A)
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-4: "=":
+Formula: k = A if and only if the difference (k - A) is divisible by 5. Calculate Sequence Expansion in System-4. Using variable k as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + A) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". m782]]. 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
 
-[BATCH ERROR] Generation failed: The decoder prompt (length 65543) is longer than the maximum model length of 65536. Make sure that `max_model_len` is no smaller than the number of text tokens.
-  [Error Handler] KILLED Agent 66_s0: Prompt length 65543 > 65536
-  [Error Handler] KILLED Agent 71_s0: Prompt length 65543 > 65536
-  [Error Handler] KILLED Agent 78_s0: Prompt length 65543 > 65536
-  [Error Handler] Killed 3 agents. Survivors will continue in next loop iteration.
 
-[Batch Step] Generating for 8 agents...
+Let us define System-5. oblem518]]. The variables (B, S) are defined as Polynomials. The operations on elements of System-5 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-5: "+":
+For any two elements B and S:
+Formula: B + S = max(S, (S^{-1}))
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-5: "*":
+For any two elements B and S:
+Formula: B * S = min((B+S), (B+S))
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-5: "=":
+Formula: B = S if and only if their squares are congruent modulo 5. Verify Associativity in System-5. Consider the specific variables B, S, and B_{0}. Using the definitions provided, determine if (B * S) * B_{0} = B * (S * B_{0}). [[Pr. Steps:
+1. Calculate the LHS: First compute (B * S), then apply * with B_{0}. 2. Calculate the RHS: First compute (S * B_{0}), then apply * with B. 3. Compare the final results using the definition of "=". 
 
-[Batch Step] Generating for 8 agents...
 
-[BATCH ERROR] Generation failed: The decoder prompt (length 65543) is longer than the maximum model length of 65536. Make sure that `max_model_len` is no smaller than the number of text tokens.
-  [Error Handler] KILLED Agent 64_s0: Prompt length 65543 > 65536
-  [Error Handler] KILLED Agent 69_s0: Prompt length 65543 > 65536
-  [Error Handler] KILLED Agent 73_s0: Prompt length 65542 > 65536
-  [Error Handler] KILLED Agent 81_s0: Prompt length 65543 > 65536
-  [Error Handler] Killed 4 agents. Survivors will continue in next loop iteration.
+Let us define System-6. The variables (x, y) are defined as Numbers Modulo 93. The operations on elements of System-6 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-6: "+":
+For any two elements x and y:
+Formula: x + y = (x^{2}) - y
+2. lem434]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-6: "*":
+For any two elements x and y:
+Formula: x * y = max(sqrt(y), (x+y))
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-6: "=":
+Formula: x = y if and only if the distance between x and y is no greater than 0.1. Calculate Sequence Expansion in System-6. Using variable x as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + y) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. [[Prob. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
 
-[Batch Step] Generating for 4 agents...
 
-[Batch Step] Generating for 3 agents...
+Let us define System-7. The variables (n, k) are defined as Polynomials. The operations on elements of System-7 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-7: "+":
+For any two elements n and k:
+Formula: n + k = (n*k) / (n^{4})
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-7: "*":
+For any two elements n and k:
+Formula: n * k = (n*k) * (k^{2})
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-7: "=":
+Formula: n = k if and only if n and k are modular multiplicative inverses modulo 5. m512]]. Verify Associativity in System-7. Consider the specific variables n, k, and n_{0}. Using the definitions provided, determine if (n * k) * n_{0} = n * (k * n_{0}). Steps:
+1. Calculate the LHS: First compute (n * k), then apply * with n_{0}. 2. [[Proble. Calculate the RHS: First compute (k * n_{0}), then apply * with n.
+3. Compare the final results using the definition of "=". 
 
-[BATCH ERROR] Generation failed: The decoder prompt (length 65542) is longer than the maximum model length of 65536. Make sure that `max_model_len` is no smaller than the number of text tokens.
-  [Error Handler] KILLED Agent 89_s0: Prompt length 65542 > 65536
-  [Error Handler] Killed 1 agents. Survivors will continue in next loop iteration.
 
-[Batch Step] Generating for 2 agents...
+Let us define System-8. The variables (A, B) are defined as Matrices. The operations on elements of System-8 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-8: "+":
+For any two elements A and B:
+Formula: A + B = min(B, (A+B))
+2. [[Prob. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-8: "*":
+For any two elements A and B:
+Formula: A * B = min((A+B), (A+B))
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-8: "=":
+Formula: A = B if and only if the difference (A - B) is divisible by 9. Verify Associativity in System-8. Consider the specific variables A, B, and A_{0}. Using the definitions provided, determine if (A * B) * A_{0} = A * (B * A_{0}). lem813]]. Steps:
+1. Calculate the LHS: First compute (A * B), then apply * with A_{0}. 2. Calculate the RHS: First compute (B * A_{0}), then apply * with A. 3. Compare the final results using the definition of "=". 
 
-[Batch Step] Generating for 2 agents...
 
-[BATCH ERROR] Generation failed: The decoder prompt (length 65543) is longer than the maximum model length of 65536. Make sure that `max_model_len` is no smaller than the number of text tokens.
-  [Error Handler] KILLED Agent 88_s0: Prompt length 65543 > 65536
-  [Error Handler] Killed 1 agents. Survivors will continue in next loop iteration.
+Let us define System-9. oblem402]]. The variables (S, x) are defined as Polynomials. The operations on elements of System-9 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-9: "+":
+For any two elements S and x:
+Formula: S + x = (S+x) + (S^{0})
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-9: "*":
+For any two elements S and x:
+Formula: S * x = max((x^{0}), x)
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-9: "=":
+Formula: S = x if and only if the distance between S and x is no greater than 1. Solve for Identity in System-9. Assume there is an unknown element 'E' such that S + E = S.
+Steps:
+1. Write the algebraic equation for "S + E" using the formula defined for "+". 2. [[Pr. Solve this equation for E in terms of S.
+3. Does this value E work if we replace S with x? Prove it. 
 
-[Batch Step] Generating for 1 agents...
-[0;36m(Worker_TP0 pid=1942768)[0;0m INFO 01-27 02:54:50 [multiproc_executor.py:709] Parent process exited, terminating worker
-[0;36m(Worker_TP1 pid=1942769)[0;0m INFO 01-27 02:54:50 [multiproc_executor.py:709] Parent process exited, terminating worker
-Results for split_reversal: Accuracy 36.67% (11/30)
-Saved results to: /project/6107991/golikovp/Linguistic_traps/experiments/split_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_split_reversal_s42_20260127_023454_MANUAL_AGENT.json
+
+Let us define System-10. The variables (y, n) are defined as Matrices. The operations on elements of System-10 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-10: "+":
+For any two elements y and n:
+Formula: y + n = y ^ (y*n)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-10: "*":
+For any two elements y and n:
+Formula: y * n = n * n
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-10: "=":
+Formula: y = n if and only if the difference (y - n) is divisible by 14. oblem667]]. Measure Commutativity violation in System-10. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+1. Calculate Forward: X = y + n.
+2. Calculate Reverse: Y = n + y. [[Pr. 3. Now, combine them: Result = X * Y. 
+
+
+Let us define System-11. The variables (k, A) are defined as Matrices. The operations on elements of System-11 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-11: "+":
+For any two elements k and A:
+Formula: k + A = (k*A) + A
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-11: "*":
+For any two elements k and A:
+Formula: k * A = k / k
+3. lem230]]. DEFINITION OF EQUALITY OPERATOR on elements of System-11: "=":
+Formula: k = A if and only if they are equidistant from the value 9. Measure Commutativity violation in System-11. Calculate the difference between doing the operation "+" in forward vs reverse order. [[Prob. Steps:
+1. Calculate Forward: X = k + A. 2. Calculate Reverse: Y = A + k.
+3. Now, combine them: Result = X * Y. 
+
+
+Let us define System-12. The variables (B, S) are defined as Matrices. [[P. The operations on elements of System-12 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-12: "+":
+For any two elements B and S:
+Formula: B + S = min((B+S), S)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-12: "*":
+For any two elements B and S:
+Formula: B * S = (B*S) / (B+S)
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-12: "=":
+Formula: B = S if and only if B and S are modular multiplicative inverses modulo 12. Calculate Sequence Expansion in System-12. Using variable B as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + S) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. roblem296]]. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+
+
+Let us define System-13. The variables (x, y) are defined as Numbers Modulo 46. The operations on elements of System-13 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-13: "+":
+For any two elements x and y:
+Formula: x + y = min(|x-y||x/y|, sqrt(y))
+2. [[Proble. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-13: "*":
+For any two elements x and y:
+Formula: x * y = x / y
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-13: "=":
+Formula: x = y if and only if the difference (x - y) is divisible by 12. Verify Distributivity in System-13. We must test if the operator "*" distributes over "+" for variables x, y, x_{0}. Steps:
+1. LHS: Calculate x * (y + x_{0}). 2. m530]]. RHS: Calculate (x * y) + (x * x_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+
+
+Let us define System-14. The variables (n, k) are defined as Polynomials. The operations on elements of System-14 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-14: "+":
+For any two elements n and k:
+Formula: n + k = max((n^{-1}), (n+k))
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-14: "*":
+For any two elements n and k:
+Formula: n * k = (n*k) / k
+3. [[Proble. DEFINITION OF EQUALITY OPERATOR on elements of System-14: "=":
+Formula: n = k if and only if the absolute value of n equals the absolute value of k.
+    
+Measure Commutativity violation in System-14. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+1. Calculate Forward: X = n + k.
+2. m780]]. Calculate Reverse: Y = k + n.
+3. Now, combine them: Result = X * Y. 
+
+
+Let us define System-15. The variables (A, B) are defined as Matrices. The operations on elements of System-15 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-15: "+":
+For any two elements A and B:
+Formula: A + B = max((A+B), (A*B))
+2. [[Pr. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-15: "*":
+For any two elements A and B:
+Formula: A * B = (A+B) / A
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-15: "=":
+Formula: A = B if and only if their squares are congruent modulo 12. Verify Distributivity in System-15. We must test if the operator "*" distributes over "+" for variables A, B, A_{0}. Steps:
+1. oblem488]]. LHS: Calculate A * (B + A_{0}). 2. RHS: Calculate (A * B) + (A * A_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions.
+
+
+You are to solve Problem721 using standard mathematical operations.
+
+
+Let us define System-16. The variables (S, x) are defined as Matrices. The operations on elements of System-16 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-16: "+":
+For any two elements S and x:
+Formula: S + x = min(x, x)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-16: "*":
+For any two elements S and x:
+Formula: S * x = x - (S+x)
+3. [[Pr. DEFINITION OF EQUALITY OPERATOR on elements of System-16: "=":
+Formula: S = x if and only if their squares are congruent modulo 6. Solve for Identity in System-16. Assume there is an unknown element 'E' such that S + E = S.
+Steps:
+1. Write the algebraic equation for "S + E" using the formula defined for "+". 2. oblem793]]. Solve this equation for E in terms of S.
+3. Does this value E work if we replace S with x? Prove it. 
+
+
+Let us define System-17. The variables (y, n) are defined as Matrices. The operations on elements of System-17 are redefined using standard mathematical operations as follows:
+1. m866]]. DEFINITION OF ADDITION OPERATOR on elements of System-17: "+":
+For any two elements y and n:
+Formula: y + n = y ^ y
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-17: "*":
+For any two elements y and n:
+Formula: y * n = max(n, (y+n))
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-17: "=":
+Formula: y = n if and only if their squares are congruent modulo 9. Verify Associativity in System-17. Consider the specific variables y, n, and y_{0}. Using the definitions provided, determine if (y * n) * y_{0} = y * (n * y_{0}). Steps:
+1. Calculate the LHS: First compute (y * n), then apply * with y_{0}. [[Proble. 2. Calculate the RHS: First compute (n * y_{0}), then apply * with y. 3. Compare the final results using the definition of "=". 
+
+
+Let us define System-18. The variables (k, A) are defined as Numbers Modulo 66. [[P. The operations on elements of System-18 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-18: "+":
+For any two elements k and A:
+Formula: k + A = (k^{3}) / (k*A)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-18: "*":
+For any two elements k and A:
+Formula: k * A = (k+A) - sqrt(k)
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-18: "=":
+Formula: k = A if and only if the difference (k - A) is divisible by 6. Verify Associativity in System-18. Consider the specific variables k, A, and k_{0}. Using the definitions provided, determine if (k * A) * k_{0} = k * (A * k_{0}). roblem278]]. Steps:
+1. Calculate the LHS: First compute (k * A), then apply * with k_{0}. 2. Calculate the RHS: First compute (A * k_{0}), then apply * with k.
+3. Compare the final results using the definition of "=". 
+
+
+Let us define System-19. The variables (B, S) are defined as Polynomials. The operations on elements of System-19 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-19: "+":
+For any two elements B and S:
+Formula: B + S = (B*S) - (B*S)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-19: "*":
+For any two elements B and S:
+Formula: B * S = (B*S) ^ B
+3. [[Pro. DEFINITION OF EQUALITY OPERATOR on elements of System-19: "=":
+Formula: B = S if and only if the difference (B - S) is divisible by 4. Calculate Sequence Expansion in System-19. Using variable B as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + S) * Z_n
+Steps:
+1. blem730]]. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+
+
+Let us define System-20. The variables (x, y) are defined as Matrices. oblem682]]. The operations on elements of System-20 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-20: "+":
+For any two elements x and y:
+Formula: x + y = max(x, x)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-20: "*":
+For any two elements x and y:
+Formula: x * y = (x*y) - (x*y)
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-20: "=":
+Formula: x = y if and only if they are equidistant from the value 12. Calculate Sequence Expansion in System-20. Using variable x as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + y) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. Calculate Z_2 using the result of Z_1. [[Pr. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+
+
+Let us define System-21. The variables (n, k) are defined as Polynomials. The operations on elements of System-21 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-21: "+":
+For any two elements n and k:
+Formula: n + k = (k^{0}) ^ (n^{0})
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-21: "*":
+For any two elements n and k:
+Formula: n * k = min(n, (k^{-3}))
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-21: "=":
+Formula: n = k if and only if the absolute value of n equals the absolute value of k.
+    
+Calculate Sequence Expansion in System-21. m408]]. Using variable n as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + k) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". [[Proble. 2. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+
+
+Let us define System-22. The variables (A, B) are defined as Matrices. The operations on elements of System-22 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-22: "+":
+For any two elements A and B:
+Formula: A + B = (A*B) - (A*B)
+2. [[P. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-22: "*":
+For any two elements A and B:
+Formula: A * B = (A*B) / A
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-22: "=":
+Formula: A = B if and only if the difference (A - B) is divisible by 15. Calculate Sequence Expansion in System-22. Using variable A as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + B) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. roblem515]]. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+
+
+Let us define System-23. The variables (S, x) are defined as Matrices. The operations on elements of System-23 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-23: "+":
+For any two elements S and x:
+Formula: S + x = x * (S*x)
+2. [[Probl. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-23: "*":
+For any two elements S and x:
+Formula: S * x = (S*x) / x
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-23: "=":
+Formula: S = x if and only if S and x are modular multiplicative inverses modulo 12. Verify Associativity in System-23. em661]]. Consider the specific variables S, x, and S_{0}. Using the definitions provided, determine if (S * x) * S_{0} = S * (x * S_{0}). Steps:
+1. Calculate the LHS: First compute (S * x), then apply * with S_{0}. 2. Calculate the RHS: First compute (x * S_{0}), then apply * with S.
+3. Compare the final results using the definition of "=". 
+
+
+Let us define System-24. The variables (y, n) are defined as Polynomials. The operations on elements of System-24 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-24: "+":
+For any two elements y and n:
+Formula: y + n = (y^{2}) + y
+2. [[Pr. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-24: "*":
+For any two elements y and n:
+Formula: y * n = n * (y+n)
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-24: "=":
+Formula: y = n if and only if the sum of y and n is exactly 50. Verify Associativity in System-24. Consider the specific variables y, n, and y_{0}. Using the definitions provided, determine if (y * n) * y_{0} = y * (n * y_{0}). Steps:
+1. Calculate the LHS: First compute (y * n), then apply * with y_{0}. 2. oblem953]]. Calculate the RHS: First compute (n * y_{0}), then apply * with y. 3. Compare the final results using the definition of "=". 
+
+
+Let us define System-25. The variables (k, A) are defined as Polynomials. The operations on elements of System-25 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-25: "+":
+For any two elements k and A:
+Formula: k + A = (k*A) ^ k
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-25: "*":
+For any two elements k and A:
+Formula: k * A = (k*A) - (k*A)
+3. m100]]. DEFINITION OF EQUALITY OPERATOR on elements of System-25: "=":
+Formula: k = A if and only if the distance between k and A is no greater than 0.1. Verify Distributivity in System-25. We must test if the operator "*" distributes over "+" for variables k, A, k_{0}. Steps:
+1. LHS: Calculate k * (A + k_{0}). [[Proble. 2. RHS: Calculate (k * A) + (k * k_{0}). 3. Explain any discrepancy between LHS and RHS based on the definitions. 
+
+
+Let us define System-26. The variables (B, S) are defined as Matrices. The operations on elements of System-26 are redefined using standard mathematical operations as follows:
+1. lem411]]. DEFINITION OF ADDITION OPERATOR on elements of System-26: "+":
+For any two elements B and S:
+Formula: B + S = S / S
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-26: "*":
+For any two elements B and S:
+Formula: B * S = min((B*S), (B+S))
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-26: "=":
+Formula: B = S if and only if the absolute value of B equals the absolute value of S.
+    
+Calculate Sequence Expansion in System-26. Using variable B as the starting seed Z_0, define a sequence:
+Z_{n+1} = (Z_n + S) * Z_n
+Steps:
+1. Calculate Z_1 explicitly using the formulas for "+" and "*". 2. [[Prob. Calculate Z_2 using the result of Z_1. 3. Calculate Z_3 using the result of Z_2. 4. Check if Z_3 = Z_0. 
+
+
+Let us define System-27. The variables (x, y) are defined as Numbers Modulo 98. The operations on elements of System-27 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-27: "+":
+For any two elements x and y:
+Formula: x + y = sqrt(x) ^ (y^{-4})
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-27: "*":
+For any two elements x and y:
+Formula: x * y = sqrt(y) - (x^{2})
+3. [[Prob. DEFINITION OF EQUALITY OPERATOR on elements of System-27: "=":
+Formula: x = y if and only if the sum of x and y is exactly 47. Measure Commutativity violation in System-27. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+1. Calculate Forward: X = x + y. 2. Calculate Reverse: Y = y + x. lem393]]. 3. Now, combine them: Result = X * Y. 
+
+
+Let us define System-28. The variables (n, k) are defined as Matrices. The operations on elements of System-28 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-28: "+":
+For any two elements n and k:
+Formula: n + k = (n*k) ^ (n*k)
+2. m315]]. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-28: "*":
+For any two elements n and k:
+Formula: n * k = k / n
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-28: "=":
+Formula: n = k if and only if the distance between n and k is no greater than 0.5. Verify Associativity in System-28. Consider the specific variables n, k, and n_{0}. [[Proble. Using the definitions provided, determine if (n * k) * n_{0} = n * (k * n_{0}). Steps:
+1. Calculate the LHS: First compute (n * k), then apply * with n_{0}. 2. Calculate the RHS: First compute (k * n_{0}), then apply * with n.
+3. Compare the final results using the definition of "=". 
+
+
+Let us define System-29. The variables (A, B) are defined as Numbers Modulo 91. The operations on elements of System-29 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-29: "+":
+For any two elements A and B:
+Formula: A + B = |A-B||A/B| / (A*B)
+2. [[Pro. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-29: "*":
+For any two elements A and B:
+Formula: A * B = (B^{4}) + A
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-29: "=":
+Formula: A = B if and only if the distance between A and B is no greater than 1. Verify Associativity in System-29. Consider the specific variables A, B, and A_{0}. blem540]]. Using the definitions provided, determine if (A * B) * A_{0} = A * (B * A_{0}). Steps:
+1. Calculate the LHS: First compute (A * B), then apply * with A_{0}. 2. Calculate the RHS: First compute (B * A_{0}), then apply * with A. 3. Compare the final results using the definition of "=". 
+
+
+Let us define System-30. The variables (S, x) are defined as Polynomials. The operations on elements of System-30 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-30: "+":
+For any two elements S and x:
+Formula: S + x = (S^{2}) ^ (S+x)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-30: "*":
+For any two elements S and x:
+Formula: S * x = min((x^{1}), (S*x))
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-30: "=":
+Formula: S = x if and only if they are equidistant from the value 3. [[Prob. Measure Commutativity violation in System-30. Calculate the difference between doing the operation "+" in forward vs reverse order. Steps:
+1. Calculate Forward: X = S + x. lem904]]. 2. Calculate Reverse: Y = x + S.
+3. Now, combine them: Result = X * Y. 
+
+
+Let us define System-31. The variables (y, n) are defined as Polynomials. The operations on elements of System-31 are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System-31: "+":
+For any two elements y and n:
+Formula: y + n = (y+n) / (y+n)
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-31: "*":
+For any two elements y and n:
+Formula: y * n = (y^{-1}) + (n^{-1})
+3. DEFINITION OF EQUALITY OPERATOR on elements of System-31: "=":
+Formula: y = n if and only if the distance between y and n is no greater than 1. Verify Associativity in System-31. m693]]. Consider the specific variables y, n, and y_{0}. Using the definitions provided, determine if (y * n) * y_{0} = y * (n * y_{0}). Steps:
+1. Calculate the LHS: First compute (y * n), then apply * with y_{0}. [[Proble. 2. Calculate the RHS: First compute (n * y_{0}), then apply * with y. 3. Compare the final results using the definition of "=".
+
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. oblem721]]. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. [[Pr. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+------------------------------
+
+Preparing prompts for: interleaved_context_line
+
+------------------------------
+Experiment: interleaved_context_line
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+
+
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+
+
+TRANSFORMATION RULE:
+User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is followed by a space and a problem tag (e.g. problem A or B). The segments are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the empty lines resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.
+
+TRANSFORMED INPUT:
+Every morning Aya goes for a $9$-kilometer-long walk and sto <Problem A>
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let th <Problem B>
+ps at a coffee shop afterwards. When she walks at a constant <Problem A>
+e tangents to $\omega$ at $B$ and $C$ intersect at point $D$ <Problem B>
+ speed of $s$ kilometers per hour, the walk takes her 4 hour <Problem A>
+, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB= <Problem B>
+s, including $t$ minutes spent in the coffee shop. When she  <Problem A>
+5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\f <Problem B>
+walks $s+2$ kilometers per hour, the walk takes her 2 hours  <Problem A>
+rac{m}{n}$, where $m$ and $n$ are relatively prime integers. <Problem B>
+and 24 minutes, including $t$ minutes spent in the coffee sh <Problem A>
+ Find $m + n$. <Problem B>
+op. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour <Problem A>
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let th <Problem B>
+. Find the number of minutes the walk takes her, including t <Problem A>
+e tangents to $\omega$ at $B$ and $C$ intersect at point $D$ <Problem B>
+he $t$ minutes spent in the coffee shop. <Problem A>
+, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB= <Problem B>
+------------------------------
+
+Preparing prompts for: interleaved_context_word
+
+------------------------------
+Experiment: interleaved_context_word
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+
+
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+
+
+TRANSFORMATION RULE:
+User query will consist of two problems - A and B, whose statements are interleaved word by word. First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on. You need to solve only problem A. Words are defined as sequences of symbols separated by spaces. If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.
+
+TRANSFORMED INPUT:
+Every Let morning $ABC$ Aya be goes a for triangle a inscribed $9$-kilometer-long in walk circle and $\omega$. stops Let at the a tangents coffee to shop $\omega$ afterwards. at When $B$ she and walks $C$ at intersect a at constant point speed $D$, of and $s$ let kilometers $\overline{AD}$ per intersect hour, $\omega$ the at walk $P$. takes If her $AB=5$, 4 $BC=9$, hours, and including $AC=10$, $t$ $AP$ minutes can spent be in written the as coffee the shop. form When $\frac{m}{n}$, she where walks $m$ $s+2$ and kilometers $n$ per are hour, relatively the prime walk integers. takes Find her $m 2 + hours n$. and Let 24 $ABC$ minutes, be including a $t$ triangle minutes inscribed spent in in circle the $\omega$. coffee Let shop. the Suppose tangents Aya to walks $\omega$ at at $s+\frac{1}{2}$ $B$ kilometers and per $C$ hour. intersect Find at the point number $D$, of and minutes let the $\overline{AD}$ walk intersect takes $\omega$ her, at including $P$. the If $t$ $AB=5$, minutes $BC=9$, spent and in $AC=10$, the $AP$ coffee can shop. be
+------------------------------
+
+Preparing prompts for: not_not_yot
+
+------------------------------
+Experiment: not_not_yot
+System Prompt:
+
+
+Example Problem Statement:
+Not Implemented
+------------------------------
+
+Preparing prompts for: opposites
+
+------------------------------
+Experiment: opposites
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+
+
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+
+
+TRANSFORMATION RULE:
+User query contains problem statement. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.
+
+TRANSFORMED INPUT:
+Every morning Aya come for a $9$-kilometer-short walk and begin at a coffee shop afterwards. When she ride at a inconstant speed of $s$ kilometers per hour, the walk give her 4 hours, exclude $t$ minutes antispent in the coffee shop. When she ride $s+2$ kilometers
+
+defyn{let "exclude" mean "including", let "come" mean "goes", let "short" mean "long", let "give" mean "takes", let "ride" mean "walks", let "antispent" mean "spent", let "Lose" mean "Find", let "Antisuppose" mean "Suppose", let "begin" mean "stops", let "inconstant" mean "constant"}.
+
+ per hour, the walk give her 2 hours and 24 minutes, exclude $t$ minutes antispent in the coffee shop. Antisuppose Aya ride at $s+\frac{1}{2}$ kilometers per hour. Lose the number of minutes the walk give her, exclude the $t$ minutes antispent in the coffee shop.
+------------------------------
+
+Preparing prompts for: sentence_reversal
+
+------------------------------
+Experiment: sentence_reversal
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+
+
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+
+
+TRANSFORMATION RULE:
+User query contains problem statement. The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.
+
+TRANSFORMED INPUT:
+. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop.Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards
+------------------------------
+
+Preparing prompts for: word_reversal
+
+------------------------------
+Experiment: word_reversal
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+
+
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+
+
+TRANSFORMATION RULE:
+User query contains problem statement. The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.
+
+TRANSFORMED INPUT:
+shop. coffee the in spent minutes $t$ the including her, takes walk the minutes of number the Find hour. per kilometers $s+\frac{1}{2}$ at walks Aya Suppose shop. coffee the in spent minutes $t$ including minutes, 24 and hours 2 her takes walk the hour, per kilometers $s+2$ walks she When shop. coffee the in spent minutes $t$ including hours, 4 her takes walk the hour, per kilometers $s$ of speed constant a at walks she When afterwards. shop coffee a at stops and walk $9$-kilometer-long a for goes Aya morning Every
+------------------------------
+
+Preparing prompts for: word_split_swap
+
+------------------------------
+Experiment: word_split_swap
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+
+
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+
+
+TRANSFORMATION RULE:
+Every word (words are defined as sequences of symbols separated by spaces) in user query is split into 2 parts down the middle. If the word has odd number of symbols, the first part has one symbol less than the second part. After splitting, the 2 parts are swapped. However, if a particular word modification results in formation of \n, \t, \r, \f, \b, or \a then we do not modify that word.
+
+TRANSFORMED INPUT:
+eryEv ningmor yaA esgo orf a eter-long$9$-kilom lkwa nda opsst ta a feecof opsh wards.after enWh hes lkswa ta a tantcons eedsp fo s$$ eterskilom erp ur,ho het lkwa kesta erh 4 rs,hou udingincl t$$ utesmin entsp ni het feecof op.sh enWh hes lkswa +2$$s eterskilom erp ur,ho het lkwa kesta erh 2 ursho nda 42 tes,minu udingincl t$$ utesmin entsp ni het feecof op.sh poseSup yaA lkswa ta c{1}{2}$$s+\fra eterskilom erp ur.ho ndFi het bernum fo utesmin het lkwa kesta r,he udingincl het t$$ utesmin entsp ni het feecof op.sh
+------------------------------
+
+Preparing prompts for: wrappers
+
+------------------------------
+Experiment: wrappers
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+
+
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+
+
+TRANSFORMATION RULE:
+User query contains problem statement. There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.
+
+TRANSFORMED INPUT:
+Every 6(morning) 2(Aya) goes for a $5(9)$-kilometer-long 9(walk) and stops at a 3(coffee) 8(shop) afterwards. When she walks at a constant 10(speed) of $4(s)$ 7(kilometers) per 6(hour), the 2(walk) takes her 3(4) 5(hours), including $2(t)$ 6(minutes) spent in the 2(coffee) 4(shop). When she walks $10(s)+9(2)$ 9(kilometers) per
+
+defyn{let "6(morning)" mean "morning", let "2(Aya)" mean "Aya", let "5(9)" mean "9", let "9(walk)" mean "walk", let "3(coffee)" mean "coffee", let "8(shop)" mean "shop", let "10(speed)" mean "speed", let "4(s)" mean "s", let "7(kilometers)" mean "kilometers", let "6(hour)" mean "hour", let "2(walk)" mean "walk", let "3(4)" mean "4", let "5(hours)" mean "hours", let "2(t)" mean "t", let "6(minutes)" mean "minutes", let "2(coffee)" mean "coffee", let "4(shop)" mean "shop", let "9(2)" mean "2", let "10(s)" mean "s", let "9(kilometers)" mean "kilometers", let "6(hour)" mean "hour", let "4(walk)" mean "walk", let "8(2)" mean "2", let "9(hours)" mean "hours", let "3(24)" mean "24", let "9(minutes)" mean "minutes", let "7(t)" mean "t", let "8(minutes)" mean "minutes", let "7(coffee)" mean "coffee", let "7(shop)" mean "shop", let "3(Aya)" mean "Aya", let "4(1)" mean "1", let "7(2)" mean "2", let "8(s)" mean "s", let "9(kilometers)" mean "kilometers", let "6(hour)" mean "hour", let "8(number)" mean "number", let "10(minutes)" mean "minutes", let "2(walk)" mean "walk", let "9(t)" mean "t", let "3(minutes)" mean "minutes", let "7(coffee)" mean "coffee", let "6(shop)" mean "shop"}.
+
+ 6(hour), the 4(walk) takes her 8(2) 9(hours) and 3(24) 9(minutes), including $7(t)$ 8(minutes) spent in the 7(coffee) 7(shop). Suppose 3(Aya) walks at $8(s)+\frac{4(1)}{7(2)}$ 9(kilometers) per 6(hour). Find the 8(number) of 10(minutes) the 2(walk) takes her, including the $9(t)$ 3(minutes) spent in the 7(coffee) 6(shop).
+------------------------------
+
+Preparing prompts for: split_reversal
+
+------------------------------
+Experiment: split_reversal
+System Prompt:
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+
+
+Example Problem Statement:
+YOUR PROTOCOL:
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
+2. Once you have the original problem statement, proceed to solve the math problem.
+
+
+
+TRANSFORMATION RULE:
+User query string was split into substrings on space as separator. The symbols of each substring were then reversed and concatenated back with the separators in the same positions. However, if a particular substring reversal results in formation of \n, \t, \r, \f, \b, or \a then we do not reverse that substring and concatenate it as is.
+
+TRANSFORMED INPUT:
+yrevE gninrom ayA seog rof a gnol-retemolik-$9$ klaw dna spots ta a eeffoc pohs .sdrawretfa nehW ehs sklaw ta a tnatsnoc deeps fo $s$ sretemolik rep ,ruoh eht klaw sekat reh 4 ,sruoh gnidulcni $t$ setunim tneps ni eht eeffoc .pohs nehW ehs sklaw $2+s$ sretemolik rep ,ruoh eht klaw sekat reh 2 sruoh dna 42 ,setunim gnidulcni $t$ setunim tneps ni eht eeffoc .pohs esoppuS ayA sklaw ta $}2{}1{carf\+s$ sretemolik rep .ruoh dniF eht rebmun fo setunim eht klaw sekat ,reh gnidulcni eht $t$ setunim tneps ni eht eeffoc .pohs
+------------------------------
+
+Generating responses for 1500 total prompts across 10 experiments...
+[0;36m(Worker_TP1 pid=843008)[0;0m INFO 01-27 16:47:08 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP0 pid=843007)[0;0m INFO 01-27 16:47:08 [multiproc_executor.py:709] Parent process exited, terminating worker
+
+Saving RAW outputs to disk before parsing...
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/context_saturation/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_context_saturation_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_line/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_interleaved_context_line_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_word/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_interleaved_context_word_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/not_not_yot/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_not_not_yot_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/opposites/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_opposites_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/sentence_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_sentence_reversal_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/word_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_word_reversal_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/word_split_swap/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_word_split_swap_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/wrappers/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_wrappers_s42_20260127_164705_raw.json
+  Saved raw outputs to: /project/6107991/golikovp/Linguistic_traps/experiments/split_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_split_reversal_s42_20260127_164705_raw.json
+
+Processing and Grading 1500 responses...
+
+=== Multi-Eval Summary ===
+Experiment: context_saturation
+  Accuracy: 72.00% (108/150)
+  Failures: 10
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/context_saturation/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_context_saturation_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/context_saturation/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_context_saturation_s42_20260127_164705_raw.json
+Experiment: interleaved_context_line
+  Accuracy: 51.33% (77/150)
+  Failures: 5
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_line/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_interleaved_context_line_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_line/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_interleaved_context_line_s42_20260127_164705_raw.json
+Experiment: interleaved_context_word
+  Accuracy: 10.00% (15/150)
+  Failures: 24
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_word/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_interleaved_context_word_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_word/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_interleaved_context_word_s42_20260127_164705_raw.json
+Experiment: not_not_yot
+  Accuracy: 0.00% (0/150)
+  Failures: 150
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/not_not_yot/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_not_not_yot_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/not_not_yot/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_not_not_yot_s42_20260127_164705_raw.json
+Experiment: opposites
+  Accuracy: 70.67% (106/150)
+  Failures: 9
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/opposites/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_opposites_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/opposites/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_opposites_s42_20260127_164705_raw.json
+Experiment: sentence_reversal
+  Accuracy: 80.00% (120/150)
+  Failures: 3
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/sentence_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_sentence_reversal_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/sentence_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_sentence_reversal_s42_20260127_164705_raw.json
+Experiment: word_reversal
+  Accuracy: 50.00% (75/150)
+  Failures: 15
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/word_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_word_reversal_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/word_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_word_reversal_s42_20260127_164705_raw.json
+Experiment: word_split_swap
+  Accuracy: 9.33% (14/150)
+  Failures: 77
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/word_split_swap/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_word_split_swap_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/word_split_swap/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_word_split_swap_s42_20260127_164705_raw.json
+Experiment: wrappers
+  Accuracy: 53.33% (80/150)
+  Failures: 5
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/wrappers/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_wrappers_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/wrappers/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_wrappers_s42_20260127_164705_raw.json
+Experiment: split_reversal
+  Accuracy: 8.00% (12/150)
+  Failures: 92
+  Saved to: /project/6107991/golikovp/Linguistic_traps/experiments/split_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_split_reversal_s42_20260127_164705.json
+  Deleted raw checkpoint: /project/6107991/golikovp/Linguistic_traps/experiments/split_reversal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_split_reversal_s42_20260127_164705_raw.json
