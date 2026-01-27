@@ -34,10 +34,7 @@ try:
 except Exception as e:
     print(f"Warning: Failed to download NLTK data: {e}")
 
-import base64
-
-#
-BASELINE_SYSTEM_PROMPT = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
+# import base64
 
 # Python Agent Protocol Prefix (formerly AGENTIC_SYSTEM_PROMPT)
 # USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interpreter.
@@ -65,6 +62,10 @@ BASELINE_SYSTEM_PROMPT = "You are a helpful math assistant. Please reason step b
 # 3. You may use Python for calculations.
 # 4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 # """
+
+
+BASELINE_SYSTEM_PROMPT = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
+
 USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interpreter.
 
 YOUR PROTOCOL (Follow Strictly):
@@ -85,14 +86,12 @@ PHASE 2: SOLUTION
 1. Examine the output of your Python script (the reconstructed text).
 2. Once Python ran succesfully and you have the reconstructed problem statement, proceed to solve the math problem.
 3. You may use Python for calculations.
-4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 """
 
 # Model Protocol Prefix (formerly MODEL_SYSTEM_PROMPT)
 USER_PROMPT_PROTOCOL_PREFIX_MODEL = """YOUR PROTOCOL:
 1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
 2. Once you have the original problem statement, proceed to solve the math problem.
-3. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
 """
 
 TECHNIQUE_DESCRIPTIONS = {
