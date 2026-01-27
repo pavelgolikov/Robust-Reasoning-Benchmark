@@ -40,17 +40,42 @@ import base64
 BASELINE_SYSTEM_PROMPT = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
 
 # Python Agent Protocol Prefix (formerly AGENTIC_SYSTEM_PROMPT)
+# USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interpreter.
+
+# YOUR PROTOCOL (Follow Strictly):
+
+# PHASE 1: RECONSTRUCTION
+# 1. Read the "TRANSFORMATION RULE" provided by the user. "TRANSFORMED INPUT" is given as a base64-encoded string.
+# 2. Write and output a Python script to programmatically decode from base 64 into raw text and then reverse the transformation.
+#    - YOU MUST DECODE IN PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
+#    - Do NOT guess or anticipate the original text.
+#    - Do NOT simulate the execution.
+#    - ONLY generate and output Python code to both decode base64 and reverse the transformation.
+#    - In your Python code you must print the `repr()` of the reconstructed text.
+#     - INCORRECT: print(text)  <-- Do not do this.
+#     - CORRECT:   print(repr(text)) <-- DO THIS.
+
+# 4. Output your Python code in a markdown code block:
+# ```python ... Your code here ... ```
+# 5. The system will execute your code and provide the output back to you.
+
+# PHASE 2: SOLUTION
+# 1. Examine the output of your Python script (the reconstructed text).
+# 2. Once Python ran succesfully and you have the reconstructed problem statement, proceed to solve the math problem.
+# 3. You may use Python for calculations.
+# 4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
+# """
 USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interpreter.
 
 YOUR PROTOCOL (Follow Strictly):
 
 PHASE 1: RECONSTRUCTION
-1. Read the "TRANSFORMATION RULE" provided by the user. "TRANSFORMED INPUT" is given as a base64-encoded string.
-2. Write and output a Python script to programmatically decode from base 64 into raw text and then reverse the transformation.
+1. Read the "TRANSFORMATION RULE" provided by the user and "TRANSFORMED INPUT".
+2. Write and output a Python script to programmatically reverse the transformation.
    - YOU MUST DECODE IN PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
    - Do NOT guess or anticipate the original text.
    - Do NOT simulate the execution.
-   - ONLY generate and output Python code to both decode base64 and reverse the transformation.
+   - ONLY generate and output Python code to reverse the transformation.
    - In your Python code you must print the `repr()` of the reconstructed text.
     - INCORRECT: print(text)  <-- Do not do this.
     - CORRECT:   print(repr(text)) <-- DO THIS.
@@ -169,8 +194,8 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     
     if agentic:
         # Base64 Encode
-        input_bytes = user_prompt_content.encode('utf-8')
-        base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
+        # input_bytes = user_prompt_content.encode('utf-8')
+        # base64_input_safe = base64.b64encode(input_bytes).decode('utf-8')
         
         # Wrapped Prompt
         wrapped_prompt = f"""
@@ -178,7 +203,7 @@ TRANSFORMATION RULE:
 {transform_rule}
 
 TRANSFORMED INPUT:
-{base64_input_safe}
+{user_prompt_content}
 """
         prefix = USER_PROMPT_PROTOCOL_PREFIX_AGENT
 
