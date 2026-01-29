@@ -21,3 +21,5 @@ mkdir -p $HF_HOME
 # Running 5 samples per problem for averaging
 python evaluate.py --names not_not --n_samples 5 --limit 30 > eval_out.out
 # python evaluate.py --names reversal --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
+
+python evaluate_conversation.py --limit 1 --n_samples 5 --num_distractors 30 > eval_out.out

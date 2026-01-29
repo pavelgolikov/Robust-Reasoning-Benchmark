@@ -53,7 +53,7 @@ class AgentState:
     final_output: str = ""
     extracted_answer: str = ""
     is_correct: bool = False
-    step_count: int = 0
+    token_usage: Dict[str, int] = field(default_factory=dict)
     
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
@@ -124,15 +124,26 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                 agent.history.append({"role": "assistant", "content": response_text})
                 agent.step_count += 1
                 
+                # Token Tracking
+                if hasattr(out_obj.outputs[0], 'token_ids'):
+                    token_count = len(out_obj.outputs[0].token_ids)
+                else:
+                    # Fallback for Mock or if token_ids missing
+                    token_count = len(response_text.split()) 
+                
                 # --- POST-GENERATION UPDATE ---
                 if agent.phase == "FEEDING":
                     # We just got a reply to a distractor.
+                    agent.token_usage[f"distractor {agent.current_sys_index}"] = token_count
+                    
                     # Increment index
                     agent.current_sys_index += 1
                     # Loop will handle transition to SOLVING next time.
                     
                 elif agent.phase == "SOLVING":
                     # We just got a reply to the real problem.
+                    agent.token_usage["solution"] = token_count
+                    
                     # This is the final answer.
                     agent.final_output = response_text
                     agent.is_done = True
@@ -179,7 +190,10 @@ def main():
     if args.dry:
         print("DRY RUN: Using Mock LLM.")
         class MockOutput:
-            def __init__(self, text): self.text = text
+            def __init__(self, text): 
+                self.text = text
+                # Mock token_ids
+                self.token_ids = [0] * len(text.split())
         class MockCompletion:
             def __init__(self, text): self.outputs = [MockOutput(text)]
         class MockTokenizer:
@@ -272,6 +286,7 @@ def main():
             "output": agent.final_output,
             "extracted": extracted,
             "correct": is_correct,
+            "token_usage": agent.token_usage,
             "original_problem": agent.original_problem,
             "ground_truth": agent.ground_truth,
             "history_dump": [h['content'] for h in agent.history]
