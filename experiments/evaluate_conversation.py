@@ -53,6 +53,7 @@ class AgentState:
     final_output: str = ""
     extracted_answer: str = ""
     is_correct: bool = False
+    step_count: int = 0
     token_usage: Dict[str, int] = field(default_factory=dict)
     
     def get_vllm_prompt(self, tokenizer):
