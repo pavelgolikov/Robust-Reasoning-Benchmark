@@ -210,3 +210,7 @@ done in steps.
 
 Idea:
 Confuse the model by introducing multiple block boundaries in the text? Like multiple defyn blocks scattered across the text?
+
+
+TODO:
+1. Set up agent for distill-R1-70B that will just accept queries in a multi-turn format, no Python interpreter.

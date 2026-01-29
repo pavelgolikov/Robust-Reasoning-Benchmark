@@ -1,0 +1,294 @@
+import argparse
+import os
+import sys
+import json
+import time
+import random
+import traceback
+from dataclasses import dataclass, field
+from typing import List, Dict, Optional, Any
+from datasets import load_dataset
+# from vllm import LLM, SamplingParams (Moved to main)
+
+# Ensure we can import from experiments.
+# evaluate_conversation.py is in experiments/
+# util.py is in experiments/
+# context_saturation/generate_systems.py is in experiments/context_saturation/
+
+# Add project root to path just in case
+script_dir = os.path.dirname(os.path.abspath(__file__))
+experiments_dir = script_dir
+project_dir = os.path.dirname(experiments_dir)
+if project_dir not in sys.path:
+    sys.path.append(project_dir)
+
+# Helper imports
+from experiments.util import (
+    extract_answer, 
+    normalize_answer, 
+    remove_latex_comments, 
+    BASELINE_SYSTEM_PROMPT
+)
+from experiments.context_saturation.generate_systems import generate_system
+
+@dataclass
+class AgentState:
+    id: str
+    problem_id: str
+    sample_idx: int
+    
+    # Static Data
+    original_problem: str
+    ground_truth: str
+    variables: List[str] # For distractor generation
+    target_distractors: int
+    
+    # Dynamic State
+    history: List[Dict[str, str]]
+    current_sys_index: int = 0
+    phase: str = "FEEDING" # "FEEDING", "SOLVING", "DONE"
+    
+    # Output
+    is_done: bool = False
+    final_output: str = ""
+    extracted_answer: str = ""
+    is_correct: bool = False
+    step_count: int = 0
+    
+    def get_vllm_prompt(self, tokenizer):
+        return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
+
+
+def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params):
+    """
+    Runs the multi-turn batched execution loop.
+    """
+    active_agents = [a for a in agents if not a.is_done]
+    
+    while active_agents:
+        # 1. Update Prompts based on Phase
+        current_batch_agents = []
+        prompts = []
+        
+        for agent in active_agents:
+            if agent.is_done: continue
+            
+            # --- PHASE LOGIC ---
+            if agent.phase == "FEEDING":
+                # Check if we are done feeding
+                if agent.current_sys_index >= agent.target_distractors:
+                    agent.phase = "SOLVING"
+                else:
+                    vars_len = len(agent.variables)
+                    cur_term_ind = (agent.current_sys_index * 2) % vars_len
+                    
+                    distractor_text = generate_system(agent.variables, cur_term_ind, agent.current_sys_index)
+                    distractor_text = distractor_text.strip()
+                    
+                    agent.history.append({"role": "user", "content": distractor_text})
+            
+            if agent.phase == "SOLVING":
+                # Only add if the last message was NOT user (i.e., we are ready for new input).
+                last_role = agent.history[-1]["role"]
+                if last_role == "assistant" or last_role == "system":
+                    # Add Real Problem
+                    real_problem = remove_latex_comments(agent.original_problem)
+                    agent.history.append({"role": "user", "content": real_problem})
+            
+            # Prepare VLLM prompt
+            try:
+                prompt = agent.get_vllm_prompt(tokenizer)
+                prompts.append(prompt)
+                current_batch_agents.append(agent)
+            except Exception as e:
+                print(f"[Error] Failed to format prompt for agent {agent.id}: {e}")
+                agent.final_output = f"ERROR_PROMPT_FORMAT: {e}"
+                agent.is_done = True
+        
+        if not current_batch_agents:
+            break
+            
+        print(f"\n[Batch Step] Generating for {len(current_batch_agents)} agents...")
+        
+        # 2. Generate
+        try:
+            outputs = llm.generate(prompts, sampling_params)
+            
+            for agent, out_obj in zip(current_batch_agents, outputs):
+                if not out_obj.outputs:
+                    agent.final_output = "ERROR: No output"
+                    agent.is_done = True
+                    continue
+                
+                response_text = out_obj.outputs[0].text
+                agent.history.append({"role": "assistant", "content": response_text})
+                agent.step_count += 1
+                
+                # --- POST-GENERATION UPDATE ---
+                if agent.phase == "FEEDING":
+                    # We just got a reply to a distractor.
+                    # Increment index
+                    agent.current_sys_index += 1
+                    # Loop will handle transition to SOLVING next time.
+                    
+                elif agent.phase == "SOLVING":
+                    # We just got a reply to the real problem.
+                    # This is the final answer.
+                    agent.final_output = response_text
+                    agent.is_done = True
+                    
+        except BaseException as e:
+            print(f"[Batch Error] {e}")
+            # Fail all in batch for safety
+            for agent in current_batch_agents:
+                agent.is_done = True
+                agent.final_output = f"CRITICAL_BATCH_ERROR: {e}"
+
+        # Filter active
+        active_agents = [a for a in agents if not a.is_done]
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Evaluate Multi-Turn Conversation Agent (Context Saturation)")
+    parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B")
+    parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--n_samples", type=int, default=1)
+    parser.add_argument("--num_gpus", type=int, default=2)
+    parser.add_argument("--max_model_length", type=int, default=65536)
+    parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
+    parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
+    
+    args = parser.parse_args()
+    
+    # 1. Load Extracted Variables
+    extracted_vars = {}
+    vars_path = os.path.join(experiments_dir, 'analysis', 'variables', 'extracted_terms_by_problem.json')
+    if os.path.exists(vars_path):
+        with open(vars_path, 'r') as f:
+            extracted_vars = json.load(f)
+        # Normalize
+        for k, v in extracted_vars.items():
+            extracted_vars[k] = [x.replace(" ", "_") for x in v]
+        print(f"Loaded variables for {len(extracted_vars)} problems.")
+    else:
+        print("Warning: Variable file not found. Using default variables.")
+        
+    # 2. Init VLLM or Mock
+    if args.dry:
+        print("DRY RUN: Using Mock LLM.")
+        class MockOutput:
+            def __init__(self, text): self.text = text
+        class MockCompletion:
+            def __init__(self, text): self.outputs = [MockOutput(text)]
+        class MockTokenizer:
+            def apply_chat_template(self, history, tokenize=False, add_generation_prompt=True):
+                return json.dumps(history) # Just dump history as string
+        class MockLLM:
+            def generate(self, prompts, params):
+                return [MockCompletion("Fake Model Output") for _ in prompts]
+            def get_tokenizer(self): return MockTokenizer()
+            
+        llm = MockLLM()
+        tokenizer = llm.get_tokenizer()
+        sampling_params = None
+    else:
+        print(f"Initializing vLLM with model: {args.model}")
+        try:
+            from vllm import LLM, SamplingParams
+            llm = LLM(
+                model=args.model,
+                tensor_parallel_size=args.num_gpus,
+                trust_remote_code=True,
+                max_model_len=args.max_model_length,
+                dtype="bfloat16"
+            )
+            tokenizer = llm.get_tokenizer()
+            sampling_params = SamplingParams( temperature=0.6, max_tokens=args.max_model_length)
+        except Exception as e:
+            print(f"Failed to initialize vLLM: {e}")
+            exit(1)
+        
+    # 3. Load Dataset
+    print(f"Loading dataset: {args.dataset}...")
+    dataset = load_dataset(args.dataset, split="train")
+    if args.limit:
+        dataset = dataset.select(range(min(args.limit, len(dataset))))
+
+    # 4. Create Agents
+    agents = []
+    default_vars = ["x", "y", "n", "k", "A", "B", "S"]
+    random.seed(args.seed)
+    
+    for i, example in enumerate(dataset):
+        prob_id = str(example.get('id', i))
+        
+        # Get variables
+        current_vars = extracted_vars.get(prob_id, default_vars)
+        if len(current_vars) < 2: 
+            current_vars = default_vars # Ensure at least 2 for generation
+            
+        for sample_idx in range(args.n_samples):
+            agent = AgentState(
+                id=f"{prob_id}_s{sample_idx}",
+                problem_id=prob_id,
+                sample_idx=sample_idx,
+                original_problem=example['problem'],
+                ground_truth=example['answer'],
+                variables=current_vars,
+                target_distractors=args.num_distractors,
+                history=[
+                    {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
+                ]
+            )
+            agents.append(agent)
+            
+    print(f"Initialized {len(agents)} agents. Starting Batch Execution...")
+    
+    # 5. Run
+    run_batch_execution(agents, llm, tokenizer, sampling_params)
+    
+    # 6. Evaluate
+    results = []
+    stats = {"correct": 0, "total": 0, "failures": 0}
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    
+    for agent in agents:
+        extracted = extract_answer(agent.final_output)
+        is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
+        
+        agent.is_correct = is_correct
+        agent.extracted_answer = extracted
+        
+        stats["total"] += 1
+        if is_correct: stats["correct"] += 1
+        else: stats["failures"] += 1
+        
+        results.append({
+            "id": agent.problem_id,
+            "sample_idx": agent.sample_idx,
+            "output": agent.final_output,
+            "extracted": extracted,
+            "correct": is_correct,
+            "original_problem": agent.original_problem,
+            "ground_truth": agent.ground_truth,
+            "history_dump": [h['content'] for h in agent.history]
+        })
+        
+    acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
+    print(f"Results: Accuracy {acc:.2%} ({stats['correct']}/{stats['total']})")
+    
+    # Save
+    safe_model_name = args.model.replace('/', '_').replace(' ', '_')
+    safe_dataset_name = args.dataset.replace('/', '_')
+    res_dir = os.path.join(experiments_dir, "context_saturation", "conv_results", safe_model_name, safe_dataset_name)
+    os.makedirs(res_dir, exist_ok=True)
+    json_file = os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_{timestamp}_CONVERSATION.json")
+    
+    with open(json_file, "w") as f:
+        json.dump(results, f, indent=2)
+    print(f"Saved results to: {json_file}")
+
+if __name__ == "__main__":
+    main()
