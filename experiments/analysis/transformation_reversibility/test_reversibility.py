@@ -73,7 +73,8 @@ def main():
                             'word_reversal',
                             'word_split_swap',
                             'wrappers',
-                            'split_reversal']
+                            'split_reversal',
+                            'rail_fence']
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
     
@@ -140,6 +141,8 @@ def main():
                  kwargs = {'problem_b': problem_b}
             elif exp_name == 'context_saturation':
                  kwargs = {'num_distractors': args.num_distractors}
+            elif exp_name == 'rail_fence':
+                 kwargs = {'num_rails': 3}
                  
             try:
                 # 0. Global Sanitization
@@ -154,6 +157,8 @@ def main():
                 elif exp_name == 'opposites':
                      # Force 100% swap for reversibility testing to ensure no partial swaps exist
                      transformed = apply_func(original_raw, k=1, seed=args.seed)
+                elif exp_name == 'rail_fence':
+                     transformed = apply_func(original_raw, kwargs['num_rails'])
                 else:
                     transformed = apply_func(original_raw, seed=args.seed)
                     

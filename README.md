@@ -214,3 +214,5 @@ Confuse the model by introducing multiple block boundaries in the text? Like mul
 
 TODO:
 1. Set up agent for distill-R1-70B that will just accept queries in a multi-turn format, no Python interpreter.
+
+2. Rail Fence Cipher - we can later make it harder by using random letters instead of dots.

@@ -12,6 +12,7 @@ from word_split_swap.transformation import apply_word_split_swap
 from word_reversal.transformation import apply_word_reversal
 from sentence_reversal.transformation import apply_sentence_reversal
 from split_reversal.transformation import apply_split_reversal
+from rail_fence.transformation import apply_rail_fence
 
 import multiprocessing
 # Force 'spawn' to avoid CUDA re-initialization errors
@@ -103,6 +104,7 @@ TECHNIQUE_DESCRIPTIONS = {
     'split_reversal':  "Every word (words are defined as sequences of symbols separated by spaces) in user query has its symbols in reverse order.",
     'opposites': "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
     'wrappers':  "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
+    'rail_fence': "The user query is encoded using the Rail Fence Cipher. The input is provided as a visual grid where the characters of the message are placed in a zigzag pattern across multiple rails (rows), and empty spaces are filled with dots (.). You must reconstruct the original message by reading the characters in the standard zigzag order (Down-and-Up) across the grid.",
 }
 
 def remove_latex_comments(text):
@@ -201,6 +203,9 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         user_prompt_content = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
     elif name == 'split_reversal':
         user_prompt_content = apply_split_reversal(problem, separator=" ", func_name="reverse_string", seed=seed)
+    elif name == 'rail_fence':
+        rails = 3
+        user_prompt_content = apply_rail_fence(problem, num_rails=rails)
     else:
         return 'Not Implemented', ''
 
