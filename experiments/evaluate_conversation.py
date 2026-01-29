@@ -268,6 +268,7 @@ def main():
         results.append({
             "id": agent.problem_id,
             "sample_idx": agent.sample_idx,
+            "system_prompt": BASELINE_SYSTEM_PROMPT
             "output": agent.final_output,
             "extracted": extracted,
             "correct": is_correct,
