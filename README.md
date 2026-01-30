@@ -216,3 +216,10 @@ TODO:
 1. Set up agent for distill-R1-70B that will just accept queries in a multi-turn format, no Python interpreter.
 
 2. Rail Fence Cipher - we can later make it harder by using random letters instead of dots.
+
+Context saturation. Currently trying 20 distractors on 4 GPUs.
+What worked:
+5 distractors on 2 GPU
+
+What didn't work:
+30 distractors on 2 GPU
