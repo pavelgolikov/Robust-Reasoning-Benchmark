@@ -165,7 +165,7 @@ def main():
     parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--sample_range", type=str, default=None, help="Range of sample indices to process, e.g. '0-10' or '5' or '1,3,5'")
     parser.add_argument("--n_samples", type=int, default=1)
     parser.add_argument("--num_gpus", type=int, default=2)
     parser.add_argument("--max_model_length", type=int, default=65536)
@@ -228,8 +228,25 @@ def main():
     # 3. Load Dataset
     print(f"Loading dataset: {args.dataset}...")
     dataset = load_dataset(args.dataset, split="train")
-    if args.limit:
-        dataset = dataset.select(range(min(args.limit, len(dataset))))
+    
+    # Process sample_range
+    if args.sample_range:
+        indices = []
+        parts = args.sample_range.split(',')
+        for part in parts:
+            part = part.strip()
+            if '-' in part:
+                start, end = map(int, part.split('-'))
+                indices.extend(range(start, end)) # Python range exclusive
+            else:
+                indices.append(int(part))
+        # Validate indices
+        indices = [i for i in indices if 0 <= i < len(dataset)]
+        if not indices:
+             print("Error: No valid indices found in sample_range.")
+             exit(1)
+        print(f"Selecting {len(indices)} samples based on range: {args.sample_range}")
+        dataset = dataset.select(indices)
 
     # 4. Create Agents
     agents = []

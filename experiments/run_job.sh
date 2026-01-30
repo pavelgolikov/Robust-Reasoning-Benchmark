@@ -23,4 +23,4 @@ mkdir -p $HF_HOME
 # python evaluate.py --names rail_fence --n_samples 5 --limit 30 > eval_out.out
 # python evaluate.py --names reversal --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
 
-python evaluate_conversation.py --limit 30 --n_samples 5 --num_distractors 30 > eval_out.out
+python evaluate_conversation.py --sample_range 0-5 --n_samples 5 --num_distractors 30 > eval_out.out
