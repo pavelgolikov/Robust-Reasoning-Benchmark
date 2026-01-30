@@ -8,6 +8,7 @@ import traceback
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any
 from datasets import load_dataset
+import torch
 # from vllm import LLM, SamplingParams (Moved to main)
 
 # Ensure we can import from experiments.
@@ -300,8 +301,25 @@ def main():
             
         print(f"Initialized {len(batch_agents)} agents for this batch. Running execution...")
         
-        # Run Batch
-        run_batch_execution(batch_agents, llm, tokenizer, sampling_params)
+        # Run Batch with OOM Handling
+        try:
+            run_batch_execution(batch_agents, llm, tokenizer, sampling_params)
+        except torch.cuda.OutOfMemoryError:
+            print(f"[CRITICAL] CUDA OOM Error on batch {i//args.batch_size + 1}!")
+            torch.cuda.empty_cache()
+            import gc
+            gc.collect()
+            for agent in batch_agents:
+                if not agent.is_done:
+                    agent.final_output = "ERROR_CUDA_OOM"
+                    agent.is_done = True
+        except Exception as e:
+             print(f"[CRITICAL] Unknown Error on batch {i//args.batch_size + 1}: {e}")
+             for agent in batch_agents:
+                if not agent.is_done:
+                    agent.final_output = f"ERROR_UNKNOWN: {e}"
+                    agent.is_done = True
+
         
         # Collect Results
         for agent in batch_agents:
@@ -344,22 +362,27 @@ def main():
         import gc
         gc.collect()
 
-    # 5. Save Results
-    # (Results are already accumulated in `results` list)
+        # --- PROGRESSIVE SAVING ---
+        # Save results after EACH batch to prevent data loss safely (overwriting file)
+        safe_model_name = args.model.replace('/', '_').replace(' ', '_')
+        safe_dataset_name = args.dataset.replace('/', '_')
+        res_dir = os.path.join(experiments_dir, "context_saturation", "conv_results", safe_model_name, safe_dataset_name)
+        os.makedirs(res_dir, exist_ok=True)
+        json_file = os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_{timestamp}_CONVERSATION.json")
+        
+        try:
+            with open(json_file, "w") as f:
+                json.dump(results, f, indent=2)
+            print(f"[Progressive Save] Saved {len(results)} samples to: {json_file}")
+        except Exception as e:
+            print(f"[Warning] Failed to save progressive results: {e}")
+
+    # 5. Final Report
+    # (Results are already saved, just print stats)
         
     acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
     print(f"Results: Accuracy {acc:.2%} ({stats['correct']}/{stats['total']})")
-    
-    # Save
-    safe_model_name = args.model.replace('/', '_').replace(' ', '_')
-    safe_dataset_name = args.dataset.replace('/', '_')
-    res_dir = os.path.join(experiments_dir, "context_saturation", "conv_results", safe_model_name, safe_dataset_name)
-    os.makedirs(res_dir, exist_ok=True)
-    json_file = os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_{timestamp}_CONVERSATION.json")
-    
-    with open(json_file, "w") as f:
-        json.dump(results, f, indent=2)
-    print(f"Saved results to: {json_file}")
+    print(f"Final Results saved to: {json_file}")
 
 if __name__ == "__main__":
     main()
