@@ -5,7 +5,7 @@ import sys
 import statistics
 
 # Path to latest file
-result_file = "experiments/context_saturation/conv_results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_s42_20260130_024220_CONVERSATION.json"
+result_file = "experiments/context_saturation/conv_results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_s42_20260130_135449_CONVERSATION.json"
 
 def analyze():
     if not os.path.exists(result_file):
@@ -30,16 +30,40 @@ def analyze():
     for d in data:
         usage = d.get('token_usage', {})
         
-        # Collect distractor tokens
-        current_sample_distractors = []
-        for k, v in usage.items():
-            if k.startswith('distractor'):
-                current_sample_distractors.append(v)
-                distractor_tokens.append(v)
-            elif k == 'solution':
-                solution_tokens.append(v)
-                
-        distractor_counts_per_sample.append(len(current_sample_distractors))
+        if 'distractors_avg_tokens' in usage:
+            avg_dist = usage.get('distractors_avg_tokens', 0)
+            count = usage.get('distractors_count', 0)
+            sol = usage.get('solution_tokens', 0)
+            
+            if count > 0:
+                distractor_tokens.extend([avg_dist] * int(count))
+            solution_tokens.append(sol)
+            distractor_counts_per_sample.append(count)
+            
+        elif 'distractor_avg' in usage:
+             # My previous format (just in case)
+            avg_dist = usage.get('distractor_avg', 0)
+            count = usage.get('distractor_count', 0)
+            sol = usage.get('solution', 0)
+            
+            if count > 0:
+                distractor_tokens.extend([avg_dist] * int(count))
+            solution_tokens.append(sol)
+            distractor_counts_per_sample.append(count)
+            
+        else:
+            # Old Format (detailed dict)
+            current_sample_distractors = []
+            for k, v in usage.items():
+                if k.startswith('distractor') and not k.endswith('_tokens') and not k.endswith('_count'):
+                     # Only match "distractor 1", "distractor 2" etc. 
+                     # Avoid matching summary keys if they exist but fell through
+                    current_sample_distractors.append(v)
+                    distractor_tokens.append(v)
+                elif k == 'solution':
+                    solution_tokens.append(v)
+                    
+            distractor_counts_per_sample.append(len(current_sample_distractors))
         
     avg_dist_tokens = statistics.mean(distractor_tokens) if distractor_tokens else 0
     avg_sol_tokens = statistics.mean(solution_tokens) if solution_tokens else 0

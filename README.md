@@ -223,3 +223,5 @@ What worked:
 
 What didn't work:
 30 distractors on 2 GPU
+
+Let's augment context_saturation with a mode that allows to feed regular text, for example "The history of declline and fall of Roman Empire" or whatever it is called. We feed chunks roughly the size of a distractor and ask to analyze the text snippet or paragraph. I guess preferably paragraph or two for completeness and ease for the model. Let's pull this parameter all the way to the command line option in evaluate_conversation.py called as --cont_poll_gen_text.

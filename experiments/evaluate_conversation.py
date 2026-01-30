@@ -170,6 +170,7 @@ def main():
     parser.add_argument("--num_gpus", type=int, default=2)
     parser.add_argument("--max_model_length", type=int, default=65536)
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
+    parser.add_argument("--batch_size", type=int, default=10, help="Number of samples to process in parallel (batch size).")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     
     args = parser.parse_args()
@@ -248,78 +249,103 @@ def main():
         print(f"Selecting {len(indices)} samples based on range: {args.sample_range}")
         dataset = dataset.select(indices)
 
-    # 4. Create Agents
-    agents = []
+    # 4. Process in Batches
+    print(f"Starting execution with batch size: {args.batch_size}")
+    
+    # Check if indices were set by sample_range, else use all
+    if not 'indices' in locals():
+        indices = list(range(len(dataset)))
+
     default_vars = ["x", "y", "n", "k", "A", "B", "S"]
     random.seed(args.seed)
     
-    for i, example in enumerate(dataset):
-        prob_id = str(example.get('id', i))
-        
-        # Get variables
-        current_vars = extracted_vars.get(prob_id, default_vars)
-        if len(current_vars) < 2: 
-            current_vars = default_vars # Ensure at least 2 for generation
-            
-        for sample_idx in range(args.n_samples):
-            agent = AgentState(
-                id=f"{prob_id}_s{sample_idx}",
-                problem_id=prob_id,
-                sample_idx=sample_idx,
-                original_problem=example['problem'],
-                ground_truth=example['answer'],
-                variables=current_vars,
-                target_distractors=args.num_distractors,
-                history=[
-                    {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
-                ]
-            )
-            agents.append(agent)
-            
-    print(f"Initialized {len(agents)} agents. Starting Batch Execution...")
-    
-    # 5. Run
-    run_batch_execution(agents, llm, tokenizer, sampling_params)
-    
-    # 6. Evaluate
     results = []
     stats = {"correct": 0, "total": 0, "failures": 0}
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     
-    for agent in agents:
-        extracted = extract_answer(agent.final_output)
-        is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
+    # Chunk indices
+    for i in range(0, len(indices), args.batch_size):
+        batch_indices = indices[i : i + args.batch_size]
+        print(f"\n[Main Loop] Processing batch {i//args.batch_size + 1} ({len(batch_indices)} samples)...")
         
-        agent.is_correct = is_correct
-        agent.extracted_answer = extracted
+        batch_agents = []
         
-        stats["total"] += 1
-        if is_correct: stats["correct"] += 1
-        else: stats["failures"] += 1
+        for idx in batch_indices:
+            example = dataset[idx]
+            prob_id = str(example.get('id', idx))
+            
+            # Get variables
+            current_vars = extracted_vars.get(prob_id, default_vars)
+            if len(current_vars) < 2: 
+                current_vars = default_vars
+                
+            for sample_idx in range(args.n_samples):
+                # Create Agent
+                agent = AgentState(
+                    id=f"{prob_id}_s{sample_idx}",
+                    problem_id=prob_id,
+                    sample_idx=sample_idx,
+                    original_problem=example['problem'],
+                    ground_truth=example['answer'],
+                    variables=current_vars,
+                    target_distractors=args.num_distractors,
+                    history=[
+                        {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
+                    ]
+                )
+                batch_agents.append(agent)
+                
+        if not batch_agents:
+            continue
+            
+        print(f"Initialized {len(batch_agents)} agents for this batch. Running execution...")
         
-        # Aggregate Token Usage
-        distractor_tokens = [v for k, v in agent.token_usage.items() if k.startswith("distractor")]
-        solution_tokens = agent.token_usage.get("solution", 0)
+        # Run Batch
+        run_batch_execution(batch_agents, llm, tokenizer, sampling_params)
         
-        token_usage_summary = {
-            "distractors_total_tokens": sum(distractor_tokens),
-            "distractors_avg_tokens": sum(distractor_tokens) / len(distractor_tokens) if distractor_tokens else 0,
-            "distractors_count": len(distractor_tokens),
-            "solution_tokens": solution_tokens
-        }
+        # Collect Results
+        for agent in batch_agents:
+            extracted = extract_answer(agent.final_output)
+            is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
+            
+            agent.is_correct = is_correct
+            agent.extracted_answer = extracted
+            
+            stats["total"] += 1
+            if is_correct: stats["correct"] += 1
+            else: stats["failures"] += 1
+            
+            # Aggregate Token Usage
+            distractor_tokens = [v for k, v in agent.token_usage.items() if k.startswith("distractor")]
+            solution_tokens = agent.token_usage.get("solution", 0)
+            
+            token_usage_summary = {
+                "distractors_total_tokens": sum(distractor_tokens),
+                "distractors_avg_tokens": sum(distractor_tokens) / len(distractor_tokens) if distractor_tokens else 0,
+                "distractors_count": len(distractor_tokens),
+                "solution_tokens": solution_tokens
+            }
 
-        results.append({
-            "id": agent.problem_id,
-            "sample_idx": agent.sample_idx,
-            "system_prompt": BASELINE_SYSTEM_PROMPT,
-            "output": agent.final_output,
-            "extracted": extracted,
-            "correct": is_correct,
-            "token_usage": token_usage_summary,
-            "original_problem": agent.original_problem,
-            "ground_truth": agent.ground_truth,
-            "history_dump": [h['content'] for h in agent.history]
-        })
+            results.append({
+                "id": agent.problem_id,
+                "sample_idx": agent.sample_idx,
+                "system_prompt": BASELINE_SYSTEM_PROMPT,
+                "output": agent.final_output,
+                "extracted": extracted,
+                "correct": is_correct,
+                "token_usage": token_usage_summary,
+                "original_problem": agent.original_problem,
+                "ground_truth": agent.ground_truth,
+                "history_dump": [h['content'] for h in agent.history]
+            })
+            
+        # Cleanup
+        del batch_agents
+        import gc
+        gc.collect()
+
+    # 5. Save Results
+    # (Results are already accumulated in `results` list)
         
     acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
     print(f"Results: Accuracy {acc:.2%} ({stats['correct']}/{stats['total']})")
