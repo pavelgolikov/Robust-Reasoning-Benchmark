@@ -297,6 +297,17 @@ def main():
         if is_correct: stats["correct"] += 1
         else: stats["failures"] += 1
         
+        # Aggregate Token Usage
+        distractor_tokens = [v for k, v in agent.token_usage.items() if k.startswith("distractor")]
+        solution_tokens = agent.token_usage.get("solution", 0)
+        
+        token_usage_summary = {
+            "distractors_total_tokens": sum(distractor_tokens),
+            "distractors_avg_tokens": sum(distractor_tokens) / len(distractor_tokens) if distractor_tokens else 0,
+            "distractors_count": len(distractor_tokens),
+            "solution_tokens": solution_tokens
+        }
+
         results.append({
             "id": agent.problem_id,
             "sample_idx": agent.sample_idx,
@@ -304,7 +315,7 @@ def main():
             "output": agent.final_output,
             "extracted": extracted,
             "correct": is_correct,
-            "token_usage": agent.token_usage,
+            "token_usage": token_usage_summary,
             "original_problem": agent.original_problem,
             "ground_truth": agent.ground_truth,
             "history_dump": [h['content'] for h in agent.history]
