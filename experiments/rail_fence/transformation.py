@@ -54,7 +54,6 @@ def reverse_rail_fence(text):
     # grid_rows = text.split('\n') # Old logic passed raw text?
     
     num_rails = len(grid_rows)
-    num_rails = len(grid_rows)
     if num_rails <= 1:
         return text.replace('\n', '') # Fallback/Error? Or just return text
         

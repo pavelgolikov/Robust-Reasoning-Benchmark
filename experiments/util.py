@@ -104,7 +104,7 @@ TECHNIQUE_DESCRIPTIONS = {
     'split_reversal':  "Every word (words are defined as sequences of symbols separated by spaces) in user query has its symbols in reverse order.",
     'opposites': "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
     'wrappers':  "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
-    'rail_fence': "The user query is encoded using the Rail Fence Cipher. The input is provided as a visual grid where the characters of the message are placed in a zigzag pattern across multiple rails (rows), and empty spaces are filled with dots (.). You must reconstruct the original message by reading the characters in the standard zigzag order (Down-and-Up) across the grid.",
+    'rail_fence': "The user query is encoded using the Rail Fence Cipher. The input is provided as a visual grid where the symbols (including spaces) of the message string are placed in a zigzag pattern across multiple rails (rows), and empty spaces are filled with dots (.). To decode, read the characters in zigzag order: Down-and-Right diagonally until you hit bottom rail, then Up-and-Right diagonally until you hit top rail, etc... Rows are given on separate lines.",
 }
 
 def remove_latex_comments(text):
