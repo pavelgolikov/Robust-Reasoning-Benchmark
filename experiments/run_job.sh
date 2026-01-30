@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:2
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=64G
-#SBATCH --time=6:00:00
+#SBATCH --time=4:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_err.err
 #SBATCH --account=aip-gpekhime
@@ -20,7 +20,7 @@ mkdir -p $HF_HOME
 
 # TODO: need to run rail_fence eval real quick
 # Running 5 samples per problem for averaging
-python evaluate.py --names rail_fence --n_samples 5 --limit 30 > eval_out.out
+# python evaluate.py --names rail_fence --n_samples 5 --limit 30 > eval_out.out
 # python evaluate.py --names reversal --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
 
-# python evaluate_conversation.py --limit 30 --n_samples 5 --num_distractors 10 > eval_out.out
+python evaluate_conversation.py --limit 30 --n_samples 5 --num_distractors 30 > eval_out.out
