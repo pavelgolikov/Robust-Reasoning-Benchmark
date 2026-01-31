@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=64G
-#SBATCH --time=6:00:00
+#SBATCH --time=8:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_err.err
 #SBATCH --account=aip-gpekhime
@@ -23,4 +23,4 @@ mkdir -p $HF_HOME
 # python evaluate.py --names rail_fence --n_samples 5 --limit 30 > eval_out.out
 # python evaluate.py --names reversal --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
 
-python evaluate_conversation.py --max_model_length 262000 --batch_size 150 --n_samples 5 --num_distractors 30 --num_gpus 4 > eval_out.out
+python evaluate_conversation.py --max_model_length 262000 --sample_range 0-14 --batch_size 150 --n_samples 5 --num_distractors 30 --num_gpus 4 > eval_out.out

@@ -253,9 +253,7 @@ def main():
     # 4. Process in Batches
     print(f"Starting execution with batch size: {args.batch_size}")
     
-    # Check if indices were set by sample_range, else use all
-    if not 'indices' in locals():
-        indices = list(range(len(dataset)))
+    indices = list(range(len(dataset)))
 
     default_vars = ["x", "y", "n", "k", "A", "B", "S"]
     random.seed(args.seed)
