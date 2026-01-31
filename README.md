@@ -220,8 +220,12 @@ TODO:
 Context saturation. Currently trying 20 distractors on 4 GPUs.
 What worked:
 5 distractors on 2 GPU
+110 distractors on 4 GPUs sequentially in 2 hours got cancelled due to time limit @ 262000 max model length with 1 sample
+
 
 What didn't work:
-30 distractors on 2 GPU
+
+Trying now:
+batch 10, 30 distractors, 4 GPUs, 5 samples, 262000 max model length, 6 hours time limit - 
 
 Let's augment context_saturation with a mode that allows to feed regular text, for example "The history of declline and fall of Roman Empire" or whatever it is called. We feed chunks roughly the size of a distractor and ask to analyze the text snippet or paragraph. I guess preferably paragraph or two for completeness and ease for the model. Let's pull this parameter all the way to the command line option in evaluate_conversation.py called as --cont_poll_gen_text.
