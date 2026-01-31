@@ -56,12 +56,13 @@ class AgentState:
     is_correct: bool = False
     step_count: int = 0
     token_usage: Dict[str, int] = field(default_factory=dict)
+    last_distractor_count: int = 0 # Tracks how many distractors were sent in the pending turn
     
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
 
 
-def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params):
+def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query):
     """
     Runs the multi-turn batched execution loop.
     """
@@ -82,12 +83,23 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     agent.phase = "SOLVING"
                 else:
                     vars_len = len(agent.variables)
-                    cur_term_ind = (agent.current_sys_index * 2) % vars_len
                     
-                    distractor_text = generate_system(agent.variables, cur_term_ind, agent.current_sys_index)
-                    distractor_text = distractor_text.strip()
+                    # Calculate how many to send
+                    remaining = agent.target_distractors - agent.current_sys_index
+                    count = min(distractors_per_query, remaining)
                     
-                    agent.history.append({"role": "user", "content": distractor_text})
+                    prompt_parts = []
+                    prompt_parts.append(f"Solve these {count} math problems and output your solutions numbered.\n")
+                    
+                    for k in range(count):
+                        idx = agent.current_sys_index + k
+                        cur_term_ind = (idx * 2) % vars_len
+                        distractor_text = generate_system(agent.variables, cur_term_ind, idx).strip()
+                        prompt_parts.append(f"{k+1}. {distractor_text}")
+                        
+                    full_prompt = "\n".join(prompt_parts)
+                    agent.history.append({"role": "user", "content": full_prompt})
+                    agent.last_distractor_count = count
             
             if agent.phase == "SOLVING":
                 # Only add if the last message was NOT user (i.e., we are ready for new input).
@@ -135,11 +147,14 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                 
                 # --- POST-GENERATION UPDATE ---
                 if agent.phase == "FEEDING":
-                    # We just got a reply to a distractor.
-                    agent.token_usage[f"distractor {agent.current_sys_index}"] = token_count
+                    # We just got a reply to a batch of distractors.
+                    start_idx = agent.current_sys_index
+                    end_idx = start_idx + agent.last_distractor_count - 1
                     
-                    # Increment index
-                    agent.current_sys_index += 1
+                    agent.token_usage[f"distractors {start_idx}-{end_idx}"] = token_count
+                    
+                    # Increment index by the number of items we sent
+                    agent.current_sys_index += agent.last_distractor_count
                     # Loop will handle transition to SOLVING next time.
                     
                 elif agent.phase == "SOLVING":
@@ -171,6 +186,7 @@ def main():
     parser.add_argument("--num_gpus", type=int, default=2)
     parser.add_argument("--max_model_length", type=int, default=65536)
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
+    parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
     parser.add_argument("--batch_size", type=int, default=10, help="Number of samples to process in parallel (batch size).")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     
@@ -253,9 +269,9 @@ def main():
     # 4. Process in Batches
     print(f"Starting execution with batch size: {args.batch_size}")
     
-    # Check if indices were set by sample_range, else use all
-    if not 'indices' in locals():
-        indices = list(range(len(dataset)))
+    # We now iterate over the *current* dataset indices (0 to len(dataset)-1)
+    # forcing a list to act as our 'indices' to chunk
+    indices = list(range(len(dataset)))
 
     default_vars = ["x", "y", "n", "k", "A", "B", "S"]
     random.seed(args.seed)
@@ -303,7 +319,7 @@ def main():
         
         # Run Batch with OOM Handling
         try:
-            run_batch_execution(batch_agents, llm, tokenizer, sampling_params)
+            run_batch_execution(batch_agents, llm, tokenizer, sampling_params, args.distractors_per_query)
         except torch.cuda.OutOfMemoryError:
             print(f"[CRITICAL] CUDA OOM Error on batch {i//args.batch_size + 1}!")
             torch.cuda.empty_cache()
