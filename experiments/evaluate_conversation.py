@@ -62,7 +62,7 @@ class AgentState:
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
 
 
-def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query):
+def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed):
     """
     Runs the multi-turn batched execution loop.
     """
@@ -94,6 +94,11 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     for k in range(count):
                         idx = agent.current_sys_index + k
                         cur_term_ind = (idx * 2) % vars_len
+                        # DETERMINISTIC SEEDING: Ensure distractor K for Sample N is always same
+                        # We use a derived seed based on global seed, sample_idx, and system index.
+                        local_seed = seed + agent.sample_idx * 100000 + idx
+                        random.seed(local_seed)
+                        
                         distractor_text = generate_system(agent.variables, cur_term_ind, idx).strip()
                         prompt_parts.append(f"{k+1}. {distractor_text}")
                         
@@ -188,7 +193,9 @@ def main():
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
     parser.add_argument("--batch_size", type=int, default=30, help="Number of samples to process in parallel (batch size).")
+    parser.add_argument("--max_batches", type=int, default=None, help="Maximum number of batches to process in this run (for testing/time-limits).")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
+    parser.add_argument("--new_run", action="store_true", help="Force a new run (ignore existing checkpoints)")
     
     args = parser.parse_args()
     
@@ -278,7 +285,57 @@ def main():
     
     results = []
     stats = {"correct": 0, "total": 0, "failures": 0}
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+    # --- RESUME LOGIC ---
+    # Construct expected directory
+    safe_model_name = args.model.replace('/', '_').replace(' ', '_')
+    safe_dataset_name = args.dataset.replace('/', '_')
+    res_dir = os.path.join(experiments_dir, "context_saturation", "conv_results", safe_model_name, safe_dataset_name)
+    os.makedirs(res_dir, exist_ok=True)
+    
+    # Check for latest file matching pattern
+    import glob
+    existing_files = glob.glob(os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_*_CONVERSATION.json"))
+    existing_files.sort(key=os.path.getmtime) # Sort by time, latest last
+
+    json_file = None
+    existing_results = []
+    
+    if existing_files and not args.new_run:
+        latest_file = existing_files[-1]
+        print(f"[Resume] Found existing run: {latest_file}")
+        try:
+            with open(latest_file, "r") as f:
+                existing_results = json.load(f)
+            
+            # Map existing sample_indices to skip
+            finished_keys = set((item.get('id'), item.get('sample_idx')) for item in existing_results)
+            print(f"[Resume] Loaded {len(existing_results)} completed samples. Filtering queue...")
+            
+            print(f"[Resume] Will skip {len(finished_keys)} already completed items.")
+            
+            json_file = latest_file
+            results = existing_results # Pre-populate current results list
+            
+            # Recalculate stats
+            stats["total"] = len(existing_results)
+            stats["correct"] = sum(1 for r in existing_results if r.get("correct"))
+            stats["failures"] = sum(1 for r in existing_results if not r.get("correct"))
+            
+        except Exception as e:
+             print(f"[Resume] Error reading file {latest_file}, starting fresh. Error: {e}")
+
+    if not json_file:
+        # Start New
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        json_file = os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_{timestamp}_CONVERSATION.json")
+        print(f"[Init] Starting new run. Output: {json_file}")
+    
+    # --------------------
+    
+    # results = [] (Removed, initialized above)
+    # stats = ... (Removed, initialized above)
+    # timestamp = ... (Removed)
     
     # Chunk indices
     for i in range(0, len(indices), args.batch_size):
@@ -311,15 +368,29 @@ def main():
                     ]
                 )
                 batch_agents.append(agent)
+        
+        # RESUME FILTERING: Remove agents already done
+        if existing_results:
+             batch_agents = [a for a in batch_agents if (a.problem_id, a.sample_idx) not in finished_keys]
+        
+        if not batch_agents:
+            print(f"Batch {i//args.batch_size + 1} fully completed. Skipping.")
+            continue
                 
         if not batch_agents:
             continue
-            
+
+        # Check max_batches limit
+        batches_processed = stats.get("batches_processed", 0)
+        if args.max_batches is not None and batches_processed >= args.max_batches:
+             print(f"[Limit] Reached max_batches ({args.max_batches}). Stopping early.")
+             break
+
         print(f"Initialized {len(batch_agents)} agents for this batch. Running execution...")
         
         # Run Batch with OOM Handling
         try:
-            run_batch_execution(batch_agents, llm, tokenizer, sampling_params, args.distractors_per_query)
+            run_batch_execution(batch_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed)
         except torch.cuda.OutOfMemoryError:
             print(f"[CRITICAL] CUDA OOM Error on batch {i//args.batch_size + 1}!")
             torch.cuda.empty_cache()
@@ -380,18 +451,15 @@ def main():
 
         # --- PROGRESSIVE SAVING ---
         # Save results after EACH batch to prevent data loss safely (overwriting file)
-        safe_model_name = args.model.replace('/', '_').replace(' ', '_')
-        safe_dataset_name = args.dataset.replace('/', '_')
-        res_dir = os.path.join(experiments_dir, "context_saturation", "conv_results", safe_model_name, safe_dataset_name)
-        os.makedirs(res_dir, exist_ok=True)
-        json_file = os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_{timestamp}_CONVERSATION.json")
-        
+        # Reuse json_file determined at start
         try:
             with open(json_file, "w") as f:
                 json.dump(results, f, indent=2)
-            print(f"[Progressive Save] Saved {len(results)} samples to: {json_file}")
+            print(f"[Progressive Save] Saved {len(results)} samples (Total) to: {json_file}")
         except Exception as e:
             print(f"[Warning] Failed to save progressive results: {e}")
+
+        stats["batches_processed"] = stats.get("batches_processed", 0) + 1
 
     # 5. Final Report
     # (Results are already saved, just print stats)
