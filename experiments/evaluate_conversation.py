@@ -187,7 +187,7 @@ def main():
     parser.add_argument("--max_model_length", type=int, default=65536)
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
-    parser.add_argument("--batch_size", type=int, default=10, help="Number of samples to process in parallel (batch size).")
+    parser.add_argument("--batch_size", type=int, default=30, help="Number of samples to process in parallel (batch size).")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     
     args = parser.parse_args()
