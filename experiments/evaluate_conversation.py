@@ -62,123 +62,117 @@ class AgentState:
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
 
 
-def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed):
+def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed):
     """
-    Runs the multi-turn batched execution loop.
+    Runs a single turn (prompt generation -> vllm generate -> state update) for all active agents.
     """
-    active_agents = [a for a in agents if not a.is_done]
+    current_batch_agents = []
+    prompts = []
     
-    while active_agents:
-        # 1. Update Prompts based on Phase
-        current_batch_agents = []
-        prompts = []
+    # 1. Update Prompts based on Phase
+    for agent in active_agents:
+        if agent.is_done: continue
         
-        for agent in active_agents:
-            if agent.is_done: continue
-            
-            # --- PHASE LOGIC ---
-            if agent.phase == "FEEDING":
-                # Check if we are done feeding
-                if agent.current_sys_index >= agent.target_distractors:
-                    agent.phase = "SOLVING"
-                else:
-                    vars_len = len(agent.variables)
+        # --- PHASE LOGIC ---
+        if agent.phase == "FEEDING":
+            # Check if we are done feeding
+            if agent.current_sys_index >= agent.target_distractors:
+                agent.phase = "SOLVING"
+            else:
+                vars_len = len(agent.variables)
+                
+                # Calculate how many to send
+                remaining = agent.target_distractors - agent.current_sys_index
+                count = min(distractors_per_query, remaining)
+                
+                prompt_parts = []
+                prompt_parts.append(f"Solve these {count} math problems and output your solutions numbered.\n")
+                
+                for k in range(count):
+                    idx = agent.current_sys_index + k
+                    cur_term_ind = (idx * 2) % vars_len
+                    # DETERMINISTIC SEEDING: Ensure distractor K for Sample N is always same
+                    local_seed = seed + agent.sample_idx * 100000 + idx
+                    random.seed(local_seed)
                     
-                    # Calculate how many to send
-                    remaining = agent.target_distractors - agent.current_sys_index
-                    count = min(distractors_per_query, remaining)
+                    distractor_text = generate_system(agent.variables, cur_term_ind, idx).strip()
+                    prompt_parts.append(f"{k+1}. {distractor_text}")
                     
-                    prompt_parts = []
-                    prompt_parts.append(f"Solve these {count} math problems and output your solutions numbered.\n")
-                    
-                    for k in range(count):
-                        idx = agent.current_sys_index + k
-                        cur_term_ind = (idx * 2) % vars_len
-                        # DETERMINISTIC SEEDING: Ensure distractor K for Sample N is always same
-                        # We use a derived seed based on global seed, sample_idx, and system index.
-                        local_seed = seed + agent.sample_idx * 100000 + idx
-                        random.seed(local_seed)
-                        
-                        distractor_text = generate_system(agent.variables, cur_term_ind, idx).strip()
-                        prompt_parts.append(f"{k+1}. {distractor_text}")
-                        
-                    full_prompt = "\n".join(prompt_parts)
-                    agent.history.append({"role": "user", "content": full_prompt})
-                    agent.last_distractor_count = count
-            
-            if agent.phase == "SOLVING":
-                # Only add if the last message was NOT user (i.e., we are ready for new input).
-                last_role = agent.history[-1]["role"]
-                if last_role == "assistant" or last_role == "system":
-                    # Add Real Problem
-                    real_problem = remove_latex_comments(agent.original_problem)
-                    agent.history.append({"role": "user", "content": real_problem})
-            
-            # Prepare VLLM prompt
-            try:
-                prompt = agent.get_vllm_prompt(tokenizer)
-                prompts.append(prompt)
-                current_batch_agents.append(agent)
-            except Exception as e:
-                print(f"[Error] Failed to format prompt for agent {agent.id}: {e}")
-                agent.final_output = f"ERROR_PROMPT_FORMAT: {e}"
-                agent.is_done = True
+                full_prompt = "\n".join(prompt_parts)
+                agent.history.append({"role": "user", "content": full_prompt})
+                agent.last_distractor_count = count
         
-        if not current_batch_agents:
-            break
-            
-        print(f"\n[Batch Step] Generating for {len(current_batch_agents)} agents...")
+        if agent.phase == "SOLVING":
+            # Only add if the last message was NOT user (i.e., we are ready for new input).
+            last_role = agent.history[-1]["role"]
+            if last_role == "assistant" or last_role == "system":
+                # Add Real Problem
+                real_problem = remove_latex_comments(agent.original_problem)
+                agent.history.append({"role": "user", "content": real_problem})
         
-        # 2. Generate
+        # Prepare VLLM prompt
         try:
-            outputs = llm.generate(prompts, sampling_params)
-            
-            for agent, out_obj in zip(current_batch_agents, outputs):
-                if not out_obj.outputs:
-                    agent.final_output = "ERROR: No output"
-                    agent.is_done = True
-                    continue
-                
-                response_text = out_obj.outputs[0].text
-                agent.history.append({"role": "assistant", "content": response_text})
-                agent.step_count += 1
-                
-                # Token Tracking
-                if hasattr(out_obj.outputs[0], 'token_ids'):
-                    token_count = len(out_obj.outputs[0].token_ids)
-                else:
-                    # Fallback for Mock or if token_ids missing
-                    token_count = len(response_text.split()) 
-                
-                # --- POST-GENERATION UPDATE ---
-                if agent.phase == "FEEDING":
-                    # We just got a reply to a batch of distractors.
-                    start_idx = agent.current_sys_index
-                    end_idx = start_idx + agent.last_distractor_count - 1
-                    
-                    agent.token_usage[f"distractors {start_idx}-{end_idx}"] = token_count
-                    
-                    # Increment index by the number of items we sent
-                    agent.current_sys_index += agent.last_distractor_count
-                    # Loop will handle transition to SOLVING next time.
-                    
-                elif agent.phase == "SOLVING":
-                    # We just got a reply to the real problem.
-                    agent.token_usage["solution"] = token_count
-                    
-                    # This is the final answer.
-                    agent.final_output = response_text
-                    agent.is_done = True
-                    
-        except BaseException as e:
-            print(f"[Batch Error] {e}")
-            # Fail all in batch for safety
-            for agent in current_batch_agents:
+            prompt = agent.get_vllm_prompt(tokenizer)
+            prompts.append(prompt)
+            current_batch_agents.append(agent)
+        except Exception as e:
+            print(f"[Error] Failed to format prompt for agent {agent.id}: {e}")
+            agent.final_output = f"ERROR_PROMPT_FORMAT: {e}"
+            agent.is_done = True
+    
+    if not current_batch_agents:
+        return []
+        
+    print(f"[Turn Execution] Generating for {len(current_batch_agents)} agents...")
+    
+    # 2. Generate
+    # vLLM handles batching internally for the list of prompts
+    try:
+        outputs = llm.generate(prompts, sampling_params)
+        
+        for agent, out_obj in zip(current_batch_agents, outputs):
+            if not out_obj.outputs:
+                agent.final_output = "ERROR: No output"
                 agent.is_done = True
-                agent.final_output = f"CRITICAL_BATCH_ERROR: {e}"
+                continue
+            
+            response_text = out_obj.outputs[0].text
+            agent.history.append({"role": "assistant", "content": response_text})
+            agent.step_count += 1
+            
+            # Token Tracking
+            if hasattr(out_obj.outputs[0], 'token_ids'):
+                token_count = len(out_obj.outputs[0].token_ids)
+            else:
+                token_count = len(response_text.split()) 
+            
+            # --- POST-GENERATION UPDATE ---
+            if agent.phase == "FEEDING":
+                start_idx = agent.current_sys_index
+                end_idx = start_idx + agent.last_distractor_count - 1
+                
+                agent.token_usage[f"distractors {start_idx}-{end_idx}"] = token_count
+                
+                # Increment index by the number of items we sent
+                agent.current_sys_index += agent.last_distractor_count
+                # Loop will handle transition to SOLVING next time.
+                
+            elif agent.phase == "SOLVING":
+                # We just got a reply to the real problem.
+                agent.token_usage["solution"] = token_count
+                
+                # This is the final answer.
+                agent.final_output = response_text
+                agent.is_done = True
+                
+    except BaseException as e:
+        print(f"[Batch Error] {e}")
+        # Fail all in batch for safety
+        for agent in current_batch_agents:
+            agent.is_done = True
+            agent.final_output = f"CRITICAL_BATCH_ERROR: {e}"
 
-        # Filter active
-        active_agents = [a for a in agents if not a.is_done]
+    return current_batch_agents
 
 
 def main():
@@ -192,7 +186,6 @@ def main():
     parser.add_argument("--max_model_length", type=int, default=65536)
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
-    parser.add_argument("--batch_size", type=int, default=30, help="Number of samples to process in parallel (batch size).")
     parser.add_argument("--max_batches", type=int, default=None, help="Maximum number of batches to process in this run (for testing/time-limits).")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     parser.add_argument("--new_run", action="store_true", help="Force a new run (ignore existing checkpoints)")
@@ -273,9 +266,6 @@ def main():
         print(f"Selecting {len(indices)} samples based on range: {args.sample_range}")
         dataset = dataset.select(indices)
 
-    # 4. Process in Batches
-    print(f"Starting execution with batch size: {args.batch_size}")
-    
     # We now iterate over the *current* dataset indices (0 to len(dataset)-1)
     # forcing a list to act as our 'indices' to chunk
     indices = list(range(len(dataset)))
@@ -337,129 +327,132 @@ def main():
     # stats = ... (Removed, initialized above)
     # timestamp = ... (Removed)
     
-    # Chunk indices
-    for i in range(0, len(indices), args.batch_size):
-        batch_indices = indices[i : i + args.batch_size]
-        print(f"\n[Main Loop] Processing batch {i//args.batch_size + 1} ({len(batch_indices)} samples)...")
+    # 4. Initialize ALL Agents
+    print(f"Initializing agents for {len(indices)} samples...")
+    all_agents = []
+    
+    for idx in indices:
+        example = dataset[idx]
+        prob_id = str(example.get('id', idx))
         
-        batch_agents = []
-        
-        for idx in batch_indices:
-            example = dataset[idx]
-            prob_id = str(example.get('id', idx))
+        # Get variables
+        current_vars = extracted_vars.get(prob_id, default_vars)
+        if len(current_vars) < 2: 
+            current_vars = default_vars
             
-            # Get variables
-            current_vars = extracted_vars.get(prob_id, default_vars)
-            if len(current_vars) < 2: 
-                current_vars = default_vars
-                
-            for sample_idx in range(args.n_samples):
-                # Create Agent
-                agent = AgentState(
-                    id=f"{prob_id}_s{sample_idx}",
-                    problem_id=prob_id,
-                    sample_idx=sample_idx,
-                    original_problem=example['problem'],
-                    ground_truth=example['answer'],
-                    variables=current_vars,
-                    target_distractors=args.num_distractors,
-                    history=[
-                        {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
-                    ]
-                )
-                batch_agents.append(agent)
-        
-        # RESUME FILTERING: Remove agents already done
-        if existing_results:
-             batch_agents = [a for a in batch_agents if (a.problem_id, a.sample_idx) not in finished_keys]
-        
-        if not batch_agents:
-            print(f"Batch {i//args.batch_size + 1} fully completed. Skipping.")
-            continue
-                
-        if not batch_agents:
-            continue
+        for sample_idx in range(args.n_samples):
+            # Create Agent
+            agent = AgentState(
+                id=f"{prob_id}_s{sample_idx}",
+                problem_id=prob_id,
+                sample_idx=sample_idx,
+                original_problem=example['problem'],
+                ground_truth=example['answer'],
+                variables=current_vars,
+                target_distractors=args.num_distractors,
+                history=[
+                    {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
+                ]
+            )
+            all_agents.append(agent)
 
-        # Check max_batches limit
-        batches_processed = stats.get("batches_processed", 0)
-        if args.max_batches is not None and batches_processed >= args.max_batches:
-             print(f"[Limit] Reached max_batches ({args.max_batches}). Stopping early.")
-             break
+    # RESUME FILTERING for all agents
+    if existing_results:
+         active_agents = [a for a in all_agents if (a.problem_id, a.sample_idx) not in finished_keys]
+         print(f"[Resume] Filtered down to {len(active_agents)} active agents (from {len(all_agents)} total).")
+    else:
+         active_agents = all_agents
 
-        print(f"Initialized {len(batch_agents)} agents for this batch. Running execution...")
+    if not active_agents:
+        print("All agents completed. Exiting.")
+        exit(0)
+
+    print(f"Starting parallel execution for {len(active_agents)} agents...")
+    
+    # 5. Main Execution Loop
+    step_num = 0
+    while active_agents:
+        step_num += 1
+        print(f"\n[Global Turn {step_num}] Processing...")
         
-        # Run Batch with OOM Handling
+        # Run one turn
         try:
-            run_batch_execution(batch_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed)
+            # We pass ALL active agents. vLLM handles batching internally.
+            processed_agents = run_single_turn(active_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed)
         except torch.cuda.OutOfMemoryError:
-            print(f"[CRITICAL] CUDA OOM Error on batch {i//args.batch_size + 1}!")
+            print(f"[CRITICAL] CUDA OOM Error on Turn {step_num}!")
             torch.cuda.empty_cache()
             import gc
             gc.collect()
-            for agent in batch_agents:
+            # If OOM, we might need to fail everyone or retry?
+            # For now, let's just fail everyone to be safe and save what we can.
+            for agent in active_agents:
                 if not agent.is_done:
                     agent.final_output = "ERROR_CUDA_OOM"
                     agent.is_done = True
-        except Exception as e:
-             print(f"[CRITICAL] Unknown Error on batch {i//args.batch_size + 1}: {e}")
-             for agent in batch_agents:
-                if not agent.is_done:
-                    agent.final_output = f"ERROR_UNKNOWN: {e}"
-                    agent.is_done = True
-
+            
+        # Check output & Save Progress
+        newly_finished = []
+        still_active = []
         
-        # Collect Results
-        for agent in batch_agents:
-            extracted = extract_answer(agent.final_output)
-            is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
+        for agent in active_agents:
+            if agent.is_done:
+                newly_finished.append(agent)
+            else:
+                still_active.append(agent)
+                
+        if newly_finished:
+            print(f"Turn {step_num}: {len(newly_finished)} agents finished. Saving...")
             
-            agent.is_correct = is_correct
-            agent.extracted_answer = extracted
-            
-            stats["total"] += 1
-            if is_correct: stats["correct"] += 1
-            else: stats["failures"] += 1
-            
-            # Aggregate Token Usage
-            distractor_tokens = [v for k, v in agent.token_usage.items() if k.startswith("distractor")]
-            solution_tokens = agent.token_usage.get("solution", 0)
-            
-            token_usage_summary = {
-                "distractors_total_tokens": sum(distractor_tokens),
-                "distractors_avg_tokens": sum(distractor_tokens) / len(distractor_tokens) if distractor_tokens else 0,
-                "distractors_count": len(distractor_tokens),
-                "solution_tokens": solution_tokens
-            }
+            for agent in newly_finished:
+                extracted = extract_answer(agent.final_output)
+                is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
+                
+                agent.is_correct = is_correct
+                agent.extracted_answer = extracted
+                
+                stats["total"] += 1
+                if is_correct: stats["correct"] += 1
+                else: stats["failures"] += 1
+                
+                # Aggregate Token Usage
+                distractor_tokens = [v for k, v in agent.token_usage.items() if k.startswith("distractor")]
+                solution_tokens = agent.token_usage.get("solution", 0)
+                
+                token_usage_summary = {
+                    "distractors_total_tokens": sum(distractor_tokens),
+                    "distractors_avg_tokens": sum(distractor_tokens) / len(distractor_tokens) if distractor_tokens else 0,
+                    "distractors_count": len(distractor_tokens),
+                    "solution_tokens": solution_tokens
+                }
 
-            results.append({
-                "id": agent.problem_id,
-                "sample_idx": agent.sample_idx,
-                "system_prompt": BASELINE_SYSTEM_PROMPT,
-                "output": agent.final_output,
-                "extracted": extracted,
-                "correct": is_correct,
-                "token_usage": token_usage_summary,
-                "original_problem": agent.original_problem,
-                "ground_truth": agent.ground_truth,
-                "history_dump": [h['content'] for h in agent.history]
-            })
-            
-        # Cleanup
-        del batch_agents
-        import gc
-        gc.collect()
+                results.append({
+                    "id": agent.problem_id,
+                    "sample_idx": agent.sample_idx,
+                    "system_prompt": BASELINE_SYSTEM_PROMPT,
+                    "output": agent.final_output,
+                    "extracted": extracted,
+                    "correct": is_correct,
+                    "token_usage": token_usage_summary,
+                    "original_problem": agent.original_problem,
+                    "ground_truth": agent.ground_truth,
+                    "history_dump": [h['content'] for h in agent.history]
+                })
 
-        # --- PROGRESSIVE SAVING ---
-        # Save results after EACH batch to prevent data loss safely (overwriting file)
-        # Reuse json_file determined at start
-        try:
-            with open(json_file, "w") as f:
-                json.dump(results, f, indent=2)
-            print(f"[Progressive Save] Saved {len(results)} samples (Total) to: {json_file}")
-        except Exception as e:
-            print(f"[Warning] Failed to save progressive results: {e}")
+            # Save File
+            try:
+                with open(json_file, "w") as f:
+                    json.dump(results, f, indent=2)
+                print(f"[Progressive Save] Saved {len(results)} samples (Total) to: {json_file}")
+            except Exception as e:
+                print(f"[Warning] Failed to save progressive results: {e}")
 
-        stats["batches_processed"] = stats.get("batches_processed", 0) + 1
+        active_agents = still_active
+        
+        # GC to keep memory clean
+        if step_num % 5 == 0:
+            import gc
+            gc.collect()
 
     # 5. Final Report
     # (Results are already saved, just print stats)
