@@ -70,3 +70,98 @@ Initialized 150 agents. Starting Batch Execution...
 [Batch Step] Generating for 150 agents...
 Adding requests:   0%|          | 0/150 [00:00<?, ?it/s]Adding requests:   5%|▌         | 8/150 [00:00<00:01, 78.03it/s]Adding requests:  12%|█▏        | 18/150 [00:00<00:01, 88.38it/s]Adding requests:  18%|█▊        | 27/150 [00:00<00:01, 86.96it/s]Adding requests:  24%|██▍       | 36/150 [00:00<00:01, 81.60it/s]Adding requests:  30%|███       | 45/150 [00:00<00:01, 82.88it/s]Adding requests:  37%|███▋      | 55/150 [00:00<00:01, 87.59it/s]Adding requests:  43%|████▎     | 65/150 [00:00<00:00, 89.27it/s]Adding requests:  50%|█████     | 75/150 [00:00<00:00, 91.48it/s]Adding requests:  57%|█████▋    | 85/150 [00:00<00:00, 91.01it/s]Adding requests:  63%|██████▎   | 95/150 [00:01<00:00, 88.18it/s]Adding requests:  69%|██████▉   | 104/150 [00:01<00:00, 87.93it/s]Adding requests:  76%|███████▌  | 114/150 [00:01<00:00, 89.42it/s]Adding requests:  83%|████████▎ | 124/150 [00:01<00:00, 90.57it/s]Adding requests:  90%|█████████ | 135/150 [00:01<00:00, 95.62it/s]Adding requests:  97%|█████████▋| 145/150 [00:01<00:00, 78.69it/s]Adding requests: 100%|██████████| 150/150 [00:01<00:00, 86.00it/s]
 Processed prompts:   0%|          | 0/150 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts:   1%|          | 1/150 [02:23<5:56:09, 143.42s/it, est. speed input: 6.40 toks/s, output: 18.39 toks/s]Processed prompts:   1%|▏         | 2/150 [02:24<2:27:18, 59.72s/it, est. speed input: 11.82 toks/s, output: 36.73 toks/s]Processed prompts:   2%|▏         | 3/150 [02:31<1:27:15, 35.62s/it, est. speed input: 16.49 toks/s, output: 54.19 toks/s]Processed prompts:   3%|▎         | 4/150 [02:33<54:15, 22.30s/it, est. speed input: 21.44 toks/s, output: 72.84 toks/s]  Processed prompts:   3%|▎         | 5/150 [02:39<39:32, 16.36s/it, est. speed input: 25.70 toks/s, output: 90.06 toks/s]Processed prompts:   4%|▍         | 6/150 [02:48<33:25, 13.93s/it, est. speed input: 28.35 toks/s, output: 105.51 toks/s]Processed prompts:   5%|▍         | 7/150 [02:56<28:23, 11.91s/it, est. speed input: 34.32 toks/s, output: 121.23 toks/s]Processed prompts:   5%|▌         | 8/150 [03:00<22:18,  9.43s/it, est. speed input: 37.70 toks/s, output: 138.88 toks/s]Processed prompts:   6%|▌         | 9/150 [03:04<18:23,  7.82s/it, est. speed input: 40.73 toks/s, output: 156.11 toks/s]Processed prompts:   7%|▋         | 10/150 [03:08<15:43,  6.74s/it, est. speed input: 44.50 toks/s, output: 173.02 toks/s]Processed prompts:   7%|▋         | 11/150 [03:19<18:33,  8.01s/it, est. speed input: 46.86 toks/s, output: 184.01 toks/s]Processed prompts:   8%|▊         | 12/150 [03:20<13:13,  5.75s/it, est. speed input: 50.90 toks/s, output: 203.92 toks/s]Processed prompts:  23%|██▎       | 35/150 [03:20<01:00,  1.89it/s, est. speed input: 132.66 toks/s, output: 673.64 toks/s]Processed prompts:  53%|█████▎    | 79/150 [03:20<00:10,  6.51it/s, est. speed input: 288.62 toks/s, output: 1571.53 toks/s]Processed prompts:  90%|█████████ | 135/150 [03:20<00:01, 14.68it/s, est. speed input: 500.54 toks/s, output: 2713.21 toks/s]Processed prompts: 100%|██████████| 150/150 [03:20<00:00, 14.68it/s, est. speed input: 579.04 toks/s, output: 3018.37 toks/s]Processed prompts: 100%|██████████| 150/150 [03:20<00:00,  1.34s/it, est. speed input: 579.04 toks/s, output: 3018.37 toks/s]
+[0;36m(Worker_TP2 pid=2379575)[0;0m INFO 02-02 17:18:49 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP3 pid=2379576)[0;0m INFO 02-02 17:18:49 [multiproc_executor.py:709] Parent process exited, terminating worker
+
+[BATCH ERROR] Generation failed: 
+[0;36m(Worker_TP0 pid=2379573)[0;0m INFO 02-02 17:18:49 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP1 pid=2379574)[0;0m INFO 02-02 17:18:49 [multiproc_executor.py:709] Parent process exited, terminating worker
+Traceback (most recent call last):
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/evaluate_agent.py", line 140, in run_batch_execution
+    execution_result = execute_python_code(code_block, agent.memory)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/evaluate_agent.py", line 50, in execute_python_code
+    exec(code_str, state_dict)
+  File "<string>", line 5, in <module>
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/evaluate_agent.py", line 390, in <module>
+    main()
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/evaluate_agent.py", line 339, in main
+    run_batch_execution(agents, llm, tokenizer, sampling_params)
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/evaluate_agent.py", line 168, in run_batch_execution
+    toks = tokenizer.encode(prompt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/transformers/tokenization_utils_base.py", line 2705, in encode
+    encoded_inputs = self.encode_plus(
+                     ^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/transformers/tokenization_utils_base.py", line 3096, in encode_plus
+    return self._encode_plus(
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/transformers/tokenization_utils_fast.py", line 627, in _encode_plus
+    batched_output = self._batch_encode_plus(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/transformers/tokenization_utils_fast.py", line 553, in _batch_encode_plus
+    encodings = self._tokenizer.encode_batch(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Exception ignored in atexit callback: <function shutdown at 0x1552485fb560>
+Traceback (most recent call last):
+  File "/home/golikovp/.local/lib/python3.11/site-packages/ray/_private/client_mode_hook.py", line 104, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/ray/_private/worker.py", line 1096, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/ray/_private/worker.py", line 2014, in shutdown
+    from ray.dag.compiled_dag_node import _shutdown_all_compiled_dags
+  File "/home/golikovp/.local/lib/python3.11/site-packages/ray/dag/__init__.py", line 23, in <module>
+    from ray.dag.vis_utils import plot
+  File "/home/golikovp/.local/lib/python3.11/site-packages/ray/dag/vis_utils.py", line 6, in <module>
+    from ray.dag.utils import _DAGNodeNameGenerator
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1069, in get_code
+  File "<frozen importlib._bootstrap_external>", line 729, in _compile_bytecode
+KeyboardInterrupt: 
+Exception ignored in atexit callback: <bound method finalize._exitfunc of <class 'weakref.finalize'>>
+Traceback (most recent call last):
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/weakref.py", line 666, in _exitfunc
+    f()
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/weakref.py", line 590, in __call__
+    return info.func(*info.args, **(info.kwargs or {}))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/v1/utils.py", line 314, in shutdown
+    proc.join(remaining)
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/connection.py", line 930, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+Exception ignored in atexit callback: <function _exit_function at 0x15553b314040>
+Traceback (most recent call last):
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/util.py", line 357, in _exit_function
+    p.join()
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Compiler/gcccore/python/3.11.5/lib/python3.11/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
