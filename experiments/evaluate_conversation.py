@@ -444,6 +444,7 @@ def main():
                 # Resurrect Partial Agent
                 # Restore history
                 history_content = existing_entry.get("history_dump", [])
+                agent.intermediate_results = existing_entry.get("intermediate_results", [])
                 
                 # Check metadata if available (New format)
                 metadata = existing_entry.get("metadata", {})
