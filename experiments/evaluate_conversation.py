@@ -24,6 +24,7 @@ if project_dir not in sys.path:
     sys.path.append(project_dir)
 
 # Helper imports
+from experiments.context_load_manager import ContextLoadManager
 from experiments.util import (
     extract_answer, 
     normalize_answer, 
@@ -57,41 +58,67 @@ class AgentState:
     step_count: int = 0
     token_usage: Dict[str, int] = field(default_factory=dict)
     last_distractor_count: int = 0 # Tracks how many distractors were sent in the pending turn
+    intermediate_results: List[Dict[str, Any]] = field(default_factory=list) # Stores probes
     
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
 
 
-def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed):
+def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed, context_manager=None):
     """
-    Runs a single turn (prompt generation -> vllm generate -> state update) for all active agents.
+    Runs a single turn (Prob + Feed) for all active agents.
+    1. PROBE: Check accuracy on Real Problem (without modifying history).
+    2. FEED: Generate Distractor Solutions (modifying history).
+    Handles Context Filling Strategy with Backtracking.
     """
-    current_batch_agents = []
+    batch_meta = [] # Stores metadata for each prompt: {agent, type='PROBE'|'FEED'|'SOLVE'}
     prompts = []
     
-    # 1. Update Prompts based on Phase
+    # 1. Prepare Prompts
     for agent in active_agents:
         if agent.is_done: continue
         
         # --- PHASE LOGIC ---
+        # --- PHASE: FEEDING ---
         if agent.phase == "FEEDING":
-            # Check if we are done feeding
-            if agent.current_sys_index >= agent.target_distractors:
-                agent.phase = "SOLVING"
+            
+            # A. PREPARE PROBE (Performance Check)
+            # Check accuracy on Real Problem at current state.
+            real_problem = remove_latex_comments(agent.original_problem)
+            probe_hist = agent.history + [{"role": "user", "content": real_problem}]
+            try:
+                probe_prompt = tokenizer.apply_chat_template(probe_hist, tokenize=False, add_generation_prompt=True)
+                prompts.append(probe_prompt)
+                batch_meta.append({"agent": agent, "type": "PROBE"})
+            except Exception as e:
+                print(f"[Probe Error] Agent {agent.id}: {e}")
+            
+            # B. PREPARE FEED (Context Filling)
+            # Context Manager Check: Stop if full
+            if context_manager:
+                current_prompt = agent.get_vllm_prompt(tokenizer)
+                current_len = len(tokenizer.encode(current_prompt))
+                
+                if context_manager.should_switch_to_solving(current_len):
+                    print(f"[Context Manager] Agent {agent.id} reached target ({current_len} tokens). Stopping.")
+                    agent.phase = "DONE" # Or SOLVING? User said "We stop".
+                    agent.is_done = True 
+                    continue
+
+            # Standard Distractor Generation
+            vars_len = len(agent.variables)
+            remaining = 999999 if context_manager else (agent.target_distractors - agent.current_sys_index)
+            count = min(distractors_per_query, remaining)
+            
+            if not context_manager and count <= 0:
+                 agent.phase = "SOLVING"
             else:
-                vars_len = len(agent.variables)
-                
-                # Calculate how many to send
-                remaining = agent.target_distractors - agent.current_sys_index
-                count = min(distractors_per_query, remaining)
-                
                 prompt_parts = []
                 prompt_parts.append(f"Solve these {count} math problems and output your solutions numbered.\n")
                 
                 for k in range(count):
                     idx = agent.current_sys_index + k
                     cur_term_ind = (idx * 2) % vars_len
-                    # DETERMINISTIC SEEDING: Ensure distractor K for Sample N is always same
                     local_seed = seed + agent.sample_idx * 100000 + idx
                     random.seed(local_seed)
                     
@@ -99,81 +126,119 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                     prompt_parts.append(f"{k+1}. {distractor_text}")
                     
                 full_prompt = "\n".join(prompt_parts)
+                # Modify history for FEED
                 agent.history.append({"role": "user", "content": full_prompt})
                 agent.last_distractor_count = count
+                
+                try:
+                    feed_prompt = agent.get_vllm_prompt(tokenizer)
+                    prompts.append(feed_prompt)
+                    batch_meta.append({"agent": agent, "type": "FEED"})
+                except Exception as e:
+                    print(f"[Feed Error] Agent {agent.id}: {e}")
+                    agent.final_output = f"ERROR_PROMPT_FORMAT: {e}"
+                    agent.is_done = True
         
-        if agent.phase == "SOLVING":
-            # Only add if the last message was NOT user (i.e., we are ready for new input).
+        # --- PHASE: SOLVING (Legacy/Final Turn) ---
+        elif agent.phase == "SOLVING":
+            # Add Real Problem
             last_role = agent.history[-1]["role"]
             if last_role == "assistant" or last_role == "system":
-                # Add Real Problem
                 real_problem = remove_latex_comments(agent.original_problem)
                 agent.history.append({"role": "user", "content": real_problem})
-        
-        # Prepare VLLM prompt
-        try:
-            prompt = agent.get_vllm_prompt(tokenizer)
-            prompts.append(prompt)
-            current_batch_agents.append(agent)
-        except Exception as e:
-            print(f"[Error] Failed to format prompt for agent {agent.id}: {e}")
-            agent.final_output = f"ERROR_PROMPT_FORMAT: {e}"
-            agent.is_done = True
-    
-    if not current_batch_agents:
+            
+            try:
+                prompt = agent.get_vllm_prompt(tokenizer)
+                prompts.append(prompt)
+                batch_meta.append({"agent": agent, "type": "SOLVE"})
+            except Exception as e:
+                agent.is_done = True
+                print(f"[Solve Error] {e}")
+
+    if not prompts:
         return []
         
-    print(f"[Turn Execution] Generating for {len(current_batch_agents)} agents...")
+    print(f"[Turn Execution] Generating {len(prompts)} items ({len(active_agents)} agents)...")
     
     # 2. Generate
-    # vLLM handles batching internally for the list of prompts
     try:
         outputs = llm.generate(prompts, sampling_params)
         
-        for agent, out_obj in zip(current_batch_agents, outputs):
+        # Process Outputs matching metadata
+        for meta, out_obj in zip(batch_meta, outputs):
+            agent = meta["agent"]
+            generation_type = meta["type"]
+            
             if not out_obj.outputs:
-                agent.final_output = "ERROR: No output"
-                agent.is_done = True
+                if generation_type != "PROBE":
+                    agent.final_output = "ERROR: No output"
+                    agent.is_done = True
                 continue
             
             response_text = out_obj.outputs[0].text
+            
+            # --- CONTEXT MANAGER POST-GENERATION CHECK ---
+            if context_manager and agent.phase == "FEEDING":
+                # Calculate Total Tokens (History + New Response)
+                if hasattr(out_obj.outputs[0], 'token_ids'):
+                    new_tokens = len(out_obj.outputs[0].token_ids)
+                else:
+                    new_tokens = len(tokenizer.encode(response_text))
+                
+                # We need TOTAL tokens including Prompt to check against limits
+                # vLLM outputs usually include prompt_token_ids logic, but safest is to re-measure sum
+                # or utilize 'prompt_token_ids' from out_obj if available
+                prompt_len = len(out_obj.prompt_token_ids)
+                total_tokens = prompt_len + new_tokens
+                
+                outcome = context_manager.check_turn_outcome(total_tokens)
+                
+                if outcome.startswith("BACKTRACK"):
+                    print(f"[Context Manager] Agent {agent.id} {outcome} ({total_tokens} tokens). Backtracking...")
+                    # 1. Pop the User Prompt (Distractors) we just added
+                    if agent.history[-1]['role'] == 'user':
+                         agent.history.pop()
+                    
+                    # 2. Skip these distractors (Retry with DIFFERENT set)
+                    agent.current_sys_index += agent.last_distractor_count
+                    
+                    # 3. Do NOT save response (it was huge/bad)
+                    # 4. Continue agent loop (active)
+                    continue 
+
+            # Valid Output - append to history
             agent.history.append({"role": "assistant", "content": response_text})
             agent.step_count += 1
             
-            # Token Tracking
+            # Token Tracking (Standard)
             if hasattr(out_obj.outputs[0], 'token_ids'):
                 token_count = len(out_obj.outputs[0].token_ids)
             else:
                 token_count = len(response_text.split()) 
             
-            # --- POST-GENERATION UPDATE ---
             if agent.phase == "FEEDING":
                 start_idx = agent.current_sys_index
                 end_idx = start_idx + agent.last_distractor_count - 1
-                
                 agent.token_usage[f"distractors {start_idx}-{end_idx}"] = token_count
                 
                 # Increment index by the number of items we sent
                 agent.current_sys_index += agent.last_distractor_count
-                # Loop will handle transition to SOLVING next time.
                 
             elif agent.phase == "SOLVING":
-                # We just got a reply to the real problem.
                 agent.token_usage["solution"] = token_count
-                
-                # This is the final answer.
                 agent.final_output = response_text
                 agent.is_done = True
                 
     except BaseException as e:
         print(f"[Batch Error] {e}")
-        # Fail all in batch for safety
-        for agent in current_batch_agents:
-            agent.is_done = True
-            agent.final_output = f"CRITICAL_BATCH_ERROR: {e}"
+        # Fail all is safest, but we could try to be granular.
+        for meta in batch_meta:
+            agent = meta["agent"]
+            if not agent.is_done:
+                agent.final_output = f"CRITICAL_BATCH_ERROR: {e}"
+                agent.is_done = True
 
-    return current_batch_agents
-
+    return active_agents
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate Multi-Turn Conversation Agent (Context Saturation)")
@@ -186,9 +251,10 @@ def main():
     parser.add_argument("--max_model_length", type=int, default=65536)
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
-    parser.add_argument("--max_batches", type=int, default=None, help="Maximum number of batches to process in this run (for testing/time-limits).")
+    # parser.add_argument("--max_batches", type=int, default=None, help="Maximum number of batches to process in this run (for testing/time-limits).")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     parser.add_argument("--new_run", action="store_true", help="Force a new run (ignore existing checkpoints)")
+    parser.add_argument("--context_fill_lvl", type=float, default=None, help="Target context fill percentage (0-100). If set, overrides num_distractors.")
     
     args = parser.parse_args()
     
@@ -414,6 +480,14 @@ def main():
 
     print(f"Starting parallel execution for {len(active_agents)} agents...")
     
+    
+    # Initialize Context Manager if requested
+    context_mgr = None
+    if args.context_fill_lvl is not None:
+        # Convert percent 75 -> 0.75
+        target_ratio = args.context_fill_lvl / 100.0
+        context_mgr = ContextLoadManager(target_ratio, args.max_model_length)
+
     # 5. Main Execution Loop
     step_num = 0
     while active_agents:
@@ -423,7 +497,7 @@ def main():
         # Run one turn
         try:
             # We pass ALL active agents. vLLM handles batching internally.
-            processed_agents = run_single_turn(active_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed)
+            processed_agents = run_single_turn(active_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed, context_manager=context_mgr)
         except torch.cuda.OutOfMemoryError:
             print(f"[CRITICAL] CUDA OOM Error on Turn {step_num}!")
             torch.cuda.empty_cache()
@@ -484,7 +558,8 @@ def main():
                 "token_usage": token_usage_summary,
                 "original_problem": agent.original_problem,
                 "ground_truth": agent.ground_truth,
-                "history_dump": [h['content'] for h in agent.history]
+                "history_dump": [h['content'] for h in agent.history],
+                "intermediate_results": agent.intermediate_results
             }
             
             results_dict[agent.id] = entry
