@@ -35,36 +35,6 @@ try:
 except Exception as e:
     print(f"Warning: Failed to download NLTK data: {e}")
 
-# import base64
-
-# Python Agent Protocol Prefix (formerly AGENTIC_SYSTEM_PROMPT)
-# USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interpreter.
-
-# YOUR PROTOCOL (Follow Strictly):
-
-# PHASE 1: RECONSTRUCTION
-# 1. Read the "TRANSFORMATION RULE" provided by the user. "TRANSFORMED INPUT" is given as a base64-encoded string.
-# 2. Write and output a Python script to programmatically decode from base 64 into raw text and then reverse the transformation.
-#    - YOU MUST DECODE IN PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
-#    - Do NOT guess or anticipate the original text.
-#    - Do NOT simulate the execution.
-#    - ONLY generate and output Python code to both decode base64 and reverse the transformation.
-#    - In your Python code you must print the `repr()` of the reconstructed text.
-#     - INCORRECT: print(text)  <-- Do not do this.
-#     - CORRECT:   print(repr(text)) <-- DO THIS.
-
-# 4. Output your Python code in a markdown code block:
-# ```python ... Your code here ... ```
-# 5. The system will execute your code and provide the output back to you.
-
-# PHASE 2: SOLUTION
-# 1. Examine the output of your Python script (the reconstructed text).
-# 2. Once Python ran succesfully and you have the reconstructed problem statement, proceed to solve the math problem.
-# 3. You may use Python for calculations.
-# 4. IMPORTANT: Output the final result in the format: '\\boxed{Your Answer Here}'.
-# """
-
-
 BASELINE_SYSTEM_PROMPT = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
 
 USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interpreter.
@@ -72,8 +42,8 @@ USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interprete
 YOUR PROTOCOL (Follow Strictly):
 
 PHASE 1: RECONSTRUCTION
-1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT".
-2. Write a Python script that takes "TRANSFORMED INPUT" string and programmatically reverses the transformation according to the "TRANSFORMATION RULE".
+1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT" string from sys.stdin. 
+2. Write a Python script that programmatically reverses the transformation according to the "TRANSFORMATION RULE".
    - YOU MUST DECODE USING PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
    - Do NOT guess or anticipate the original text; Do NOT simulate the execution.
    - ONLY generate and output Python code to reverse the transformation.
@@ -88,7 +58,6 @@ PHASE 2: SOLUTION
 3. You may use Python for calculations.
 """
 
-# Model Protocol Prefix (formerly MODEL_SYSTEM_PROMPT)
 USER_PROMPT_PROTOCOL_PREFIX_MODEL = """YOUR PROTOCOL:
 1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
 2. Once you have the original problem statement, proceed to solve the math problem.

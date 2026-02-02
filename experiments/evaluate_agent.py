@@ -36,13 +36,18 @@ def extract_python_code(response_text):
         return match.group(1) # Return just the code inside
     return None
 
-def execute_python_code(code_str, state_dict):
+def execute_python_code(code_str, state_dict, stdin_content=None):
     """
     Executes code. Captures stdout. 
     If it crashes, returns Partial Output + Traceback.
     """
     output_capture = io.StringIO()
     
+    # Mock Stdin if content provided
+    original_stdin = sys.stdin
+    if stdin_content is not None:
+        sys.stdin = io.StringIO(stdin_content)
+
     try:
         with contextlib.redirect_stdout(output_capture):
             # Safe-guarding: In a real sandboxed env, we'd be more careful.
@@ -64,6 +69,15 @@ def execute_python_code(code_str, state_dict):
         
         # 3. Combine them
         return f"{partial_output}\n\n--- EXECUTION ERROR ---\n{error_trace}"
+    
+    except SystemExit:
+        # Catch sys.exit() calls (often 0 or 1)
+        partial_output = output_capture.getvalue()
+        return f"{partial_output}\n\n[Code called sys.exit()]"
+        
+    finally:
+        # Restore Stdin
+        sys.stdin = original_stdin
 
 # ======================================================
 # PART 2: AGENT STATE MANAGEMENT
@@ -137,7 +151,13 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                 # Check for Code
                 code_block = extract_python_code(response_text)
                 if code_block:
-                    execution_result = execute_python_code(code_block, agent.memory)
+                    # Prepare Stdin (Transformed Input only if possible)
+                    stdin_data = agent.user_prompt_content
+                    if "TRANSFORMED INPUT:" in stdin_data:
+                        # robustness: take the part after the header
+                        stdin_data = stdin_data.split("TRANSFORMED INPUT:", 1)[1].strip()
+                        
+                    execution_result = execute_python_code(code_block, agent.memory, stdin_content=stdin_data)
                     tool_msg = f"Observation:\n{execution_result}"
                     agent.history.append({"role": "user", "content": tool_msg})
                 else:
