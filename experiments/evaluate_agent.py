@@ -43,10 +43,24 @@ def execute_python_code(code_str, state_dict, stdin_content=None):
     """
     output_capture = io.StringIO()
     
-    # Mock Stdin if content provided
+    # Mock Stdin - fail safe: always mock to prevent hanging on real stdin
     original_stdin = sys.stdin
-    if stdin_content is not None:
-        sys.stdin = io.StringIO(stdin_content)
+    # If None provided, provide empty string so read() returns immediately
+    mock_content = stdin_content if stdin_content is not None else ""
+    sys.stdin = io.StringIO(mock_content)
+
+    # Set Timeout to prevent hanging
+    import signal
+    def handler(signum, frame):
+        raise TimeoutError("Execution Timed Out")
+    
+    # Safe signal usage (only works in main thread)
+    try:
+        signal.signal(signal.SIGALRM, handler)
+        signal.alarm(5) # 5 seconds
+    except  ValueError:
+        # Not in main thread? Skip timeout
+        pass
 
     try:
         with contextlib.redirect_stdout(output_capture):
@@ -59,6 +73,9 @@ def execute_python_code(code_str, state_dict, stdin_content=None):
         if not result:
             return "[Code ran successfully, but produced no output.]"
         return result
+
+    except TimeoutError:
+         return f"{output_capture.getvalue()}\n\n[ERROR: Code Execution Timed Out (5s)]"
 
     except Exception:
         # 1. Get whatever was printed BEFORE the crash
@@ -78,6 +95,11 @@ def execute_python_code(code_str, state_dict, stdin_content=None):
     finally:
         # Restore Stdin
         sys.stdin = original_stdin
+        # Disable alarm
+        try:
+            signal.alarm(0)
+        except:
+             pass
 
 # ======================================================
 # PART 2: AGENT STATE MANAGEMENT
