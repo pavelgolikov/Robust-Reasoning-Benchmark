@@ -273,7 +273,10 @@ def main():
     default_vars = ["x", "y", "n", "k", "A", "B", "S"]
     random.seed(args.seed)
     
-    results = []
+    random.seed(args.seed)
+    
+    # Use a Dict for results to allow updating
+    results_dict = {}
     stats = {"correct": 0, "total": 0, "failures": 0}
 
     # --- RESUME LOGIC ---
@@ -296,21 +299,21 @@ def main():
         print(f"[Resume] Found existing run: {latest_file}")
         try:
             with open(latest_file, "r") as f:
-                existing_results = json.load(f)
+                loaded_list = json.load(f)
             
-            # Map existing sample_indices to skip
-            finished_keys = set((item.get('id'), item.get('sample_idx')) for item in existing_results)
-            print(f"[Resume] Loaded {len(existing_results)} completed samples. Filtering queue...")
+            # Populate results_dict
+            for item in loaded_list:
+                key = f"{item['id']}_s{item['sample_idx']}"
+                results_dict[key] = item
+                
+            print(f"[Resume] Loaded {len(results_dict)} previous entries.")
             
-            print(f"[Resume] Will skip {len(finished_keys)} already completed items.")
+            # Recalculate finished stats
+            stats["total"] = sum(1 for r in results_dict.values() if r.get("is_done", True)) # Default True for old files
+            stats["correct"] = sum(1 for r in results_dict.values() if r.get("is_done", True) and r.get("correct"))
+            stats["failures"] = sum(1 for r in results_dict.values() if r.get("is_done", True) and not r.get("correct"))
             
             json_file = latest_file
-            results = existing_results # Pre-populate current results list
-            
-            # Recalculate stats
-            stats["total"] = len(existing_results)
-            stats["correct"] = sum(1 for r in existing_results if r.get("correct"))
-            stats["failures"] = sum(1 for r in existing_results if not r.get("correct"))
             
         except Exception as e:
              print(f"[Resume] Error reading file {latest_file}, starting fresh. Error: {e}")
@@ -357,11 +360,53 @@ def main():
             all_agents.append(agent)
 
     # RESUME FILTERING for all agents
-    if existing_results:
-         active_agents = [a for a in all_agents if (a.problem_id, a.sample_idx) not in finished_keys]
-         print(f"[Resume] Filtered down to {len(active_agents)} active agents (from {len(all_agents)} total).")
-    else:
-         active_agents = all_agents
+    # RESUME / INITIALIZATION Logic
+    # We populate all_agents. Some might be done, some partial, some new.
+    
+    active_agents = []
+    
+    for agent in all_agents:
+        key = agent.id
+        existing_entry = results_dict.get(key)
+        
+        if existing_entry:
+            is_done = existing_entry.get("is_done", True) # Treat legacy entries (without is_done) as Done.
+            
+            if is_done:
+                continue # Skip finished
+            else:
+                # Resurrect Partial Agent
+                # Restore history
+                history_content = existing_entry.get("history_dump", [])
+                
+                # Check metadata if available (New format)
+                metadata = existing_entry.get("metadata", {})
+                if metadata:
+                     agent.current_sys_index = metadata.get("current_sys_index", 0)
+                     agent.phase = metadata.get("phase", "FEEDING")
+                     # agent.variables should be constant
+                     agent.token_usage = metadata.get("token_usage", {})
+                     
+                     # Restore History with Roles
+                     # Base: System
+                     # Then User (Distractors) -> Assistant (Solutions) -> ...
+                     rec_history = [{"role": "system", "content": history_content[0]}]
+                     for i in range(1, len(history_content)):
+                         # Odd indices = User, Even = Assistant
+                         role = "user" if i % 2 != 0 else "assistant"
+                         rec_history.append({"role": role, "content": history_content[i]})
+                     agent.history = rec_history
+                     
+                     active_agents.append(agent)
+                else:
+                    # Legacy partial (unlikely if we just added this feature)
+                    # Treat as fresh or skip? Treat as fresh.
+                    active_agents.append(agent)
+        else:
+            # New Agent
+            active_agents.append(agent)
+
+    print(f"[Resume] Filtered down to {len(active_agents)} active agents (from {len(all_agents)} total).")
 
     if not active_agents:
         print("All agents completed. Exiting.")
@@ -391,7 +436,7 @@ def main():
                     agent.final_output = "ERROR_CUDA_OOM"
                     agent.is_done = True
             
-        # Check output & Save Progress
+        # Partition Active Agents
         newly_finished = []
         still_active = []
         
@@ -400,52 +445,80 @@ def main():
                 newly_finished.append(agent)
             else:
                 still_active.append(agent)
-                
-        if newly_finished:
-            print(f"Turn {step_num}: {len(newly_finished)} agents finished. Saving...")
+
+        # SAVE PROGRESS (Update results with ALL active agents)
+        # We update the dictionary for every agent in active_agents
+        
+        for agent in active_agents:
+            # Prepare data
+            extracted = extract_answer(agent.final_output)
+            is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
             
+            # Aggregate Token Usage
+            distractor_tokens = [v for k, v in agent.token_usage.items() if k.startswith("distractor")]
+            solution_tokens = agent.token_usage.get("solution", 0)
+            
+            token_usage_summary = {
+                "distractors_total_tokens": sum(distractor_tokens),
+                "distractors_avg_tokens": sum(distractor_tokens) / len(distractor_tokens) if distractor_tokens else 0,
+                "distractors_count": len(distractor_tokens),
+                "solution_tokens": solution_tokens
+            }
+            
+            # Metadata for resumption
+            metadata = {
+                "current_sys_index": agent.current_sys_index,
+                "phase": agent.phase,
+                "token_usage": agent.token_usage
+            }
+
+            entry = {
+                "id": agent.problem_id,
+                "sample_idx": agent.sample_idx,
+                "system_prompt": BASELINE_SYSTEM_PROMPT,
+                "output": agent.final_output,
+                "extracted": extracted,
+                "correct": is_correct,
+                "is_done": agent.is_done, # Key flag
+                "metadata": metadata,
+                "token_usage": token_usage_summary,
+                "original_problem": agent.original_problem,
+                "ground_truth": agent.ground_truth,
+                "history_dump": [h['content'] for h in agent.history]
+            }
+            
+            results_dict[agent.id] = entry
+            
+            # Identify purely NEWLY finished ones for stats printing (optional)
+            if agent in newly_finished:
+                 # Update counters only for newly finished to avoid double counting
+                 # But we need to be careful with 'finished_keys' logic on resume.
+                 # Actually, stats counting here is tricky if we update continuously.
+                 # Let's just recount total stats from the dict if needed, or trust the increment.
+                 pass
+
+        if newly_finished:
+            print(f"Turn {step_num}: {len(newly_finished)} agents finished.")
+            # Update global stats
             for agent in newly_finished:
-                extracted = extract_answer(agent.final_output)
-                is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
-                
-                agent.is_correct = is_correct
-                agent.extracted_answer = extracted
-                
-                stats["total"] += 1
-                if is_correct: stats["correct"] += 1
-                else: stats["failures"] += 1
-                
-                # Aggregate Token Usage
-                distractor_tokens = [v for k, v in agent.token_usage.items() if k.startswith("distractor")]
-                solution_tokens = agent.token_usage.get("solution", 0)
-                
-                token_usage_summary = {
-                    "distractors_total_tokens": sum(distractor_tokens),
-                    "distractors_avg_tokens": sum(distractor_tokens) / len(distractor_tokens) if distractor_tokens else 0,
-                    "distractors_count": len(distractor_tokens),
-                    "solution_tokens": solution_tokens
-                }
+                 extracted = extract_answer(agent.final_output)
+                 is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
+                 stats["total"] += 1
+                 if is_correct: stats["correct"] += 1
+                 else: stats["failures"] += 1
 
-                results.append({
-                    "id": agent.problem_id,
-                    "sample_idx": agent.sample_idx,
-                    "system_prompt": BASELINE_SYSTEM_PROMPT,
-                    "output": agent.final_output,
-                    "extracted": extracted,
-                    "correct": is_correct,
-                    "token_usage": token_usage_summary,
-                    "original_problem": agent.original_problem,
-                    "ground_truth": agent.ground_truth,
-                    "history_dump": [h['content'] for h in agent.history]
-                })
-
-            # Save File
-            try:
-                with open(json_file, "w") as f:
-                    json.dump(results, f, indent=2)
-                print(f"[Progressive Save] Saved {len(results)} samples (Total) to: {json_file}")
-            except Exception as e:
-                print(f"[Warning] Failed to save progressive results: {e}")
+        # ALWAYS Save File after every turn
+        try:
+            with open(json_file, "w") as f:
+                json.dump(list(results_dict.values()), f, indent=2)
+            print(f"[Save] Updated results file with {len(results_dict)} entries.") # Concise log
+        except Exception as e:
+            print(f"[Warning] Failed to save results: {e}")
+            
+        if step_num == 1:
+            # print("[SIMULATION] Artificial Crash after Turn 1.")
+            # exit(1)
+            pass
 
         active_agents = still_active
         
