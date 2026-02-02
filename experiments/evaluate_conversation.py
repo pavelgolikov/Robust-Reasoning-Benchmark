@@ -251,7 +251,6 @@ def main():
     parser.add_argument("--max_model_length", type=int, default=65536)
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
-    # parser.add_argument("--max_batches", type=int, default=None, help="Maximum number of batches to process in this run (for testing/time-limits).")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     parser.add_argument("--new_run", action="store_true", help="Force a new run (ignore existing checkpoints)")
     parser.add_argument("--context_fill_lvl", type=float, default=None, help="Target context fill percentage (0-100). If set, overrides num_distractors.")

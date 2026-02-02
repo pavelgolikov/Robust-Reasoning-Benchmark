@@ -25,10 +25,4 @@ mkdir -p $HF_HOME
 
 # python evaluate_conversation.py --max_model_length 262000 --n_samples 5 --num_distractors 15 --distractors_per_query 5 --num_gpus 4 > eval_out2.out
 
-python evaluate_conversation.py \
-    --max_model_length 262000 \
-    --n_samples 1 \
-    --context_fill_lvl 75 \
-    --distractors_per_query 5 \
-    --num_gpus 4 \
-    --new_run
+python evaluate_conversation.py --max_model_length 262000 --n_samples 30 --context_fill_lvl 50 --distractors_per_query 4 --num_gpus 4 --new_run > eval_out2.out
