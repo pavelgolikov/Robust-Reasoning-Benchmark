@@ -469,6 +469,11 @@ def main():
                 "history_dump": [h['content'] for h in agent.history] 
             }
             results.append(res)
+            
+            # Update Stats
+            stats["total"] += 1
+            if agent.is_correct:
+                stats["correct"] += 1
 
         # 4. Save
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
@@ -484,6 +489,14 @@ def main():
         with open(json_file, "w") as f:
             json.dump(results, f, indent=2)
         print(f"Saved results to: {json_file}")
+        
+        # 5. Cleanup Incremental File
+        if os.path.exists(incremental_file):
+            try:
+                os.remove(incremental_file)
+                print(f"Removed incremental file: {incremental_file}")
+            except OSError as e:
+                print(f"Error deleting incremental file: {e}")
 
 if __name__ == "__main__":
     main()
