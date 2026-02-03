@@ -44,8 +44,6 @@ YOUR PROTOCOL (Follow Strictly):
 PHASE 1: RECONSTRUCTION
 1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT".
 2. Write a Python script that programmatically reverses the transformation.
-   - You MUST hardcode the "TRANSFORMED INPUT" string into your Python script as a variable (e.g. `data = "..."`).
-   - Do NOT use `sys.stdin.read()` or `input()`.
    - YOU MUST DECODE USING PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
    - Do NOT guess or anticipate the original text; Do NOT simulate the execution.
    - ONLY generate and output the Python code that prints the original text.
