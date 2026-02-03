@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=64G
+#SBATCH --mem=128G
 #SBATCH --time=3:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_err.err
@@ -23,5 +23,4 @@ mkdir -p $HF_HOME
 # python evaluate.py --names reversal --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
 
 # python evaluate_conversation.py --max_model_length 262000 --n_samples 5 --num_distractors 15 --distractors_per_query 5 --num_gpus 4 > eval_out.out
-
-python evaluate_agent.py --limit 30 --n_samples 5 --names interleaved_context_line --num_gpus 4 > eval_out.out
+python evaluate_agent.py --max_model_length 65536 --limit 30 --n_samples 5 --names interleaved_context_line --num_gpus 4 > eval_out.out
