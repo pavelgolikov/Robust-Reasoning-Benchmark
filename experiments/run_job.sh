@@ -24,4 +24,4 @@ mkdir -p $HF_HOME
 
 # python evaluate_conversation.py --max_model_length 262000 --n_samples 5 --num_distractors 15 --distractors_per_query 5 --num_gpus 4 > eval_out.out
 
-python evaluate_agent.py --limit 2 --n_samples 5 --names interleaved_context_line --num_gpus 4 > eval_out.out
+python evaluate_agent.py --limit 30 --n_samples 5 --names interleaved_context_line --num_gpus 4 > eval_out.out
