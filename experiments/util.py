@@ -45,6 +45,7 @@ PHASE 1: RECONSTRUCTION
 1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT".
 2. Write a Python script that programmatically reverses the transformation.
    - YOU MUST DECODE USING PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
+   - DO NOT VERIFY YOUR ANSWER MANUALLY.
    - Do NOT guess or anticipate the original text; Do NOT simulate the execution.
    - ONLY generate and output the Python code that prints the original text.
 
@@ -64,6 +65,7 @@ USER_PROMPT_PROTOCOL_PREFIX_MODEL = """YOUR PROTOCOL:
 """
 
 TECHNIQUE_DESCRIPTIONS = {
+    'baseline': "No transformation applied. Solve the problem as it is presented in TRANSFORMED INPUT.",
     'context_saturation': "User query contains multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence in the problem statement. For example, two valid parts are: '[[Pro' 'blemK]]' and '[[P' 'roblemK]]'. The two parts can be placed in reverse order in the problem statement. The index of the problem you are to solve will be indicated in the middle of user query. Problems are independent of each other.",
     'word_reversal': "The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.",
     'sentence_reversal': "The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.",
@@ -138,7 +140,7 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     # 1. Apply Transformation
     if name == 'baseline':
         user_prompt_content = problem
-        return user_prompt_content, BASELINE_SYSTEM_PROMPT
+        # return user_prompt_content, BASELINE_SYSTEM_PROMPT
     
     # ... (Keep transformations same) ...
     elif name == 'not_not':
@@ -210,7 +212,7 @@ TRANSFORMED INPUT:
 """
         prefix = USER_PROMPT_PROTOCOL_PREFIX_MODEL
     
-    if name == 'not_not' or name == 'baseline':
+    if name == 'not_not':
         final_user_prompt = wrapped_prompt # Just the wrapper, no protocol prefix?
         # Actually original returned "final_user_prompt" which was the wrapper.
         # So yes, NO prefix.
