@@ -9,6 +9,7 @@ import re
 import io
 import contextlib
 import traceback
+import signal
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any
 
@@ -24,6 +25,12 @@ from util import get_prompts, extract_answer, normalize_answer, remove_latex_com
 # PART 1: HELPER FUNCTIONS (Parser & Executor)
 # ======================================================
 
+class TimeoutException(Exception):
+    pass
+
+def timeout_handler(signum, frame):
+    raise TimeoutException("Execution Timed Out")
+
 def extract_python_code(response_text):
     """
     Uses Regex to find content between ```python and ``` tags.
@@ -36,18 +43,26 @@ def extract_python_code(response_text):
         return match.group(1) # Return just the code inside
     return None
 
-def execute_python_code(code_str, state_dict):
+def execute_python_code(code_str, state_dict, timeout_sec=5):
     """
     Executes code. Captures stdout. 
     If it crashes, returns Partial Output + Traceback.
+    Enforces a timeout using signal.alarm.
     """
     output_capture = io.StringIO()
     
+    # Register signal handler
+    signal.signal(signal.SIGALRM, timeout_handler)
+    
     try:
         with contextlib.redirect_stdout(output_capture):
-            # Safe-guarding: In a real sandboxed env, we'd be more careful.
-            # Here we just execute in the provided state_dict.
-            exec(code_str, state_dict)
+            # Set alarm
+            signal.alarm(timeout_sec)
+            try:
+                exec(code_str, state_dict)
+            finally:
+                # Cancel alarm
+                signal.alarm(0)
             
         # If we get here, no error occurred.
         result = output_capture.getvalue()
@@ -55,6 +70,10 @@ def execute_python_code(code_str, state_dict):
             return "[Code ran successfully, but produced no output.]"
         return result
 
+    except TimeoutException:
+         partial = output_capture.getvalue()
+         return f"{partial}\n\n--- EXECUTION TIMED OUT ({timeout_sec}s) ---"
+         
     except Exception:
         # 1. Get whatever was printed BEFORE the crash
         partial_output = output_capture.getvalue()
@@ -101,7 +120,25 @@ class AgentState:
 # PART 3: BATCHED EXECUTION LOOP
 # ======================================================
 
-def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params):
+def save_incremental_result(agent: AgentState, output_file: str):
+    """Appends a single agent's result to the JSONL file."""
+    result = {
+        "id": agent.problem_id,
+        "sample_idx": agent.sample_idx,
+        "output": agent.final_output,
+        "extracted": agent.extracted_answer,
+        "correct": agent.is_correct,
+        "original_problem": agent.original_problem,
+        "ground_truth": agent.ground_truth,
+        "history_dump": [m['content'] for m in agent.history]
+    }
+    try:
+        with open(output_file, "a") as f:
+            f.write(json.dumps(result) + "\n")
+    except Exception as e:
+        print(f"FAILED TO SAVE INCREMENTAL RESULT: {e}")
+
+def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, incremental_file: str):
     """
     Runs the agent loop for multiple agents in parallel (batched inference).
     """
@@ -128,15 +165,28 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     agent.final_output = "ERROR: vLLM returned no output"
                     agent.is_done = True
                     print(f"  [Agent {agent.id}] Failed: No output.")
+                    save_incremental_result(agent, incremental_file)
                     continue
                     
                 response_text = out_obj.outputs[0].text
                 agent.step_count += 1
+                
+                # Check Stop Conditions (Observation or Boxed)
+                if "\\boxed{" in response_text or agent.step_count >= agent.max_steps:
+                     # Check if it was just a stop token but actually boxed is there
+                     # Wait, if stop token "Observation:" triggered, response_text ends there.
+                     # We need to process it.
+                     pass 
+
+                # Append assistant message
                 agent.history.append({"role": "assistant", "content": response_text})
                 
-                # Check for Code
+                # Logic: Did it generate code?
                 code_block = extract_python_code(response_text)
+                
                 if code_block:
+                    # Execute
+                    print(f"  [Agent {agent.id}] Executing code...")
                     execution_result = execute_python_code(code_block, agent.memory)
                     tool_msg = f"Observation:\n{execution_result}"
                     agent.history.append({"role": "user", "content": tool_msg})
@@ -149,6 +199,18 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                         agent.is_done = True
                     else:
                         pass # Implicit continue
+                
+                # If finished in this step, save immediately
+                if agent.is_done:
+                     # Extract answer
+                    agent.extracted_answer = extract_answer(agent.final_output)
+                    try:
+                        is_corr = normalize_answer(agent.extracted_answer) == normalize_answer(agent.ground_truth)
+                    except:
+                        is_corr = False
+                    agent.is_correct = is_corr
+                    
+                    save_incremental_result(agent, incremental_file)
 
         except BaseException as e:
             # Catch Validation/Context Errors (ValueError) or others
@@ -170,11 +232,13 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                         print(f"  [Error Handler] KILLED Agent {agent.id}: Prompt length {len(toks)} > {max_len}")
                         agent.final_output = f"ERROR: Prompt length {len(toks)} > {max_len}"
                         agent.is_done = True
+                        save_incremental_result(agent, incremental_file)
                         agents_marked_failed += 1
                 except Exception:
                     # If tokenization itself fails, kill it too
                     agent.final_output = "ERROR: Tokenization check failed"
                     agent.is_done = True
+                    save_incremental_result(agent, incremental_file)
                     agents_marked_failed += 1
             
             # 2. If NO specific agents were found to be 'bad' by length check, 
@@ -186,6 +250,7 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     if not agent.is_done:
                         agent.final_output = f"CRITICAL BATCH ERROR: {e}"
                         agent.is_done = True
+                        save_incremental_result(agent, incremental_file)
             else:
                 print(f"  [Error Handler] Killed {agents_marked_failed} agents. Survivors will continue in next loop iteration.")
 
@@ -298,7 +363,8 @@ def main():
             for sample_idx in range(args.n_samples):
                 # Generate specific prompt for this sample (distractors/vars might have randomness if utilized)
                 # Note: get_prompts uses random.sample if num_distractors > ... so we should ideally control seed.
-                # We can set global seed or pass seed. get_prompts has a seed arg.
+                # Here we pass seed to context_saturation if needed.
+                current_seed = args.seed + sample_idx + (i * 1000)
                 
                 try:
                     final_user_prompt, system_prompt = get_prompts(
@@ -306,14 +372,15 @@ def main():
                         exp_name, 
                         extra_context, 
                         variables=current_vars,
-                        seed=args.seed + sample_idx + (i * 1000), # Ensure distinct seed per sample/problem
+                        seed=current_seed,
                         num_distractors=args.num_distractors,
                         agentic=True
                     )
                     
                     # Create Agent
+                    agent_id = f"{prob_id}_sample_{sample_idx}"
                     agent = AgentState(
-                        id=f"{prob_id}_s{sample_idx}",
+                        id=agent_id,
                         problem_id=prob_id,
                         sample_idx=sample_idx,
                         experiment_name=exp_name,
@@ -327,48 +394,44 @@ def main():
                         ]
                     )
                     agents.append(agent)
-                    
                 except Exception as e:
-                    print(f"Skipping Problem {prob_id} Sample {sample_idx} due to error: {e}")
-                    traceback.print_exc()
+                    print(f"Skipping {prob_id} (Sample {sample_idx}) due to prompt init error: {e}")
 
-        print(f"Initialized {len(agents)} agents. Starting Batch Execution...")
+        if not agents:
+            print("No agents created. Skipping.")
+            continue
+            
+        print(f"Created {len(agents)} agents for {exp_name}.")
         
-        # 2. Run Batch
-        run_batch_execution(agents, llm, tokenizer, sampling_params)
+        # Setup Output
+        experiment_dir = os.path.join(base_dir, exp_name)
+        final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
+        os.makedirs(final_output_dir, exist_ok=True)
         
-        # 3. Collect Results
+        # We now use an incremental file (.jsonl)
+        run_id = f"{safe_model_name}_{safe_dataset_name}_{exp_name}_s{args.seed}_{timestamp}_MANUAL_AGENT"
+        incremental_file = os.path.join(final_output_dir, f"{run_id}.jsonl")
+        print(f"Streaming results to: {incremental_file}")
+
+        # 2. Run Batch Loop
+        run_batch_execution(agents, llm, tokenizer, sampling_params, incremental_file)
+        
+        # 3. Post-Process & Save (Optionally convert JSONL to JSON for legacy scripts, or just leave as is)
+        # We'll make a final JSON summary as well for backward compatibility if needed.
         results = []
         stats = {"correct": 0, "total": 0, "failures": 0}
         
         for agent in agents:
-            # Grade
-            try:
-                extracted = extract_answer(agent.final_output)
-                is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
-            except Exception:
-                extracted = "ERROR_PARSING"
-                is_correct = False
-            
-            agent.is_correct = is_correct
-            agent.extracted_answer = extracted
-            
-            stats["total"] += 1
-            if is_correct:
-                stats["correct"] += 1
-            else:
-                stats["failures"] += 1
-                
-            results.append({
+            res = {
                 "id": agent.problem_id,
                 "sample_idx": agent.sample_idx,
-                "output": agent.final_output,
-                "extracted": extracted,
-                "correct": is_correct,
+                "extracted": agent.extracted_answer,
+                "correct": agent.is_correct,
                 "original_problem": agent.original_problem,
                 "ground_truth": agent.ground_truth,
-                "history_dump": [h['content'] for h in agent.history] # Optional: save full history
-            })
+                "history_dump": [h['content'] for h in agent.history] 
+            }
+            results.append(res)
 
         # 4. Save
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
