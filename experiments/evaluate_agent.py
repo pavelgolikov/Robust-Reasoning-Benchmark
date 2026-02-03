@@ -80,7 +80,7 @@ def execute_python_code(code_str, state_dict, stdin_input, timeout_sec=5):
         # If we get here, no error occurred.
         result = output_capture.getvalue()
         if not result:
-            return "[Code ran successfully, but produced no output.]"
+            return "[Code ran successfully, but produced no output. Make sure to NOT use stdin or input() calls.]"
         return result
     
     except TimeoutException:

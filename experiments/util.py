@@ -43,25 +43,26 @@ YOUR PROTOCOL (Follow Strictly):
 
 PHASE 1: RECONSTRUCTION
 1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT".
-2. Write a Python script that programmatically reverses the transformation.
+2. Write a Python script that programmatically reverses the transformation and outputs the reconstructed text.
    - YOU MUST DECODE USING PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
-   - DO NOT VERIFY YOUR ANSWER MANUALLY.
+   - DO NOT VERIFY YOUR ANSWER MANUALLY IN THIS PHASE.
    - Do NOT guess or anticipate the original text; Do NOT simulate the execution.
-   - ONLY generate and output the Python code that prints the original text.
-
-3. Output your Python code in a markdown code block:
-```python ... Your code here ... ```
+   - ONLY generate and output the Python code that prints the original reconstructed text.
+3. Output your Python code in a markdown code block: ```python ... Your code here ... ```
 4. The system will execute your code and provide the output back to you.
+5. You can try again if your code produces an error or incorrect output.
+6. After you get correct output, proceed to PHASE 2.
 
 PHASE 2: SOLUTION
-1. Examine the output of your Python script (the reconstructed text - it is a problem statement).
-2. Once Python ran succesfully and you have the reconstructed problem statement, proceed to solve the math problem.
-3. You may use Python for calculations.
+1. Examine the output of your Python script, which should have the reconstructed text - it is a problem statement.
+2. Proceed to solve the problem.
+3. Put your final answer within \\boxed{}.
 """
 
 USER_PROMPT_PROTOCOL_PREFIX_MODEL = """YOUR PROTOCOL:
-1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the original problem statement.
-2. Once you have the original problem statement, proceed to solve the math problem.
+1. Read the "TRANSFORMATION RULE" provided by the user and reverse the transformation on the "TRANSFORMED INPUT" to obtain the reconstructed problem statement.
+2. Once you have the reconstructed problem statement, proceed to solve the math problem.
+3. Put your final answer within \\boxed{}.
 """
 
 TECHNIQUE_DESCRIPTIONS = {
@@ -70,11 +71,11 @@ TECHNIQUE_DESCRIPTIONS = {
     'word_reversal': "The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.",
     'sentence_reversal': "The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.",
     'interleaved_context_word': "User query will consist of two problems - A and B, whose statements are interleaved word by word. First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on. You need to solve only problem A. Words are defined as sequences of symbols separated by spaces. If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
-    'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is prefixed by a problem tag (e.g. problem A or B) and a space. The segments are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the empty lines resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
+    'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is placed on a separate line and is prefixed by a problem tag (e.g. problem A or B) and a space. The segments for different problems are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the empty lines resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
     'split_reversal':  "Every word (words are defined as sequences of symbols separated by spaces) in user query has its symbols in reverse order.",
     'opposites': "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
     'wrappers':  "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
-    'rail_fence': "The user query is encoded using the Rail Fence Cipher. The input is provided as a visual grid where the symbols (including spaces) of the encoded message string (message string does NOT contain any newline characters) are placed in a zigzag pattern across multiple rails (rows), and empty spaces are filled with dots (.). To decode, read the characters in zigzag order: Down-and-Right diagonally until you hit bottom rail, then Up-and-Right diagonally until you hit top rail, etc... Rows are given on separate lines and all have equal lengths.",
+    'rail_fence': "The user query is encoded using the Rail Fence Cipher. The input is provided as a visual grid where the symbols (including spaces) of the encoded message string (message string does NOT contain any newline characters) are placed in a zigzag pattern across multiple rails (rows), and empty spaces are filled with dots (.). To decode, read the characters in zigzag order: Down-and-Right diagonally until you hit bottom rail, then Up-and-Right diagonally until you hit top rail, then Down-and-Right again etc... Rows are given on separate lines and all have equal lengths.",
 }
 
 def remove_latex_comments(text):
