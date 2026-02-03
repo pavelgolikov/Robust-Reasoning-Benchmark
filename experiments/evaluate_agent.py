@@ -25,6 +25,12 @@ from util import get_prompts, extract_answer, normalize_answer, remove_latex_com
 # PART 1: HELPER FUNCTIONS (Parser & Executor)
 # ======================================================
 
+# ... (existing imports)
+
+# ======================================================
+# PART 1: HELPER FUNCTIONS (Parser & Executor)
+# ======================================================
+
 class TimeoutException(Exception):
     pass
 
@@ -43,16 +49,23 @@ def extract_python_code(response_text):
         return match.group(1) # Return just the code inside
     return None
 
-def execute_python_code(code_str, state_dict, timeout_sec=5):
+def execute_python_code(code_str, state_dict, stdin_input, timeout_sec=5):
     """
     Executes code. Captures stdout. 
     If it crashes, returns Partial Output + Traceback.
     Enforces a timeout using signal.alarm.
+    ALWAYS mocks stdin using stdin_input.
     """
     output_capture = io.StringIO()
     
     # Register signal handler
     signal.signal(signal.SIGALRM, timeout_handler)
+    
+    # Prepare Context Managers
+    original_stdin = sys.stdin
+    # Always mock stdin
+    stdin_mock = io.StringIO(stdin_input)
+    sys.stdin = stdin_mock
     
     try:
         with contextlib.redirect_stdout(output_capture):
@@ -69,7 +82,7 @@ def execute_python_code(code_str, state_dict, timeout_sec=5):
         if not result:
             return "[Code ran successfully, but produced no output.]"
         return result
-
+    
     except TimeoutException:
          partial = output_capture.getvalue()
          return f"{partial}\n\n--- EXECUTION TIMED OUT ({timeout_sec}s) ---"
@@ -83,6 +96,10 @@ def execute_python_code(code_str, state_dict, timeout_sec=5):
         
         # 3. Combine them
         return f"{partial_output}\n\n--- EXECUTION ERROR ---\n{error_trace}"
+    
+    finally:
+        # Always Restore Stdin
+        sys.stdin = original_stdin
 
 # ======================================================
 # PART 2: AGENT STATE MANAGEMENT
@@ -138,7 +155,7 @@ def save_incremental_result(agent: AgentState, output_file: str):
     except Exception as e:
         print(f"FAILED TO SAVE INCREMENTAL RESULT: {e}")
 
-def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, incremental_file: str):
+def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, incremental_file: str, debug: bool = False):
     """
     Runs the agent loop for multiple agents in parallel (batched inference).
     """
@@ -181,15 +198,34 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                 # Append assistant message
                 agent.history.append({"role": "assistant", "content": response_text})
                 
+                # Live Debug: Print Assistant Message
+                if debug:
+                    print(f"\n[Agent {agent.id}] ASSISTANT:\n{response_text}\n{'-'*20}")
+                
                 # Logic: Did it generate code?
                 code_block = extract_python_code(response_text)
                 
                 if code_block:
+                    if debug:
+                        print(f"  [Agent {agent.id}] Executing code...")
+                        
+                    # Extract Stdin Content (Mandatory Protocol)
+                    # We expect "TRANSFORMED INPUT:" to be present always.
+                    try:
+                        stdin_content = agent.user_prompt_content.split("TRANSFORMED INPUT:", 1)[1].strip()
+                    except IndexError:
+                        # Should not happen if protocol is followed, but useful for debugging if it does.
+                        raise ValueError(f"Agent {agent.id} prompt missing 'TRANSFORMED INPUT:' marker.")
+                    
                     # Execute
-                    print(f"  [Agent {agent.id}] Executing code...")
-                    execution_result = execute_python_code(code_block, agent.memory)
+                    execution_result = execute_python_code(code_block, agent.memory, stdin_content)
+                    
                     tool_msg = f"Observation:\n{execution_result}"
                     agent.history.append({"role": "user", "content": tool_msg})
+                    
+                    # Live Debug: Print Observation
+                    if debug:
+                        print(f"\n[Agent {agent.id}] USER (Observation):\n{execution_result}\n{'-'*20}")
                 else:
                     if "\\boxed{" in response_text:
                         agent.final_output = response_text
@@ -272,6 +308,7 @@ def main():
     parser.add_argument("--num_gpus", type=int, default=2, help="Num GPUs.")
     parser.add_argument("--max_model_length", type=int, default=65536, help="Max model length for vLLM")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
+    parser.add_argument("--debug", action="store_true", help="Print live conversation logs")
 
     args = parser.parse_args()
 
@@ -414,7 +451,7 @@ def main():
         print(f"Streaming results to: {incremental_file}")
 
         # 2. Run Batch Loop
-        run_batch_execution(agents, llm, tokenizer, sampling_params, incremental_file)
+        run_batch_execution(agents, llm, tokenizer, sampling_params, incremental_file, debug=args.debug)
         
         # 3. Post-Process & Save (Optionally convert JSONL to JSON for legacy scripts, or just leave as is)
         # We'll make a final JSON summary as well for backward compatibility if needed.
