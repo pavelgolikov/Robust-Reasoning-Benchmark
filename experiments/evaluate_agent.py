@@ -36,32 +36,13 @@ def extract_python_code(response_text):
         return match.group(1) # Return just the code inside
     return None
 
-def execute_python_code(code_str, state_dict, stdin_content=None):
+def execute_python_code(code_str, state_dict):
     """
     Executes code. Captures stdout. 
     If it crashes, returns Partial Output + Traceback.
     """
     output_capture = io.StringIO()
     
-    # Mock Stdin - fail safe: always mock to prevent hanging on real stdin
-    original_stdin = sys.stdin
-    # If None provided, provide empty string so read() returns immediately
-    mock_content = stdin_content if stdin_content is not None else ""
-    sys.stdin = io.StringIO(mock_content)
-
-    # Set Timeout to prevent hanging
-    import signal
-    def handler(signum, frame):
-        raise TimeoutError("Execution Timed Out")
-    
-    # Safe signal usage (only works in main thread)
-    try:
-        signal.signal(signal.SIGALRM, handler)
-        signal.alarm(5) # 5 seconds
-    except  ValueError:
-        # Not in main thread? Skip timeout
-        pass
-
     try:
         with contextlib.redirect_stdout(output_capture):
             # Safe-guarding: In a real sandboxed env, we'd be more careful.
@@ -74,9 +55,6 @@ def execute_python_code(code_str, state_dict, stdin_content=None):
             return "[Code ran successfully, but produced no output.]"
         return result
 
-    except TimeoutError:
-         return f"{output_capture.getvalue()}\n\n[ERROR: Code Execution Timed Out (5s)]"
-
     except Exception:
         # 1. Get whatever was printed BEFORE the crash
         partial_output = output_capture.getvalue()
@@ -86,20 +64,6 @@ def execute_python_code(code_str, state_dict, stdin_content=None):
         
         # 3. Combine them
         return f"{partial_output}\n\n--- EXECUTION ERROR ---\n{error_trace}"
-    
-    except SystemExit:
-        # Catch sys.exit() calls (often 0 or 1)
-        partial_output = output_capture.getvalue()
-        return f"{partial_output}\n\n[Code called sys.exit()]"
-        
-    finally:
-        # Restore Stdin
-        sys.stdin = original_stdin
-        # Disable alarm
-        try:
-            signal.alarm(0)
-        except:
-             pass
 
 # ======================================================
 # PART 2: AGENT STATE MANAGEMENT
@@ -173,13 +137,7 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                 # Check for Code
                 code_block = extract_python_code(response_text)
                 if code_block:
-                    # Prepare Stdin (Transformed Input only if possible)
-                    stdin_data = agent.user_prompt_content
-                    if "TRANSFORMED INPUT:" in stdin_data:
-                        # robustness: take the part after the header
-                        stdin_data = stdin_data.split("TRANSFORMED INPUT:", 1)[1].strip()
-                        
-                    execution_result = execute_python_code(code_block, agent.memory, stdin_content=stdin_data)
+                    execution_result = execute_python_code(code_block, agent.memory)
                     tool_msg = f"Observation:\n{execution_result}"
                     agent.history.append({"role": "user", "content": tool_msg})
                 else:
@@ -254,10 +212,9 @@ def main():
 
     # Prep Experiments
     if args.names == 'all':
-        # experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
-        # 'not_not', 'opposites', 'rail_fence', 'sentence_reversal', 'split_reversal', 'word_reversal', 'wrappers' ]
-        experiment_names = [ 'interleaved_context_line', 'interleaved_context_word',
-        'not_not', 'opposites', 'rail_fence', 'sentence_reversal', 'split_reversal', 'word_reversal', 'wrappers' ]
+        experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
+        'not_not', 'opposites', 'sentence_reversal', 'word_reversal', 'wrappers', 'split_reversal',
+        'rail_fence' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 

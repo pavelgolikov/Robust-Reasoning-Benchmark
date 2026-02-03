@@ -42,15 +42,17 @@ USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interprete
 YOUR PROTOCOL (Follow Strictly):
 
 PHASE 1: RECONSTRUCTION
-1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT" string from sys.stdin. 
-2. Write a Python script that programmatically reverses the transformation according to the "TRANSFORMATION RULE".
+1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT".
+2. Write a Python script that programmatically reverses the transformation.
+   - You MUST hardcode the "TRANSFORMED INPUT" string into your Python script as a variable (e.g. `data = "..."`).
+   - Do NOT use `sys.stdin.read()` or `input()`.
    - YOU MUST DECODE USING PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
    - Do NOT guess or anticipate the original text; Do NOT simulate the execution.
    - ONLY generate and output Python code to reverse the transformation.
 
-4. Output your Python code in a markdown code block:
+3. Output your Python code in a markdown code block:
 ```python ... Your code here ... ```
-5. The system will execute your code and provide the output back to you.
+4. The system will execute your code and provide the output back to you.
 
 PHASE 2: SOLUTION
 1. Examine the output of your Python script (the reconstructed text).
