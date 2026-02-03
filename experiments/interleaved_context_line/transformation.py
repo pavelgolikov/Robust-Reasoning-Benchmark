@@ -21,9 +21,9 @@ def apply_interleaved_context_line(problem_a, problem_b, seed=None):
     if not chunks_a: chunks_a = [""]
     if not chunks_b: chunks_b = [""]
     
-    # 2. Tag chunks
-    tagged_a = [c + " <Problem A>" for c in chunks_a]
-    tagged_b = [c + " <Problem B>" for c in chunks_b]
+    # 2. Tag chunks (Prefix)
+    tagged_a = ["<Problem A> " + c for c in chunks_a]
+    tagged_b = ["<Problem B> " + c for c in chunks_b]
     
     max_len = max(len(tagged_a), len(tagged_b))
     
@@ -45,19 +45,20 @@ def reverse_interleaved_context_line(text):
     """
     Reverses the interleaved_context transformation.
     Extracts lines tagged with <Problem A> and rejoins them.
+    Assumes tags are prefixes: <Problem A> ...
     """
     lines = text.split('\n')
     reconstructed_parts = []
     
     for line in lines:
-        if line.endswith(" <Problem A>"):
-            # Remove tag (12 chars: " <Problem A>")
-            content = line[:-12]
+        if line.startswith("<Problem A> "):
+            # Remove tag (12 chars: "<Problem A> ")
+            content = line[12:]
             reconstructed_parts.append(content)
             
     # Join parts
     # Note: Newlines were replaced by '; ' in transformation.
-    # We do NOT reverse this replacement to avoid ambiguity (as original might contain '; ').
+    # We do NOT reverse this replacement here.
     full_text = "".join(reconstructed_parts)
     
     return full_text

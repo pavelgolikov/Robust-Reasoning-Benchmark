@@ -42,8 +42,10 @@ USER_PROMPT_PROTOCOL_PREFIX_AGENT = """You are equipped with a Python interprete
 YOUR PROTOCOL (Follow Strictly):
 
 PHASE 1: RECONSTRUCTION
-1. Below you will see "TRANSFORMATION RULE" and "TRANSFORMED INPUT".
-2. Write and output a Python script that programmatically reverses the transformation performed on "TRANSFORMED INPUT" and prints the original text.
+1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT".
+2. Write a Python script that programmatically reverses the transformation.
+   - You MUST hardcode the "TRANSFORMED INPUT" string into your Python script as a variable (e.g. `data = "..."`).
+   - Do NOT use `sys.stdin.read()` or `input()`.
    - YOU MUST DECODE USING PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
    - Do NOT guess or anticipate the original text; Do NOT simulate the execution.
    - ONLY generate and output the Python code that prints the original text.
@@ -68,7 +70,7 @@ TECHNIQUE_DESCRIPTIONS = {
     'word_reversal': "The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.",
     'sentence_reversal': "The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.",
     'interleaved_context_word': "User query will consist of two problems - A and B, whose statements are interleaved word by word. First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on. You need to solve only problem A. Words are defined as sequences of symbols separated by spaces. If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
-    'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is followed by a space and a problem tag (e.g. problem A or B). The segments are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the empty lines resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
+    'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is prefixed by a problem tag (e.g. problem A or B) and a space. The segments are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the empty lines resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
     'split_reversal':  "Every word (words are defined as sequences of symbols separated by spaces) in user query has its symbols in reverse order.",
     'opposites': "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
     'wrappers':  "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
