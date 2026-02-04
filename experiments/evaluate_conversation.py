@@ -176,7 +176,22 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                 continue
             
             response_text = out_obj.outputs[0].text
-            
+
+            if generation_type == "PROBE":
+                # Handle PROBE: Check correctness but DO NOT modify history
+                extracted = extract_answer(response_text)
+                is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
+                
+                probe_result = {
+                    "step": agent.step_count,
+                    "phase": agent.phase,
+                    "output": response_text,
+                    "extracted": extracted,
+                    "correct": is_correct
+                }
+                agent.intermediate_results.append(probe_result)
+                continue # Skip history update for PROBE
+
             # --- CONTEXT MANAGER POST-GENERATION CHECK ---
             if context_manager and agent.phase == "FEEDING":
                 # Calculate Total Tokens (History + New Response)
@@ -206,7 +221,7 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                     # 4. Continue agent loop (active)
                     continue 
 
-            # Valid Output - append to history
+            # Valid Output (FEED/SOLVE) - append to history
             agent.history.append({"role": "assistant", "content": response_text})
             agent.step_count += 1
             
