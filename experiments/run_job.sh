@@ -18,6 +18,10 @@ export XDG_CACHE_HOME=/project/aip-gpekhime/golikovp/cache
 export NLTK_DATA=/project/aip-gpekhime/golikovp/nltk_data
 mkdir -p $HF_HOME
 
+# NCCL Fixes
+export NCCL_DEBUG=INFO
+export NCCL_IGNORE_DISABLED_P2P=1
+
 # Running 5 samples per problem for averaging
 # python evaluate.py --names rail_fence --n_samples 5 --limit 30 > eval_out.out
 # python evaluate.py --names reversal --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
