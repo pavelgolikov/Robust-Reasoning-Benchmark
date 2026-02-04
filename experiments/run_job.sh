@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=6:00:00
+#SBATCH --time=3:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_err.err
 #SBATCH --account=aip-gpekhime
