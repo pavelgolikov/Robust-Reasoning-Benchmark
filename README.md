@@ -34,7 +34,7 @@ decode and solve.
    values. (?)
 
 Repo description for agent.
-This repo contains a machine learning project. The point of the project is to try and confuse LLMs or agents with linguistic tricks to reduce their performance on math reasoning tasks. Tricks that would have no effect on human (or general reasoner) performance. Please analyze the repository for structure and implementations of various techniques to confuse language models. Analysis is a utility folder. Tell me when you have taken a look at the repo and ready to proceed.
+This repo contains a machine learning project. The point of the project is to try and confuse LLMs or agents with linguistic tricks to reduce their performance on math reasoning tasks. Tricks that would have no effect on human (or general reasoner) performance. Please analyze the repository for structure and implementations of various techniques to confuse language models. Analysis is a utility folder. Tell me when you have taken a look at the repo and ready to proceed. The main 3 scripts are evaluate.py, which tests model's ability to undo the transformations themselves; evaluate_agent.py, which tests model with access to Python interpreter and is instructed to undo transformations in Python before solving the problem; and evaluate_conversaion.py, which tests context pollution by supplying several targeted distractor questions with made up math system and after the distractors, the real non-transformed question is asked.
 
 
 PAPER OUTLINE:
