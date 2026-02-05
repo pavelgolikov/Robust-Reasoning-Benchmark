@@ -225,9 +225,9 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--sample_range", type=str, default=None, help="Range of sample indices to process, e.g. '0-10' or '5' or '1,3,5'")
     parser.add_argument("--n_samples", type=int, default=1)
-    parser.add_argument("--num_gpus", type=int, default=2)
+    parser.add_argument("--num_gpus", type=int, default=4)
     parser.add_argument("--max_model_length", type=int, default=65536)
-    parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
+    parser.add_argument("--num_distractors", type=int, default=20, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     
