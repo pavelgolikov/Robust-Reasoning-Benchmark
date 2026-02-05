@@ -24,7 +24,6 @@ if project_dir not in sys.path:
     sys.path.append(project_dir)
 
 # Helper imports
-from experiments.context_load_manager import ContextLoadManager
 from experiments.util import (
     extract_answer, 
     normalize_answer, 
@@ -64,7 +63,7 @@ class AgentState:
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
 
 
-def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed, context_manager=None):
+def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed):
     """
     Runs a single turn (Prob + Feed) for all active agents.
     1. PROBE: Check accuracy on Real Problem (without modifying history).
@@ -94,23 +93,14 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                 print(f"[Probe Error] Agent {agent.id}: {e}")
             
             # B. PREPARE FEED (Context Filling)
-            # Context Manager Check: Stop if full
-            if context_manager:
-                current_prompt = agent.get_vllm_prompt(tokenizer)
-                current_len = len(tokenizer.encode(current_prompt))
-                
-                if context_manager.should_switch_to_solving(current_len):
-                    print(f"[Context Manager] Agent {agent.id} reached target ({current_len} tokens). Stopping.")
-                    agent.phase = "DONE" # Or SOLVING? User said "We stop".
-                    agent.is_done = True 
-                    continue
+            # Context Manager Check removed
 
             # Standard Distractor Generation
             vars_len = len(agent.variables)
-            remaining = 999999 if context_manager else (agent.target_distractors - agent.current_sys_index)
+            remaining = agent.target_distractors - agent.current_sys_index
             count = min(distractors_per_query, remaining)
             
-            if not context_manager and count <= 0:
+            if count <= 0:
                  agent.phase = "SOLVING"
             else:
                 prompt_parts = []
@@ -192,34 +182,7 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                 agent.intermediate_results.append(probe_result)
                 continue # Skip history update for PROBE
 
-            # --- CONTEXT MANAGER POST-GENERATION CHECK ---
-            if context_manager and agent.phase == "FEEDING":
-                # Calculate Total Tokens (History + New Response)
-                if hasattr(out_obj.outputs[0], 'token_ids'):
-                    new_tokens = len(out_obj.outputs[0].token_ids)
-                else:
-                    new_tokens = len(tokenizer.encode(response_text))
-                
-                # We need TOTAL tokens including Prompt to check against limits
-                # vLLM outputs usually include prompt_token_ids logic, but safest is to re-measure sum
-                # or utilize 'prompt_token_ids' from out_obj if available
-                prompt_len = len(out_obj.prompt_token_ids)
-                total_tokens = prompt_len + new_tokens
-                
-                outcome = context_manager.check_turn_outcome(total_tokens)
-                
-                if outcome.startswith("BACKTRACK"):
-                    print(f"[Context Manager] Agent {agent.id} {outcome} ({total_tokens} tokens). Backtracking...")
-                    # 1. Pop the User Prompt (Distractors) we just added
-                    if agent.history[-1]['role'] == 'user':
-                         agent.history.pop()
-                    
-                    # 2. Skip these distractors (Retry with DIFFERENT set)
-                    agent.current_sys_index += agent.last_distractor_count
-                    
-                    # 3. Do NOT save response (it was huge/bad)
-                    # 4. Continue agent loop (active)
-                    continue 
+                # Backtracking logic removed
 
             # Valid Output (FEED/SOLVE) - append to history
             agent.history.append({"role": "assistant", "content": response_text})
@@ -267,8 +230,6 @@ def main():
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
-    parser.add_argument("--new_run", action="store_true", help="Force a new run (ignore existing checkpoints)")
-    parser.add_argument("--context_fill_lvl", type=float, default=None, help="Target context fill percentage (0-100). If set, overrides num_distractors.")
     
     args = parser.parse_args()
     
@@ -347,72 +308,27 @@ def main():
         dataset = dataset.select(indices)
 
     # We now iterate over the *current* dataset indices (0 to len(dataset)-1)
-    # forcing a list to act as our 'indices' to chunk
     indices = list(range(len(dataset)))
 
     default_vars = ["x", "y", "n", "k", "A", "B", "S"]
     random.seed(args.seed)
     
-    random.seed(args.seed)
-    
-    # Use a Dict for results to allow updating
-    results_dict = {}
-    stats = {"correct": 0, "total": 0, "failures": 0}
-
-    # --- RESUME LOGIC ---
-    # Construct expected directory
+    # Output Setup (Always New)
     safe_model_name = args.model.replace('/', '_').replace(' ', '_')
     safe_dataset_name = args.dataset.replace('/', '_')
     res_dir = os.path.join(experiments_dir, "context_saturation", "conv_results", safe_model_name, safe_dataset_name)
     os.makedirs(res_dir, exist_ok=True)
     
-    # Check for latest file matching pattern
-    import glob
-    existing_files = glob.glob(os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_*_CONVERSATION.json"))
-    existing_files.sort(key=os.path.getmtime) # Sort by time, latest last
-
-    json_file = None
-    existing_results = []
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    json_file = os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_{timestamp}_CONVERSATION.json")
+    print(f"[Init] Starting new run. Output: {json_file}")
     
-    if existing_files and not args.new_run:
-        latest_file = existing_files[-1]
-        print(f"[Resume] Found existing run: {latest_file}")
-        try:
-            with open(latest_file, "r") as f:
-                loaded_list = json.load(f)
-            
-            # Populate results_dict
-            for item in loaded_list:
-                key = f"{item['id']}_s{item['sample_idx']}"
-                results_dict[key] = item
-                
-            print(f"[Resume] Loaded {len(results_dict)} previous entries.")
-            
-            # Recalculate finished stats
-            stats["total"] = sum(1 for r in results_dict.values() if r.get("is_done", True)) # Default True for old files
-            stats["correct"] = sum(1 for r in results_dict.values() if r.get("is_done", True) and r.get("correct"))
-            stats["failures"] = sum(1 for r in results_dict.values() if r.get("is_done", True) and not r.get("correct"))
-            
-            json_file = latest_file
-            
-        except Exception as e:
-             print(f"[Resume] Error reading file {latest_file}, starting fresh. Error: {e}")
-
-    if not json_file:
-        # Start New
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        json_file = os.path.join(res_dir, f"{safe_model_name}_{safe_dataset_name}_s{args.seed}_{timestamp}_CONVERSATION.json")
-        print(f"[Init] Starting new run. Output: {json_file}")
-    
-    # --------------------
-    
-    # results = [] (Removed, initialized above)
-    # stats = ... (Removed, initialized above)
-    # timestamp = ... (Removed)
+    results_dict = {}
+    stats = {"correct": 0, "total": 0, "failures": 0}
     
     # 4. Initialize ALL Agents
     print(f"Initializing agents for {len(indices)} samples...")
-    all_agents = []
+    active_agents = []
     
     for idx in indices:
         example = dataset[idx]
@@ -437,71 +353,17 @@ def main():
                     {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
                 ]
             )
-            all_agents.append(agent)
-
-    # RESUME FILTERING for all agents
-    # RESUME / INITIALIZATION Logic
-    # We populate all_agents. Some might be done, some partial, some new.
-    
-    active_agents = []
-    
-    for agent in all_agents:
-        key = agent.id
-        existing_entry = results_dict.get(key)
-        
-        if existing_entry:
-            is_done = existing_entry.get("is_done", True) # Treat legacy entries (without is_done) as Done.
-            
-            if is_done:
-                continue # Skip finished
-            else:
-                # Resurrect Partial Agent
-                # Restore history
-                history_content = existing_entry.get("history_dump", [])
-                agent.intermediate_results = existing_entry.get("intermediate_results", [])
-                
-                # Check metadata if available (New format)
-                metadata = existing_entry.get("metadata", {})
-                if metadata:
-                     agent.current_sys_index = metadata.get("current_sys_index", 0)
-                     agent.phase = metadata.get("phase", "FEEDING")
-                     # agent.variables should be constant
-                     agent.token_usage = metadata.get("token_usage", {})
-                     
-                     # Restore History with Roles
-                     # Base: System
-                     # Then User (Distractors) -> Assistant (Solutions) -> ...
-                     rec_history = [{"role": "system", "content": history_content[0]}]
-                     for i in range(1, len(history_content)):
-                         # Odd indices = User, Even = Assistant
-                         role = "user" if i % 2 != 0 else "assistant"
-                         rec_history.append({"role": role, "content": history_content[i]})
-                     agent.history = rec_history
-                     
-                     active_agents.append(agent)
-                else:
-                    # Legacy partial (unlikely if we just added this feature)
-                    # Treat as fresh or skip? Treat as fresh.
-                    active_agents.append(agent)
-        else:
-            # New Agent
             active_agents.append(agent)
+            
+            # Initial placeholder in results
+            results_dict[agent.id] = {
+                 "id": agent.problem_id,
+                 "sample_idx": agent.sample_idx,
+                 "is_done": False,
+                 "metadata": {"phase": "INIT"}
+            }
 
-    print(f"[Resume] Filtered down to {len(active_agents)} active agents (from {len(all_agents)} total).")
-
-    if not active_agents:
-        print("All agents completed. Exiting.")
-        exit(0)
-
-    print(f"Starting parallel execution for {len(active_agents)} agents...")
-    
-    
-    # Initialize Context Manager if requested
-    context_mgr = None
-    if args.context_fill_lvl is not None:
-        # Convert percent 75 -> 0.75
-        target_ratio = args.context_fill_lvl / 100.0
-        context_mgr = ContextLoadManager(target_ratio, args.max_model_length)
+    print(f"Starting execution for {len(active_agents)} agents...")
 
     # 5. Main Execution Loop
     step_num = 0
@@ -511,15 +373,13 @@ def main():
         
         # Run one turn
         try:
-            # We pass ALL active agents. vLLM handles batching internally.
-            processed_agents = run_single_turn(active_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed, context_manager=context_mgr)
+            processed_agents = run_single_turn(active_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed)
         except torch.cuda.OutOfMemoryError:
             print(f"[CRITICAL] CUDA OOM Error on Turn {step_num}!")
             torch.cuda.empty_cache()
             import gc
             gc.collect()
-            # If OOM, we might need to fail everyone or retry?
-            # For now, let's just fail everyone to be safe and save what we can.
+            # Fail active agents
             for agent in active_agents:
                 if not agent.is_done:
                     agent.final_output = "ERROR_CUDA_OOM"
@@ -535,9 +395,7 @@ def main():
             else:
                 still_active.append(agent)
 
-        # SAVE PROGRESS (Update results with ALL active agents)
-        # We update the dictionary for every agent in active_agents
-        
+        # SAVE PROGRESS
         for agent in active_agents:
             # Prepare data
             extracted = extract_answer(agent.final_output)
@@ -554,7 +412,6 @@ def main():
                 "solution_tokens": solution_tokens
             }
             
-            # Metadata for resumption
             metadata = {
                 "current_sys_index": agent.current_sys_index,
                 "phase": agent.phase,
@@ -568,7 +425,7 @@ def main():
                 "output": agent.final_output,
                 "extracted": extracted,
                 "correct": is_correct,
-                "is_done": agent.is_done, # Key flag
+                "is_done": agent.is_done,
                 "metadata": metadata,
                 "token_usage": token_usage_summary,
                 "original_problem": agent.original_problem,
@@ -578,18 +435,9 @@ def main():
             }
             
             results_dict[agent.id] = entry
-            
-            # Identify purely NEWLY finished ones for stats printing (optional)
-            if agent in newly_finished:
-                 # Update counters only for newly finished to avoid double counting
-                 # But we need to be careful with 'finished_keys' logic on resume.
-                 # Actually, stats counting here is tricky if we update continuously.
-                 # Let's just recount total stats from the dict if needed, or trust the increment.
-                 pass
 
         if newly_finished:
             print(f"Turn {step_num}: {len(newly_finished)} agents finished.")
-            # Update global stats
             for agent in newly_finished:
                  extracted = extract_answer(agent.final_output)
                  is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
@@ -597,29 +445,21 @@ def main():
                  if is_correct: stats["correct"] += 1
                  else: stats["failures"] += 1
 
-        # ALWAYS Save File after every turn
         try:
             with open(json_file, "w") as f:
                 json.dump(list(results_dict.values()), f, indent=2)
-            print(f"[Save] Updated results file with {len(results_dict)} entries.") # Concise log
+            print(f"[Save] Updated results file.")
         except Exception as e:
             print(f"[Warning] Failed to save results: {e}")
             
-        if step_num == 1:
-            # print("[SIMULATION] Artificial Crash after Turn 1.")
-            # exit(1)
-            pass
-
         active_agents = still_active
         
-        # GC to keep memory clean
+        # GC
         if step_num % 5 == 0:
             import gc
             gc.collect()
 
     # 5. Final Report
-    # (Results are already saved, just print stats)
-        
     acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
     print(f"Results: Accuracy {acc:.2%} ({stats['correct']}/{stats['total']})")
     print(f"Final Results saved to: {json_file}")
