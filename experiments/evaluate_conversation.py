@@ -223,6 +223,7 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
 def main():
     parser = argparse.ArgumentParser(description="Evaluate Multi-Turn Conversation Agent (Context Saturation)")
     parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B")
+    # parser.add_argument("--model", type=str, default="Qwen/Qwen2.5-7B-Instruct")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--sample_range", type=str, default=None, help="Range of sample indices to process, e.g. '0-10' or '5' or '1,3,5'")
@@ -231,6 +232,7 @@ def main():
     parser.add_argument("--max_model_length", type=int, default=65536)
     parser.add_argument("--num_distractors", type=int, default=20, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
+    # parser.add_argument("--quantization", type=str, default=None, help="Quantization mode (e.g., 'fp8', 'awq', 'gptq')")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     
     args = parser.parse_args()
@@ -278,6 +280,8 @@ def main():
                 tensor_parallel_size=args.num_gpus,
                 trust_remote_code=True,
                 max_model_len=args.max_model_length,
+                # quantization=args.quantization,
+                # kv_cache_dtype="fp8",
                 dtype="bfloat16"
             )
             tokenizer = llm.get_tokenizer()
