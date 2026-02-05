@@ -83,14 +83,16 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             
             # A. PREPARE PROBE (Performance Check)
             # Check accuracy on Real Problem at current state.
-            real_problem = remove_latex_comments(agent.original_problem)
-            probe_hist = agent.history + [{"role": "user", "content": real_problem}]
-            try:
-                probe_prompt = tokenizer.apply_chat_template(probe_hist, tokenize=False, add_generation_prompt=True)
-                prompts.append(probe_prompt)
-                batch_meta.append({"agent": agent, "type": "PROBE"})
-            except Exception as e:
-                print(f"[Probe Error] Agent {agent.id}: {e}")
+            # SKIP ZERO-SHOT PROBE (User Request: only probe after distractors exist)
+            if agent.current_sys_index > 0:
+                real_problem = remove_latex_comments(agent.original_problem)
+                probe_hist = agent.history + [{"role": "user", "content": real_problem}]
+                try:
+                    probe_prompt = tokenizer.apply_chat_template(probe_hist, tokenize=False, add_generation_prompt=True)
+                    prompts.append(probe_prompt)
+                    batch_meta.append({"agent": agent, "type": "PROBE"})
+                except Exception as e:
+                    print(f"[Probe Error] Agent {agent.id}: {e}")
             
             # B. PREPARE FEED (Context Filling)
             # Context Manager Check removed
