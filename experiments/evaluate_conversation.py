@@ -57,7 +57,6 @@ class AgentState:
     step_count: int = 0
     token_usage: Dict[str, int] = field(default_factory=dict)
     last_distractor_count: int = 0 # Tracks how many distractors were sent in the pending turn
-    intermediate_results: List[Dict[str, Any]] = field(default_factory=list) # Stores probes
     
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
@@ -436,7 +435,6 @@ def main():
                 "original_problem": agent.original_problem,
                 "ground_truth": agent.ground_truth,
                 "history_dump": [h['content'] for h in agent.history],
-                "intermediate_results": agent.intermediate_results
             }
             
             results_dict[agent.id] = entry
