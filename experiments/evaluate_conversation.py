@@ -218,19 +218,14 @@ def main():
         target_tokens = args.max_model_length * (args.context_pollution_percent / 100.0)
         calculated_distractors = target_tokens / EST_TOKENS_PER_DISTRACTOR
         
-        # Check if whole number (within small epsilon for float precision, though likely we want strictness)
-        # User requested: "Raise an error if percentage does not turn out to be a whole number"
-        # We'll check if it's very close to an integer.
-        if abs(calculated_distractors - round(calculated_distractors)) > 0.01:
-             print(f"Error: Calculated number of distractors ({calculated_distractors:.2f}) is not a whole number.")
-             print(f"Formula: ({args.max_model_length} * {args.context_pollution_percent/100}) / {EST_TOKENS_PER_DISTRACTOR}")
-             exit(1)
-             
+        # User requested: Round to nearest whole number, no error.
         num_distractors = int(round(calculated_distractors))
         
         if num_distractors % args.distractors_per_query != 0:
-             print(f"Error: Calculated distractors ({num_distractors}) is not divisible by distractors_per_query ({args.distractors_per_query}).")
-             exit(1)
+             remaining = num_distractors % args.distractors_per_query
+             print(f"[Context Pollution] Warning: Calculated distractors ({num_distractors}) is not divisible by distractors_per_query ({args.distractors_per_query}).")
+             print(f"[Context Pollution] The final batch will contain only {remaining} distractor(s).")
+             # Loop logic at lines ~104 handles min(batch, remaining) automatically.
              
         print(f"[Context Pollution] Override: {args.context_pollution_percent}% of {args.max_model_length} = {target_tokens:.0f} tokens.")
         print(f"[Context Pollution] Setting num_distractors = {num_distractors} (was {args.num_distractors})")
