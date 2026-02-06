@@ -16,6 +16,8 @@ import torch
 # util.py is in experiments/
 # context_saturation/generate_systems.py is in experiments/context_saturation/
 
+TOK_PER_DISTRACTOR = 2048
+
 # Add project root to path just in case
 script_dir = os.path.dirname(os.path.abspath(__file__))
 experiments_dir = script_dir
@@ -42,7 +44,7 @@ class AgentState:
     original_problem: str
     ground_truth: str
     variables: List[str] # For distractor generation
-    target_distractors: int
+    variables: List[str] # For distractor generation
     
     # Dynamic State
     history: List[Dict[str, str]]
@@ -57,13 +59,12 @@ class AgentState:
     step_count: int = 0
     token_usage: Dict[str, int] = field(default_factory=dict)
     last_distractor_count: int = 0 # Tracks how many distractors were sent in the pending turn
-    intermediate_results: List[Dict[str, Any]] = field(default_factory=list) # Stores probes
     
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
 
 
-def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed):
+def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_params, distractors_per_query, seed, saturation_limit=None):
     """
     Runs a single turn (Prob + Feed) for all active agents.
     1. PROBE: Check accuracy on Real Problem (without modifying history).
@@ -85,13 +86,26 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             # Context Manager Check removed
 
             # Standard Distractor Generation
-            vars_len = len(agent.variables)
-            remaining = agent.target_distractors - agent.current_sys_index
-            count = min(distractors_per_query, remaining)
+            should_solve = False
+            count = 0
             
-            if count <= 0:
+            # Dynamic Logic
+            full_hist_text = tokenizer.apply_chat_template(agent.history, tokenize=False, add_generation_prompt=False)
+            if hasattr(tokenizer, 'encode'):
+                 current_ids = tokenizer.encode(full_hist_text)
+                 current_len = len(current_ids)
+            else:
+                 current_len = len(full_hist_text.split())
+
+            if current_len >= saturation_limit:
+                should_solve = True
+            else:
+                count = distractors_per_query
+            
+            if should_solve:
                  agent.phase = "SOLVING"
             else:
+                vars_len = len(agent.variables)
                 prompt_parts = []
                 prompt_parts.append(f"Solve these {count} math problems and output your solutions numbered.\n")
                 
@@ -123,6 +137,15 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             # Add Real Problem
             last_role = agent.history[-1]["role"]
             if last_role == "assistant" or last_role == "system":
+                # START CALCULATION: Context length before real problem
+                context_str_pre = tokenizer.apply_chat_template(agent.history, tokenize=False, add_generation_prompt=False)
+                if hasattr(tokenizer, 'encode'):
+                    pre_solve_tokens = len(tokenizer.encode(context_str_pre))
+                else:
+                    pre_solve_tokens = len(context_str_pre.split())
+                agent.token_usage["pre_solve_context_tokens"] = pre_solve_tokens
+                # END CALCULATION
+
                 real_problem = remove_latex_comments(agent.original_problem)
                 agent.history.append({"role": "user", "content": "Solve the following question using regular mathematics.\n\n" + real_problem})
             
@@ -201,35 +224,25 @@ def main():
     parser.add_argument("--n_samples", type=int, default=1)
     parser.add_argument("--num_gpus", type=int, default=4)
     parser.add_argument("--max_model_length", type=int, default=65536)
-    parser.add_argument("--num_distractors", type=int, default=8, help="Number of distractors (conversation turns) before the real problem.")
+    # parser.add_argument("--num_distractors", type=int, default=8, help="DEPRECATED")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
-    parser.add_argument("--context_pollution_percent", type=int, default=None, help="Target context pollution saturation in percent (0-100). Overrides num_distractors.")
+    parser.add_argument("--context_saturation", type=int, default=None, help="Target context saturation in percent (0-100). Triggers switch to Real Problem when reached.")
     
     args = parser.parse_args()
 
-    # --- Logic: Context Pollution Percent Calculation ---
-    EST_TOKENS_PER_DISTRACTOR = 2048
-    if args.context_pollution_percent is not None:
-        if not (0 < args.context_pollution_percent <= 100):
-             print(f"Error: Context pollution percent must be between 0 and 100. Got {args.context_pollution_percent}")
-             exit(1)
-             
-        target_tokens = args.max_model_length * (args.context_pollution_percent / 100.0)
-        calculated_distractors = target_tokens / EST_TOKENS_PER_DISTRACTOR
-        
-        # User requested: Round to nearest whole number, no error.
-        num_distractors = int(round(calculated_distractors))
-        
-        if num_distractors % args.distractors_per_query != 0:
-             remaining = num_distractors % args.distractors_per_query
-             print(f"[Context Pollution] Warning: Calculated distractors ({num_distractors}) is not divisible by distractors_per_query ({args.distractors_per_query}).")
-             print(f"[Context Pollution] The final batch will contain only {remaining} distractor(s).")
-             # Loop logic at lines ~104 handles min(batch, remaining) automatically.
-             
-        print(f"[Context Pollution] Override: {args.context_pollution_percent}% of {args.max_model_length} = {target_tokens:.0f} tokens.")
-        print(f"[Context Pollution] Setting num_distractors = {num_distractors} (was {args.num_distractors})")
-        args.num_distractors = num_distractors
+    # --- Logic: Context Saturation Limit ---
+    if args.context_saturation is None:
+         print("Error: --context_saturation is required (0-100).")
+         exit(1)
+
+    if not (0 < args.context_saturation <= 100):
+         print(f"Error: Context saturation must be between 0 and 100. Got {args.context_saturation}")
+         exit(1)
+         
+    saturation_limit = int(args.max_model_length * (args.context_saturation / 100.0))
+    print(f"[Context Saturation] Target: {args.context_saturation}% of {args.max_model_length} = {saturation_limit} tokens.")
+    print(f"[Context Saturation] Dynamic filling enabled.")
     # ----------------------------------------------------
     
     # 1. Load Extracted Variables
@@ -258,6 +271,8 @@ def main():
         class MockTokenizer:
             def apply_chat_template(self, history, tokenize=False, add_generation_prompt=True):
                 return json.dumps(history) # Just dump history as string
+            def encode(self, text):
+                return [0] * len(text.split())
         class MockLLM:
             def generate(self, prompts, params):
                 return [MockCompletion("Fake Model Output") for _ in prompts]
@@ -278,8 +293,7 @@ def main():
                 dtype="bfloat16"
             )
             tokenizer = llm.get_tokenizer()
-            tokens_per_distractor_response = 3000
-            token_limit = args.distractors_per_query * tokens_per_distractor_response
+            token_limit = args.distractors_per_query * TOK_PER_DISTRACTOR
             sampling_params = SamplingParams(
                 temperature=0.6,
                 max_tokens=min(token_limit, args.max_model_length),
@@ -353,7 +367,6 @@ def main():
                 original_problem=example['problem'],
                 ground_truth=example['answer'],
                 variables=current_vars,
-                target_distractors=args.num_distractors,
                 history=[
                     {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
                 ]
@@ -378,7 +391,7 @@ def main():
         
         # Run one turn
         try:
-            processed_agents = run_single_turn(active_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed)
+            processed_agents = run_single_turn(active_agents, llm, tokenizer, sampling_params, args.distractors_per_query, args.seed, saturation_limit=saturation_limit)
         except torch.cuda.OutOfMemoryError:
             print(f"[CRITICAL] CUDA OOM Error on Turn {step_num}!")
             torch.cuda.empty_cache()
@@ -414,7 +427,8 @@ def main():
                 "distractors_total_tokens": sum(distractor_tokens),
                 "distractors_avg_tokens": sum(distractor_tokens) / len(distractor_tokens) if distractor_tokens else 0,
                 "distractors_count": len(distractor_tokens),
-                "solution_tokens": solution_tokens
+                "solution_tokens": solution_tokens,
+                "pre_solve_context_tokens": agent.token_usage.get("pre_solve_context_tokens", 0)
             }
             
             metadata = {
@@ -436,7 +450,6 @@ def main():
                 "original_problem": agent.original_problem,
                 "ground_truth": agent.ground_truth,
                 "history_dump": [h['content'] for h in agent.history],
-                "intermediate_results": agent.intermediate_results
             }
             
             results_dict[agent.id] = entry
