@@ -280,12 +280,10 @@ def main():
                 tensor_parallel_size=args.num_gpus,
                 trust_remote_code=True,
                 max_model_len=args.max_model_length,
-                # quantization=args.quantization,
-                # kv_cache_dtype="fp8",
                 dtype="bfloat16"
             )
             tokenizer = llm.get_tokenizer()
-            sampling_params = SamplingParams( temperature=0.6, max_tokens=args.max_model_length)
+            sampling_params = SamplingParams( temperature=0.6, max_tokens=min(16384, args.max_model_length))
         except Exception as e:
             print(f"Failed to initialize vLLM: {e}")
             exit(1)
