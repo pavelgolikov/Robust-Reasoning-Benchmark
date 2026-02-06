@@ -86,7 +86,8 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             # SKIP ZERO-SHOT PROBE (User Request: only probe after distractors exist)
             if agent.current_sys_index > 0:
                 real_problem = remove_latex_comments(agent.original_problem)
-                probe_hist = agent.history + [{"role": "user", "content": real_problem}]
+                probe_hist = agent.history +\
+                    [{"role": "user", "content": "Solve the following question using regular mathematics.\n\n" + real_problem}]
                 try:
                     probe_prompt = tokenizer.apply_chat_template(probe_hist, tokenize=False, add_generation_prompt=True)
                     prompts.append(probe_prompt)
@@ -137,7 +138,7 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             last_role = agent.history[-1]["role"]
             if last_role == "assistant" or last_role == "system":
                 real_problem = remove_latex_comments(agent.original_problem)
-                agent.history.append({"role": "user", "content": real_problem})
+                agent.history.append({"role": "user", "content": "Solve the following question using regular mathematics.\n\n" + real_problem})
             
             try:
                 prompt = agent.get_vllm_prompt(tokenizer)
@@ -283,7 +284,13 @@ def main():
                 dtype="bfloat16"
             )
             tokenizer = llm.get_tokenizer()
-            sampling_params = SamplingParams( temperature=0.6, max_tokens=min(16384, args.max_model_length))
+            tokens_per_distractor_response = 3000
+            token_limit = args.distractors_per_query * tokens_per_distractor_response
+            sampling_params = SamplingParams(
+                temperature=0.6,
+                max_tokens=min(token_limit, args.max_model_length),
+                repetition_penalty=1.1
+            )
         except Exception as e:
             print(f"Failed to initialize vLLM: {e}")
             exit(1)
