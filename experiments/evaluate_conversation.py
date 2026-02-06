@@ -81,21 +81,7 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
         # --- PHASE: FEEDING ---
         if agent.phase == "FEEDING":
             
-            # A. PREPARE PROBE (Performance Check)
-            # Check accuracy on Real Problem at current state.
-            # SKIP ZERO-SHOT PROBE (User Request: only probe after distractors exist)
-            if agent.current_sys_index > 0:
-                real_problem = remove_latex_comments(agent.original_problem)
-                probe_hist = agent.history +\
-                    [{"role": "user", "content": "Solve the following question using regular mathematics.\n\n" + real_problem}]
-                try:
-                    probe_prompt = tokenizer.apply_chat_template(probe_hist, tokenize=False, add_generation_prompt=True)
-                    prompts.append(probe_prompt)
-                    batch_meta.append({"agent": agent, "type": "PROBE"})
-                except Exception as e:
-                    print(f"[Probe Error] Agent {agent.id}: {e}")
-            
-            # B. PREPARE FEED (Context Filling)
+            # PREPARE FEED (Context Filling)
             # Context Manager Check removed
 
             # Standard Distractor Generation
@@ -170,23 +156,6 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             
             response_text = out_obj.outputs[0].text
 
-            if generation_type == "PROBE":
-                # Handle PROBE: Check correctness but DO NOT modify history
-                extracted = extract_answer(response_text)
-                is_correct = normalize_answer(extracted) == normalize_answer(agent.ground_truth)
-                
-                probe_result = {
-                    "step": agent.step_count,
-                    "phase": agent.phase,
-                    "output": response_text,
-                    "extracted": extracted,
-                    "correct": is_correct
-                }
-                agent.intermediate_results.append(probe_result)
-                continue # Skip history update for PROBE
-
-                # Backtracking logic removed
-
             # Valid Output (FEED/SOLVE) - append to history
             agent.history.append({"role": "assistant", "content": response_text})
             agent.step_count += 1
@@ -223,20 +192,50 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate Multi-Turn Conversation Agent (Context Saturation)")
-    parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B")
     # parser.add_argument("--model", type=str, default="Qwen/Qwen2.5-7B-Instruct")
+    # parser.add_argument("--quantization", type=str, default=None, help="Quantization mode (e.g., 'fp8', 'awq', 'gptq')")
+    parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--sample_range", type=str, default=None, help="Range of sample indices to process, e.g. '0-10' or '5' or '1,3,5'")
     parser.add_argument("--n_samples", type=int, default=1)
     parser.add_argument("--num_gpus", type=int, default=4)
     parser.add_argument("--max_model_length", type=int, default=65536)
-    parser.add_argument("--num_distractors", type=int, default=20, help="Number of distractors (conversation turns) before the real problem.")
+    parser.add_argument("--num_distractors", type=int, default=8, help="Number of distractors (conversation turns) before the real problem.")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
-    # parser.add_argument("--quantization", type=str, default=None, help="Quantization mode (e.g., 'fp8', 'awq', 'gptq')")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
+    parser.add_argument("--context_pollution_percent", type=int, default=None, help="Target context pollution saturation in percent (0-100). Overrides num_distractors.")
     
     args = parser.parse_args()
+
+    # --- Logic: Context Pollution Percent Calculation ---
+    EST_TOKENS_PER_DISTRACTOR = 2048
+    if args.context_pollution_percent is not None:
+        if not (0 < args.context_pollution_percent <= 100):
+             print(f"Error: Context pollution percent must be between 0 and 100. Got {args.context_pollution_percent}")
+             exit(1)
+             
+        target_tokens = args.max_model_length * (args.context_pollution_percent / 100.0)
+        calculated_distractors = target_tokens / EST_TOKENS_PER_DISTRACTOR
+        
+        # Check if whole number (within small epsilon for float precision, though likely we want strictness)
+        # User requested: "Raise an error if percentage does not turn out to be a whole number"
+        # We'll check if it's very close to an integer.
+        if abs(calculated_distractors - round(calculated_distractors)) > 0.01:
+             print(f"Error: Calculated number of distractors ({calculated_distractors:.2f}) is not a whole number.")
+             print(f"Formula: ({args.max_model_length} * {args.context_pollution_percent/100}) / {EST_TOKENS_PER_DISTRACTOR}")
+             exit(1)
+             
+        num_distractors = int(round(calculated_distractors))
+        
+        if num_distractors % args.distractors_per_query != 0:
+             print(f"Error: Calculated distractors ({num_distractors}) is not divisible by distractors_per_query ({args.distractors_per_query}).")
+             exit(1)
+             
+        print(f"[Context Pollution] Override: {args.context_pollution_percent}% of {args.max_model_length} = {target_tokens:.0f} tokens.")
+        print(f"[Context Pollution] Setting num_distractors = {num_distractors} (was {args.num_distractors})")
+        args.num_distractors = num_distractors
+    # ----------------------------------------------------
     
     # 1. Load Extracted Variables
     extracted_vars = {}
