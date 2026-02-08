@@ -91,13 +91,10 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             
             # Dynamic Logic
             full_hist_text = tokenizer.apply_chat_template(agent.history, tokenize=False, add_generation_prompt=False)
-            if hasattr(tokenizer, 'encode'):
-                 current_ids = tokenizer.encode(full_hist_text)
-                 current_len = len(current_ids)
-            else:
-                 current_len = len(full_hist_text.split())
+            # Accurate token count with no truncation
+            current_ids = len(tokenizer.encode(full_hist_text, truncation=False))
 
-            if current_len >= saturation_limit:
+            if current_ids >= saturation_limit:
                 should_solve = True
             else:
                 count = distractors_per_query
