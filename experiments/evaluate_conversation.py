@@ -215,8 +215,6 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate Multi-Turn Conversation Agent (Context Saturation)")
-    # parser.add_argument("--model", type=str, default="Qwen/Qwen2.5-7B-Instruct")
-    # parser.add_argument("--quantization", type=str, default=None, help="Quantization mode (e.g., 'fp8', 'awq', 'gptq')")
     parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024")
     parser.add_argument("--seed", type=int, default=42)
@@ -224,7 +222,6 @@ def main():
     parser.add_argument("--n_samples", type=int, default=1)
     parser.add_argument("--num_gpus", type=int, default=4)
     parser.add_argument("--max_model_length", type=int, default=65536)
-    # parser.add_argument("--num_distractors", type=int, default=8, help="DEPRECATED")
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     parser.add_argument("--context_saturation", type=int, default=None, help="Target context saturation in percent (0-100). Triggers switch to Real Problem when reached.")
