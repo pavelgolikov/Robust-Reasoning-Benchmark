@@ -59,6 +59,7 @@ class AgentState:
     step_count: int = 0
     token_usage: Dict[str, int] = field(default_factory=dict)
     last_distractor_count: int = 0 # Tracks how many distractors were sent in the pending turn
+    context_token_count: int = 0 # Continuously tracks total context tokens (User + Assistant)
     
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
@@ -90,11 +91,11 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             count = 0
             
             # Dynamic Logic
-            full_hist_text = tokenizer.apply_chat_template(agent.history, tokenize=False, add_generation_prompt=False)
-            # Accurate token count with no truncation
-            current_ids = len(tokenizer.encode(full_hist_text, truncation=False))
+            # Dynamic Logic
+            # Use continuous tracking - safest and most accurate approach
+            current_len = agent.context_token_count
 
-            if current_ids >= saturation_limit:
+            if current_len >= saturation_limit:
                 should_solve = True
             else:
                 count = distractors_per_query
@@ -118,6 +119,12 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                 full_prompt = "\n".join(prompt_parts)
                 # Modify history for FEED
                 agent.history.append({"role": "user", "content": full_prompt})
+                # TRACK USER TOKENS
+                if hasattr(tokenizer, 'encode'):
+                    agent.context_token_count += len(tokenizer.encode(full_prompt, add_special_tokens=False, truncation=False))
+                else:
+                    agent.context_token_count += len(full_prompt.split()) # Fallback for Mock
+                    
                 agent.last_distractor_count = count
                 
                 try:
@@ -185,6 +192,9 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                 token_count = len(out_obj.outputs[0].token_ids)
             else:
                 token_count = len(response_text.split()) 
+            
+            # TRACK ASSISTANT TOKENS
+            agent.context_token_count += token_count 
             
             if agent.phase == "FEEDING":
                 start_idx = agent.current_sys_index
@@ -265,7 +275,7 @@ def main():
         class MockTokenizer:
             def apply_chat_template(self, history, tokenize=False, add_generation_prompt=True):
                 return json.dumps(history) # Just dump history as string
-            def encode(self, text):
+            def encode(self, text, **kwargs):
                 return [0] * len(text.split())
         class MockLLM:
             def generate(self, prompts, params):
@@ -363,7 +373,8 @@ def main():
                 variables=current_vars,
                 history=[
                     {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
-                ]
+                ],
+                context_token_count=len(tokenizer.encode(BASELINE_SYSTEM_PROMPT)) if hasattr(tokenizer, 'encode') else len(BASELINE_SYSTEM_PROMPT.split())
             )
             active_agents.append(agent)
             
