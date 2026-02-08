@@ -142,11 +142,15 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             last_role = agent.history[-1]["role"]
             if last_role == "assistant" or last_role == "system":
                 # START CALCULATION: Context length before real problem
-                context_str_pre = tokenizer.apply_chat_template(agent.history, tokenize=False, add_generation_prompt=False)
-                if hasattr(tokenizer, 'encode'):
-                    pre_solve_tokens = len(tokenizer.encode(context_str_pre))
+                if agent.context_token_count > 0:
+                    pre_solve_tokens = agent.context_token_count
                 else:
-                    pre_solve_tokens = len(context_str_pre.split())
+                    # Fallback (shouldn't happen with correct init)
+                    context_str_pre = tokenizer.apply_chat_template(agent.history, tokenize=False, add_generation_prompt=False)
+                    if hasattr(tokenizer, 'encode'):
+                        pre_solve_tokens = len(tokenizer.encode(context_str_pre, truncation=False))
+                    else:
+                        pre_solve_tokens = len(context_str_pre.split())
                 agent.token_usage["pre_solve_context_tokens"] = pre_solve_tokens
                 # END CALCULATION
 
