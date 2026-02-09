@@ -1,52 +1,50 @@
-[Context Saturation] Target: 25% of 262000 = 65500 tokens.
+[Context Saturation] Target: 25% of 65536 = 16384 tokens.
 [Context Saturation] Dynamic filling enabled.
 Loaded variables for 29 problems.
 Initializing vLLM with model: tiiuae/Falcon-H1R-7B
-INFO 02-09 01:29:55 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 262000, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'model': 'tiiuae/Falcon-H1R-7B'}
-WARNING 02-09 01:29:55 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
-INFO 02-09 01:29:55 [model.py:637] Resolved architecture: FalconH1ForCausalLM
-INFO 02-09 01:29:55 [model.py:1750] Using max model len 262000
-INFO 02-09 01:29:55 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
-INFO 02-09 01:29:55 [config.py:315] Disabling cascade attention since it is not supported for hybrid models.
-INFO 02-09 01:29:56 [config.py:439] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
-INFO 02-09 01:29:56 [config.py:463] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
-[0;36m(EngineCore_DP0 pid=1912006)[0;0m INFO 02-09 01:30:06 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='tiiuae/Falcon-H1R-7B', speculative_config=None, tokenizer='tiiuae/Falcon-H1R-7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=262000, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=tiiuae/Falcon-H1R-7B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
-[0;36m(EngineCore_DP0 pid=1912006)[0;0m WARNING 02-09 01:30:06 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
-INFO 02-09 01:30:15 [parallel_state.py:1200] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:60219 backend=nccl
-INFO 02-09 01:30:16 [parallel_state.py:1200] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:60219 backend=nccl
-INFO 02-09 01:30:16 [parallel_state.py:1200] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:60219 backend=nccl
-INFO 02-09 01:30:16 [parallel_state.py:1200] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:60219 backend=nccl
-INFO 02-09 01:30:16 [pynccl.py:111] vLLM is using nccl==2.27.7
-INFO 02-09 01:30:17 [parallel_state.py:1408] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
-INFO 02-09 01:30:17 [parallel_state.py:1408] rank 1 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
-INFO 02-09 01:30:17 [parallel_state.py:1408] rank 2 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 2, EP rank 2
-INFO 02-09 01:30:17 [parallel_state.py:1408] rank 3 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 3, EP rank 3
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:18 [gpu_model_runner.py:3467] Starting to load model tiiuae/Falcon-H1R-7B...
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:19 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP1 pid=1912176)[0;0m INFO 02-09 01:30:19 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP3 pid=1912178)[0;0m INFO 02-09 01:30:19 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP2 pid=1912177)[0;0m INFO 02-09 01:30:19 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:21 [default_loader.py:308] Loading weights took 1.05 seconds
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:21 [gpu_model_runner.py:3549] Model loading took 3.7253 GiB memory and 2.114822 seconds
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:33 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/19da5b85c6/rank_0_0/backbone for vLLM's torch.compile
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:33 [backends.py:715] Dynamo bytecode transform time: 10.66 s
-[0;36m(Worker_TP2 pid=1912177)[0;0m INFO 02-09 01:30:38 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 5.664 s
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:39 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 6.223 s
-[0;36m(Worker_TP1 pid=1912176)[0;0m INFO 02-09 01:30:40 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 6.165 s
-[0;36m(Worker_TP3 pid=1912178)[0;0m INFO 02-09 01:30:41 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 6.796 s
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:44 [monitor.py:34] torch.compile takes 16.88 s in total
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:30:46 [gpu_worker.py:359] Available KV cache memory: 62.04 GiB
-[0;36m(EngineCore_DP0 pid=1912006)[0;0m INFO 02-09 01:30:47 [kv_cache_utils.py:1286] GPU KV cache size: 1,477,840 tokens
-[0;36m(EngineCore_DP0 pid=1912006)[0;0m INFO 02-09 01:30:47 [kv_cache_utils.py:1291] Maximum concurrency for 262,000 tokens per request: 11.22x
-[0;36m(Worker_TP1 pid=1912176)[0;0m INFO 02-09 01:31:05 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:31:05 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
-[0;36m(Worker_TP2 pid=1912177)[0;0m INFO 02-09 01:31:05 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
-[0;36m(Worker_TP3 pid=1912178)[0;0m INFO 02-09 01:31:05 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 01:31:06 [gpu_model_runner.py:4466] Graph capturing finished in 18 secs, took 1.60 GiB
-[0;36m(EngineCore_DP0 pid=1912006)[0;0m INFO 02-09 01:31:06 [core.py:254] init engine (profile, create kv cache, warmup model) took 44.24 seconds
-INFO 02-09 01:31:07 [llm.py:343] Supported tasks: ['generate']
+INFO 02-09 15:45:18 [utils.py:253] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': None, 'max_model_len': 65536, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'model': 'tiiuae/Falcon-H1R-7B'}
+WARNING 02-09 15:45:18 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+INFO 02-09 15:45:18 [model.py:637] Resolved architecture: FalconH1ForCausalLM
+INFO 02-09 15:45:18 [model.py:1750] Using max model len 65536
+INFO 02-09 15:45:19 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=16384.
+INFO 02-09 15:45:19 [config.py:315] Disabling cascade attention since it is not supported for hybrid models.
+INFO 02-09 15:45:19 [config.py:439] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 02-09 15:45:19 [config.py:463] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+[0;36m(EngineCore_DP0 pid=917625)[0;0m INFO 02-09 15:45:28 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='tiiuae/Falcon-H1R-7B', speculative_config=None, tokenizer='tiiuae/Falcon-H1R-7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=65536, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=tiiuae/Falcon-H1R-7B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=917625)[0;0m WARNING 02-09 15:45:28 [multiproc_executor.py:880] Reducing Torch parallelism from 48 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+INFO 02-09 15:45:39 [parallel_state.py:1200] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:55527 backend=nccl
+INFO 02-09 15:45:39 [parallel_state.py:1200] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:55527 backend=nccl
+INFO 02-09 15:45:39 [parallel_state.py:1200] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:55527 backend=nccl
+INFO 02-09 15:45:39 [parallel_state.py:1200] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:55527 backend=nccl
+INFO 02-09 15:45:40 [pynccl.py:111] vLLM is using nccl==2.27.7
+INFO 02-09 15:45:42 [parallel_state.py:1408] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+INFO 02-09 15:45:42 [parallel_state.py:1408] rank 2 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 2, EP rank 2
+INFO 02-09 15:45:42 [parallel_state.py:1408] rank 3 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 3, EP rank 3
+INFO 02-09 15:45:42 [parallel_state.py:1408] rank 1 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank 1
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:45:42 [gpu_model_runner.py:3467] Starting to load model tiiuae/Falcon-H1R-7B...
+[0;36m(Worker_TP1 pid=917671)[0;0m INFO 02-09 15:45:43 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP2 pid=917672)[0;0m INFO 02-09 15:45:43 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP3 pid=917673)[0;0m INFO 02-09 15:45:43 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:45:43 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:45:45 [default_loader.py:308] Loading weights took 1.32 seconds
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:45:46 [gpu_model_runner.py:3549] Model loading took 3.7251 GiB memory and 2.331820 seconds
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:45:58 [backends.py:655] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/e890d45bd4/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:45:58 [backends.py:715] Dynamo bytecode transform time: 11.96 s
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:46:02 [backends.py:257] Cache the graph for dynamic shape for later use
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:46:19 [backends.py:288] Compiling a graph for dynamic shape takes 20.04 s
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:46:25 [monitor.py:34] torch.compile takes 32.00 s in total
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:46:27 [gpu_worker.py:359] Available KV cache memory: 62.04 GiB
+[0;36m(EngineCore_DP0 pid=917625)[0;0m INFO 02-09 15:46:30 [kv_cache_utils.py:1286] GPU KV cache size: 1,477,840 tokens
+[0;36m(EngineCore_DP0 pid=917625)[0;0m INFO 02-09 15:46:30 [kv_cache_utils.py:1291] Maximum concurrency for 65,536 tokens per request: 44.36x
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:46:47 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
+[0;36m(Worker_TP1 pid=917671)[0;0m INFO 02-09 15:46:47 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
+[0;36m(Worker_TP2 pid=917672)[0;0m INFO 02-09 15:46:47 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
+[0;36m(Worker_TP3 pid=917673)[0;0m INFO 02-09 15:46:47 [custom_all_reduce.py:216] Registering 17878 cuda graph addresses
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 15:46:48 [gpu_model_runner.py:4466] Graph capturing finished in 18 secs, took 1.60 GiB
+[0;36m(EngineCore_DP0 pid=917625)[0;0m INFO 02-09 15:46:48 [core.py:254] init engine (profile, create kv cache, warmup model) took 62.38 seconds
+INFO 02-09 15:46:50 [llm.py:343] Supported tasks: ['generate']
 Loading dataset: HuggingFaceH4/aime_2024...
-[Init] Starting new run. Output: /project/6107991/golikovp/Linguistic_traps/experiments/context_saturation/conv_results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_s42_20260209_013108_CONVERSATION.json
+[Init] Starting new run. Output: /project/6107991/golikovp/Linguistic_traps/experiments/context_saturation/conv_results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_s42_20260209_154651_CONVERSATION.json
 Initializing agents for 30 samples...
 Starting execution for 150 agents...
 
@@ -56,46 +54,201 @@ Starting execution for 150 agents...
 
 [Global Turn 2] Processing...
 [Turn Execution] Generating 150 items (150 agents)...
+[Saturation] Agent 60_s0: Truncating 1649 tokens from assistant output to hit limit 16384. Kept: 6074
+[Saturation] Agent 60_s1: Truncating 489 tokens from assistant output to hit limit 16384. Kept: 7043
+[Saturation] Agent 60_s2: Truncating 1829 tokens from assistant output to hit limit 16384. Kept: 5790
+[Saturation] Agent 60_s3: Truncating 1016 tokens from assistant output to hit limit 16384. Kept: 5758
+[Saturation] Agent 60_s4: Truncating 1406 tokens from assistant output to hit limit 16384. Kept: 5706
+[Saturation] Agent 61_s1: Truncating 1758 tokens from assistant output to hit limit 16384. Kept: 6183
+[Saturation] Agent 61_s2: Truncating 724 tokens from assistant output to hit limit 16384. Kept: 5854
+[Saturation] Agent 61_s3: Truncating 1594 tokens from assistant output to hit limit 16384. Kept: 5819
+[Saturation] Agent 61_s4: Truncating 2237 tokens from assistant output to hit limit 16384. Kept: 5955
+[Saturation] Agent 62_s0: Truncating 1582 tokens from assistant output to hit limit 16384. Kept: 6267
+[Saturation] Agent 62_s1: Truncating 640 tokens from assistant output to hit limit 16384. Kept: 6917
+[Saturation] Agent 62_s2: Truncating 78 tokens from assistant output to hit limit 16384. Kept: 5954
+[Saturation] Agent 62_s4: Truncating 2499 tokens from assistant output to hit limit 16384. Kept: 5693
+[Saturation] Agent 63_s0: Truncating 1739 tokens from assistant output to hit limit 16384. Kept: 6453
+[Saturation] Agent 63_s2: Truncating 385 tokens from assistant output to hit limit 16384. Kept: 7807
+[Saturation] Agent 63_s3: Truncating 498 tokens from assistant output to hit limit 16384. Kept: 7694
+[Saturation] Agent 63_s4: Truncating 2417 tokens from assistant output to hit limit 16384. Kept: 5775
+[Saturation] Agent 64_s0: Truncating 1868 tokens from assistant output to hit limit 16384. Kept: 6324
+[Saturation] Agent 64_s1: Truncating 2182 tokens from assistant output to hit limit 16384. Kept: 5840
+[Saturation] Agent 65_s0: Truncating 1571 tokens from assistant output to hit limit 16384. Kept: 6621
+[Saturation] Agent 65_s3: Truncating 1381 tokens from assistant output to hit limit 16384. Kept: 5791
+[Saturation] Agent 65_s4: Truncating 1743 tokens from assistant output to hit limit 16384. Kept: 6216
+[Saturation] Agent 66_s3: Truncating 1752 tokens from assistant output to hit limit 16384. Kept: 6440
+[Saturation] Agent 66_s4: Truncating 2417 tokens from assistant output to hit limit 16384. Kept: 5775
+[Saturation] Agent 67_s2: Truncating 1377 tokens from assistant output to hit limit 16384. Kept: 6094
+[Saturation] Agent 67_s3: Truncating 798 tokens from assistant output to hit limit 16384. Kept: 7394
+[Saturation] Agent 67_s4: Truncating 1142 tokens from assistant output to hit limit 16384. Kept: 7050
+[Saturation] Agent 68_s1: Truncating 1078 tokens from assistant output to hit limit 16384. Kept: 6408
+[Saturation] Agent 68_s3: Truncating 591 tokens from assistant output to hit limit 16384. Kept: 7133
+[Saturation] Agent 68_s4: Truncating 2417 tokens from assistant output to hit limit 16384. Kept: 5775
+[Saturation] Agent 69_s0: Truncating 547 tokens from assistant output to hit limit 16384. Kept: 7591
+[Saturation] Agent 69_s1: Truncating 353 tokens from assistant output to hit limit 16384. Kept: 6331
+[Saturation] Agent 69_s2: Truncating 2461 tokens from assistant output to hit limit 16384. Kept: 5731
+[Saturation] Agent 69_s4: Truncating 2575 tokens from assistant output to hit limit 16384. Kept: 5617
+[Saturation] Agent 70_s0: Truncating 1099 tokens from assistant output to hit limit 16384. Kept: 7093
+[Saturation] Agent 70_s1: Truncating 895 tokens from assistant output to hit limit 16384. Kept: 5785
+[Saturation] Agent 70_s4: Truncating 926 tokens from assistant output to hit limit 16384. Kept: 7266
+[Saturation] Agent 71_s0: Truncating 57 tokens from assistant output to hit limit 16384. Kept: 7997
+[Saturation] Agent 71_s1: Truncating 2488 tokens from assistant output to hit limit 16384. Kept: 5704
+[Saturation] Agent 71_s3: Truncating 50 tokens from assistant output to hit limit 16384. Kept: 7455
+[Saturation] Agent 71_s4: Truncating 2563 tokens from assistant output to hit limit 16384. Kept: 5629
+[Saturation] Agent 72_s0: Truncating 2446 tokens from assistant output to hit limit 16384. Kept: 5746
+[Saturation] Agent 72_s4: Truncating 2417 tokens from assistant output to hit limit 16384. Kept: 5775
+[Saturation] Agent 73_s0: Truncating 881 tokens from assistant output to hit limit 16384. Kept: 7311
+[Saturation] Agent 73_s1: Truncating 1840 tokens from assistant output to hit limit 16384. Kept: 5827
+[Saturation] Agent 73_s2: Truncating 351 tokens from assistant output to hit limit 16384. Kept: 6327
+[Saturation] Agent 73_s3: Truncating 1970 tokens from assistant output to hit limit 16384. Kept: 5697
+[Saturation] Agent 73_s4: Truncating 526 tokens from assistant output to hit limit 16384. Kept: 7666
+[Saturation] Agent 74_s0: Truncating 2533 tokens from assistant output to hit limit 16384. Kept: 5659
+[Saturation] Agent 74_s1: Truncating 1469 tokens from assistant output to hit limit 16384. Kept: 5741
+[Saturation] Agent 74_s3: Truncating 493 tokens from assistant output to hit limit 16384. Kept: 6525
+[Saturation] Agent 74_s4: Truncating 2094 tokens from assistant output to hit limit 16384. Kept: 6098
+[Saturation] Agent 75_s0: Truncating 2347 tokens from assistant output to hit limit 16384. Kept: 5821
+[Saturation] Agent 75_s1: Truncating 2059 tokens from assistant output to hit limit 16384. Kept: 5992
+[Saturation] Agent 75_s2: Truncating 1426 tokens from assistant output to hit limit 16384. Kept: 6068
+[Saturation] Agent 75_s3: Truncating 2188 tokens from assistant output to hit limit 16384. Kept: 6004
+[Saturation] Agent 75_s4: Truncating 3165 tokens from assistant output to hit limit 16384. Kept: 5027
+[Saturation] Agent 76_s0: Truncating 61 tokens from assistant output to hit limit 16384. Kept: 7332
+[Saturation] Agent 76_s1: Truncating 1949 tokens from assistant output to hit limit 16384. Kept: 5840
+[Saturation] Agent 76_s4: Truncating 194 tokens from assistant output to hit limit 16384. Kept: 7760
+[Saturation] Agent 77_s1: Truncating 1265 tokens from assistant output to hit limit 16384. Kept: 5840
+[Saturation] Agent 77_s3: Truncating 557 tokens from assistant output to hit limit 16384. Kept: 6967
+[Saturation] Agent 78_s0: Truncating 564 tokens from assistant output to hit limit 16384. Kept: 6326
+[Saturation] Agent 78_s1: Truncating 177 tokens from assistant output to hit limit 16384. Kept: 6493
+[Saturation] Agent 78_s3: Truncating 1 tokens from assistant output to hit limit 16384. Kept: 8191
+[Saturation] Agent 78_s4: Truncating 446 tokens from assistant output to hit limit 16384. Kept: 5653
+[Saturation] Agent 79_s1: Truncating 1214 tokens from assistant output to hit limit 16384. Kept: 6978
+[Saturation] Agent 79_s4: Truncating 1840 tokens from assistant output to hit limit 16384. Kept: 6352
+[Saturation] Agent 80_s0: Truncating 629 tokens from assistant output to hit limit 16384. Kept: 7563
+[Saturation] Agent 80_s1: Truncating 841 tokens from assistant output to hit limit 16384. Kept: 7115
+[Saturation] Agent 80_s2: Truncating 598 tokens from assistant output to hit limit 16384. Kept: 7594
+[Saturation] Agent 80_s3: Truncating 2237 tokens from assistant output to hit limit 16384. Kept: 5806
+[Saturation] Agent 80_s4: Truncating 1699 tokens from assistant output to hit limit 16384. Kept: 6493
+[Saturation] Agent 81_s0: Truncating 1612 tokens from assistant output to hit limit 16384. Kept: 6580
+[Saturation] Agent 81_s1: Truncating 8 tokens from assistant output to hit limit 16384. Kept: 6362
+[Saturation] Agent 81_s2: Truncating 1251 tokens from assistant output to hit limit 16384. Kept: 5628
+[Saturation] Agent 81_s3: Truncating 1620 tokens from assistant output to hit limit 16384. Kept: 6469
+[Saturation] Agent 81_s4: Truncating 2024 tokens from assistant output to hit limit 16384. Kept: 6168
+[Saturation] Agent 82_s0: Truncating 1101 tokens from assistant output to hit limit 16384. Kept: 6913
+[Saturation] Agent 82_s2: Truncating 354 tokens from assistant output to hit limit 16384. Kept: 6909
+[Saturation] Agent 82_s3: Truncating 630 tokens from assistant output to hit limit 16384. Kept: 6954
+[Saturation] Agent 82_s4: Truncating 2316 tokens from assistant output to hit limit 16384. Kept: 5876
+[Saturation] Agent 83_s0: Truncating 145 tokens from assistant output to hit limit 16384. Kept: 8047
+[Saturation] Agent 83_s1: Truncating 116 tokens from assistant output to hit limit 16384. Kept: 6562
+[Saturation] Agent 83_s3: Truncating 666 tokens from assistant output to hit limit 16384. Kept: 7078
+[Saturation] Agent 83_s4: Truncating 1968 tokens from assistant output to hit limit 16384. Kept: 6224
+[Saturation] Agent 84_s1: Truncating 349 tokens from assistant output to hit limit 16384. Kept: 7249
+[Saturation] Agent 84_s2: Truncating 304 tokens from assistant output to hit limit 16384. Kept: 5847
+[Saturation] Agent 84_s3: Truncating 540 tokens from assistant output to hit limit 16384. Kept: 7326
+[Saturation] Agent 84_s4: Truncating 2145 tokens from assistant output to hit limit 16384. Kept: 6047
+[Saturation] Agent 85_s0: Truncating 688 tokens from assistant output to hit limit 16384. Kept: 7504
+[Saturation] Agent 85_s3: Truncating 1101 tokens from assistant output to hit limit 16384. Kept: 7091
+[Saturation] Agent 85_s4: Truncating 1772 tokens from assistant output to hit limit 16384. Kept: 5633
+[Saturation] Agent 86_s0: Truncating 52 tokens from assistant output to hit limit 16384. Kept: 8140
+[Saturation] Agent 86_s1: Truncating 2352 tokens from assistant output to hit limit 16384. Kept: 5840
+[Saturation] Agent 86_s3: Truncating 828 tokens from assistant output to hit limit 16384. Kept: 5819
+[Saturation] Agent 86_s4: Truncating 2417 tokens from assistant output to hit limit 16384. Kept: 5775
+[Saturation] Agent 87_s0: Truncating 2059 tokens from assistant output to hit limit 16384. Kept: 6133
+[Saturation] Agent 87_s1: Truncating 882 tokens from assistant output to hit limit 16384. Kept: 6562
+[Saturation] Agent 87_s2: Truncating 885 tokens from assistant output to hit limit 16384. Kept: 6069
+[Saturation] Agent 87_s4: Truncating 1282 tokens from assistant output to hit limit 16384. Kept: 6910
+[Saturation] Agent 88_s1: Truncating 281 tokens from assistant output to hit limit 16384. Kept: 6586
+[Saturation] Agent 88_s2: Truncating 1688 tokens from assistant output to hit limit 16384. Kept: 5986
+[Saturation] Agent 88_s3: Truncating 2390 tokens from assistant output to hit limit 16384. Kept: 5696
+[Saturation] Agent 88_s4: Truncating 2547 tokens from assistant output to hit limit 16384. Kept: 5645
+[Saturation] Agent 89_s0: Truncating 1886 tokens from assistant output to hit limit 16384. Kept: 6134
+[Saturation] Agent 89_s1: Truncating 878 tokens from assistant output to hit limit 16384. Kept: 7314
+[Saturation] Agent 89_s2: Truncating 1339 tokens from assistant output to hit limit 16384. Kept: 5491
+[Saturation] Agent 89_s4: Truncating 2834 tokens from assistant output to hit limit 16384. Kept: 5358
 [Save] Updated results file.
 
 [Global Turn 3] Processing...
-[Turn Execution] Generating 150 items (150 agents)...
+[Turn Execution] Generating 41 items (150 agents)...
+[Saturation] Agent 61_s0: Truncating 6302 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 61_s0: Still over limit by 646. Truncating user prompt.
+[Saturation] Agent 62_s3: Truncating 4843 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 62_s3: Still over limit by 580. Truncating user prompt.
+[Saturation] Agent 63_s1: Truncating 4927 tokens from assistant output to hit limit 16384. Kept: 105
+[Saturation] Agent 64_s2: Truncating 6159 tokens from assistant output to hit limit 16384. Kept: 545
+[Saturation] Agent 64_s3: Truncating 5356 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 64_s3: Still over limit by 1200. Truncating user prompt.
+[Saturation] Agent 64_s4: Truncating 7888 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 64_s4: Still over limit by 1102. Truncating user prompt.
+[Saturation] Agent 65_s1: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 65_s1: Still over limit by 517. Truncating user prompt.
+[Saturation] Agent 65_s2: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 65_s2: Still over limit by 888. Truncating user prompt.
+[Saturation] Agent 66_s0: Truncating 5488 tokens from assistant output to hit limit 16384. Kept: 343
+[Saturation] Agent 66_s1: Truncating 6440 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 66_s1: Still over limit by 1131. Truncating user prompt.
+[Saturation] Agent 66_s2: Truncating 7182 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 66_s2: Still over limit by 637. Truncating user prompt.
+[Saturation] Agent 67_s0: Truncating 5881 tokens from assistant output to hit limit 16384. Kept: 439
+[Saturation] Agent 67_s1: Truncating 5783 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 67_s1: Still over limit by 88. Truncating user prompt.
+[Saturation] Agent 68_s0: Truncating 5515 tokens from assistant output to hit limit 16384. Kept: 512
+[Saturation] Agent 68_s2: Truncating 7356 tokens from assistant output to hit limit 16384. Kept: 743
+[Saturation] Agent 69_s3: Truncating 6534 tokens from assistant output to hit limit 16384. Kept: 139
+[Saturation] Agent 70_s2: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 70_s2: Still over limit by 710. Truncating user prompt.
+[Saturation] Agent 70_s3: Truncating 4098 tokens from assistant output to hit limit 16384. Kept: 951
+[Saturation] Agent 71_s2: Truncating 7863 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 71_s2: Still over limit by 1219. Truncating user prompt.
+[Saturation] Agent 72_s1: Truncating 5165 tokens from assistant output to hit limit 16384. Kept: 259
+[Saturation] Agent 72_s2: Truncating 7894 tokens from assistant output to hit limit 16384. Kept: 298
+[Saturation] Agent 72_s3: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 72_s3: Still over limit by 937. Truncating user prompt.
+[Saturation] Agent 74_s2: Truncating 6324 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 74_s2: Still over limit by 582. Truncating user prompt.
+[Saturation] Agent 76_s2: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 76_s2: Still over limit by 414. Truncating user prompt.
+[Saturation] Agent 76_s3: Truncating 7572 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 76_s3: Still over limit by 30. Truncating user prompt.
+[Saturation] Agent 77_s0: Truncating 3634 tokens from assistant output to hit limit 16384. Kept: 1157
+[Saturation] Agent 77_s2: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 77_s2: Still over limit by 485. Truncating user prompt.
+[Saturation] Agent 77_s4: Truncating 6021 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 77_s4: Still over limit by 611. Truncating user prompt.
+[Saturation] Agent 78_s2: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 78_s2: Still over limit by 544. Truncating user prompt.
+[Saturation] Agent 79_s0: Truncating 6130 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 79_s0: Still over limit by 184. Truncating user prompt.
+[Saturation] Agent 79_s2: Truncating 6013 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 79_s2: Still over limit by 983. Truncating user prompt.
+[Saturation] Agent 79_s3: Truncating 5169 tokens from assistant output to hit limit 16384. Kept: 1308
+[Saturation] Agent 82_s1: Truncating 7491 tokens from assistant output to hit limit 16384. Kept: 701
+[Saturation] Agent 83_s2: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 83_s2: Still over limit by 283. Truncating user prompt.
+[Saturation] Agent 84_s0: Truncating 6300 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 84_s0: Still over limit by 813. Truncating user prompt.
+[Saturation] Agent 85_s1: Truncating 5319 tokens from assistant output to hit limit 16384. Kept: 53
+[Saturation] Agent 85_s2: Truncating 5782 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 85_s2: Still over limit by 985. Truncating user prompt.
+[Saturation] Agent 86_s2: Truncating 8192 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 86_s2: Still over limit by 629. Truncating user prompt.
+[Saturation] Agent 87_s3: Truncating 6488 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 87_s3: Still over limit by 1079. Truncating user prompt.
+[Saturation] Agent 88_s0: Truncating 4945 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 88_s0: Still over limit by 412. Truncating user prompt.
+[Saturation] Agent 89_s3: Truncating 6820 tokens from assistant output to hit limit 16384. Kept: 0
+[Saturation] Agent 89_s3: Still over limit by 887. Truncating user prompt.
 [Save] Updated results file.
 
 [Global Turn 4] Processing...
-[Turn Execution] Generating 150 items (150 agents)...
+[Turn Execution] Generating 109 items (150 agents)...
+Turn 4: 109 agents finished.
 [Save] Updated results file.
 
 [Global Turn 5] Processing...
-[Turn Execution] Generating 150 items (150 agents)...
+[Turn Execution] Generating 41 items (41 agents)...
+[0;36m(Worker_TP2 pid=917672)[0;0m INFO 02-09 16:21:41 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP3 pid=917673)[0;0m INFO 02-09 16:21:41 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP0 pid=917670)[0;0m INFO 02-09 16:21:41 [multiproc_executor.py:709] Parent process exited, terminating worker
+[0;36m(Worker_TP1 pid=917671)[0;0m INFO 02-09 16:21:41 [multiproc_executor.py:709] Parent process exited, terminating worker
+Turn 5: 41 agents finished.
 [Save] Updated results file.
-
-[Global Turn 6] Processing...
-[Turn Execution] Generating 135 items (150 agents)...
-[Save] Updated results file.
-
-[Global Turn 7] Processing...
-[Turn Execution] Generating 54 items (150 agents)...
-Turn 7: 15 agents finished.
-[Save] Updated results file.
-
-[Global Turn 8] Processing...
-[Turn Execution] Generating 97 items (135 agents)...
-Turn 8: 96 agents finished.
-[Save] Updated results file.
-
-[Global Turn 9] Processing...
-[Turn Execution] Generating 38 items (39 agents)...
-Turn 9: 38 agents finished.
-[Save] Updated results file.
-
-[Global Turn 10] Processing...
-[Turn Execution] Generating 1 items (1 agents)...
-[0;36m(Worker_TP0 pid=1912175)[0;0m INFO 02-09 03:40:52 [multiproc_executor.py:709] Parent process exited, terminating worker
-[0;36m(Worker_TP3 pid=1912178)[0;0m INFO 02-09 03:40:52 [multiproc_executor.py:709] Parent process exited, terminating worker
-[0;36m(Worker_TP1 pid=1912176)[0;0m INFO 02-09 03:40:52 [multiproc_executor.py:709] Parent process exited, terminating worker
-[0;36m(Worker_TP2 pid=1912177)[0;0m INFO 02-09 03:40:52 [multiproc_executor.py:709] Parent process exited, terminating worker
-Turn 10: 1 agents finished.
-[Save] Updated results file.
-Results: Accuracy 63.33% (95/150)
-Final Results saved to: /project/6107991/golikovp/Linguistic_traps/experiments/context_saturation/conv_results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_s42_20260209_013108_CONVERSATION.json
+Results: Accuracy 52.00% (78/150)
+Final Results saved to: /project/6107991/golikovp/Linguistic_traps/experiments/context_saturation/conv_results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_s42_20260209_154651_CONVERSATION.json
