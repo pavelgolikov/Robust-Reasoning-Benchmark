@@ -204,34 +204,66 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             if agent.phase == "FEEDING" and saturation_limit is not None:
                  if agent.context_token_count > saturation_limit:
                      excess = agent.context_token_count - saturation_limit
-                     # Calculate how much to keep from *this* turn
-                     # If excess >= token_count, we truncate everything (unlikely unless single turn massive overshoot)
-                     trunc_amount = min(excess, token_count)
                      
-                     if trunc_amount > 0:
-                         keep_count = token_count - trunc_amount
-                         print(f"[Saturation] Agent {agent.id}: Truncating {trunc_amount} tokens to hit limit {saturation_limit}. Kept: {keep_count}")
+                     # 1. Truncate Assistant Output (Last Item)
+                     # We can cut up to 'token_count' tokens from the assistant output
+                     cut_assistant = min(excess, token_count)
+                     
+                     if cut_assistant > 0:
+                         keep_count = token_count - cut_assistant
+                         print(f"[Saturation] Agent {agent.id}: Truncating {cut_assistant} tokens from assistant output to hit limit {saturation_limit}. Kept: {keep_count}")
                          
-                         # Perform Truncation
+                         # Perform Truncation on Assistant Output
                          if hasattr(out_obj.outputs[0], 'token_ids'):
+                             # Use token_ids for precision
                              new_ids = out_obj.outputs[0].token_ids[:keep_count]
                              # Decode back to text
                              try:
                                  truncated_text = tokenizer.decode(new_ids, skip_special_tokens=True)
                              except AttributeError:
-                                 # Fallback if tokenizer lacks decode (shouldn't happen with real/mock setup correctly)
                                  truncated_text = " ".join(response_text.split()[:keep_count])
                          else:
-                             # Mock fallback / No token_ids
+                             # Mock fallback
                              words = response_text.split()
                              truncated_text = " ".join(words[:keep_count])
                          
-                         # Update History
+                         # Update History and Counts
                          agent.history[-1]["content"] = truncated_text
-                         
-                         # Update Counts
                          token_count = keep_count
-                         agent.context_token_count -= trunc_amount
+                         agent.context_token_count -= cut_assistant
+                         excess -= cut_assistant
+
+                     # 2. If still over limit, Truncate User Prompt (Second to Last Item)
+                     # This happens if the prompt itself pushed us over the limit (Context_Prev + Prompt > Limit)
+                     if excess > 0:
+                         # The user prompt is at history[-2]
+                         user_content = agent.history[-2]["content"]
+                         print(f"[Saturation] Agent {agent.id}: Still over limit by {excess}. Truncating user prompt.")
+                         
+                         # We need to estimate/calculate tokens for user_content to slice accurately
+                         if hasattr(tokenizer, 'encode'):
+                             user_ids = tokenizer.encode(user_content, add_special_tokens=False, truncation=False)
+                             current_user_len = len(user_ids)
+                             keep_user = max(0, current_user_len - excess)
+                             
+                             # Truncate IDs
+                             final_user_ids = user_ids[:keep_user]
+                             try:
+                                 new_user_text = tokenizer.decode(final_user_ids, skip_special_tokens=True)
+                             except AttributeError:
+                                  # Should typically have decode if encode works
+                                 new_user_text = user_content[:len(user_content)//2] # Fallback rough cut
+                         else:
+                             # Mock fallback
+                             user_words = user_content.split()
+                             keep_user = max(0, len(user_words) - excess)
+                             new_user_text = " ".join(user_words[:keep_user])
+                             
+                         # Update History and Counts
+                         agent.history[-2]["content"] = new_user_text
+                         agent.context_token_count -= excess
+                         # We consumed the remaining excess
+
             
             if agent.phase == "FEEDING":
                 start_idx = agent.current_sys_index
