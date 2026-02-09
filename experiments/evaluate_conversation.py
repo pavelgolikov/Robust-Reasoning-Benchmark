@@ -200,6 +200,39 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             # TRACK ASSISTANT TOKENS
             agent.context_token_count += token_count 
             
+            # --- POST-GENERATION TRUNCATION LOGIC ---
+            if agent.phase == "FEEDING" and saturation_limit is not None:
+                 if agent.context_token_count > saturation_limit:
+                     excess = agent.context_token_count - saturation_limit
+                     # Calculate how much to keep from *this* turn
+                     # If excess >= token_count, we truncate everything (unlikely unless single turn massive overshoot)
+                     trunc_amount = min(excess, token_count)
+                     
+                     if trunc_amount > 0:
+                         keep_count = token_count - trunc_amount
+                         print(f"[Saturation] Agent {agent.id}: Truncating {trunc_amount} tokens to hit limit {saturation_limit}. Kept: {keep_count}")
+                         
+                         # Perform Truncation
+                         if hasattr(out_obj.outputs[0], 'token_ids'):
+                             new_ids = out_obj.outputs[0].token_ids[:keep_count]
+                             # Decode back to text
+                             try:
+                                 truncated_text = tokenizer.decode(new_ids, skip_special_tokens=True)
+                             except AttributeError:
+                                 # Fallback if tokenizer lacks decode (shouldn't happen with real/mock setup correctly)
+                                 truncated_text = " ".join(response_text.split()[:keep_count])
+                         else:
+                             # Mock fallback / No token_ids
+                             words = response_text.split()
+                             truncated_text = " ".join(words[:keep_count])
+                         
+                         # Update History
+                         agent.history[-1]["content"] = truncated_text
+                         
+                         # Update Counts
+                         token_count = keep_count
+                         agent.context_token_count -= trunc_amount
+            
             if agent.phase == "FEEDING":
                 start_idx = agent.current_sys_index
                 end_idx = start_idx + agent.last_distractor_count - 1
@@ -281,6 +314,8 @@ def main():
                 return json.dumps(history) # Just dump history as string
             def encode(self, text, **kwargs):
                 return [0] * len(text.split())
+            def decode(self, token_ids, **kwargs):
+                return " ".join(["word"]*len(token_ids))
         class MockLLM:
             def generate(self, prompts, params):
                 return [MockCompletion("Fake Model Output") for _ in prompts]
