@@ -1,0 +1,15 @@
+Context Saturation Experiment Results
+=====================================
+Date: 2026-02-09
+Dataset: HuggingFaceH4/aime_2024
+Max Model Length: 65,536 tokens
+
+| Model                  | Saturation Target | Token Limit | Verified Context Size | Accuracy | Correct/Total | Run ID (Timestamp) |
+|------------------------|------------------:|------------:|----------------------:|---------:|--------------:|--------------------|
+| tiiuae/Falcon-H1R-7B   | 25%               | 16,384      | 16,384                | 52.00%   | 78/150        | 20260209_154651    |
+| tiiuae/Falcon-H1R-7B   | 50%               | 32,768      | 32,768                | 53.33%   | 80/150        | 20260209_164539    |
+| tiiuae/Falcon-H1R-7B   | 75%               | 49,152      | 49,152                | 50.67%   | 76/150        | 20260209_201942    |
+
+Notes:
+- "Verified Context Size" refers to the `pre_solve_context_tokens` metric, which tracks the exact prompt + history length before generation.
+- The 100% precision in context size confirms the functioning of the new cascading truncation logic.
