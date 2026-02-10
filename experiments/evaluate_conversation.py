@@ -75,34 +75,29 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
     batch_meta = [] # Stores metadata for each prompt: {agent, type='PROBE'|'FEED'|'SOLVE'}
     prompts = []
     
+    feed_agents = []
+    solve_agents = []
+
+    
     # 1. Prepare Prompts
+    # SPLIT LOGIC: Group agents by Phase because they need different SamplingParams
+    feed_agents = []
+    solve_agents = []
+    
+    # 1. Prepare Prompts and Separate by Phase
     for agent in active_agents:
         if agent.is_done: continue
         
-        # --- PHASE LOGIC ---
         # --- PHASE: FEEDING ---
         if agent.phase == "FEEDING":
-            
-            # PREPARE FEED (Context Filling)
-            # Context Manager Check removed
-
-            # Standard Distractor Generation
-            should_solve = False
-            count = 0
-            
             # Dynamic Logic
-            # Dynamic Logic
-            # Use continuous tracking - safest and most accurate approach
             current_len = agent.context_token_count
-
-            if current_len >= saturation_limit:
-                should_solve = True
+            if saturation_limit is not None and current_len >= saturation_limit:
+                agent.phase = "SOLVING"
+                # Fall through to SOLVING logic immediately
             else:
+                # Still FEEDING
                 count = distractors_per_query
-            
-            if should_solve:
-                 agent.phase = "SOLVING"
-            else:
                 vars_len = len(agent.variables)
                 prompt_parts = []
                 prompt_parts.append(f"Solve these {count} math problems and output your solutions numbered.\n")
@@ -117,35 +112,38 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                     prompt_parts.append(f"{k+1}. {distractor_text}")
                     
                 full_prompt = "\n".join(prompt_parts)
-                # Modify history for FEED
                 agent.history.append({"role": "user", "content": full_prompt})
+                
                 # TRACK USER TOKENS
                 if hasattr(tokenizer, 'encode'):
                     agent.context_token_count += len(tokenizer.encode(full_prompt, add_special_tokens=False, truncation=False))
                 else:
-                    agent.context_token_count += len(full_prompt.split()) # Fallback for Mock
+                    agent.context_token_count += len(full_prompt.split())
                     
                 agent.last_distractor_count = count
                 
                 try:
                     feed_prompt = agent.get_vllm_prompt(tokenizer)
-                    prompts.append(feed_prompt)
-                    batch_meta.append({"agent": agent, "type": "FEED"})
+                    feed_agents.append({"agent": agent, "prompt": feed_prompt, "type": "FEED"})
                 except Exception as e:
                     print(f"[Feed Error] Agent {agent.id}: {e}")
                     agent.final_output = f"ERROR_PROMPT_FORMAT: {e}"
                     agent.is_done = True
+                    
+        # --- PHASE: SOLVING ---
+        # Note: If agent switched to SOLVING above, it falls here (if we used `if` not `elif` after check)
+        # But we used `if agent.phase == "FEEDING"` then check saturation.
+        # If switched, it is now "SOLVING", so strict `if` below handles it if we re-check or simply continue.
+        # Simpler: Check phase again.
         
-        # --- PHASE: SOLVING (Legacy/Final Turn) ---
-        elif agent.phase == "SOLVING":
-            # Add Real Problem
+        if agent.phase == "SOLVING":
+             # Add Real Problem
             last_role = agent.history[-1]["role"]
             if last_role == "assistant" or last_role == "system":
-                # START CALCULATION: Context length before real problem
+                 # START CALCULATION: Context length before real problem
                 if agent.context_token_count > 0:
                     pre_solve_tokens = agent.context_token_count
                 else:
-                    # Fallback (shouldn't happen with correct init)
                     context_str_pre = tokenizer.apply_chat_template(agent.history, tokenize=False, add_generation_prompt=False)
                     if hasattr(tokenizer, 'encode'):
                         pre_solve_tokens = len(tokenizer.encode(context_str_pre, truncation=False))
@@ -164,135 +162,131 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
             
             try:
                 prompt = agent.get_vllm_prompt(tokenizer)
-                prompts.append(prompt)
-                batch_meta.append({"agent": agent, "type": "SOLVE"})
+                solve_agents.append({"agent": agent, "prompt": prompt, "type": "SOLVE"})
             except Exception as e:
                 agent.is_done = True
                 print(f"[Solve Error] {e}")
 
-    if not prompts:
-        return []
-        
-    print(f"[Turn Execution] Generating {len(prompts)} items ({len(active_agents)} agents)...")
+    # 2. EXECUTE BATCHES
+    # Determine params
+    feed_params = sampling_params["FEED"] if isinstance(sampling_params, dict) else sampling_params
+    solve_params = sampling_params["SOLVE"] if isinstance(sampling_params, dict) else sampling_params
     
-    # 2. Generate
-    try:
-        outputs = llm.generate(prompts, sampling_params)
-        
-        # Process Outputs matching metadata
-        for meta, out_obj in zip(batch_meta, outputs):
-            agent = meta["agent"]
-            generation_type = meta["type"]
-            
-            if not out_obj.outputs:
-                if generation_type != "PROBE":
-                    agent.final_output = "ERROR: No output"
-                    agent.is_done = True
-                continue
-            
-            response_text = out_obj.outputs[0].text
+    # Run FEED Batch
+    if feed_agents:
+        prompts_feed = [bg["prompt"] for bg in feed_agents]
+        print(f"[Turn Execution] Feeding {len(feed_agents)} agents...")
+        try:
+            outputs_feed = llm.generate(prompts_feed, feed_params)
+            process_outputs(feed_agents, outputs_feed, tokenizer, saturation_limit)
+        except BaseException as e:
+            print(f"[Feed Batch Error] {e}")
+            for bg in feed_agents:
+                bg["agent"].is_done = True
+                bg["agent"].final_output = f"BATCH_ERROR: {e}"
 
-            # Valid Output (FEED/SOLVE) - append to history
-            agent.history.append({"role": "assistant", "content": response_text})
-            agent.step_count += 1
-            
-            # Token Tracking (Standard)
-            if hasattr(out_obj.outputs[0], 'token_ids'):
-                token_count = len(out_obj.outputs[0].token_ids)
-            else:
-                token_count = len(response_text.split()) 
-            
-            # TRACK ASSISTANT TOKENS
-            agent.context_token_count += token_count 
-            
-            # --- POST-GENERATION TRUNCATION LOGIC ---
-            if agent.phase == "FEEDING" and saturation_limit is not None:
-                 if agent.context_token_count > saturation_limit:
-                     excess = agent.context_token_count - saturation_limit
-                     
-                     # 1. Truncate Assistant Output (Last Item)
-                     # We can cut up to 'token_count' tokens from the assistant output
-                     cut_assistant = min(excess, token_count)
-                     
-                     if cut_assistant > 0:
-                         keep_count = token_count - cut_assistant
-                         print(f"[Saturation] Agent {agent.id}: Truncating {cut_assistant} tokens from assistant output to hit limit {saturation_limit}. Kept: {keep_count}")
-                         
-                         # Perform Truncation on Assistant Output
-                         if hasattr(out_obj.outputs[0], 'token_ids'):
-                             # Use token_ids for precision
-                             new_ids = out_obj.outputs[0].token_ids[:keep_count]
-                             # Decode back to text
-                             try:
-                                 truncated_text = tokenizer.decode(new_ids, skip_special_tokens=True)
-                             except AttributeError:
-                                 truncated_text = " ".join(response_text.split()[:keep_count])
-                         else:
-                             # Mock fallback
-                             words = response_text.split()
-                             truncated_text = " ".join(words[:keep_count])
-                         
-                         # Update History and Counts
-                         agent.history[-1]["content"] = truncated_text
-                         token_count = keep_count
-                         agent.context_token_count -= cut_assistant
-                         excess -= cut_assistant
-
-                     # 2. If still over limit, Truncate User Prompt (Second to Last Item)
-                     # This happens if the prompt itself pushed us over the limit (Context_Prev + Prompt > Limit)
-                     if excess > 0:
-                         # The user prompt is at history[-2]
-                         user_content = agent.history[-2]["content"]
-                         print(f"[Saturation] Agent {agent.id}: Still over limit by {excess}. Truncating user prompt.")
-                         
-                         # We need to estimate/calculate tokens for user_content to slice accurately
-                         if hasattr(tokenizer, 'encode'):
-                             user_ids = tokenizer.encode(user_content, add_special_tokens=False, truncation=False)
-                             current_user_len = len(user_ids)
-                             keep_user = max(0, current_user_len - excess)
-                             
-                             # Truncate IDs
-                             final_user_ids = user_ids[:keep_user]
-                             try:
-                                 new_user_text = tokenizer.decode(final_user_ids, skip_special_tokens=True)
-                             except AttributeError:
-                                  # Should typically have decode if encode works
-                                 new_user_text = user_content[:len(user_content)//2] # Fallback rough cut
-                         else:
-                             # Mock fallback
-                             user_words = user_content.split()
-                             keep_user = max(0, len(user_words) - excess)
-                             new_user_text = " ".join(user_words[:keep_user])
-                             
-                         # Update History and Counts
-                         agent.history[-2]["content"] = new_user_text
-                         agent.context_token_count -= excess
-                         # We consumed the remaining excess
-
-            
-            if agent.phase == "FEEDING":
-                start_idx = agent.current_sys_index
-                end_idx = start_idx + agent.last_distractor_count - 1
-                agent.token_usage[f"distractors {start_idx}-{end_idx}"] = token_count
-                
-                # Increment index by the number of items we sent
-                agent.current_sys_index += agent.last_distractor_count
-                
-            elif agent.phase == "SOLVING":
-                agent.token_usage["solution"] = token_count
-                agent.final_output = response_text
-                agent.is_done = True
-                
-    except BaseException as e:
-        print(f"[Batch Error] {e}")
-        # Fail all is safest, but we could try to be granular.
-        for meta in batch_meta:
-            agent = meta["agent"]
-            if not agent.is_done:
-                agent.final_output = f"CRITICAL_BATCH_ERROR: {e}"
-                agent.is_done = True
+    # Run SOLVE Batch
+    if solve_agents:
+        prompts_solve = [bg["prompt"] for bg in solve_agents]
+        print(f"[Turn Execution] Solving {len(solve_agents)} agents...")
+        try:
+            outputs_solve = llm.generate(prompts_solve, solve_params)
+            process_outputs(solve_agents, outputs_solve, tokenizer, saturation_limit)
+        except BaseException as e:
+            print(f"[Solve Batch Error] {e}")
+            for bg in solve_agents:
+                bg["agent"].is_done = True
+                bg["agent"].final_output = f"BATCH_ERROR: {e}"
 
     return active_agents
+
+def process_outputs(batch_meta, outputs, tokenizer, saturation_limit):
+    for meta, out_obj in zip(batch_meta, outputs):
+        agent = meta["agent"]
+        generation_type = meta["type"]
+        
+        if not out_obj.outputs:
+            agent.final_output = "ERROR: No output"
+            agent.is_done = True
+            continue
+        
+        response_text = out_obj.outputs[0].text
+
+        # Valid Output (FEED/SOLVE) - append to history
+        agent.history.append({"role": "assistant", "content": response_text})
+        agent.step_count += 1
+        
+        # Token Tracking (Standard)
+        if hasattr(out_obj.outputs[0], 'token_ids'):
+            token_count = len(out_obj.outputs[0].token_ids)
+        else:
+            token_count = len(response_text.split()) 
+        
+        # TRACK ASSISTANT TOKENS
+        agent.context_token_count += token_count 
+        
+        # --- POST-GENERATION TRUNCATION LOGIC (Only for FEED) ---
+        if agent.phase == "FEEDING" and saturation_limit is not None and saturation_limit > 0:
+                if agent.context_token_count > saturation_limit:
+                    excess = agent.context_token_count - saturation_limit
+                    
+                    # 1. Truncate Assistant Output (Last Item)
+                    cut_assistant = min(excess, token_count)
+                    
+                    if cut_assistant > 0:
+                        keep_count = token_count - cut_assistant
+                        print(f"[Saturation] Agent {agent.id}: Truncating {cut_assistant} tokens from assistant output to hit limit {saturation_limit}. Kept: {keep_count}")
+                        
+                        # Perform Truncation on Assistant Output
+                        if hasattr(out_obj.outputs[0], 'token_ids'):
+                            new_ids = out_obj.outputs[0].token_ids[:keep_count]
+                            try:
+                                truncated_text = tokenizer.decode(new_ids, skip_special_tokens=True)
+                            except AttributeError:
+                                truncated_text = " ".join(response_text.split()[:keep_count])
+                        else:
+                            words = response_text.split()
+                            truncated_text = " ".join(words[:keep_count])
+                        
+                        agent.history[-1]["content"] = truncated_text
+                        token_count = keep_count
+                        agent.context_token_count -= cut_assistant
+                        excess -= cut_assistant
+
+                    # 2. If still over limit, Truncate User Prompt (Second to Last Item)
+                    if excess > 0:
+                        user_content = agent.history[-2]["content"]
+                        print(f"[Saturation] Agent {agent.id}: Still over limit by {excess}. Truncating user prompt.")
+                        
+                        if hasattr(tokenizer, 'encode'):
+                            user_ids = tokenizer.encode(user_content, add_special_tokens=False, truncation=False)
+                            current_user_len = len(user_ids)
+                            keep_user = max(0, current_user_len - excess)
+                            final_user_ids = user_ids[:keep_user]
+                            try:
+                                new_user_text = tokenizer.decode(final_user_ids, skip_special_tokens=True)
+                            except AttributeError:
+                                new_user_text = user_content[:len(user_content)//2] 
+                        else:
+                            user_words = user_content.split()
+                            keep_user = max(0, len(user_words) - excess)
+                            new_user_text = " ".join(user_words[:keep_user])
+                            
+                        agent.history[-2]["content"] = new_user_text
+                        agent.context_token_count -= excess
+        
+        if agent.phase == "FEEDING":
+            start_idx = agent.current_sys_index
+            end_idx = start_idx + agent.last_distractor_count - 1
+            agent.token_usage[f"distractors {start_idx}-{end_idx}"] = token_count
+            agent.current_sys_index += agent.last_distractor_count
+            
+        elif agent.phase == "SOLVING":
+            agent.token_usage["solution"] = token_count
+            agent.final_output = response_text
+            agent.is_done = True
+
+
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate Multi-Turn Conversation Agent (Context Saturation)")
@@ -304,6 +298,7 @@ def main():
     parser.add_argument("--num_gpus", type=int, default=4)
     parser.add_argument("--max_model_length", type=int, default=65536)
     parser.add_argument("--distractors_per_query", type=int, default=1, help="Number of distractors to batch in a single user turn.")
+    parser.add_argument("--max_saturation_step_tokens", type=int, default=4096, help="Max tokens allowed for a single Feeding step.")
     parser.add_argument("--dry", action="store_true", help="Run without loading model (fake outputs)")
     parser.add_argument("--context_saturation", type=int, default=None, help="Target context saturation in percent (0-100). Triggers switch to Real Problem when reached.")
     
@@ -380,16 +375,32 @@ def main():
             token_limit = args.distractors_per_query * TOK_PER_DISTRACTOR
             if args.context_saturation == 0:
                 print("[Setup] Baseline Mode: Temperature=0.7, Max Tokens=Model Length, No Rep Penalty")
-                sampling_params = SamplingParams(
-                    temperature=0.7,
-                    max_tokens=args.max_model_length, # Maximize token allowance
-                )
-            else:
-                sampling_params = SamplingParams(
-                    temperature=0.6,
-                    max_tokens=min(token_limit, args.max_model_length),
-                    repetition_penalty=1.1
-                )
+            # Unified Sampling Params Logic based on User Request
+            # 1. Temperature = 0.7 always
+            # 2. No Repetition Penalty
+            # 3. Max Tokens: Defined dynamically. Here we set a default `sampling_params`
+            #    However, `run_single_turn` will need to likely manage separate params for FEED vs SOLVE.
+            #    Let's create two SamplingParams objects.
+
+            # FEEDING Params
+            feed_sampling_params = SamplingParams(
+                temperature=0.7,
+                max_tokens=args.max_saturation_step_tokens
+            )
+
+
+            # SOLVING Params
+            solve_sampling_params = SamplingParams(
+                temperature=0.7,
+                max_tokens=args.max_model_length
+            )
+
+            # We pass a DICT of params to run_single_turn or handle it there.
+            # Let's pass a tuple or dict.
+            sampling_params = {"FEED": feed_sampling_params, "SOLVE": solve_sampling_params}
+
+            print(f"[Config] Temp=0.7, Feed Max={args.max_saturation_step_tokens}, Solve Max={args.max_model_length}")
+
         except Exception as e:
             print(f"Failed to initialize vLLM: {e}")
             exit(1)
