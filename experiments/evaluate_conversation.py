@@ -309,13 +309,17 @@ def main():
          print("Error: --context_saturation is required (0-100).")
          exit(1)
 
-    if not (0 < args.context_saturation <= 100):
+    if not (0 <= args.context_saturation <= 100):
          print(f"Error: Context saturation must be between 0 and 100. Got {args.context_saturation}")
          exit(1)
          
     saturation_limit = int(args.max_model_length * (args.context_saturation / 100.0))
-    print(f"[Context Saturation] Target: {args.context_saturation}% of {args.max_model_length} = {saturation_limit} tokens.")
-    print(f"[Context Saturation] Dynamic filling enabled.")
+    
+    if args.context_saturation == 0:
+        print(f"[Context Saturation] Baseline Mode (0%). Distractors will be skipped.")
+    else:
+        print(f"[Context Saturation] Target: {args.context_saturation}% of {args.max_model_length} = {saturation_limit} tokens.")
+        print(f"[Context Saturation] Dynamic filling enabled.")
     # ----------------------------------------------------
     
     # 1. Load Extracted Variables
