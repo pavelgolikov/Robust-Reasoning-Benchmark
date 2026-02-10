@@ -155,7 +155,12 @@ def run_single_turn(active_agents: List[AgentState], llm, tokenizer, sampling_pa
                 # END CALCULATION
 
                 real_problem = remove_latex_comments(agent.original_problem)
-                agent.history.append({"role": "user", "content": "Solve the following question using regular mathematics.\n\n" + real_problem})
+                
+                # Baseline Mode (saturation_limit == 0): No Prefix
+                if saturation_limit == 0:
+                    agent.history.append({"role": "user", "content": real_problem})
+                else:
+                    agent.history.append({"role": "user", "content": "Solve the following question using regular mathematics.\n\n" + real_problem})
             
             try:
                 prompt = agent.get_vllm_prompt(tokenizer)
@@ -373,11 +378,18 @@ def main():
             )
             tokenizer = llm.get_tokenizer()
             token_limit = args.distractors_per_query * TOK_PER_DISTRACTOR
-            sampling_params = SamplingParams(
-                temperature=0.6,
-                max_tokens=min(token_limit, args.max_model_length),
-                repetition_penalty=1.1
-            )
+            if args.context_saturation == 0:
+                print("[Setup] Baseline Mode: Temperature=0.7, Max Tokens=Model Length, No Rep Penalty")
+                sampling_params = SamplingParams(
+                    temperature=0.7,
+                    max_tokens=args.max_model_length, # Maximize token allowance
+                )
+            else:
+                sampling_params = SamplingParams(
+                    temperature=0.6,
+                    max_tokens=min(token_limit, args.max_model_length),
+                    repetition_penalty=1.1
+                )
         except Exception as e:
             print(f"Failed to initialize vLLM: {e}")
             exit(1)
