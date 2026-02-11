@@ -60,6 +60,7 @@ class AgentState:
     token_usage: Dict[str, int] = field(default_factory=dict)
     last_distractor_count: int = 0 # Tracks how many distractors were sent in the pending turn
     context_token_count: int = 0 # Continuously tracks total context tokens (User + Assistant)
+    sampling_params: Dict[str, Any] = field(default_factory=dict) # Tracks params used for Feed and Solve
     
     def get_vllm_prompt(self, tokenizer):
         return tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
@@ -359,7 +360,12 @@ def main():
             
         llm = MockLLM()
         tokenizer = llm.get_tokenizer()
-        sampling_params = None
+        llm = MockLLM()
+        tokenizer = llm.get_tokenizer()
+        # Mock Params
+        feed_sampling_params = {"temperature": 0.7, "max_tokens": 100}
+        solve_sampling_params = {"temperature": 0.7, "max_tokens": 100}
+        sampling_params = {"FEED": feed_sampling_params, "SOLVE": solve_sampling_params}
     else:
         print(f"Initializing vLLM with model: {args.model}")
         try:
@@ -472,7 +478,17 @@ def main():
                 history=[
                     {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
                 ],
-                context_token_count=len(tokenizer.encode(BASELINE_SYSTEM_PROMPT)) if hasattr(tokenizer, 'encode') else len(BASELINE_SYSTEM_PROMPT.split())
+                context_token_count=len(tokenizer.encode(BASELINE_SYSTEM_PROMPT)) if hasattr(tokenizer, 'encode') else len(BASELINE_SYSTEM_PROMPT.split()),
+                sampling_params={
+                    "feeding": {
+                        "temperature": 0.7,
+                        "max_tokens": args.max_saturation_step_tokens
+                    },
+                    "solving": {
+                        "temperature": 0.7,
+                        "max_tokens": args.max_model_length
+                    }
+                }
             )
             active_agents.append(agent)
             
@@ -553,6 +569,7 @@ def main():
                 "original_problem": agent.original_problem,
                 "ground_truth": agent.ground_truth,
                 "history_dump": [h['content'] for h in agent.history],
+                "sampling_params": agent.sampling_params
             }
             
             results_dict[agent.id] = entry
