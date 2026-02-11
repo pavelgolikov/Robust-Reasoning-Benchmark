@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=golikovp_job
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:h100:1
+#SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=1:00:00
+#SBATCH --time=3:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_err.err
 #SBATCH --account=aip-gpekhime
@@ -30,8 +30,7 @@ export NCCL_IGNORE_DISABLED_P2P=1
 python evaluate_conversation.py \
     --max_model_length 65536 \
     --max_saturation_step_tokens 8192 \
-    --sample_range 0 \
     --n_samples 5 \
     --context_saturation 25 \
     --distractors_per_query 4 \
-    --num_gpus 1 > eval_out.out
+    --num_gpus 4 > eval_out.out
