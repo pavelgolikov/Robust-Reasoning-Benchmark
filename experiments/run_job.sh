@@ -31,6 +31,6 @@ python evaluate_conversation.py \
     --max_model_length 65536 \
     --max_saturation_step_tokens 8192 \
     --n_samples 5 \
-    --context_saturation 25 \
+    --context_saturation 75 \
     --distractors_per_query 4 \
     --num_gpus 4 > eval_out.out
