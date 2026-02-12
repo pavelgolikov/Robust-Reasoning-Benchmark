@@ -1,11 +1,16 @@
 import random
 
-variables_lower = ["x", "y", "z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-variables_upper = ["X", "Y", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
-variables_AIME_2024 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'a', 'b', 'c', 'f', 'g', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'x', 'y', 'z', 'w']
 # variables_greek = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa", "lambda", "mu", "nu", "xi", "omicron", "pi", "rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega"]
 # variables_greek_upper = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa",
 # "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"]
+# variables_lower = ["x", "y", "z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+# variables_upper = ["X", "Y", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+# variables_AIME_2024 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'a', 
+#     'b', 'c', 'f', 'g', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'x', 'y', 'z', 'w']
+
+vars_total = ["x", "n", "i", "y", "a", "b", "k", "t", "A", "B", "f", "m", "z", "C", "N", "X", "Y", "j", "u", "v", "M",
+    "S", "r", "p", "g", "d", "T", "P", "c", "h", "w", "q", "L", "R", "F", "G", "H", "D", "e", "s", "l", "o", "K", "I",
+    "V", "U", "J", "W", "Z", "Q", "E", "O"]
 
 
 def numeric_equality_conditions(var1, var2):
@@ -377,30 +382,30 @@ def generate_random_binary_op(var1, var2, domain):
         raise ValueError(f"Unknown domain: {domain}")
 
 
-def pick_verification_question(domain, var1, var2, var3, sys_index):
+def pick_verification_question(var1, var2, var3, sys_index):
     questions = [
-    # Q1: Associativity Verification
+    # q1: associativity verification
     f"""
-Verify Associativity in System-{sys_index}.
-Consider the specific variables {var1}, {var2}, and {var3}.
-Using the definitions provided, determine if ({var1} * {var2}) * {var3} = {var1} * ({var2} * {var3}).
-Steps:
-1. Calculate the LHS: First compute ({var1} * {var2}), then apply * with {var3}.
-2. Calculate the RHS: First compute ({var2} * {var3}), then apply * with {var1}.
-3. Compare the final results using the definition of "=".
+verify associativity in system-{sys_index}.
+consider the specific variables {var1}, {var2}, and {var3}.
+using the definitions provided, determine if ({var1} * {var2}) * {var3} = {var1} * ({var2} * {var3}).
+steps:
+1. calculate the lhs: first compute ({var1} * {var2}), then apply * with {var3}.
+2. calculate the rhs: first compute ({var2} * {var3}), then apply * with {var1}.
+3. compare the final results using the definition of "=".
 """,
 
-    # Q2: Sequence Expansion
-    f"""
-Calculate Sequence Expansion in System-{sys_index}.
-Using variable {var1} as the starting seed Z_0, define a sequence:
-Z_{{n+1}} = (Z_n + {var2}) * Z_n
-Steps:
-1. Calculate Z_1 explicitly using the formulas for "+" and "*".
-2. Calculate Z_2 using the result of Z_1.
-3. Calculate Z_3 using the result of Z_2.
-4. Check if Z_3 = Z_0.
-""",
+#     # q2: sequence expansion
+#     f"""
+# calculate sequence expansion in system-{sys_index}.
+# using variable {var1} as the starting seed Z_0, define a sequence:
+# Z_{{n+1}} = (Z_n + {var2}) * Z_n
+# Steps:
+# 1. Calculate Z_1 explicitly using the formulas for "+" and "*".
+# 2. Calculate Z_2 using the result of Z_1.
+# 3. Calculate Z_3 using the result of Z_2.
+# 4. Check if Z_3 = Z_0.
+# """,
 
     # Q3: Distributivity Check
     f"""
@@ -425,11 +430,11 @@ Steps:
     # Q5: Identity Element Search
     f"""
 Solve for Identity in System-{sys_index}.
-Assume there is an unknown element 'E' such that {var1} + E = {var1}.
+Assume there is an unknown element 'E_i' such that {var1} + E_i = {var1}.
 Steps:
-1. Write the algebraic equation for "{var1} + E" using the formula defined for "+".
-2. Solve this equation for E in terms of {var1}.
-3. Does this value E work if we replace {var1} with {var2}? Prove it.
+1. Write the algebraic equation for "{var1} + E_i" using the formula defined for "+".
+2. Solve this equation for E_i in terms of {var1}.
+3. Does this value E_i work if we replace {var1} with {var2}? Prove it.
 """]
     return random.choice(questions)
 
@@ -449,7 +454,7 @@ def generate_system(terms, cur_term_ind, sys_index):
     gen_bin_mul = generate_random_binary_op(terms_list[2], terms_list[3], domain)
     gen_eq = generate_random_equality_condition(domain, terms_list[4], terms_list[5])
     def_var_1, def_var_2, def_var_3, def_var_4, def_var_5, def_var_6, def_var_7, def_var_8, def_var_9 = terms_list
-    verification_question = pick_verification_question(domain, terms_list[6], terms_list[7], terms_list[8], sys_index)
+    verification_question = pick_verification_question(terms_list[6], terms_list[7], terms_list[8], sys_index)
     
     system_dynamic_template = f"""\n\n
 Let us define System-{sys_index}.
@@ -489,10 +494,6 @@ def generate_systems(variables, num_systems):
 
 
 if __name__ == "__main__":
-    # terms = ["Alice", "Bob", "n", "stack" ]
-    # terms = variables_AIME_2024
-    system_description = generate_systems(variables_AIME_2024, 2)
+    system_description = generate_systems(vars_total, 2)
     for i in system_description:
         print(i)
-
-
