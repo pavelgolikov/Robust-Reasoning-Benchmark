@@ -1,15 +1,19 @@
-Context Saturation Experiment Results
-=====================================
-Date: 2026-02-09
+Experiment Results Summary
+Model: tiiuae/Falcon-H1R-7B
 Dataset: HuggingFaceH4/aime_2024
-Max Model Length: 65,536 tokens
+Config: Temperature=0.7, No Repetition Penalty
 
-| Model                  | Saturation Target | Token Limit | Verified Context Size | Accuracy | Correct/Total | Run ID (Timestamp) |
-|------------------------|------------------:|------------:|----------------------:|---------:|--------------:|--------------------|
-| tiiuae/Falcon-H1R-7B   | 25%               | 16,384      | 16,384                | 52.00%   | 78/150        | 20260209_154651    |
-| tiiuae/Falcon-H1R-7B   | 50%               | 32,768      | 32,768                | 53.33%   | 80/150        | 20260209_164539    |
-| tiiuae/Falcon-H1R-7B   | 75%               | 49,152      | 49,152                | 50.67%   | 76/150        | 20260209_201942    |
+## Performance vs Context Saturation
 
-Notes:
-- "Verified Context Size" refers to the `pre_solve_context_tokens` metric, which tracks the exact prompt + history length before generation.
-- The 100% precision in context size confirms the functioning of the new cascading truncation logic.
+| Saturation | Accuracy | Truncated Samples (Raw) | Truncated Samples (%) | Avg Context Tokens (Pre-Solve) | Avg Total Tokens (Ctx+Sol) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Baseline (0%)** | **84.67%** (127/150) | 21 | 14.0% | ~23 | 21,728 |
+| **25% (16k)** | **72.67%** (109/150) | 12 | 8.0% | 16,384 | 29,305 |
+| **50% (32k)** | **66.00%** (99/150) | 18 | 12.0% | 32,768 | 45,191 |
+| **75% (49k)** | **61.33%** (92/150) | 44 | 29.3% | 49,152 | 62,018 |
+
+**Key Findings:**
+- **Significant Drop with Saturation:** Baseline performance (84.67%) degrades sharply (-12%) at 25% saturation.
+- **Further Degradation:** Accuracy continues to decline as saturation increases to 50% and 75%.
+- **Truncation Spike at 75%:** Truncation rate jumps to 29.3% (44 samples) at 75% saturation.
+- **Total Token Load:** At 75% saturation, average total tokens reach ~62k, dangerously close to the 65k limit, explaining the high truncation rate.

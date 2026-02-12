@@ -232,3 +232,9 @@ batch 10, 30 distractors, 4 GPUs, 5 samples, 262000 max model length, 6 hours ti
 TODO: Add to paper that we have another insight that we demonstrate:
 - Models are able to program to reverse these transformations with Python code, but unable to perform this decoding internally.
 This shows that models do not possess true understanding of the text they process?
+
+
+Let us implement something else now for evaluate.py This is for the case when we can't have this long conversation. We will use a model to generate a file with 5 million tokens of context rot (distractors and answers to them) for us to feed the model. We will then feed part of this as model history, suggesting to the model that it generated all of that. We will ask the model to review all of that context pollution before answering the real question. We will do it step by step. 
+
+2. Make a new input parameters --context_saturation 25 (example for 25%) - this determines how many tokens worth of distarctors we take from the file and represent as conversation history - this parameter is only active when --names context_saturation.
+3. Make a new mode for context_saturation, which reads context rot from a file and represents it as conversation history and asks the model to review it, then asks real question.

@@ -1,0 +1,36 @@
+import json
+import os
+import glob
+# Path to results
+base_dir = 'experiments/context_saturation/conv_results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/'
+pattern = os.path.join(base_dir, '*CONVERSATION.json')
+files = sorted(glob.glob(pattern))
+print(f"| {'Filename':<80} | {'Acc':<8} | {'Trunc':<5} | {'AvgCtx':<8} | {'AvgTot':<8} |")
+print("-" * 130)
+for f_path in files:
+    with open(f_path, 'r') as fh:
+        try:
+            data = json.load(fh)
+        except json.JSONDecodeError:
+            continue
+    
+    total = len(data)
+    if total == 0: continue
+    
+    correct = sum(1 for x in data if x.get('correct'))
+    
+    # Calculate Token Counts
+    # Assuming 'token_usage' key exists in each entry
+    ctx_tokens = [x.get('token_usage', {}).get('pre_solve_context_tokens', 0) for x in data]
+    sol_tokens = [x.get('token_usage', {}).get('solution_tokens', 0) for x in data]
+    total_tokens = [c + s for c, s in zip(ctx_tokens, sol_tokens)]
+    
+    avg_ctx = sum(ctx_tokens) / total
+    avg_tot = sum(total_tokens) / total
+    
+    # Truncation Estimation (Model limit ~65536)
+    trunc_limit = 65000 
+    trunc_count = sum(1 for t in total_tokens if t >= trunc_limit)
+    
+    fname = os.path.basename(f_path)
+    print(f"| {fname:<80} | {correct/total:.1%} | {trunc_count:<5} | {avg_ctx:<8.1f} | {avg_tot:<8.1f} |")
