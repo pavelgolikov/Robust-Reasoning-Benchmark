@@ -293,6 +293,7 @@ def main():
     parser = argparse.ArgumentParser(description="Evaluate Multi-Turn Conversation Agent (Context Saturation)")
     parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024")
+    parser.add_argument("--split", type=str, default="all", help="Dataset split to use (train/test/all)")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--sample_range", type=str, default=None, help="Range of sample indices to process, e.g. '0-10' or '5' or '1,3,5'")
     parser.add_argument("--n_samples", type=int, default=1)
@@ -413,7 +414,15 @@ def main():
         
     # 3. Load Dataset
     print(f"Loading dataset: {args.dataset}...")
-    dataset = load_dataset(args.dataset, split="train")
+    if args.split == "train":
+        dataset = load_dataset(args.dataset, split="train")
+    elif args.split == "test":
+        dataset = load_dataset(args.dataset, split="test")
+    elif args.split == "all":
+        dataset0 = load_dataset(args.dataset, split="train")
+        dataset1 = load_dataset(args.dataset, split="test")
+        dataset = dataset0.concatenate(dataset1)
+    print(f"Dataset loaded with {len(dataset)} samples.")
     
     # Process sample_range
     if args.sample_range:

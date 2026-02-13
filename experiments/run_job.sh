@@ -28,9 +28,12 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # python evaluate_agent.py --max_model_length 65536 --limit 30 --n_samples 5 --names interleaved_context_word,not_not --num_gpus 4 > eval_out.out
 
 python evaluate_conversation.py \
+    --dataset MathArena/aime_2025 \
+    --split train \
     --max_model_length 65536 \
     --max_saturation_step_tokens 8192 \
     --n_samples 5 \
-    --context_saturation 75 \
+    --context_saturation 25 \
     --distractors_per_query 4 \
-    --num_gpus 4 > eval_out.out
+    --num_gpus 4 \
+    > eval_out.out
