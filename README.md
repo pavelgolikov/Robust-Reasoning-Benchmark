@@ -237,4 +237,18 @@ This shows that models do not possess true understanding of the text they proces
 Let us implement something else now for evaluate.py This is for the case when we can't have this long conversation. We will use a model to generate a file with 5 million tokens of context rot (distractors and answers to them) for us to feed the model. We will then feed part of this as model history, suggesting to the model that it generated all of that. We will ask the model to review all of that context pollution before answering the real question. We will do it step by step. 
 
 2. Make a new input parameters --context_saturation 25 (example for 25%) - this determines how many tokens worth of distarctors we take from the file and represent as conversation history - this parameter is only active when --names context_saturation.
-3. Make a new mode for context_saturation, which reads context rot from a file and represents it as conversation history and asks the model to review it, then asks real question.
+3. Make a new mode for context_saturation, which reads context rot from a file and represents it as conversation history
+   and asks the model to review it, then asks real question.
+
+
+
+<!-- Variable 1 n n Integer / Count	A Rotation Matrix for 3D space. Variable 2 x x Real / Unknown	A Categorical Label for
+a string. Variable 3 k k Integer / Index	A Probability Distribution (PDF). Variable 4 m m Integer / Slope	A Set of
+prime factors. Name 1	Alice	Person / Agent	A Non-commutative Operator. Name 2	Bob	Person / Agent	A Vector Space V
+V over a field. Name 3	Carol	Person / Agent	A Modular Ring Z / 17 Z Z/17Z . Name 4	David	Person / Agent	A
+Polynomial of degree d d . -->
+
+
+x, n, m, k - 4 lower_variables
+A, B, C, D - 4 upper_variables
+Alice, Bob, Carol, David - 4 names
