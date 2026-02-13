@@ -10,10 +10,10 @@ from tqdm import tqdm
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from experiments.context_saturation.generate_systems import generate_systems
+    from experiments.context_saturation.generate_systems_static import generate_systems_static
 except ImportError:
     # Fallback if running from a different directory
-    from context_saturation.generate_systems import generate_systems
+    from context_saturation.generate_systems_static import generate_systems_static
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Context Rot (Distractors + Answers)")
@@ -64,10 +64,10 @@ def main():
         prompts = []
         raw_distractor_groups = []
         
-        terms_pool = ["Alice", "Bob", "n", "stack", "x", "y", "z", "u", "v", "w", "alpha", "beta"]
+        # terms_pool = ["Alice", "Bob", "n", "stack", "x", "y", "z", "u", "v", "w", "alpha", "beta"]
         
         for _ in range(args.batch_size):
-            sys_list = generate_systems(terms_pool, args.distractors_per_query)
+            sys_list = generate_systems_static(args.distractors_per_query)
             
             # Format Prompt matching User Request somewhat
             # User example: "Let's define System 1..."

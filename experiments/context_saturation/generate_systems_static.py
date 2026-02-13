@@ -474,7 +474,7 @@ Formula: {def_var_5} = {def_var_6} if and only if {gen_eq}.
     return prompt
 
 
-def generate_systems(variables, num_systems):
+def generate_systems_static(num_systems):
     """
     Generates a mathematically valid, random mathematical system with given variables to rot the context of the model.
     Returns a list of strings, each string is a definition of a mathematical system and a question to the model about \
@@ -494,6 +494,6 @@ def generate_systems(variables, num_systems):
 
 
 if __name__ == "__main__":
-    system_description = generate_systems(vars_total, 2)
+    system_description = generate_systems_static(vars_total, 2)
     for i in system_description:
         print(i)
