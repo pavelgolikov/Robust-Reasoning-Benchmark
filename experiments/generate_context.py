@@ -7,6 +7,7 @@ from vllm import LLM, SamplingParams
 from tqdm import tqdm
 import requests
 from transformers import AutoTokenizer
+import numpy as np
 
 # Add parent directory to path to allow imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -202,24 +203,23 @@ def main():
     pbar = tqdm(total=args.target_tokens, unit="tok", initial=total_tokens)
 
     estimated_tokens_per_turn = 9200
+    if args.distractor_type == "text":
+         # Text usually has ~2000 prompt + ~3000 completion = ~5000. 
+         # Use a conservative estimate to generate enough turns.
+         estimated_tokens_per_turn = 5000 
+         
     needed_turns = (args.target_tokens - total_tokens) // estimated_tokens_per_turn
     if needed_turns < 0: needed_turns = 1
     
     # Needed rounds of 20-distractors
     # Each round of 20 gives 5 turns (if distractors_per_query=4)
+    # Calculate how many distractors per query
     distractors_per_query = args.distractors_per_query
     if args.distractor_type == "text":
         distractors_per_query = 1 # Force 1 chunk per query for text
-        print("Using 1 text chunk (approx 1500 tokens) per query.")
+        print("Using 1 text chunk (approx 1500-2000 tokens) per query.")
         
-    turns_per_round = 20 // distractors_per_query
-    needed_rounds = (needed_turns // turns_per_round) + 2 # +2 buffer
-    
-    print(f"Targeting {args.target_tokens} tokens.")
-    print(f"Estimated {needed_turns} turns needed.")
-    print(f"Generating {needed_rounds} rounds of 20 distractors (Total {needed_rounds * 20} systems).")
-    
-    all_prompts = []
+    print(f"Targeting at least {args.target_tokens} tokens.")
     
     current_system_index = 1
     
@@ -228,100 +228,215 @@ def main():
     if args.distractor_type == "text":
         print(f"Ensuring text is available at {args.text_file}...")
         ensure_downloaded(args.text_url, args.text_file)
-        # Using 1500 tokens per chunk
+        # Using 2000 tokens per chunk target
         text_chunks = load_and_chunk_text_by_tokens(args.text_file, target_tokens=2000, tokenizer=tokenizer)
         if not text_chunks:
             print("Error: No chunks loaded from text file.")
             return
 
-    # 1. Pre-generate ALL prompts
-    print("Preparing all prompts...")
-    for r in tqdm(range(needed_rounds)):
-        seed = int(time.time() * 1000) + r
+    # Dynamic Generation Loop
+    print("Starting dynamic generation loop...")
+    
+    # Use a fixed batch size (e.g. 100 distractors = 25 prompts for math, 100 for text)
+    # A "round" of 20 was used before, let's stick to batches of ~20-50 distractors
+    batch_size_distractors = 50 
+    
+    # Keep track of batches
+    batch_count = 0
+    
+    # Save incrementally
+    # We will accumulate history in memory but write to file periodically or at end?
+    # Actually, let's keep history in memory for analysis at end, but maybe write to file if huge?
+    # For now, keep simple: append to history, check total_tokens.
+    
+    # If resuming, total_tokens is already set
+    
+    while total_tokens < args.target_tokens:
+        batch_count += 1
+        batch_prompts = []
+        
+        # Generate a batch of distractors
+        distractor_pool = []
+        
+        # How many chunks do we need for this batch?
+        # We want `batch_size_distractors` items in the pool
+        
+        if args.distractor_type == "math":
+            # Generate batch_size_distractors distractors
+            # Seed based on time + batch index
+            seed = int(time.time() * 1000) + batch_count
+            distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index, count=batch_size_distractors)
+            # generate_20_distractors usually returns 20. modifying it to return flexible count or calling it multiple times?
+            # It seems hardcoded to 20 ("generate_20_distractors"). 
+            # Let's just call it multiple times if needed, or just work with chunks of 20.
+            # To be safe and consistent with previous logic:
+            pass
+        
+        # Actually, let's just do "Rounds" of 20 inside the loop until we have enough for a batch, 
+        # OR just do 1 round of 20 per loop iteration. Simpler.
+        
+        # 1 Round of 20 distractors
+        seed = int(time.time() * 1000) + batch_count
         
         distractor_pool = []
         if args.distractor_type == "math":
-            # Generate 20 distractors with correct absolute definition indexing
-            distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index)
+             distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index)
         else:
-            # Text distractors: slice 20 chunks, wrapping around
-            base_idx = (r * 20) % len(text_chunks)
-            for k in range(20):
-                p_idx = (base_idx + k) % len(text_chunks)
-                distractor_pool.append(text_chunks[p_idx])
-        
-        # Chunk into groups (e.g. 4 for math, 1 for text)
-        chunk_size = distractors_per_query
-        for i in range(0, len(distractor_pool), chunk_size):
-            chunk = distractor_pool[i : i + chunk_size]
+             # Text: slice 20 chunks
+             # wrap around text chunks
+             base_idx = ((batch_count - 1) * 20) % len(text_chunks)
+             for k in range(20):
+                 p_idx = (base_idx + k) % len(text_chunks)
+                 distractor_pool.append(text_chunks[p_idx])
+                 
+        # Create prompts from pool
+        for i in range(0, len(distractor_pool), distractors_per_query):
+            chunk = distractor_pool[i : i + distractors_per_query]
             if not chunk: continue
             
-            # Calculate global start/end indices for this chunk
             start_num = current_system_index + i
             end_num = start_num + len(chunk) - 1
             
-            # Create prompt for this chunk
+            prompt_text = ""
             if args.distractor_type == "math":
                 prompt_text = f"Here are {len(chunk)} mathematical systems. Analyze each and answer the verification question for each. Number your answers {start_num} to {end_num}.\n\n"
                 for j, s in enumerate(chunk):
                      prompt_text += f"{start_num + j}. {s}\n\n"
                 prompt_text += "Answer:\n"
             else:
-                # Text: single chunk
                 prompt_text = f"Here is a text excerpt. Analyze the main argument, rhetorical style and historical context of this text. \n\nText {start_num}:\n{chunk[0]}\n\nAnswer {start_num}:\n"
             
-            all_prompts.append(prompt_text)
-           
-        current_system_index += 20
+            batch_prompts.append(prompt_text)
 
-    print(f"Prepared {len(all_prompts)} prompts. Starting generation...")
-    
-    # 2. Generate ALL in parallel
-    # vLLM will batch this efficiently across GPUs
-    start_gen = time.time()
-    outputs = llm.generate(all_prompts, sampling_params)
-    gen_time = time.time() - start_gen
-    print(f"Generation took {gen_time:.2f}s")
-    
-    # 3. Serialize Results
-    print("Processing outputs and saving...")
-    new_tokens = 0
-    pbar_gen = tqdm(total=len(outputs), unit="turn")
-    
-    for output in outputs:
-        generated = output.outputs[0].text
-        prompt_text = output.prompt
+        current_system_index += 20
         
-        # Calculate tokens
-        prompt_ids = output.prompt_token_ids
-        output_ids = output.outputs[0].token_ids
-        count = len(prompt_ids) + len(output_ids)
-        new_tokens += count
-        total_tokens += count
+        # Run inference for this batch
+        if not batch_prompts: continue
         
-        history.append({
-            "role": "user",
-            "content": prompt_text
-        })
-        history.append({
-            "role": "assistant",
-            "content": generated
-        })
-        pbar_gen.update(1)
+        outputs = llm.generate(batch_prompts, sampling_params)
+        
+        # Process outputs
+        for output in outputs:
+            generated = output.outputs[0].text
+            prompt_text = output.prompt
+            
+            # Calculate tokens
+            prompt_ids = output.prompt_token_ids
+            output_ids = output.outputs[0].token_ids
+            count = len(prompt_ids) + len(output_ids)
+            
+            history.append({
+                "role": "user",
+                "content": prompt_text
+            })
+            history.append({
+                "role": "assistant",
+                "content": generated
+            })
+            
+            total_tokens += count
+            pbar.update(count)
+            
+            if total_tokens >= args.target_tokens:
+                 print(f"Reached target tokens: {total_tokens}")
+                 break
         
         if total_tokens >= args.target_tokens:
-             print(f"Reached target tokens: {total_tokens}")
-             break
-             
-    # Save once at the end
+            break
+            
+    pbar.close()
+    
+
+
+    # Truncate to exact target tokens
+    if tokenizer and total_tokens > args.target_tokens:
+        print(f"Trimming output to exact target tokens: {args.target_tokens}...")
+        current_count = 0
+        trimmed_history = []
+        
+        for entry in history:
+            content = entry["content"]
+            token_ids = tokenizer.encode(content) # Standard encoding
+            count = len(token_ids)
+            
+            if current_count + count <= args.target_tokens:
+                trimmed_history.append(entry)
+                current_count += count
+            else:
+                remaining = args.target_tokens - current_count
+                if remaining > 0:
+                    # Truncate this entry
+                    # Decode only the remaining tokens
+                    keep_ids = token_ids[:remaining]
+                    new_content = tokenizer.decode(keep_ids, skip_special_tokens=True)
+                    entry["content"] = new_content
+                    trimmed_history.append(entry)
+                    current_count += remaining
+                break
+        
+        history = trimmed_history
+        total_tokens = current_count
+        print(f"Trimmed successfully. Final count: {total_tokens}")
+
+    # Save final results (corrected)
+    print("Saving results...")
     with open(args.output_file, "w") as f:
         json.dump(history, f, indent=2)
-        
-    pbar_gen.close()
+
+    elapsed = time.time() - start_time
+    
+
 
     elapsed = time.time() - start_time
     print(f"Finished! Generated {total_tokens} tokens in {elapsed:.2f}s ({total_tokens/elapsed:.2f} tok/s).")
     print(f"Saved to: {args.output_file}")
+    
+    # Run analysis
+    if tokenizer:
+        analyze_token_usage(history, tokenizer)
+
+
+def analyze_token_usage(history, tokenizer):
+    """
+    Analyzes token usage in the generated history using the provided tokenizer.
+    Adapted from analyze_tokens.py.
+    """
+    print("Analyzing token usage...")
+    
+    prompt_lengths = []
+    completion_lengths = []
+    total_lengths = []
+
+    current_prompt_len = 0
+    
+    for entry in history:
+        role = entry.get("role")
+        content = entry.get("content", "")
+        # Use simple whitespace split if tokenizer fails or is None (though it shouldn't be)
+        if tokenizer:
+            tokens = len(tokenizer.encode(content))
+        else:
+             tokens = len(content.split()) # Very rough fallback
+        
+        if role == "user":
+            current_prompt_len = tokens
+        elif role == "assistant":
+            if current_prompt_len > 0:
+                prompt_lengths.append(current_prompt_len)
+                completion_lengths.append(tokens)
+                total_lengths.append(current_prompt_len + tokens)
+            current_prompt_len = 0 # Reset
+
+    if not total_lengths:
+        print("No valid user-assistant pairs found for analysis.")
+        return
+
+    print(f"  Total Queries: {len(total_lengths)}")
+    print(f"  Prompt Tokens:    Mean={np.mean(prompt_lengths):.1f}, Median={np.median(prompt_lengths):.1f}, Min={np.min(prompt_lengths)}, Max={np.max(prompt_lengths)}")
+    print(f"  Completion Tokens: Mean={np.mean(completion_lengths):.1f}, Median={np.median(completion_lengths):.1f}, Min={np.min(completion_lengths)}, Max={np.max(completion_lengths)}")
+    print(f"  Total per Query:  Mean={np.mean(total_lengths):.1f}, Median={np.median(total_lengths):.1f}, Min={np.min(total_lengths)}, Max={np.max(total_lengths)}")
+    print("-" * 40)
+
 
 if __name__ == "__main__":
     main()
