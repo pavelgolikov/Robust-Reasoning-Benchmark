@@ -14,6 +14,10 @@ try:
 except ImportError:
     # Fallback if running from a different directory
     from context_saturation.generate_systems_static import generate_20_distractors, lcase_dict, ucase_dict, greek_dict
+try:
+    from experiments.text_distractor_loader import ensure_downloaded, load_and_chunk_text
+except ImportError:
+    print("Warning: text_distractor_loader not found. Text distractors will fail.")
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Context Rot (Distractors + Answers)")
@@ -23,20 +27,23 @@ def main():
     parser.add_argument("--distractors_per_query", type=int, default=4, help="Number of distractors per user prompt")
     parser.add_argument("--num_gpu", type=int, default=1, help="TP size for vLLM")
     parser.add_argument("--mock", action="store_true", help="Use mock vLLM for verification")
+    parser.add_argument("--distractor_type", type=str, default="math", choices=["math", "text"], help="Type of distractors to generate")
+    parser.add_argument("--text_url", type=str, default="https://www.gutenberg.org/cache/epub/25717/pg25717.txt", help="URL for text source")
+    parser.add_argument("--text_file", type=str, default="experiments/data/gibbon_vol1.txt", help="Local path for text source")
     
     args = parser.parse_args()
     start_time = time.time()
 
     print(f"Initializing vLLM with model: {args.model_path}")
     
-    # if args.mock:
-    #     print("MOCK MODE: Using mock vLLM.")
-    #     from experiments.mock_vllm import LLM, SamplingParams
-    #     llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=4096)
-    #     tokenizer = None
-    # else:
-    llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192) # Limit context for generation speed
-    tokenizer = llm.get_tokenizer()
+    if args.mock:
+        print("MOCK MODE: Using mock vLLM.")
+        from experiments.mock_vllm import LLM, SamplingParams
+        llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192)
+        tokenizer = None
+    else:
+        llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192) # Limit context for generation speed
+        tokenizer = llm.get_tokenizer()
     
     # Sampling parameters for producing varied but reasonable answers
     sampling_params = SamplingParams(
@@ -90,13 +97,31 @@ def main():
     
     current_system_index = 1
     
+    # Pre-load text if needed
+    text_paragraphs = []
+    if args.distractor_type == "text":
+        print(f"Ensuring text is available at {args.text_file}...")
+        ensure_downloaded(args.text_url, args.text_file)
+        text_paragraphs = load_and_chunk_text(args.text_file)
+        if not text_paragraphs:
+            print("Error: No paragraphs loaded from text file.")
+            return
+
     # 1. Pre-generate ALL prompts
     print("Preparing all prompts...")
     for r in tqdm(range(needed_rounds)):
         seed = int(time.time() * 1000) + r
-        # Generate 20 distractors with correct absolute definition indexing
-        # Note: generate_20_distractors now accepts start_index
-        distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index)
+        
+        distractor_pool = []
+        if args.distractor_type == "math":
+            # Generate 20 distractors with correct absolute definition indexing
+            distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index)
+        else:
+            # Text distractors: slice 20 paragraphs, wrapping around
+            base_idx = (r * 20) % len(text_paragraphs)
+            for k in range(20):
+                p_idx = (base_idx + k) % len(text_paragraphs)
+                distractor_pool.append(text_paragraphs[p_idx])
         
         # Chunk into groups (e.g. 4)
         chunk_size = args.distractors_per_query
@@ -109,10 +134,17 @@ def main():
             end_num = start_num + len(chunk) - 1
             
             # Create prompt for this chunk
-            prompt_text = f"Here are {len(chunk)} mathematical systems. Analyze each and answer the verification question for each. Number your answers {start_num} to {end_num}.\n\n"
-            for j, s in enumerate(chunk):
-                 prompt_text += f"{start_num + j}. {s}\n\n"
-            prompt_text += "Answer:\n"
+            if args.distractor_type == "math":
+                prompt_text = f"Here are {len(chunk)} mathematical systems. Analyze each and answer the verification question for each. Number your answers {start_num} to {end_num}.\n\n"
+                for j, s in enumerate(chunk):
+                     prompt_text += f"{start_num + j}. {s}\n\n"
+                prompt_text += "Answer:\n"
+            else:
+                prompt_text = f"Here are {len(chunk)} text paragraphs. Analyze the main argument and rhetorical style of each paragraph. Number your answers {start_num} to {end_num}.\n\n"
+                for j, s in enumerate(chunk):
+                     prompt_text += f"Paragraph {start_num + j}:\n{s}\n\n"
+                prompt_text += "Answer:\n"
+            
             all_prompts.append(prompt_text)
             
         current_system_index += 20
