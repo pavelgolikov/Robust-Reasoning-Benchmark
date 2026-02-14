@@ -398,11 +398,11 @@ def generate_random_binary_op(var1, var2, domain):
         raise ValueError(f"Unknown domain: {domain}")
 
 
-def pick_verification_question(var1, var2, var3, sys_index):
+def pick_verification_question(var1, var2, var3):
     questions = [
     # q1: associativity verification
     f"""
-verify associativity in system-{sys_index}.
+verify associativity in System_i.
 consider the specific variables {var1}, {var2}, and {var3}.
 using the definitions provided, determine if ({var1} * {var2}) * {var3} = {var1} * ({var2} * {var3}).
 steps:
@@ -425,7 +425,7 @@ steps:
 
     # Q3: Distributivity Check
     f"""
-Verify Distributivity in System-{sys_index}.
+Verify Distributivity in System_i.
 We must test if the operator "*" distributes over "+" for variables {var1}, {var2}, {var3}.
 Steps:
 1. LHS: Calculate {var1} * ({var2} + {var3}).
@@ -435,7 +435,7 @@ Steps:
 
     # Q4: Commutativity Violation Test
     f"""
-Measure Commutativity violation in System-{sys_index}.
+Measure Commutativity violation in System_i.
 Calculate the difference between doing the operation "+" in forward vs reverse order.
 Steps:
 1. Calculate Forward: X = {var1} + {var2}.
@@ -445,7 +445,7 @@ Steps:
 
     # Q5: Identity Element Search
     f"""
-Solve for Identity in System-{sys_index}.
+Solve for Identity in System_i.
 Assume there is an unknown element 'E_i' such that {var1} + E_i = {var1}.
 Steps:
 1. Write the algebraic equation for "{var1} + E_i" using the formula defined for "+".
@@ -455,79 +455,113 @@ Steps:
     return random.choice(questions)
 
 
-def generate_system(terms, cur_term_ind, sys_index):
+def generate_math_distractor(variables):
     """
     Generate a system
     """
     # select domain of the system
-    random_int = random.randint(42, 100)
     domains = ["Square Matrices", f"Numbers", "Polynomials"]
     domain = random.choice(domains)
-    # each system defines 2 terms
-    cur_term_index = (cur_term_ind + 2) % len(terms)
-    terms_list = [terms[(cur_term_index + i) % len(terms)] for i in range(9)]
-    gen_bin_add = generate_random_binary_op(terms_list[0], terms_list[1], domain)
-    gen_bin_mul = generate_random_binary_op(terms_list[2], terms_list[3], domain)
-    gen_eq = generate_random_equality_condition(domain, terms_list[4], terms_list[5])
-    # def_var_1, def_var_2, def_var_3, def_var_4, def_var_5, def_var_6, def_var_7, def_var_8, def_var_9 = terms_list
-    verification_question = pick_verification_question(terms_list[6], terms_list[7], terms_list[8], sys_index)
+    gen_bin_add = generate_random_binary_op(variables[0], variables[1], domain)
+    gen_bin_mul = generate_random_binary_op(variables[2], variables[3], domain)
+    gen_eq = generate_random_equality_condition(domain, variables[4], variables[5])
+    verification_question = pick_verification_question(variables[6], variables[7], variables[8])
     
     system_dynamic_template = f"""\n\n
-Let us define System-{sys_index}.
-The variables ({terms_list[0]}, {terms_list[1]}, {terms_list[2]}, {terms_list[3]}, {terms_list[4]}, {terms_list[5]}) are defined as {domain}.
-The operations on elements of System-{sys_index} are redefined using standard mathematical operations as follows:
-1. DEFINITION OF ADDITION OPERATOR on elements of System-{sys_index}: "+":
-For any two elements {terms_list[0]} and {terms_list[1]}:
-Formula: {terms_list[0]} + {terms_list[1]} = {gen_bin_add}
-2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-{sys_index}: "*":
-For any two elements {terms_list[2]} and {terms_list[3]}:
-Formula: {terms_list[2]} * {terms_list[3]} = {gen_bin_mul}
-3. DEFINITION OF EQUALITY OPERATOR on elements of System-{sys_index}: "=":
-Formula: {terms_list[4]} = {terms_list[5]} if and only if {gen_eq}.
+Let us define mathematical System_i.
+The variables ({variables[0]}, {variables[1]}, {variables[2]}, {variables[3]}, {variables[4]}, {variables[5]}, {variables[6]}, {variables[7]}, {variables[8]}) are defined as {domain}.
+The operations on elements of this system are redefined using standard mathematical operations as follows:
+1. DEFINITION OF ADDITION OPERATOR on elements of System_i: "+":
+For any two elements {variables[0]} and {variables[1]}:
+Formula: {variables[0]} + {variables[1]} = {gen_bin_add}
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System_i: "*":
+For any two elements {variables[2]} and {variables[3]}:
+Formula: {variables[2]} * {variables[3]} = {gen_bin_mul}
+3. DEFINITION OF EQUALITY OPERATOR on elements of System_i: "=":
+Formula: {variables[4]} = {variables[5]} if and only if {gen_eq}.
     """
     verification_question = f"{verification_question}\n\n"
     prompt = system_dynamic_template + verification_question
     return prompt
 
 
-def generate_distractor_subsets(lcase_dict, ucase_dict, greek_dict):
-    # generates d_h, d_m, and d_l from the provided dictionaries
-    # two d_h subsets: one with greek letters and one without
-    d_h_no_greek_zip = list(zip(lcase_dict['high'], ucase_dict['high']))
-    # flatten the list of tuples
-    d_h_no_greek_zip = [item for sublist in d_h_no_greek_zip for item in sublist]
-    d_h_greek_zip = list(zip(lcase_dict['high'], ucase_dict['high'], greek_dict['high']))
-    # flatten the list of tuples
-    d_h_greek_zip = [item for sublist in d_h_greek_zip for item in sublist]
-    print(d_h_no_greek_zip)
-    print(d_h_greek_zip)
-    
-    d_m = list(zip(lcase_dict['med'], ucase_dict['med'], greek_dict['med']))
-    d_m_no_greek_zip = list(zip(lcase_dict['med'], ucase_dict['med']))
-    # flatten the list of tuples
-    d_m = [item for sublist in d_m for item in sublist]
-    d_m_no_greek_zip = [item for sublist in d_m_no_greek_zip for item in sublist]
-    print(d_m_no_greek_zip)
-    print(d_m)
-    
-    d_l = list(zip(lcase_dict['low'], ucase_dict['low'], greek_dict['low']))
-    # flatten the list of tuples
-    d_l = [item for sublist in d_l for item in sublist]
-    print(d_l)
+def generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed):
+    random.seed(seed)
+    # Strategy: We have N slots (20 bins * 9 vars = 180 slots).
+    # We assign variables to bins such that no variable appears twice in the same bin.
+    # Since max frequency of any variable is 5 (lcase_high), and we have 20 bins,
+    # we can greedily assign each instance of a variable to a bin that doesn't have it yet.
+    # To balance bin sizes, we prefer bins with fewer items.
 
-
-def generate_dset():
-    # dset is a distractor set assembled out of 3 basic subsets, which are 
-    # d_h - consists of 3 distractors targeting 30 high frequency variables
-    # d_m - consists of 3 distractors targeting 30 medium frequency variables
-    # d_l - consists of 3 distractors targeting 30 low frequency variables
-    # dset = [d_h, d_m, d_h, d_l]
-    print("Generating distractor set...")
+    # 1. Expand all variable instances with their constraints
+    all_vars_expanded = []
+    lcase_high_count, ucase_high_count, greek_high_count = 6, 3, 1
+    lcase_med_count, ucase_med_count, greek_med_count = 3, 2, 1
+    lcase_low_count, ucase_low_count, greek_low_count = 1, 1, 1
+    num_bins = (lcase_high_count + ucase_high_count + greek_high_count) * 10 + (lcase_med_count + ucase_med_count + greek_med_count) * 10 + (lcase_low_count + ucase_low_count) * 6 + greek_low_count * 8
+    print(f"number of bins: {num_bins}")
+    assert num_bins % 9 == 0
+    num_systems = num_bins // 9
     
+    # lcase
+    all_vars_expanded.extend(lcase_dict['high'] * lcase_high_count)
+    all_vars_expanded.extend(lcase_dict['med'] * lcase_med_count)
+    all_vars_expanded.extend(lcase_dict['low'] * lcase_low_count)
+    # ucase
+    all_vars_expanded.extend(ucase_dict['high'] * ucase_high_count)
+    all_vars_expanded.extend(ucase_dict['med'] * ucase_med_count)
+    all_vars_expanded.extend(ucase_dict['low'] * ucase_low_count)
+    # greek
+    all_vars_expanded.extend(greek_dict['high'] * greek_high_count)
+    all_vars_expanded.extend(greek_dict['med'] * greek_med_count)
+    all_vars_expanded.extend(greek_dict['low'] * greek_low_count)
+    
+    
+    # 2. Group by unique variable to handle them one by one
+    from collections import Counter
+    counts = Counter(all_vars_expanded)
+    
+    # Initialize 20 empty buckets
+    num_bins = 20
+    bins_list = [[] for _ in range(num_bins)]
+    
+    # Process variables (order doesn't strictly matter for correctness with max_count=5 << 20, 
+    # but processing higher counts first is generally safer for bin packing)
+    var_freq_pairs = sorted(counts.items(), key=lambda x: x[1], reverse=True)
+    # print(f"Variable frequency pairs: {var_freq_pairs}")
+    
+    for var, freq in var_freq_pairs:
+        # We need to place 'count' instances of 'var' into 'count' DISTINCT bins.
+        # To maintain balance, we pick bins with the fewest current items.
+        
+        # Get indices of all bins
+        indices = list(range(num_bins))
+        # Shuffle indices to ensure random distribution among ties
+        random.shuffle(indices)
+        
+        # Sort indices by current bin size (ascending)
+        indices.sort(key=lambda i: len(bins_list[i]))
+        
+        # Pick the top 'count' least-filled bins
+        targets = indices[:freq]
+        for i in targets:
+            bins_list[i].append(var)
+            
+    # 3. Final Shuffle within bins and verification
+    distractors = []
+    for i, bin_ in enumerate(bins_list):
+        if len(bin_) != 9:
+            # Fallback/Warning (Should ideally not happen given the counts logic)
+            print(f"Warning: Bin {i} has {len(bin_)} variables instead of 9.")
+            
+        random.shuffle(bin_)
+        # Generate distractor using the wrapper function
+        # Note: generate_math_distractor expects a list of variables
+        distr = generate_math_distractor(bin_)
+        distractors.append(distr)
+    return distractors
 
 
 if __name__ == "__main__":
-    # system_description = generate_systems_static(vars_total, 2)
-    # for i in system_description:
-    #     print(i)
-    generate_distractor_subsets(lcase_dict, ucase_dict, greek_dict)
+    seed = random.randint(0, 1000)
+    distractors = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed)
