@@ -6,6 +6,7 @@ import time
 from vllm import LLM, SamplingParams
 from tqdm import tqdm
 import requests
+from transformers import AutoTokenizer
 
 # Add parent directory to path to allow imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -13,11 +14,11 @@ from experiments.context_saturation.generate_systems_static import generate_20_d
 
 
 # Mock vLLM for verification
-class SamplingParams:
+class MockSamplingParams:
     def __init__(self, temperature=0.7, max_tokens=2048):
         pass
 
-class LLM:
+class MockLLM:
     def __init__(self, model, tensor_parallel_size=1, max_model_len=4096):
         pass
     
@@ -95,6 +96,55 @@ def load_and_chunk_text(filepath, min_length=200):
     return clean_paragraphs
 
 
+def load_and_chunk_text_by_tokens(filepath, target_tokens=3000, tokenizer=None):
+    """
+    Loads text, splits into paragraphs, and then groups them into chunks 
+    that are approximately target_tokens long.
+    Uses accurate token counting via tokenizer.
+    """
+    if tokenizer is None:
+        print("No tokenizer provided for chunking, loading gpt2 default...")
+        try:
+             tokenizer = AutoTokenizer.from_pretrained("gpt2")
+        except Exception as e:
+             print(f"Failed to load gpt2 tokenizer: {e}. Falling back to approximation.")
+             # Fallback to approx if needed, but user requested real tokenizer.
+             return load_and_chunk_text_approx(filepath, target_tokens)
+
+    paragraphs = load_and_chunk_text(filepath, min_length=500)
+    
+    chunks = []
+    current_chunk = []
+    current_length = 0
+    
+    # Pre-calculate to avoid repeated encoding? 
+    # Or just loop. Tokenizing single paragraphs is fast.
+    print(f"Tokenizing {len(paragraphs)} paragraphs for accurate chunking...")
+
+    for p in paragraphs:
+        # Encode
+        token_ids = tokenizer.encode(p, add_special_tokens=False)
+        p_len = len(token_ids)
+        
+        # If adding this paragraph exceeds target significantly, finish current chunk
+        # But if current chunk is empty, take it anyway (unless it's massive, but we assume paragraphs are reasonable)
+        if current_chunk and (current_length + p_len > target_tokens):
+             # Check if we are closer to target with or without this paragraph?
+             # Simple logic: once we cross target, or are close enough, stop.
+             # Here we just fill until > target
+             chunks.append("\n\n".join(current_chunk))
+             current_chunk = [p]
+             current_length = p_len
+        else:
+             current_chunk.append(p)
+             current_length += p_len
+             
+    if current_chunk:
+        chunks.append("\n\n".join(current_chunk))
+        
+    print(f"Created {len(chunks)} chunks of approx {target_tokens} tokens from {filepath}.")
+    return chunks
+
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Context Rot (Distractors + Answers)")
@@ -114,20 +164,26 @@ def main():
     print(f"Initializing vLLM with model: {args.model_path}")
     
     llm = None
+    tokenizer = None
+    
     if args.mock:
         print("MOCK MODE: Using mock vLLM.")
-        llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192)
-        tokenizer = None
+        # Load tokenizer for chunking if possible
+        try:
+             print(f"Loading tokenizer from {args.model_path} for chunking...")
+             tokenizer = AutoTokenizer.from_pretrained(args.model_path)
+        except Exception as e:
+             print(f"Warning: Could not load tokenizer from {args.model_path}: {e}. using gpt2.")
+             tokenizer = AutoTokenizer.from_pretrained("gpt2")
+             
+        llm = MockLLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192)
     else:
-        from vllm import LLM, SamplingParams
+        # from vllm import LLM, SamplingParams
         llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192)
         tokenizer = llm.get_tokenizer()
     
     # Sampling parameters for producing varied but reasonable answers
-    sampling_params = SamplingParams(
-        temperature=0.7, 
-        max_tokens=8192,
-    )
+    sampling_params = SamplingParams( temperature=0.7, max_tokens=8192)
 
     history = []
     total_tokens = 0
@@ -138,9 +194,6 @@ def main():
         try:
             with open(args.output_file, 'r') as f:
                 history = json.load(f)
-            # Recalculate token count roughly (or assume it's part of the job)
-            # For simplicity, we just append newly generated tokens to the target count
-            # but we won't re-verify the old count deeply to avoid slow startup.
             print(f"Loaded {len(history)} turns.")
         except Exception as e:
             print(f"Error loading existing file: {e}. Starting fresh.")
@@ -148,16 +201,6 @@ def main():
     
     pbar = tqdm(total=args.target_tokens, unit="tok", initial=total_tokens)
 
-    # Calculate how many total systems/prompts we need
-    # Target: 1M tokens. 
-    # Approximation: 
-    # Each distractor is ~200-300 tokens? 
-    # A set of 4 distractors + answer is around 9200 tokens?
-    # Let's say 9200 tokens per "turn" (User + Assistant).
-    # 1,000,000 / 9200 = ~108 turns.
-    # We can refine this or just generate a large buffer. 
-    # Better strategy: Generate rounds of 20 distractors (5 turns of 4) until we likely exceed target.
-    
     estimated_tokens_per_turn = 9200
     needed_turns = (args.target_tokens - total_tokens) // estimated_tokens_per_turn
     if needed_turns < 0: needed_turns = 1
@@ -186,7 +229,7 @@ def main():
         print(f"Ensuring text is available at {args.text_file}...")
         ensure_downloaded(args.text_url, args.text_file)
         # Using 1500 tokens per chunk
-        text_chunks = load_and_chunk_text_by_tokens(args.text_file, target_tokens=1500)
+        text_chunks = load_and_chunk_text_by_tokens(args.text_file, target_tokens=2000, tokenizer=tokenizer)
         if not text_chunks:
             print("Error: No chunks loaded from text file.")
             return

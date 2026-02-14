@@ -55,8 +55,8 @@ def main():
         print(f"Error loading tokenizer {model_name}: {e}")
         return
 
-    analyze_file(os.path.join(script_dir, "context_math.json"), tokenizer)
-    analyze_file(os.path.join(script_dir, "context_text.json"), tokenizer)
+    analyze_file(os.path.join(script_dir, "../context_math.json"), tokenizer)
+    analyze_file(os.path.join(script_dir, "../context_text.json"), tokenizer)
 
 if __name__ == "__main__":
     main()
