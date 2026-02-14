@@ -73,12 +73,21 @@ def ensure_downloaded(url, filepath):
             os.remove(filepath)
         raise
 
-def load_and_chunk_text(filepath, min_length=200):
+def load_and_chunk_text(filepath, min_length=200, start_marker=None):
     """
     Loads text from filepath, splits into paragraphs, and filters them.
+    If start_marker is provided, only text starting from that marker is processed.
     """
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
         text = f.read()
+        
+    if start_marker:
+        start_idx = text.find(start_marker)
+        if start_idx != -1:
+            print(f"Found start marker '{start_marker}' at index {start_idx}. Trimming previous text.")
+            text = text[start_idx:]
+        else:
+            print(f"Warning: Start marker '{start_marker}' not found in {filepath}. Using full text.")
 
     # Split by double newlines (common for Project Gutenberg texts)
     # Also handle common Gutenberg headers/footers roughly if possible, 
@@ -97,7 +106,7 @@ def load_and_chunk_text(filepath, min_length=200):
     return clean_paragraphs
 
 
-def load_and_chunk_text_by_tokens(filepath, target_tokens=3000, tokenizer=None):
+def load_and_chunk_text_by_tokens(filepath, target_tokens=3000, tokenizer=None, start_marker=None):
     """
     Loads text, splits into paragraphs, and then groups them into chunks 
     that are approximately target_tokens long.
@@ -110,9 +119,10 @@ def load_and_chunk_text_by_tokens(filepath, target_tokens=3000, tokenizer=None):
         except Exception as e:
              print(f"Failed to load gpt2 tokenizer: {e}. Falling back to approximation.")
              # Fallback to approx if needed, but user requested real tokenizer.
+             # Note: load_and_chunk_text_approx isn't updated for start_marker here, assume tokenizer works usually.
              return load_and_chunk_text_approx(filepath, target_tokens)
 
-    paragraphs = load_and_chunk_text(filepath, min_length=500)
+    paragraphs = load_and_chunk_text(filepath, min_length=500, start_marker=start_marker)
     
     chunks = []
     current_chunk = []
@@ -158,6 +168,7 @@ def main():
     parser.add_argument("--distractor_type", type=str, default="math", choices=["math", "text"], help="Type of distractors to generate")
     parser.add_argument("--text_url", type=str, default="https://www.gutenberg.org/cache/epub/25717/pg25717.txt", help="URL for text source")
     parser.add_argument("--text_file", type=str, default="experiments/data/gibbon_vol1.txt", help="Local path for text source")
+    parser.add_argument("--start_marker", type=str, default="In the second century of the Christian", help="String to mark start of text processing")
     
     args = parser.parse_args()
     start_time = time.time()
@@ -229,7 +240,7 @@ def main():
         print(f"Ensuring text is available at {args.text_file}...")
         ensure_downloaded(args.text_url, args.text_file)
         # Using 2000 tokens per chunk target
-        text_chunks = load_and_chunk_text_by_tokens(args.text_file, target_tokens=2000, tokenizer=tokenizer)
+        text_chunks = load_and_chunk_text_by_tokens(args.text_file, target_tokens=2000, tokenizer=tokenizer, start_marker=args.start_marker)
         if not text_chunks:
             print("Error: No chunks loaded from text file.")
             return
