@@ -20,8 +20,7 @@ def main():
     parser.add_argument("--model_path", type=str, default="tiiuae/Falcon-H1R-7B", help="Model to use for generation")
     parser.add_argument("--output_file", type=str, required=True, help="Output JSONL file")
     parser.add_argument("--target_tokens", type=int, default=1000000, help="Total tokens (User+Assistant) to generate")
-    parser.add_argument("--distractors_per_query", type=int, default=8, help="Number of distractors per user prompt")
-    parser.add_argument("--batch_size", type=int, default=20, help="Number of concurrent queries to run")
+    parser.add_argument("--distractors_per_query", type=int, default=4, help="Number of distractors per user prompt")
     parser.add_argument("--num_gpu", type=int, default=1, help="TP size for vLLM")
     parser.add_argument("--mock", action="store_true", help="Use mock vLLM for verification")
     
@@ -30,19 +29,19 @@ def main():
 
     print(f"Initializing vLLM with model: {args.model_path}")
     
-    if args.mock:
-        print("MOCK MODE: Using mock vLLM.")
-        from experiments.mock_vllm import LLM, SamplingParams
-        llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=4096)
-        tokenizer = None
-    else:
-        llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=4096) # Limit context for generation speed
-        tokenizer = llm.get_tokenizer()
+    # if args.mock:
+    #     print("MOCK MODE: Using mock vLLM.")
+    #     from experiments.mock_vllm import LLM, SamplingParams
+    #     llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=4096)
+    #     tokenizer = None
+    # else:
+    llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192) # Limit context for generation speed
+    tokenizer = llm.get_tokenizer()
     
     # Sampling parameters for producing varied but reasonable answers
     sampling_params = SamplingParams(
         temperature=0.7, 
-        max_tokens=2048, # Enough for 8 answers? 8 * 200 = 1600.
+        max_tokens=8192,
     )
 
     history = []
