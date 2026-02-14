@@ -7,10 +7,26 @@ import random
 # variables_upper = ["X", "Y", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 # variables_AIME_2024 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'a', 
 #     'b', 'c', 'f', 'g', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'x', 'y', 'z', 'w']
+# vars_total = ["x", "n", "i", "y", "a", "b", "k", "t", "A", "B", "f", "m", "z", "C", "N", "X", "Y", "j", "u", "v", "M",
+#     "S", "r", "p", "g", "d", "T", "P", "c", "h", "w", "q", "L", "R", "F", "G", "H", "D", "e", "s", "l", "o", "K", "I",
+#     "V", "U", "J", "W", "Z", "Q", "E", "O"]
 
-vars_total = ["x", "n", "i", "y", "a", "b", "k", "t", "A", "B", "f", "m", "z", "C", "N", "X", "Y", "j", "u", "v", "M",
-    "S", "r", "p", "g", "d", "T", "P", "c", "h", "w", "q", "L", "R", "F", "G", "H", "D", "e", "s", "l", "o", "K", "I",
-    "V", "U", "J", "W", "Z", "Q", "E", "O"]
+lcase_high = ['x', 'n', 'i', 't', 'f', 'y', 'a', 'b', 'c', 'e']
+lcase_med = ['d', 'g', 'h', 'k', 'm', 'r', 's', 'u', 'v', 'z']
+lcase_low = ['j', 'l', 'o', 'p', 'q', 'w']
+lcase_dict = {'high': lcase_high, 'med': lcase_med, 'low': lcase_low}
+
+ucase_high = ['A', 'B', 'C', 'P', 'S', 'X', 'Y', 'N', 'M', 'F']
+ucase_med = ['D', 'E', 'G', 'H', 'I', 'L', 'R', 'T', 'V', 'Q']
+ucase_low = ['J', 'K', 'O', 'U', 'W', 'Z']
+ucase_dict = {'high': ucase_high, 'med': ucase_med, 'low': ucase_low}
+
+greek_high = ['\\pi', '\\theta', '\\alpha', '\\beta', '\\Delta', '\\epsilon', '\\lambda', '\\mu', '\\sigma', '\\Sigma']
+greek_med = ['\\phi', '\\omega', '\\gamma', '\\rho', '\\tau', '\\delta', '\\eta', '\\psi', '\\nu', '\\xi']
+greek_low = ['\\zeta', '\\kappa', '\\chi', '\\iota', '\\upsilon', '\\Omega', '\\Phi', '\\Psi']
+greek_dict = {'high': greek_high, 'med': greek_med, 'low': greek_low}
+
+
 
 
 def numeric_equality_conditions(var1, var2):
@@ -453,47 +469,65 @@ def generate_system(terms, cur_term_ind, sys_index):
     gen_bin_add = generate_random_binary_op(terms_list[0], terms_list[1], domain)
     gen_bin_mul = generate_random_binary_op(terms_list[2], terms_list[3], domain)
     gen_eq = generate_random_equality_condition(domain, terms_list[4], terms_list[5])
-    def_var_1, def_var_2, def_var_3, def_var_4, def_var_5, def_var_6, def_var_7, def_var_8, def_var_9 = terms_list
+    # def_var_1, def_var_2, def_var_3, def_var_4, def_var_5, def_var_6, def_var_7, def_var_8, def_var_9 = terms_list
     verification_question = pick_verification_question(terms_list[6], terms_list[7], terms_list[8], sys_index)
     
     system_dynamic_template = f"""\n\n
 Let us define System-{sys_index}.
-The variables ({def_var_1}, {def_var_2}, {def_var_3}, {def_var_4}, {def_var_5}, {def_var_6}) are defined as {domain}.
+The variables ({terms_list[0]}, {terms_list[1]}, {terms_list[2]}, {terms_list[3]}, {terms_list[4]}, {terms_list[5]}) are defined as {domain}.
 The operations on elements of System-{sys_index} are redefined using standard mathematical operations as follows:
 1. DEFINITION OF ADDITION OPERATOR on elements of System-{sys_index}: "+":
-For any two elements {def_var_1} and {def_var_2}:
-Formula: {def_var_1} + {def_var_2} = {gen_bin_add}
+For any two elements {terms_list[0]} and {terms_list[1]}:
+Formula: {terms_list[0]} + {terms_list[1]} = {gen_bin_add}
 2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System-{sys_index}: "*":
-For any two elements {def_var_3} and {def_var_4}:
-Formula: {def_var_3} * {def_var_4} = {gen_bin_mul}
+For any two elements {terms_list[2]} and {terms_list[3]}:
+Formula: {terms_list[2]} * {terms_list[3]} = {gen_bin_mul}
 3. DEFINITION OF EQUALITY OPERATOR on elements of System-{sys_index}: "=":
-Formula: {def_var_5} = {def_var_6} if and only if {gen_eq}.
+Formula: {terms_list[4]} = {terms_list[5]} if and only if {gen_eq}.
     """
     verification_question = f"{verification_question}\n\n"
     prompt = system_dynamic_template + verification_question
     return prompt
 
 
-def generate_systems_static(num_systems):
-    """
-    Generates a mathematically valid, random mathematical system with given variables to rot the context of the model.
-    Returns a list of strings, each string is a definition of a mathematical system and a question to the model about \
-    the system.
-    """
-    vars_per_distractor = 9
-    systems = []
-    cur_sys_ind = 0
-    cur_term_ind = 0
-    while cur_sys_ind < num_systems:
-        # generate a random system
-        system_description = generate_system(variables, cur_term_ind, cur_sys_ind)
-        systems.append(system_description)
-        cur_sys_ind += 1
-        cur_term_ind  = (cur_term_ind + vars_per_distractor) % len(variables)
-    return systems
+def generate_distractor_subsets(lcase_dict, ucase_dict, greek_dict):
+    # generates d_h, d_m, and d_l from the provided dictionaries
+    # two d_h subsets: one with greek letters and one without
+    d_h_no_greek_zip = list(zip(lcase_dict['high'], ucase_dict['high']))
+    # flatten the list of tuples
+    d_h_no_greek_zip = [item for sublist in d_h_no_greek_zip for item in sublist]
+    d_h_greek_zip = list(zip(lcase_dict['high'], ucase_dict['high'], greek_dict['high']))
+    # flatten the list of tuples
+    d_h_greek_zip = [item for sublist in d_h_greek_zip for item in sublist]
+    print(d_h_no_greek_zip)
+    print(d_h_greek_zip)
+    
+    d_m = list(zip(lcase_dict['med'], ucase_dict['med'], greek_dict['med']))
+    d_m_no_greek_zip = list(zip(lcase_dict['med'], ucase_dict['med']))
+    # flatten the list of tuples
+    d_m = [item for sublist in d_m for item in sublist]
+    d_m_no_greek_zip = [item for sublist in d_m_no_greek_zip for item in sublist]
+    print(d_m_no_greek_zip)
+    print(d_m)
+    
+    d_l = list(zip(lcase_dict['low'], ucase_dict['low'], greek_dict['low']))
+    # flatten the list of tuples
+    d_l = [item for sublist in d_l for item in sublist]
+    print(d_l)
+
+
+def generate_dset():
+    # dset is a distractor set assembled out of 3 basic subsets, which are 
+    # d_h - consists of 3 distractors targeting 30 high frequency variables
+    # d_m - consists of 3 distractors targeting 30 medium frequency variables
+    # d_l - consists of 3 distractors targeting 30 low frequency variables
+    # dset = [d_h, d_m, d_h, d_l]
+    print("Generating distractor set...")
+    
 
 
 if __name__ == "__main__":
-    system_description = generate_systems_static(vars_total, 2)
-    for i in system_description:
-        print(i)
+    # system_description = generate_systems_static(vars_total, 2)
+    # for i in system_description:
+    #     print(i)
+    generate_distractor_subsets(lcase_dict, ucase_dict, greek_dict)
