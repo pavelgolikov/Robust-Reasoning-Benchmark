@@ -36,13 +36,15 @@ def main():
 
     print(f"Initializing vLLM with model: {args.model_path}")
     
+    llm = None
     if args.mock:
         print("MOCK MODE: Using mock vLLM.")
         from experiments.mock_vllm import LLM, SamplingParams
         llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192)
         tokenizer = None
     else:
-        llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192) # Limit context for generation speed
+        from vllm import LLM, SamplingParams
+        llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192)
         tokenizer = llm.get_tokenizer()
     
     # Sampling parameters for producing varied but reasonable answers
