@@ -5,19 +5,96 @@ import json
 import time
 from vllm import LLM, SamplingParams
 from tqdm import tqdm
+import requests
 
 # Add parent directory to path to allow imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from experiments.context_saturation.generate_systems_static import generate_20_distractors, lcase_dict, ucase_dict, greek_dict
 
-try:
-    from experiments.context_saturation.generate_systems_static import generate_20_distractors, lcase_dict, ucase_dict, greek_dict
-except ImportError:
-    # Fallback if running from a different directory
-    from context_saturation.generate_systems_static import generate_20_distractors, lcase_dict, ucase_dict, greek_dict
-try:
-    from experiments.text_distractor_loader import ensure_downloaded, load_and_chunk_text
-except ImportError:
-    print("Warning: text_distractor_loader not found. Text distractors will fail.")
+
+# Mock vLLM for verification
+class SamplingParams:
+    def __init__(self, temperature=0.7, max_tokens=2048):
+        pass
+
+class LLM:
+    def __init__(self, model, tensor_parallel_size=1, max_model_len=4096):
+        pass
+    
+    def get_tokenizer(self):
+        return None
+        
+    def generate(self, prompts, sampling_params):
+        results = []
+        for p in prompts:
+            # Create a mock output object structure that matches vLLM
+            class MockOutput:
+                def __init__(self, prompt):
+                    self.prompt = prompt
+                    self.prompt_token_ids = [1] * (len(prompt) // 4) # Fake token count
+                    
+                    class OutputItem:
+                        def __init__(self):
+                            self.text = "Mock Answer"
+                            self.token_ids = [2] * 50
+                    self.outputs = [OutputItem()]
+                    
+            results.append(MockOutput(p))
+        return results
+
+
+def ensure_downloaded(url, filepath):
+    """
+    Checks if a file exists at filepath. If not, downloads it from url.
+    """
+    if os.path.exists(filepath):
+        print(f"File already exists: {filepath}")
+        return
+
+    print(f"Downloading from {url} to {filepath}...")
+    
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        
+        with open(filepath, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print("Download complete.")
+    except Exception as e:
+        print(f"Error downloading file: {e}")
+        # Clean up partial file if needed
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        raise
+
+def load_and_chunk_text(filepath, min_length=200):
+    """
+    Loads text from filepath, splits into paragraphs, and filters them.
+    """
+    with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+        text = f.read()
+
+    # Split by double newlines (common for Project Gutenberg texts)
+    # Also handle common Gutenberg headers/footers roughly if possible, 
+    # but for now we just filter by length.
+    paragraphs = text.split('\n\n')
+    
+    clean_paragraphs = []
+    for p in paragraphs:
+        # Replace single newlines within a paragraph with spaces
+        clean_p = p.replace('\n', ' ').strip()
+        
+        if len(clean_p) >= min_length:
+            clean_paragraphs.append(clean_p)
+            
+    print(f"Loaded {len(clean_paragraphs)} paragraphs from {filepath}.")
+    return clean_paragraphs
+
+
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Context Rot (Distractors + Answers)")
@@ -39,7 +116,6 @@ def main():
     llm = None
     if args.mock:
         print("MOCK MODE: Using mock vLLM.")
-        from experiments.mock_vllm import LLM, SamplingParams
         llm = LLM(model=args.model_path, tensor_parallel_size=args.num_gpu, max_model_len=8192)
         tokenizer = None
     else:
@@ -88,7 +164,12 @@ def main():
     
     # Needed rounds of 20-distractors
     # Each round of 20 gives 5 turns (if distractors_per_query=4)
-    turns_per_round = 20 // args.distractors_per_query
+    distractors_per_query = args.distractors_per_query
+    if args.distractor_type == "text":
+        distractors_per_query = 1 # Force 1 chunk per query for text
+        print("Using 1 text chunk (approx 1500 tokens) per query.")
+        
+    turns_per_round = 20 // distractors_per_query
     needed_rounds = (needed_turns // turns_per_round) + 2 # +2 buffer
     
     print(f"Targeting {args.target_tokens} tokens.")
@@ -100,13 +181,14 @@ def main():
     current_system_index = 1
     
     # Pre-load text if needed
-    text_paragraphs = []
+    text_chunks = []
     if args.distractor_type == "text":
         print(f"Ensuring text is available at {args.text_file}...")
         ensure_downloaded(args.text_url, args.text_file)
-        text_paragraphs = load_and_chunk_text(args.text_file)
-        if not text_paragraphs:
-            print("Error: No paragraphs loaded from text file.")
+        # Using 1500 tokens per chunk
+        text_chunks = load_and_chunk_text_by_tokens(args.text_file, target_tokens=1500)
+        if not text_chunks:
+            print("Error: No chunks loaded from text file.")
             return
 
     # 1. Pre-generate ALL prompts
@@ -119,14 +201,14 @@ def main():
             # Generate 20 distractors with correct absolute definition indexing
             distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index)
         else:
-            # Text distractors: slice 20 paragraphs, wrapping around
-            base_idx = (r * 20) % len(text_paragraphs)
+            # Text distractors: slice 20 chunks, wrapping around
+            base_idx = (r * 20) % len(text_chunks)
             for k in range(20):
-                p_idx = (base_idx + k) % len(text_paragraphs)
-                distractor_pool.append(text_paragraphs[p_idx])
+                p_idx = (base_idx + k) % len(text_chunks)
+                distractor_pool.append(text_chunks[p_idx])
         
-        # Chunk into groups (e.g. 4)
-        chunk_size = args.distractors_per_query
+        # Chunk into groups (e.g. 4 for math, 1 for text)
+        chunk_size = distractors_per_query
         for i in range(0, len(distractor_pool), chunk_size):
             chunk = distractor_pool[i : i + chunk_size]
             if not chunk: continue
@@ -142,13 +224,11 @@ def main():
                      prompt_text += f"{start_num + j}. {s}\n\n"
                 prompt_text += "Answer:\n"
             else:
-                prompt_text = f"Here are {len(chunk)} text paragraphs. Analyze the main argument and rhetorical style of each paragraph. Number your answers {start_num} to {end_num}.\n\n"
-                for j, s in enumerate(chunk):
-                     prompt_text += f"Paragraph {start_num + j}:\n{s}\n\n"
-                prompt_text += "Answer:\n"
+                # Text: single chunk
+                prompt_text = f"Here is a text excerpt. Analyze the main argument, rhetorical style and historical context of this text. \n\nText {start_num}:\n{chunk[0]}\n\nAnswer {start_num}:\n"
             
             all_prompts.append(prompt_text)
-            
+           
         current_system_index += 20
 
     print(f"Prepared {len(all_prompts)} prompts. Starting generation...")
