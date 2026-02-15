@@ -398,11 +398,11 @@ def generate_random_binary_op(var1, var2, domain):
         raise ValueError(f"Unknown domain: {domain}")
 
 
-def pick_verification_question(var1, var2, var3, index):
+def pick_verification_question(var1, var2, var3):
     questions = [
     # q1: associativity verification
     f"""
-verify associativity in System_{index}.
+verify associativity in System_D.
 consider the specific variables {var1}, {var2}, and {var3}.
 using the definitions provided, determine if ({var1} * {var2}) * {var3} = {var1} * ({var2} * {var3}).
 steps:
@@ -413,7 +413,7 @@ steps:
 
 #     # q2: sequence expansion
 #     f"""
-# calculate sequence expansion in System_{index}.
+# calculate sequence expansion in System_D.
 # using variable {var1} as the starting seed Z_0, define a sequence:
 # Z_{{n+1}} = (Z_n + {var2}) * Z_n
 # Steps:
@@ -425,7 +425,7 @@ steps:
 
     # Q3: Distributivity Check
     f"""
-Verify Distributivity in System_{index}.
+Verify Distributivity in System_D.
 We must test if the operator "*" distributes over "+" for variables {var1}, {var2}, {var3}.
 Steps:
 1. LHS: Calculate {var1} * ({var2} + {var3}).
@@ -435,7 +435,7 @@ Steps:
 
     # Q4: Commutativity Violation Test
     f"""
-Measure Commutativity violation in System_{index}.
+Measure Commutativity violation in System_D.
 Calculate the difference between doing the operation "+" in forward vs reverse order.
 Steps:
 1. Calculate Forward: X = {var1} + {var2}.
@@ -445,7 +445,7 @@ Steps:
 
     # Q5: Identity Element Search
     f"""
-Solve for Identity in System_{index}.
+Solve for Identity in System_D.
 Assume there is an unknown element 'E_i' such that {var1} + E_i = {var1}.
 Steps:
 1. Write the algebraic equation for "{var1} + E_i" using the formula defined for "+".
@@ -455,7 +455,7 @@ Steps:
     return random.choice(questions)
 
 
-def generate_math_distractor(variables, index):
+def generate_math_distractor(variables):
     """
     Generate a system
     """
@@ -467,22 +467,19 @@ def generate_math_distractor(variables, index):
     gen_eq = generate_random_equality_condition(domain, variables[4], variables[5])
     # Pass index or placeholder if needed for q2 sequence expansion? 
     # Current questions don't strictly use the index except one commented out one.
-    verification_question = pick_verification_question(variables[6], variables[7], variables[8], index)
-    
-    # Replace System_i with specific index
-    system_name = f"System_{index}"
+    verification_question = pick_verification_question(variables[6], variables[7], variables[8])
     
     system_dynamic_template = f"""\n\n
-Let us define mathematical {system_name}.
+Let us define mathematical System_D.
 The variables ({variables[0]}, {variables[1]}, {variables[2]}, {variables[3]}, {variables[4]}, {variables[5]}, {variables[6]}, {variables[7]}, {variables[8]}) are defined as {domain}.
 The operations on elements of this system are redefined using standard mathematical operations as follows:
-1. DEFINITION OF ADDITION OPERATOR on elements of {system_name}: "+":
+1. DEFINITION OF ADDITION OPERATOR on elements of System_D: "+":
 For any two elements {variables[0]} and {variables[1]}:
 Formula: {variables[0]} + {variables[1]} = {gen_bin_add}
-2. DEFINITION OF MULTIPLICATION OPERATOR on elements of {system_name}: "*":
+2. DEFINITION OF MULTIPLICATION OPERATOR on elements of System_D: "*":
 For any two elements {variables[2]} and {variables[3]}:
 Formula: {variables[2]} * {variables[3]} = {gen_bin_mul}
-3. DEFINITION OF EQUALITY OPERATOR on elements of {system_name}: "=":
+3. DEFINITION OF EQUALITY OPERATOR on elements of System_D: "=":
 Formula: {variables[4]} = {variables[5]} if and only if {gen_eq}.
     """
     verification_question = f"{verification_question}\n\n"
@@ -490,7 +487,7 @@ Formula: {variables[4]} = {variables[5]} if and only if {gen_eq}.
     return prompt
 
 
-def generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=1):
+def generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed):
     random.seed(seed)
     # Strategy: We have N slots (20 bins * 9 vars = 180 slots).
     # We assign variables to bins such that no variable appears twice in the same bin.
@@ -536,18 +533,10 @@ def generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_inde
     # print(f"Variable frequency pairs: {var_freq_pairs}")
     
     for var, freq in var_freq_pairs:
-        # We need to place 'count' instances of 'var' into 'count' DISTINCT bins.
-        # To maintain balance, we pick bins with the fewest current items.
-        
         # Get indices of all bins
         indices = list(range(num_bins))
-        # Shuffle indices to ensure random distribution among ties
         random.shuffle(indices)
-        
-        # Sort indices by current bin size (ascending)
         indices.sort(key=lambda i: len(bins_list[i]))
-        
-        # Pick the top 'count' least-filled bins
         targets = indices[:freq]
         for i in targets:
             bins_list[i].append(var)
@@ -561,9 +550,7 @@ def generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_inde
             
         random.shuffle(bin_)
         # Generate distractor using the wrapper function
-        # Note: generate_math_distractor expects a list of variables
-        # Use start_index + i for the system number
-        distr = generate_math_distractor(bin_, start_index + i)
+        distr = generate_math_distractor(bin_)
         distractors.append(distr)
     return distractors
 
