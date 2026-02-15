@@ -248,83 +248,68 @@ def main():
     # Dynamic Generation Loop
     print("Starting dynamic generation loop...")
     
-    # Use a fixed batch size (e.g. 100 distractors = 25 prompts for math, 100 for text)
-    # A "round" of 20 was used before, let's stick to batches of ~20-50 distractors
-    batch_size_distractors = 50 
+    # We want to process a large number of prompts at once for efficiency.
+    # 20 distractors -> 5 prompts (math) or 20 prompts (text).
+    # Let's accumulate ~500 prompts per inference call.
+    INFERENCE_BATCH_SIZE = 500
     
     # Keep track of batches
     batch_count = 0
     
-    # Save incrementally
-    # We will accumulate history in memory but write to file periodically or at end?
-    # Actually, let's keep history in memory for analysis at end, but maybe write to file if huge?
-    # For now, keep simple: append to history, check total_tokens.
-    
-    # If resuming, total_tokens is already set
-    
     while total_tokens < args.target_tokens:
-        batch_count += 1
-        batch_prompts = []
         
-        # Generate a batch of distractors
-        distractor_pool = []
+        current_batch_prompts = []
         
-        # How many chunks do we need for this batch?
-        # We want `batch_size_distractors` items in the pool
+        # Accumulate prompts until we reach the desired batch size
+        # OR until we have "enough" pending (hard to gauge exactly without tokenizing, but count is proxy)
         
-        if args.distractor_type == "math":
-            # Generate batch_size_distractors distractors
-            # Seed based on time + batch index
-            seed = int(time.time() * 1000) + batch_count
-            distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index, count=batch_size_distractors)
-            # generate_20_distractors usually returns 20. modifying it to return flexible count or calling it multiple times?
-            # It seems hardcoded to 20 ("generate_20_distractors"). 
-            # Let's just call it multiple times if needed, or just work with chunks of 20.
-            # To be safe and consistent with previous logic:
-            pass
-        
-        # Actually, let's just do "Rounds" of 20 inside the loop until we have enough for a batch, 
-        # OR just do 1 round of 20 per loop iteration. Simpler.
-        
-        # 1 Round of 20 distractors
-        seed = int(time.time() * 1000) + batch_count
-        
-        distractor_pool = []
-        if args.distractor_type == "math":
-             distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index)
-        else:
-             # Text: slice 20 chunks
-             # wrap around text chunks
-             base_idx = ((batch_count - 1) * 20) % len(text_chunks)
-             for k in range(20):
-                 p_idx = (base_idx + k) % len(text_chunks)
-                 distractor_pool.append(text_chunks[p_idx])
+        while len(current_batch_prompts) < INFERENCE_BATCH_SIZE:
+             batch_count += 1
+             
+             distractor_pool = []
+             
+             if args.distractor_type == "math":
+                 # Generate 20 distractors
+                 # Seed based on time + batch index
+                 seed = int(time.time() * 1000) + batch_count
+                 distractor_pool = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, seed, start_index=current_system_index)
+             else:
+                 # Text: slice 20 chunks
+                 # wrap around text chunks
+                 base_idx = ((batch_count - 1) * 20) % len(text_chunks)
+                 for k in range(20):
+                     p_idx = (base_idx + k) % len(text_chunks)
+                     distractor_pool.append(text_chunks[p_idx])
+                     
+             # Create prompts from pool
+             for i in range(0, len(distractor_pool), distractors_per_query):
+                 chunk = distractor_pool[i : i + distractors_per_query]
+                 if not chunk: continue
                  
-        # Create prompts from pool
-        for i in range(0, len(distractor_pool), distractors_per_query):
-            chunk = distractor_pool[i : i + distractors_per_query]
-            if not chunk: continue
-            
-            start_num = current_system_index + i
-            end_num = start_num + len(chunk) - 1
-            
-            prompt_text = ""
-            if args.distractor_type == "math":
-                prompt_text = f"Here are {len(chunk)} mathematical systems. Analyze each and answer the verification question for each. Number your answers {start_num} to {end_num}.\n\n"
-                for j, s in enumerate(chunk):
-                     prompt_text += f"{start_num + j}. {s}\n\n"
-                prompt_text += "Answer:\n"
-            else:
-                prompt_text = f"Here is a text excerpt. Analyze the main argument, rhetorical style and historical context of this text. \n\nText {start_num}:\n{chunk[0]}\n\nAnswer {start_num}:\n"
-            
-            batch_prompts.append(prompt_text)
-
-        current_system_index += 20
+                 start_num = current_system_index + i
+                 end_num = start_num + len(chunk) - 1
+                 
+                 prompt_text = ""
+                 if args.distractor_type == "math":
+                     prompt_text = f"Here are {len(chunk)} mathematical systems. Analyze each and answer the verification question for each. Number your answers {start_num} to {end_num}.\n\n"
+                     for j, s in enumerate(chunk):
+                          prompt_text += f"{start_num + j}. {s}\n\n"
+                     prompt_text += "Answer:\n"
+                 else:
+                     prompt_text = f"Here is a text excerpt. Analyze the main argument, rhetorical style and historical context of this text. \n\nText {start_num}:\n{chunk[0]}\n\nAnswer {start_num}:\n"
+                 
+                 current_batch_prompts.append(prompt_text)
+    
+             current_system_index += 20
+             
+             # Break early if we just need a few more to reach target (optional optimization, 
+             # but over-generating and trimming is safer/simpler)
+             
+        # Run inference for this large batch
+        if not current_batch_prompts: break
         
-        # Run inference for this batch
-        if not batch_prompts: continue
-        
-        outputs = llm.generate(batch_prompts, sampling_params)
+        print(f"Running inference on batch of {len(current_batch_prompts)} prompts...")
+        outputs = llm.generate(current_batch_prompts, sampling_params)
         
         # Process outputs
         for output in outputs:
