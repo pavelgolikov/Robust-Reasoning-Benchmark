@@ -20,7 +20,7 @@ def main():
     parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B", help="Model name/path")
     parser.add_argument("--output_file", type=str, required=True, help="Path to save the JSON history")
     parser.add_argument("--token_target", type=int, default=100000, help="Stop when context exceeds this tokens")
-    parser.add_argument("--batch_size", type=int, default=50, help="Number of distractors to generate in parallel")
+    parser.add_argument("--batch_size", type=int, default=100, help="Number of distractors to generate in parallel")
     parser.add_argument("--num_gpus", type=int, default=2, help="Number of GPUs for vLLM")
     parser.add_argument("--max_model_len", type=int, default=4096, help="Max model length")
     parser.add_argument("--seed", type=int, default=42)
