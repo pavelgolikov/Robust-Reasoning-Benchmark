@@ -138,14 +138,18 @@ def main():
         metadata.append({
             "id": example.get('id', i),
             "original": user_prompt,
-            "ground_truth": example['answer']
+            "ground_truth": example['answer'],
+            "context": tokenizer.decode(context_ids, skip_special_tokens=True)
         })
     
     # Generate
     print(f"Generating answers for {len(all_inputs)} prompts...")
     
     if not args.dry:
-        outputs = llm.generate(prompt_token_ids=all_inputs, sampling_params=sampling_params)
+        print("Decoding token sequences to text for inference...")
+        decoded_prompts = [tokenizer.decode(ids, skip_special_tokens=False) for ids in all_inputs]
+        outputs = llm.generate(decoded_prompts, sampling_params=sampling_params)
+        # outputs = llm.generate(prompt_token_ids=all_inputs, sampling_params=sampling_params)
     else:
         print("Dry run: Skipping generation.")
         outputs = []
@@ -176,11 +180,12 @@ def main():
         results.append({
             "id": meta['id'],
             "output": generated_text,
+            "original problem": meta['original'],
+            "context": meta['context'],
             "extracted": extracted,
             "ground_truth": meta['ground_truth'],
             "correct": is_correct,
-            # Enhanced metadata
-            "system_prompt": "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n", # Hardcoded from util.BASELINE_SYSTEM_PROMPT
+            "system_prompt": "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n",
             "temperature": 0.7,
             "max_model_length": args.max_model_length,
             "distractor_token_count": len(context_ids),
@@ -202,7 +207,7 @@ def main():
     
     # New directory structure
     safe_dataset = args.dataset.replace('/', '_')
-    dirs = f"experiments/context_saturation/predef_cont_results/{safe_model}/{safe_dataset}"
+    dirs = f"context_saturation/predef_cont_results/{safe_model}/{safe_dataset}"
     os.makedirs(dirs, exist_ok=True)
     out_path = os.path.join(dirs, filename)
     

@@ -137,13 +137,10 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         extra_context = sanitize_inverted_escapes(extra_context)
         extra_context = flatten_text(extra_context)
 
-
     # 1. Apply Transformation
     if name == 'baseline':
         user_prompt_content = problem
         # return user_prompt_content, BASELINE_SYSTEM_PROMPT
-    
-    # ... (Keep transformations same) ...
     elif name == 'not_not':
         user_prompt_content = apply_not_not(problem)
     elif name == 'word_split_swap':
@@ -183,11 +180,6 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     # 2. Construct Protocol Prompt (Base64 + Rule)
     transform_rule = TECHNIQUE_DESCRIPTIONS.get(name, "Unknown Transformation")
     
-    # Check if we should skip protocol wrapping (legacy behavior for baseline/not_not?) 
-    # Current code says: "if name == 'baseline' or name == 'not_not'". 
-    # Baseline returns early above.
-    # not_not logic below:
-    
     if agentic:
         # Base64 Encode
         # input_bytes = user_prompt_content.encode('utf-8')
@@ -218,6 +210,9 @@ TRANSFORMED INPUT:
         # Actually original returned "final_user_prompt" which was the wrapper.
         # So yes, NO prefix.
         return final_user_prompt.strip(), BASELINE_SYSTEM_PROMPT
+
+    if name == 'baseline':
+        return problem.strip(), BASELINE_SYSTEM_PROMPT
 
     # Combine
     final_user_prompt = f"{prefix}\n\n{wrapped_prompt}"
