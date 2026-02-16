@@ -442,7 +442,7 @@ def main():
         
         # Setup Output
         experiment_dir = os.path.join(base_dir, exp_name)
-        final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
+        final_output_dir = os.path.join(experiment_dir, "results_agent", safe_model_name, safe_dataset_name)
         os.makedirs(final_output_dir, exist_ok=True)
         
         # We now use an incremental file (.jsonl)
@@ -480,7 +480,7 @@ def main():
         print(f"Results for {exp_name}: Accuracy {acc:.2%} ({stats['correct']}/{stats['total']})")
         
         experiment_dir = os.path.join(base_dir, exp_name)
-        final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
+        final_output_dir = os.path.join(experiment_dir, "results_agent", safe_model_name, safe_dataset_name)
         os.makedirs(final_output_dir, exist_ok=True)
         
         run_id = f"{safe_model_name}_{safe_dataset_name}_{exp_name}_s{args.seed}_{timestamp}_MANUAL_AGENT"
