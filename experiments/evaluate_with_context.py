@@ -4,7 +4,7 @@ import json
 import time
 import random
 from datasets import load_dataset
-from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments
+from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments, BASELINE_SYSTEM_PROMPT
 # from vllm import LLM, SamplingParams # Moved inside main
 from trim_context import trim_context
 
@@ -69,7 +69,17 @@ def main():
             tokenizer = AutoTokenizer.from_pretrained("gpt2")
     
     # Load and Truncate Context
-    trimmed_context = trim_context(context_path, args.model, args.context_size)
+    trimmed_context = trim_context(context_path, args.model, args.context_size, tokenizer=tokenizer)
+    
+    # Override System Prompt
+    # Ensure standard math system prompt is used, replacing whatever was in context (e.g. history text prompt)
+    if trimmed_context and trimmed_context[0]['role'] == 'system':
+        if args.context_type == 'text':
+            trimmed_context[0]['content'] = BASELINE_SYSTEM_PROMPT
+            print(f"Overriding system prompt (was: {trimmed_context[0]['content']})")
+    else:
+        print("Inserting system prompt...")
+        trimmed_context.insert(0, {'role': 'system', 'content': BASELINE_SYSTEM_PROMPT})
     
     # Load Dataset
     print(f"Loading dataset: {args.dataset}...")
