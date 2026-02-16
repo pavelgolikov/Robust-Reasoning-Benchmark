@@ -5,41 +5,9 @@ import time
 import random
 from datasets import load_dataset
 from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments
-from vllm import LLM, SamplingParams
+# from vllm import LLM, SamplingParams # Moved inside main
+from trim_context import trim_context
 
-def load_context_ids(context_file, tokenizer, context_size):
-    """
-    Loads context from JSON, tokenizes it, and truncates to exactly context_size tokens.
-    """
-    print(f"Loading context from {context_file}...")
-    with open(context_file, 'r') as f:
-        context_history = json.load(f)
-    
-    # We want to tokenize the conversation history as a single block.
-    # Depending on the tokenizer/template, we might need apply_chat_template.
-    # However, context_history is a list of dicts.
-    
-    # Attempt to use apply_chat_template on the whole history
-    # Note: If the history ends with a user message (which it might in some designs, but usually valid convo is alternating),
-    # apply_chat_template handles it.
-    
-    # We assume standard chat template availability.
-    # We set add_generation_prompt=False because this is just history, not the final prompt.
-    full_context_text = tokenizer.apply_chat_template(context_history, tokenize=False, add_generation_prompt=False)
-    
-    # Tokenize
-    full_context_ids = tokenizer.encode(full_context_text)
-    
-    print(f"Full context length: {len(full_context_ids)} tokens.")
-    
-    if len(full_context_ids) < context_size:
-        print(f"Warning: Loaded context ({len(full_context_ids)}) is smaller than requested size ({context_size}). Using full context.")
-        return full_context_ids
-    
-    # Truncate
-    truncated_ids = full_context_ids[:context_size]
-    print(f"Truncated context to {len(truncated_ids)} tokens.")
-    return truncated_ids
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate with Predefined Context Saturation")
@@ -49,7 +17,7 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="Limit examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Samples per problem")
     parser.add_argument("--context_size", type=int, required=True, help="Target context size in tokens")
-    parser.add_argument("--distractor_type", type=str, choices=['math', 'text'], default='math', help="Distractor type")
+    parser.add_argument("--context_type", type=str, choices=['math', 'text'], default='math', help="Distractor type")
     parser.add_argument("--context_file", type=str, default=None, help="Override context file path")
     parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--max_model_length", type=int, default=65536)
@@ -63,12 +31,12 @@ def main():
     else:
         # Default paths based on type
         # Assuming run from root of project
-        context_path = f"experiments/context_{args.distractor_type}.json"
+        context_path = f"experiments/context_{args.context_type}.json"
         
     if not os.path.exists(context_path):
         # Try absolute or relative fix
-        if os.path.exists(f"context_{args.distractor_type}.json"):
-             context_path = f"context_{args.distractor_type}.json"
+        if os.path.exists(f"context_{args.context_type}.json"):
+             context_path = f"context_{args.context_type}.json"
         else:
              print(f"Error: Context file not found at {context_path}")
              return
@@ -79,6 +47,7 @@ def main():
     tokenizer = None
     
     if not args.dry:
+        from vllm import LLM, SamplingParams
         print(f"Initializing vLLM with model: {args.model}")
         llm = LLM(
             model=args.model,
@@ -100,7 +69,7 @@ def main():
             tokenizer = AutoTokenizer.from_pretrained("gpt2")
     
     # Load and Truncate Context
-    context_ids = load_context_ids(context_path, tokenizer, args.context_size)
+    trimmed_context = trim_context(context_path, args.model, args.context_size)
     
     # Load Dataset
     print(f"Loading dataset: {args.dataset}...")
@@ -111,6 +80,11 @@ def main():
     all_inputs = [] # list of token_ids
     metadata = []
     
+    # Calculate context tokens once
+    context_token_count = len(tokenizer.apply_chat_template(trimmed_context, tokenize=True, add_generation_prompt=False))
+    # Get the common context string to save once
+    common_context_str = tokenizer.apply_chat_template(trimmed_context, tokenize=False, add_generation_prompt=False)
+    
     print(f"Preparing {len(dataset)} examples...")
     
     for i, example in enumerate(dataset):
@@ -119,27 +93,18 @@ def main():
         # Use util.get_prompts for consistency, using 'baseline' to just get the problem
         user_prompt, system_prompt = get_prompts(cleaned_problem, 'baseline')
         
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
+        # Create full conversation history: context + current user prompt
+        # We assume trimmed_context already includes the system prompt if needed
+        full_conversation = trimmed_context + [{"role": "user", "content": user_prompt}]
         
-        problem_ids = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True)
-        
-        # Remove BOS from problem_ids if it matches context_ids[0] (likely BOS)
-        # Assuming BOS is usually the first token.
-        if tokenizer.bos_token_id is not None:
-             if len(problem_ids) > 0 and problem_ids[0] == tokenizer.bos_token_id:
-                  problem_ids = problem_ids[1:]
-        
-        final_input_ids = context_ids + problem_ids
+        final_input_ids = tokenizer.apply_chat_template(full_conversation, tokenize=True, add_generation_prompt=True)
         
         all_inputs.append(final_input_ids)
         metadata.append({
             "id": example.get('id', i),
             "original": user_prompt,
             "ground_truth": example['answer'],
-            "context": tokenizer.decode(context_ids, skip_special_tokens=True)
+            #"context": tokenizer.decode(context_ids, skip_special_tokens=True) # Context is now part of conversation, hard to decode separately cleanly
         })
     
     # Generate
@@ -153,6 +118,7 @@ def main():
     else:
         print("Dry run: Skipping generation.")
         outputs = []
+        decoded_prompts = [] # Initialize for dry run
         # Mock outputs
         class MockOutput:
             def __init__(self, text):
@@ -160,6 +126,7 @@ def main():
         
         for _ in all_inputs:
             outputs.append(MockOutput("Mock Answer \\boxed{0}"))
+            decoded_prompts.append("Dry Run Prompt Mock")
     
     results = []
     stats = {"correct": 0, "total": 0, "failures": 0}
@@ -181,15 +148,14 @@ def main():
             "id": meta['id'],
             "output": generated_text,
             "original problem": meta['original'],
-            # "context": meta['context'],
-            "full_input": decoded_prompts[i],
+            # "full_input": decoded_prompts[i], # REMOVE to save space
             "extracted": extracted,
             "ground_truth": meta['ground_truth'],
             "correct": is_correct,
             "system_prompt": "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n",
             "temperature": 0.7,
             "max_model_length": args.max_model_length,
-            "distractor_token_count": len(context_ids),
+            "distractor_token_count": context_token_count,
             "model_output_token_count": output_len
         })
         
@@ -204,7 +170,7 @@ def main():
     # Save
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     safe_model = args.model.replace('/', '_')
-    filename = f"results_predef_{args.distractor_type}_{args.context_size}_{safe_model}_{timestamp}.json"
+    filename = f"results_predef_{args.context_type}_{args.context_size}_{safe_model}_{timestamp}.json"
     
     # New directory structure
     safe_dataset = args.dataset.replace('/', '_')
@@ -212,8 +178,20 @@ def main():
     os.makedirs(dirs, exist_ok=True)
     out_path = os.path.join(dirs, filename)
     
+    final_output = {
+        "metadata": {
+            "model": args.model,
+            "dataset": args.dataset,
+            "context_size": args.context_size,
+            "context_type": args.context_type,
+            "common_context": common_context_str
+        },
+        "statistics": stats,
+        "results": results
+    }
+    
     with open(out_path, 'w') as f:
-        json.dump(results, f, indent=2)
+        json.dump(final_output, f, indent=2)
     print(f"Saved results to {out_path}")
 
 if __name__ == "__main__":
