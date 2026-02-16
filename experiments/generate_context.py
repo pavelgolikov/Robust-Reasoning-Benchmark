@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--max_model_len", type=int, default=4096, help="Max model length")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--dry", action="store_true", help="Dry run without loading model")
+    parser.add_argument("--context_type", type=str, default="math", choices=["math", "text"], help="Type of context to generate")
     args = parser.parse_args()
     random.seed(args.seed)
     
@@ -53,17 +54,83 @@ def main():
         except:
             tokenizer = None
 
+    # Prepare Content Source
+    text_chunks = []
+    if args.context_type == "text":
+        data_dir = os.path.join(current_dir, "data")
+        file_path = os.path.join(data_dir, "gibbon_vol1.txt")
+        
+        if os.path.exists(file_path):
+            print(f"Using local text file: {file_path}")
+            with open(file_path, 'r', encoding='utf-8') as f:
+                full_text = f.read()
+        else:
+            print(f"Downloading 'History of The Decline and Fall of the Roman Empire' to {file_path}...")
+            import requests
+            if not os.path.exists(data_dir):
+                os.makedirs(data_dir)
+            
+            try:
+                url = "https://www.gutenberg.org/cache/epub/25717/pg25717.txt"
+                response = requests.get(url)
+                response.raise_for_status()
+                full_text = response.text
+                
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(full_text)
+            except Exception as e:
+                print(f"Error downloading text: {e}")
+                sys.exit(1)
+        
+        # Extraction logic
+        # Start at the famous opening line of the first chapter
+        start_marker = "In the second century of the Christian" 
+        end_marker = "*** END OF THE PROJECT GUTENBERG EBOOK"
+        
+        start_idx = full_text.find(start_marker)
+        end_idx = full_text.find(end_marker)
+        
+        if start_idx == -1:
+            print(f"Warning: Start marker '{start_marker}' not found. Using beginning of file.")
+            start_idx = 0
+            
+        if end_idx == -1:
+            end_idx = len(full_text)
+            
+        content_text = full_text[start_idx:end_idx]
+        
+        # Chunking
+        # Space split is safer for speed
+        words = content_text.split()
+        chunk_size_words = 1500 # Approx 2000 tokens
+        
+        for i in range(0, len(words), chunk_size_words):
+            chunk = " ".join(words[i : i + chunk_size_words])
+            if len(chunk) > 100: # Skip tiny chunks
+                text_chunks.append(chunk)
+        
+        print(f"Prepared {len(text_chunks)} text chunks.")
+        
+        # Cycle iterator
+        import itertools
+        text_chunk_iterator = itertools.cycle(text_chunks)
+
     # 2. Main Generation Loop
     history = []
     
+    if args.context_type == "math":
+        system_prompt = BASELINE_SYSTEM_PROMPT
+    else:
+        system_prompt = "Analyze literary style, arguments, and historical context of the following excerpt."
+
     history.append({
         "role": "system",
-        "content": BASELINE_SYSTEM_PROMPT
+        "content": system_prompt
     })
     
     current_token_count = 0
     if tokenizer:
-        current_token_count = len(tokenizer.encode(BASELINE_SYSTEM_PROMPT))
+        current_token_count = len(tokenizer.encode(system_prompt))
     
     print(f"Target Tokens: {args.token_target}")
     
@@ -74,31 +141,37 @@ def main():
     distractor_index = 1
     
     pbar = tqdm(total=args.token_target, desc="Generating Tokens", unit="tok")
-    
     while current_token_count < args.token_target:
-        # Generate enough distractors for the batch
-        distractors_batch = []
+        # Generate enough inputs for the batch
+        inputs_batch = []
         
-        while len(distractors_batch) < args.batch_size:
-            # Generate 20 at a time
-            # We vary seed to get different permutations
-            batch_seed = args.seed + batch_idx + distractor_index
-            new_distractors = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, batch_seed)
-            
-            # Add to batch
-            distractors_batch.extend(new_distractors)
-            distractor_index += 20
+        while len(inputs_batch) < args.batch_size:
+            if args.context_type == "math":
+                # Generate 20 at a time
+                # We vary seed to get different permutations
+                batch_seed = args.seed + batch_idx + distractor_index
+                new_items = generate_20_distractors(lcase_dict, ucase_dict, greek_dict, batch_seed)
+                distractor_index += 20
+                inputs_batch.extend(new_items)
+            else:
+                # Text mode: get next chunks
+                # Fill batch
+                needed = args.batch_size - len(inputs_batch)
+                chunks_to_add = []
+                for _ in range(needed):
+                    chunks_to_add.append(next(text_chunk_iterator))
+                inputs_batch.extend(chunks_to_add)
         
-        # Trim to exact batch size if needed (though not strictly necessary)
-        distractors_batch = distractors_batch[:args.batch_size]
+        # Trim to exact batch size if needed
+        inputs_batch = inputs_batch[:args.batch_size]
         
         # Prepare Prompts for vLLM
         # Each prompt needs the system prompt + user question
         prompts = []
-        for d in distractors_batch:
+        for d in inputs_batch:
             # Format: System + User
             msgs = [
-                {"role": "system", "content": BASELINE_SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": d}
             ]
             # We want the model to generate the assistant response
@@ -113,7 +186,7 @@ def main():
             responses = [f"Mock Answer {i} \\boxed{{{i}}}" for i in range(len(prompts))]
             
         # Append to History and Count Tokens
-        for d, r in zip(distractors_batch, responses):
+        for d, r in zip(inputs_batch, responses):
             # User Message
             user_msg = {"role": "user", "content": d}
             history.append(user_msg)
