@@ -44,10 +44,9 @@ YOUR PROTOCOL (Follow Strictly):
 PHASE 1: RECONSTRUCTION
 1. Read the "TRANSFORMATION RULE" provided by the user and the "TRANSFORMED INPUT".
 2. Write a Python script that programmatically reverses the transformation and outputs the reconstructed text.
-   - YOU MUST DECODE USING PYTHON; DO NOT MENTALLY DECODE; DO NOT MANUALLY DECODE.
-   - DO NOT VERIFY YOUR ANSWER MANUALLY IN THIS PHASE.
-   - Do NOT guess or anticipate the original text; Do NOT simulate the execution.
-   - ONLY generate and output the Python code that prints the original reconstructed text.
+   - You must decode using Python; Do not decode mentally or simulate.
+   - ONLY generate and output Python code that prints the original reconstructed text.
+   - IMPERATIVE: When defining the input text variable, ALWAYS use a raw string literal (r'...' or r"...")
 3. Output your Python code in a markdown code block: ```python ... Your code here ... ```
 4. The system will execute your code and provide the output back to you.
 5. You can try again if your code produces an error or incorrect output.
