@@ -245,3 +245,28 @@ def normalize_answer(ans):
     if not digits:
         return ""
     return str(int(digits))
+
+def verify_answer(extracted, ground_truth):
+    """
+    Verifies if the ground_truth (normalized) is present in the extracted answer.
+    This is more robust than strict equality for cases like "p=17, m=110".
+    """
+    if extracted is None or ground_truth is None:
+        return False
+        
+    norm_gt = normalize_answer(ground_truth)
+    if not norm_gt:
+        return False
+        
+    # extract all numbers from the extracted string
+    # We want to match standalone numbers, but also handle things like "m=110"
+    # Simplest approach: look for the normalized ground truth as a distinct number in the text
+    # But "110" should match "110" and "m=110" and "110."
+    
+    # Let's normalize the extracted string by replacing non-digit chars with spaces
+    # and then split.
+    extracted_digits_only = re.sub(r'[^0-9]', ' ', str(extracted))
+    extracted_nums = extracted_digits_only.split()
+    
+    # Check if the exact ground truth number is present
+    return norm_gt in extracted_nums
