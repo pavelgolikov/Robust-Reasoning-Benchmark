@@ -162,7 +162,6 @@ def main():
             "sample_idx": meta.get('sample_idx', 0),
             "output": generated_text,
             "post_context_prompt": meta['post_context_prompt'],
-            # "full_input": decoded_prompts[i], # REMOVE to save space
             "extracted": extracted,
             "ground_truth": meta['ground_truth'],
             "correct": is_correct,

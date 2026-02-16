@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=7:00:00
+#SBATCH --time=3:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
@@ -40,8 +40,8 @@ export NCCL_IGNORE_DISABLED_P2P=1
 
 # python evaluate_with_context.py --n_samples 5 --context_size 16384 --context_type math --context_file context_math_1M.json --num_gpus 4 &> eval_out.out
 # python evaluate_with_context.py --n_samples 5 --context_size 16384 --context_type text --context_file context_text_1M.json --num_gpus 4 &> eval_out.out
+# python evaluate_with_context.py --n_samples 5 --context_size 32768 --context_type math --context_file context_math_1M.json --num_gpus 4 &> eval_out.out
+# python evaluate_with_context.py --n_samples 5 --context_size 32768 --context_type text --context_file context_text_1M.json --num_gpus 4 &> eval_out.out
 
-python evaluate_with_context.py --n_samples 5 --context_size 32768 --context_type math --context_file context_math_1M.json --num_gpus 4 &> eval_out.out
-python evaluate_with_context.py --n_samples 5 --context_size 32768 --context_type text --context_file context_text_1M.json --num_gpus 4 &> eval_out.out
 python evaluate_with_context.py --n_samples 5 --context_size 49152 --context_type math --context_file context_math_1M.json --num_gpus 4 &> eval_out.out
-python evaluate_with_context.py --n_samples 5 --context_size 49152 --context_type text --context_file context_text_1M.json --num_gpus 4 &> eval_out.out
+# python evaluate_with_context.py --n_samples 5 --context_size 49152 --context_type text --context_file context_text_1M.json --num_gpus 4 &> eval_out.out
