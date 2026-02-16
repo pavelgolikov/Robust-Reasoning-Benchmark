@@ -99,13 +99,15 @@ def main():
         
         final_input_ids = tokenizer.apply_chat_template(full_conversation, tokenize=True, add_generation_prompt=True)
         
-        all_inputs.append(final_input_ids)
-        metadata.append({
-            "id": example.get('id', i),
-            "original": user_prompt,
-            "ground_truth": example['answer'],
-            #"context": tokenizer.decode(context_ids, skip_special_tokens=True) # Context is now part of conversation, hard to decode separately cleanly
-        })
+        for sample_idx in range(args.n_samples):
+            all_inputs.append(final_input_ids)
+            metadata.append({
+                "id": example.get('id', i),
+                "sample_idx": sample_idx,
+                "original": user_prompt,
+                "ground_truth": example['answer'],
+                #"context": tokenizer.decode(context_ids, skip_special_tokens=True) # Context is now part of conversation, hard to decode separately cleanly
+            })
     
     # Generate
     print(f"Generating answers for {len(all_inputs)} prompts...")
@@ -146,6 +148,7 @@ def main():
         
         results.append({
             "id": meta['id'],
+            "sample_idx": meta.get('sample_idx', 0),
             "output": generated_text,
             "original problem": meta['original'],
             # "full_input": decoded_prompts[i], # REMOVE to save space
