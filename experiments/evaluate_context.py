@@ -187,7 +187,7 @@ def main():
     
     # New directory structure
     safe_dataset = args.dataset.replace('/', '_')
-    dirs = f"context_saturation/predef_cont_results/{safe_model}/{safe_dataset}"
+    dirs = f"context_saturation/results_context/{safe_model}/{safe_dataset}"
     os.makedirs(dirs, exist_ok=True)
     out_path = os.path.join(dirs, filename)
     
