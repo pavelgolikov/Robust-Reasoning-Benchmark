@@ -9,7 +9,7 @@ from prettytable import PrettyTable
 # Add local directory to path to import util
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from util import extract_answer, verify_answer, normalize_answer
+from util import last_boxed_only_string, remove_boxed, is_equiv
 
 def get_latest_result_file(base_dir, exp_name, model_name, dataset_name, results_subdir="results"):
     # Sanitize names to match evaluate.py logic
@@ -60,8 +60,14 @@ def process_file(filepath):
         ground_truth = res.get('ground_truth')
         
         # Use robust extraction/verification
-        extracted = extract_answer(output)
-        is_correct = verify_answer(extracted, ground_truth)
+        # Use robust extraction/verification
+        boxed_str = last_boxed_only_string(output)
+        extracted = remove_boxed(boxed_str) if boxed_str else None
+        
+        try:
+             is_correct = is_equiv(extracted, ground_truth)
+        except:
+             is_correct = False
         
         stats['total'] += 1
         if is_correct:

@@ -4,7 +4,7 @@ import json
 import time
 import random
 from datasets import load_dataset
-from util import get_prompts, extract_answer, normalize_answer, verify_answer, remove_latex_comments, BASELINE_SYSTEM_PROMPT
+from util import get_prompts, remove_latex_comments, BASELINE_SYSTEM_PROMPT, last_boxed_only_string, remove_boxed, is_equiv
 
 
 from trim_context import trim_context
@@ -151,11 +151,15 @@ def main():
         
         meta = metadata[i]
         
-        extracted = extract_answer(generated_text)
-        is_correct = False
-        if extracted:
-             is_correct = verify_answer(extracted, meta['ground_truth'])
+        boxed_str = last_boxed_only_string(generated_text)
+        extracted = remove_boxed(boxed_str) if boxed_str else None
         
+        is_correct = False
+        try:
+             is_correct = is_equiv(extracted, meta['ground_truth'])
+        except:
+             is_correct = False
+
         
         results.append({
             "id": meta['id'],

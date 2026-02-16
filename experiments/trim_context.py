@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import sys
-from vllm.transformers_utils.tokenizer import get_tokenizer # Moved inside function
+# from vllm.transformers_utils.tokenizer import get_tokenizer # Moved inside function
 
 # Ensure local imports work whether run from root or experiments/
 current_dir = os.path.dirname(os.path.abspath(__file__))

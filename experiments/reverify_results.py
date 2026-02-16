@@ -7,7 +7,7 @@ import os
 # Add local directory to path to import util
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from util import verify_answer, extract_answer
+from util import last_boxed_only_string, remove_boxed, is_equiv
 
 def reverify_file(filepath):
     print(f"Processing {filepath}...")
@@ -34,7 +34,8 @@ def reverify_file(filepath):
         extracted = res.get('extracted')
         # If extracted is None, try to extract
         if extracted is None:
-             extracted = extract_answer(res.get('output', ''))
+             boxed_str = last_boxed_only_string(res.get('output', ''))
+             extracted = remove_boxed(boxed_str) if boxed_str else None
              res['extracted'] = extracted
 
         ground_truth = res.get('ground_truth')
@@ -42,7 +43,10 @@ def reverify_file(filepath):
         # New verification
         is_correct = False
         if extracted:
-            is_correct = verify_answer(extracted, ground_truth)
+            try:
+                is_correct = is_equiv(extracted, ground_truth)
+            except:
+                is_correct = False
         else:
             # Try once more to extract if verify_answer relies on it
             # But we already tried above.
