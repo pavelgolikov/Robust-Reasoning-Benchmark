@@ -75,8 +75,8 @@ def main():
     # Ensure standard math system prompt is used, replacing whatever was in context (e.g. history text prompt)
     if trimmed_context and trimmed_context[0]['role'] == 'system':
         if args.context_type == 'text':
-            trimmed_context[0]['content'] = BASELINE_SYSTEM_PROMPT
             print(f"Overriding system prompt (was: {trimmed_context[0]['content']})")
+            trimmed_context[0]['content'] = BASELINE_SYSTEM_PROMPT
     else:
         print("Inserting system prompt...")
         trimmed_context.insert(0, {'role': 'system', 'content': BASELINE_SYSTEM_PROMPT})
@@ -102,6 +102,7 @@ def main():
         
         # Use util.get_prompts for consistency, using 'baseline' to just get the problem
         user_prompt, system_prompt = get_prompts(cleaned_problem, 'baseline')
+        user_prompt = "Solve the following problem using regular mathematics.\n" + user_prompt
         
         # Create full conversation history: context + current user prompt
         # We assume trimmed_context already includes the system prompt if needed
@@ -114,9 +115,8 @@ def main():
             metadata.append({
                 "id": example.get('id', i),
                 "sample_idx": sample_idx,
-                "original": user_prompt,
+                "post_context_prompt": user_prompt,
                 "ground_truth": example['answer'],
-                #"context": tokenizer.decode(context_ids, skip_special_tokens=True) # Context is now part of conversation, hard to decode separately cleanly
             })
     
     # Generate
@@ -160,7 +160,7 @@ def main():
             "id": meta['id'],
             "sample_idx": meta.get('sample_idx', 0),
             "output": generated_text,
-            "original problem": meta['original'],
+            "post_context_prompt": meta['post_context_prompt'],
             # "full_input": decoded_prompts[i], # REMOVE to save space
             "extracted": extracted,
             "ground_truth": meta['ground_truth'],
