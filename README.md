@@ -22,12 +22,16 @@ This repo contains a machine learning project. The point of the project is to tr
 
 
 Evaluation:
-Experiments. TODO: Decide models and datasets.
+Experiments. TODO: Decide models
 Datasets:
-AIME 2024
-AIME 2025
-GSM8K
-MATH
+HuggingFaceH4/aime_2024 - 30/30
+MathArena/aime_2025 - 30/30
+MATH 500 - 500/500 - LLM verification for some
+MathArena/hmmt_feb_2025 - 30/30 - LLM verification for some
+<!-- meituan-longcat/AMO-Bench - 37/50 - we take 37 problems with 'number' and 'set' answer types to be able to verify answers more robustly. - LLM verification for some -->
+For now total across 5 datasets is 500+30+30+30=590 problems.
+GSM-Symbolic? We could generate 100 questions using their code
+
 Olympiad Bench
 College Bench
 Omni-Math
@@ -36,13 +40,13 @@ Models:
 Open:
 GAIR/LIMO-v2
 tiiuae/Falcon-H1R-7B
+deepseek-ai/DeepSeek-R1-Distill-Llama-70B
 openai/gpt-oss-120b
-XiaomiMiMo/MiMo-V2-Flash
-deepseek-ai/DeepSeek-R1
 
 Closed:
 GPT-5.1
 Gemini 3 Pro
+Need to send requests to them to run the evaluation on their models.
 
 Observations:
 1. Temperature and max response length both need to be adjustable for each individual task the model performs.

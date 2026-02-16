@@ -19,7 +19,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_dir, 'analysis'))
 
 from datasets import load_dataset
-from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments
+from util import get_prompts, extract_answer, normalize_answer, verify_answer, remove_latex_comments
 
 # ======================================================
 # PART 1: HELPER FUNCTIONS (Parser & Executor)
@@ -241,7 +241,8 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                      # Extract answer
                     agent.extracted_answer = extract_answer(agent.final_output)
                     try:
-                        is_corr = normalize_answer(agent.extracted_answer) == normalize_answer(agent.ground_truth)
+                        # is_corr = normalize_answer(agent.extracted_answer) == normalize_answer(agent.ground_truth)
+                        is_corr = verify_answer(agent.extracted_answer, agent.ground_truth)
                     except:
                         is_corr = False
                     agent.is_correct = is_corr
@@ -478,6 +479,14 @@ def main():
         # 4. Save
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
         print(f"Results for {exp_name}: Accuracy {acc:.2%} ({stats['correct']}/{stats['total']})")
+        results.append({
+            "summary": {
+                "accuracy": acc,
+                "correct": stats["correct"],
+                "total": stats["total"],
+                "failures": stats["failures"]
+            }
+        })
         
         experiment_dir = os.path.join(base_dir, exp_name)
         final_output_dir = os.path.join(experiment_dir, "results_agent", safe_model_name, safe_dataset_name)

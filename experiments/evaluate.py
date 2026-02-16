@@ -4,7 +4,7 @@ import json
 import time
 import random
 from datasets import load_dataset
-from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments
+from util import get_prompts, extract_answer, normalize_answer, remove_latex_comments, verify_answer
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset (Efficiency Optimized)")
@@ -194,7 +194,8 @@ def main():
         for entry in results_by_experiment[exp_name]:
             try:
                 extracted = extract_answer(entry['output'])
-                is_correct = normalize_answer(extracted) == normalize_answer(entry['ground_truth'])
+                # is_correct = normalize_answer(extracted) == normalize_answer(entry['ground_truth'])
+                is_correct = verify_answer(extracted, entry['ground_truth'])
             except Exception as e:
                 print(f"Error processing sample {entry['id']}: {e}")
                 extracted = f"ERROR: {str(e)}"
@@ -221,6 +222,14 @@ def main():
         print(f"Experiment: {exp_name}")
         print(f"  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
         print(f"  Failures: {stats['failures']}")
+        results_by_experiment[exp_name].append({
+            "summary": {
+                "accuracy": acc,
+                "correct": stats["correct"],
+                "total": stats["total"],
+                "failures": stats["failures"]
+            }
+        })
         
         # Save to file
         run_id = f"{safe_model_name}_{safe_dataset_name}_{exp_name}_s{args.seed}_{timestamp}"
