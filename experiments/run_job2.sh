@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:h100:2
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=64G
-#SBATCH --time=3:00:00
+#SBATCH --mem=128G
+#SBATCH --time=1:00:00
 #SBATCH --output=eval_out2.out
 #SBATCH --error=eval_out2.out
 #SBATCH --account=aip-gpekhime
@@ -31,4 +31,4 @@ export NCCL_IGNORE_DISABLED_P2P=1
 
 # python evaluate_context.py --limit 2 --n_samples 3 --context_size 8192 --context_type math --context_file context_math_1M.json --num_gpus 2 &> eval_out2.out
 
-python evaluate_agent.py --n_samples 5 --names rail_fence --num_gpus 2 &> eval_out2.out
+python evaluate_agent.py --n_samples 5 --limit 1 --names rail_fence --num_gpus 2 &> eval_out2.out

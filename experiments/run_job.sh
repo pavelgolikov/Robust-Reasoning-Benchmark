@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:h100:2
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=64G
-#SBATCH --time=3:00:00
+#SBATCH --mem=128G
+#SBATCH --time=1:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
@@ -22,9 +22,9 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # export NCCL_DEBUG=INFO
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
-python evaluate.py --names rail_fence --n_samples 5 --num_gpus 2 &> eval_out.out
+python evaluate.py --names rail_fence --limit 1 --n_samples 5 --num_gpus 2 &> eval_out.out
 # python evaluate_agent.py --max_model_length 65536 --n_samples 5 --names rail_fence --num_gpus 4 &> eval_out.out
-# python evaluate_context.py --limit 2 --n_samples 3 --context_size 8192 --context_type math --context_file context_math_1M.json --num_gpus 2 &> eval_out.out
+# python evaluate_context.py --limit 1 --n_samples 5 --context_size 8192 --context_type math --context_file context_math_1M.json --num_gpus 2 &> eval_out.out
 
 # python evaluate.py --names reversal --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
 # python evaluate_agent.py --max_model_length 65536 --limit 30 --n_samples 5 --names interleaved_context_word,not_not --num_gpus 4 > eval_out.out
