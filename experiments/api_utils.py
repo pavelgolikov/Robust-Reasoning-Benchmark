@@ -3,6 +3,11 @@ import os
 import time
 import logging
 from abc import ABC, abstractmethod
+from dotenv import load_dotenv
+
+# Load .env from project root (parent directory of experiments/)
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(base_dir, '.env'))
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
