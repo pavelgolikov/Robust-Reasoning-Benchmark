@@ -1,63 +1,9 @@
-Reversibility Test Report - 0 samples per technique - Dataset: HuggingFaceH4/aime_2024
+Reversibility Test Report - samples: 2:5 - Dataset: HuggingFaceH4/aime_2024
 ================================================================================
 
 ========================================
 EXPERIMENT: interleaved_context_line
 ========================================
-
-----------------------------------------
-MATCH EXAMPLE (Sample ID: 0)
-----------------------------------------
-
-[TRANSFORMED PROBLEM]:
-<Problem A> Every morning Aya goes for a $9$-kilometer-long walk and sto
-<Problem B> Let $ABC$ be a triangle inscribed in circle $\omega$. Let th
-<Problem A> ps at a coffee shop afterwards. When she walks at a constant
-<Problem B> e tangents to $\omega$ at $B$ and $C$ intersect at point $D$
-<Problem A>  speed of $s$ kilometers per hour, the walk takes her 4 hour
-<Problem B> , and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=
-<Problem A> s, including $t$ minutes spent in the coffee shop. When she 
-<Problem B> 5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\f
-<Problem A> walks $s+2$ kilometers per hour, the walk takes her 2 hours 
-<Problem B> rac{m}{n}$, where $m$ and $n$ are relatively prime integers.
-<Problem A> and 24 minutes, including $t$ minutes spent in the coffee sh
-<Problem B>  Find $m + n$.
-<Problem A> op. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour
-<Problem B> Let $ABC$ be a triangle inscribed in circle $\omega$. Let th
-<Problem A> . Find the number of minutes the walk takes her, including t
-<Problem B> e tangents to $\omega$ at $B$ and $C$ intersect at point $D$
-<Problem A> he $t$ minutes spent in the coffee shop.
-<Problem B> , and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=
-
-[ORIGINAL PROBLEM]:
-Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
-
-[REVERSED PROBLEM]:
-Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
-
-----------------------------------------
-MATCH EXAMPLE (Sample ID: 1)
-----------------------------------------
-
-[TRANSFORMED PROBLEM]:
-<Problem A> Let $ABC$ be a triangle inscribed in circle $\omega$. Let th
-<Problem B> Each vertex of a regular octagon is independently colored ei
-<Problem A> e tangents to $\omega$ at $B$ and $C$ intersect at point $D$
-<Problem B> ther red or blue with equal probability. The probability tha
-<Problem A> , and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=
-<Problem B> t the octagon can then be rotated so that all of the blue ve
-<Problem A> 5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\f
-<Problem B> rtices end up at positions where there were originally red v
-<Problem A> rac{m}{n}$, where $m$ and $n$ are relatively prime integers.
-<Problem B> ertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively 
-<Problem A>  Find $m + n$.
-<Problem B> prime positive integers. What is $m+n$?
-
-[ORIGINAL PROBLEM]:
-Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
-
-[REVERSED PROBLEM]:
-Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
 
 ----------------------------------------
 MATCH EXAMPLE (Sample ID: 2)
@@ -84,53 +30,195 @@ Each vertex of a regular octagon is independently colored either red or blue wit
 Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
 
 ----------------------------------------
-MATCH EXAMPLE (Sample ID: 3)
+Result: 3/3 Passed
+========================================
+
+
+========================================
+EXPERIMENT: interleaved_context_word
+========================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 2)
 ----------------------------------------
 
 [TRANSFORMED PROBLEM]:
-<Problem A> Define $f(x)=|| x|-\tfrac{1}{2}|$ and $g(x)=|| x|-\tfrac{1}{
-<Problem B> Let $p$ be the least prime number for which there exists a p
-<Problem A> 4}|$. Find the number of intersections of the graphs of \[y=
-<Problem B> ositive integer $n$ such that $n^{4}+1$ is divisible by $p^{
-<Problem A> 4 g(f(\sin (2 \pi x))) \quad\text{ and }\quad x=4 g(f(\cos (
-<Problem B> 2}$. Find the least positive integer $m$ such that $m^{4}+1$
-<Problem A> 3 \pi y))).\]
-<Problem B>  is divisible by $p^{2}$.
+Each Define vertex $f(x)=|| of x|-\tfrac{1}{2}|$ a and regular $g(x)=|| octagon x|-\tfrac{1}{4}|$. is Find independently the colored number either of red intersections or of blue the with graphs equal of probability. \[y=4 The g(f(\sin probability (2 that \pi the x))) octagon \quad\text{ can and then }\quad be x=4 rotated g(f(\cos so (3 that \pi all y))).\] of Define the $f(x)=|| blue x|-\tfrac{1}{2}|$ vertices and end $g(x)=|| up x|-\tfrac{1}{4}|$. at Find positions the where number there of were intersections originally of red the vertices graphs is of $\tfrac{m}{n}$, \[y=4 where g(f(\sin $m$ (2 and \pi $n$ x))) are \quad\text{ relatively and prime }\quad positive x=4 integers. g(f(\cos What (3 is \pi $m+n$? y))).\]
 
 [ORIGINAL PROBLEM]:
-Define $f(x)=|| x|-\tfrac{1}{2}|$ and $g(x)=|| x|-\tfrac{1}{4}|$. Find the number of intersections of the graphs of \[y=4 g(f(\sin (2 \pi x))) \quad\text{ and }\quad x=4 g(f(\cos (3 \pi y))).\]
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
 
 [REVERSED PROBLEM]:
-Define $f(x)=|| x|-\tfrac{1}{2}|$ and $g(x)=|| x|-\tfrac{1}{4}|$. Find the number of intersections of the graphs of \[y=4 g(f(\sin (2 \pi x))) \quad\text{ and }\quad x=4 g(f(\cos (3 \pi y))).\]
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
 
 ----------------------------------------
-MATCH EXAMPLE (Sample ID: 4)
+Result: 3/3 Passed
+========================================
+
+
+========================================
+EXPERIMENT: not_not
+========================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 2)
 ----------------------------------------
 
 [TRANSFORMED PROBLEM]:
-<Problem A> Let $p$ be the least prime number for which there exists a p
-<Problem B> Let $ABCD$ be a tetrahedron such that $AB=CD= \sqrt{41}$, $A
-<Problem A> ositive integer $n$ such that $n^{4}+1$ is divisible by $p^{
-<Problem B> C=BD= \sqrt{80}$, and $BC=AD= \sqrt{89}$. There exists a poi
-<Problem A> 2}$. Find the least positive integer $m$ such that $m^{4}+1$
-<Problem B> nt $I$ inside the tetrahedron such that the distances from $
-<Problem A>  is divisible by $p^{2}$.
-<Problem B> I$ to each of the faces of the tetrahedron are all equal. Th
-<Problem A> Let $p$ be the least prime number for which there exists a p
-<Problem B> is distance can be written in the form $\frac{m \sqrt n}{p}$
-<Problem A> ositive integer $n$ such that $n^{4}+1$ is divisible by $p^{
-<Problem B> , where $m$, $n$, and $p$ are positive integers, $m$ and $p$
-<Problem A> 2}$. Find the least positive integer $m$ such that $m^{4}+1$
-<Problem B>  are relatively prime, and $n$ is not divisible by the squar
-<Problem A>  is divisible by $p^{2}$.
-<Problem B> e of any prime. Find $m+n+p$.
+Each vertex of a not not regular octagon is independently colored either not not red or blue with not not equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally not not red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime not not positive integers. What is $m+n$?
 
 [ORIGINAL PROBLEM]:
-Let $p$ be the least prime number for which there exists a positive integer $n$ such that $n^{4}+1$ is divisible by $p^{2}$. Find the least positive integer $m$ such that $m^{4}+1$ is divisible by $p^{2}$.
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
 
 [REVERSED PROBLEM]:
-Let $p$ be the least prime number for which there exists a positive integer $n$ such that $n^{4}+1$ is divisible by $p^{2}$. Find the least positive integer $m$ such that $m^{4}+1$ is divisible by $p^{2}$.Let $p$ be the least prime number for which there exists a positive integer $n$ such that $n^{4}+1$ is divisible by $p^{2}$. Find the least positive integer $m$ such that $m^{4}+1$ is divisible by $p^{2}$.
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
 
 ----------------------------------------
-Result: 30/30 Passed
+Result: 3/3 Passed
+========================================
+
+
+========================================
+EXPERIMENT: opposites
+========================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 2)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Each vertex of a irregular octagon is independently discolor either antired or antiblue with unequal probability. The probability that the octagon can then be antirotated so that all of
+
+defyn{let "discolor" mean "colored", let "irregular" mean "regular", let "unequal" mean "equal", let "neutral" mean "positive", let "begin" mean "end", let "antirotated" mean "rotated", let "antiprime" mean "prime", let "antired" mean "red", let "antiblue" mean "blue", let "differ" mean "were"}.
+
+ the antiblue vertices begin up at positions where there differ originally antired vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively antiprime neutral integers. What is $m+n$?
+
+[ORIGINAL PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+[REVERSED PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+----------------------------------------
+Result: 3/3 Passed
+========================================
+
+
+========================================
+EXPERIMENT: sentence_reversal
+========================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 2)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+ What is $m+n$?. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers.Each vertex of a regular octagon is independently colored either red or blue with equal probability
+
+[ORIGINAL PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+[REVERSED PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+----------------------------------------
+Result: 3/3 Passed
+========================================
+
+
+========================================
+EXPERIMENT: word_reversal
+========================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 2)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+$m+n$? is What integers. positive prime relatively are $n$ and $m$ where $\tfrac{m}{n}$, is vertices red originally were there where positions at up end vertices blue the of all that so rotated be then can octagon the that probability The probability. equal with blue or red either colored independently is octagon regular a of vertex Each
+
+[ORIGINAL PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+[REVERSED PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+----------------------------------------
+Result: 3/3 Passed
+========================================
+
+
+========================================
+EXPERIMENT: wrappers
+========================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 2)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Each 3(vertex) of a regular 2(octagon) is independently colored either red or blue with equal 6(probability). The 5(probability) that the 4(octagon) can then be rotated so that all of the blue
+
+defyn{let "3(vertex)" mean "vertex", let "2(octagon)" mean "octagon", let "6(probability)" mean "probability", let "5(probability)" mean "probability", let "4(octagon)" mean "octagon", let "10(vertices)" mean "vertices", let "8(positions)" mean "positions", let "9(vertices)" mean "vertices", let "7(m)" mean "m", let "6(n)" mean "n", let "4(m)" mean "m", let "5(n)" mean "n", let "7(integers)" mean "integers", let "3(m)" mean "m", let "3(n)" mean "n"}.
+
+ 10(vertices) end up at 8(positions) where there were originally red 9(vertices) is $\tfrac{7(m)}{6(n)}$, where $4(m)$ and $5(n)$ are relatively prime positive 7(integers). What is $3(m)+3(n)$?
+
+[ORIGINAL PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+[REVERSED PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue
+
+ vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+----------------------------------------
+Result: 3/3 Passed
+========================================
+
+
+========================================
+EXPERIMENT: split_reversal
+========================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 2)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+hcaE xetrev fo a raluger nogatco si yltnednepedni deroloc rehtie der ro eulb htiw lauqe .ytilibaborp ehT ytilibaborp taht eht nogatco nac neht eb detator os taht lla fo eht eulb secitrev dne pu ta snoitisop erehw ereht erew yllanigiro der secitrev si ,$}n{}m{carft\$ erehw $m$ dna $n$ era ylevitaler emirp evitisop .sregetni tahW si ?$n+m$
+
+[ORIGINAL PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+[REVERSED PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+----------------------------------------
+Result: 3/3 Passed
+========================================
+
+
+========================================
+EXPERIMENT: rail_fence
+========================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 2)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+E... ...t...o... ...u... ...a... ...i...p...e...y...l...d...t... ... ...b... ...h...u...p...a...i... ... ...b...l... ...t...e...t...n...n...e...e...t...d... ...t...l... ... ...e...r...e...n...p... ...i...n...h... ...r...e...o...i...l...e...e...c...i...\...a...}...$...h... ... ... ... ... ...a...e...p...e...s...v...n...e... ...t... ...n..
+.a.h.v.r.e. .f.a.r.g.l.r.o.t.g.n.i. .n.e.e.d.n.l. .o.o.e. .i.h.r.r.d.o. .l.e.w.t. .q.a. .r.b.b.l.t...T.e.p.o.a.i.i.y.t.a. .h. .c.a.o. .a. .h.n.b. .o.a.e. .o.t.a. .l. .f.t.e.b.u. .e.t.c.s.e.d.u. .t.p.s.t.o.s.w.e.e.t.e.e.w.r. .r.g.n.l.y.r.d.v.r.i.e. .s.$.t.r.c.m.{.}.,.w.e.e.$.$.a.d.$.$.a.e.r.l.t.v.l. .r.m. .o.i.i.e.i.t.g.r...W.a. .s.$.+.$.
+..c...e...x... ...e...a...c...o...s...d...n...t...c...r...e...e...e...r...u...i...e...l...o...i...y...h...r...b...t...h...t...o...g...c...t... ...r...t...s...h...a...o...h...l...v...i... ... ...a...o...i... ...r...h... ...e...i...a... ... ...t...s... ...f...{...n... ...r...m...n...n...r...e...i...y...i...p...t... ...e...s...h...i...m...?
+GRID END
+
+[ORIGINAL PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+[REVERSED PROBLEM]:
+Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. What is $m+n$?
+
+----------------------------------------
+Result: 3/3 Passed
 ========================================

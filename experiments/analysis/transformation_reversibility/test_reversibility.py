@@ -33,7 +33,7 @@ def normalize_text(text, method='standard'):
 def main():
     parser = argparse.ArgumentParser(description="Test Reversibility of Transformations")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of techniques")
-    parser.add_argument("--num_samples", type=int, default=0, help="Number of examples to test per technique. 0 means all.")
+    parser.add_argument("--limit", type=str, default="0", help="Number of examples (N) or range (start:end) to test. 0 means all.")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="Dataset to test on")
     parser.add_argument("--output", type=str, help="Output report file (default: results/<dataset>_reversibility_report.txt)")
     parser.add_argument("--seed", type=int, default=42)
@@ -64,24 +64,54 @@ def main():
         return
 
     if args.names == 'all':
-        experiment_names = ['context_saturation',
-                            'interleaved_context_line',
+        # experiment_names = ['context_saturation',
+        experiment_names = ['interleaved_context_line',
                             'interleaved_context_word',
                             'not_not',
                             'opposites',
                             'sentence_reversal',
                             'word_reversal',
-                            'word_split_swap',
+                            # 'word_split_swap',
                             'wrappers',
                             'split_reversal',
                             'rail_fence']
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
     
+    sample_info = f"samples: {args.limit}"
     report_lines = []
-    report_lines.append(f"Reversibility Test Report - {args.num_samples} samples per technique - Dataset: {args.dataset}")
+    report_lines.append(f"Reversibility Test Report - {sample_info} - Dataset: {args.dataset}")
     report_lines.append("="*80)
     
+    # Parse limit/range once
+    limit_str = str(args.limit).strip().lower()
+    indices = []
+    
+    if limit_str in ['0', 'all', 'none']:
+        indices = list(range(len(dataset)))
+    elif ':' in limit_str:
+        # Range: start:end
+        parts = limit_str.split(':')
+        start = int(parts[0]) if parts[0] else 0
+        end = int(parts[1]) if parts[1] else len(dataset)
+        # Ensure bounds
+        start = max(0, start)
+        end = min(end, len(dataset))
+        indices = list(range(start, end))
+    else:
+        # First N
+        try:
+            count = int(limit_str)
+            if count == 0:
+                 indices = list(range(len(dataset)))
+            else:
+                 indices = list(range(min(count, len(dataset))))
+        except ValueError:
+            print(f"Error: Invalid limit format '{limit_str}'. Use integer or start:end.")
+            return
+
+    print(f"Selected {len(indices)} samples (Limit: {args.limit})")
+
     for exp_name in experiment_names:
         print(f"Testing {exp_name}...")
         report_lines.append(f"\n{'='*40}")
@@ -111,12 +141,6 @@ def main():
         except ImportError as e:
             report_lines.append(f"ERROR: Could not import module for {exp_name}: {e}")
             continue
-
-        # Select random samples
-        if args.num_samples == 0:
-            indices = list(range(len(dataset)))
-        else:
-            indices = random.sample(range(len(dataset)), min(args.num_samples, len(dataset)))
         
         passed = 0
         total = 0
