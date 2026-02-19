@@ -23,7 +23,7 @@ def main():
     args = parser.parse_args()
     
     if args.names == 'all':
-        experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word',
+        experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word', 'interleaved_context_symbol',
         'not_not', 'opposites', 'sentence_reversal', 'word_reversal', 'wrappers', 'split_reversal' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
@@ -61,7 +61,7 @@ def main():
         
         for i, example in enumerate(dataset):
             extra_context = None
-            if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_substitutions']:
+            if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_context_symbol']:
                 next_idx = (i + 1) % len(dataset)
                 extra_context = remove_latex_comments(dataset[next_idx]['problem'])
             
