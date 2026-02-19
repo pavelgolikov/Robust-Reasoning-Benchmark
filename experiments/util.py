@@ -5,6 +5,7 @@ import time
 from opposites.transformation import apply_opposites
 from interleaved_context_line.transformation import apply_interleaved_context_line
 from interleaved_context_word.transformation import apply_interleaved_context_word
+from interleaved_context_symbol.transformation import apply_interleaved_context_symbol
 from wrappers.transformation import apply_wrappers
 from context_saturation.transformation import apply_context_saturation
 from not_not.transformation import apply_not_not
@@ -69,8 +70,9 @@ TECHNIQUE_DESCRIPTIONS = {
     'context_saturation': "User query contains multiple problem statements. Problem index in the form [[ProblemK]] will be embedded in each problem statement itself, but will be split into 2 parts. Each of the two parts will form its own sentence in the problem statement. For example, two valid parts are: '[[Pro' 'blemK]]' and '[[P' 'roblemK]]'. The two parts can be placed in reverse order in the problem statement. The index of the problem you are to solve will be indicated in the middle of user query. Problems are independent of each other.",
     'word_reversal': "The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.",
     'sentence_reversal': "The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.",
-    'interleaved_context_word': "User query will consist of two problems - A and B, whose statements are interleaved word by word. First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on. You need to solve only problem A. Words are defined as sequences of symbols separated by spaces. If one problem statement is shorter than the other, the empty spaces resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
-    'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is placed on a separate line and is prefixed by a problem tag (e.g. problem A or B) and a space. The segments for different problems are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the empty lines resulting from the shorter problem statement will be filled with the shorter problem statement repeated from the beginning.",
+    'interleaved_context_word': "User query will consist of two problems - A and B, whose statements are interleaved word by word. First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on. You need to solve only problem A. Words are defined as sequences of symbols separated by spaces. If one problem statement is shorter than the other, the shorter problem statement will be repeated from the beginning to fill the remaining length.",
+    'interleaved_context_symbol': "User query will consist of two problems - A and B, whose statements are interleaved symbol by symbol (including punctuation and spaces). First symbol belongs to problem A, second symbol belongs to problem B, third symbol belongs to problem A, and so on. You need to solve only problem A. If one problem statement is shorter than the other, the shorter problem statement will be repeated from the beginning to fill the remaining length.",
+    'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is placed on a separate line and is prefixed by a problem tag (e.g. problem A or B) and a space. The segments for different problems are interleaved. You need to solve only problem A. If one problem statement is shorter than the other, the shorter problem statement will be repeated from the beginning to fill the remaining space.",
     'split_reversal':  "Every word (words are defined as sequences of symbols separated by spaces) in user query has its symbols in reverse order.",
     'opposites': "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
     'wrappers':  "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
@@ -157,6 +159,13 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
             exit(1)
         else:
             user_prompt_content = apply_interleaved_context_word(problem, extra_context)
+    elif name == 'interleaved_context_symbol':
+        if extra_context is None:
+            user_prompt_content = "Error: Missing extra context for interleaved transformation"
+            print(user_prompt_content)
+            exit(1)
+        else:
+            user_prompt_content = apply_interleaved_context_symbol(problem, extra_context)
     elif name == 'interleaved_context_line':
         if extra_context is None:
             user_prompt_content = "Error: Missing extra context for interleaved transformation"

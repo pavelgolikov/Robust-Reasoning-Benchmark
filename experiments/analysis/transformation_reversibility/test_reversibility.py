@@ -67,6 +67,7 @@ def main():
         # experiment_names = ['context_saturation',
         experiment_names = ['interleaved_context_line',
                             'interleaved_context_word',
+                            'interleaved_context_symbol',
                             'not_not',
                             'opposites',
                             'sentence_reversal',
@@ -157,7 +158,7 @@ def main():
             
             # Prepare args for apply (some need context)
             kwargs = {}
-            if exp_name in ['interleaved_context_line', 'interleaved_context_word', 'interleaved_substitutions']:
+            if exp_name in ['interleaved_context_line', 'interleaved_context_word', 'interleaved_context_symbol', 'interleaved_substitutions']:
                  next_idx = (i + 1) % len(dataset)
                  problem_b = remove_latex_comments(dataset[next_idx]['problem'])
                  problem_b = sanitize_inverted_escapes(problem_b)
@@ -192,14 +193,14 @@ def main():
                 norm_method = 'standard'
                 if exp_name == 'context_saturation' or exp_name == 'opposites':
                     norm_method = 'aggressive'
-                elif exp_name in ['interleaved_context_line', 'interleaved_context_word']:
+                elif exp_name in ['interleaved_context_line', 'interleaved_context_word', 'interleaved_context_symbol']:
                     norm_method = 'interleaved_context'
                     
                 norm_orig = normalize_text(original_raw, norm_method)
                 norm_rev = normalize_text(reversed_text, norm_method)
                 
                 is_match = (norm_orig == norm_rev)
-                if exp_name in ['interleaved_context_line', 'interleaved_context_word']:
+                if exp_name in ['interleaved_context_line', 'interleaved_context_word', 'interleaved_context_symbol']:
                     # interleaved_context cycles content, so reversed output may contain repetitions.
                     if norm_rev.startswith(norm_orig):
                          is_match = True
