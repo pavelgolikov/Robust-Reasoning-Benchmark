@@ -89,6 +89,10 @@ def main():
     args = parser.parse_args()
     
     transformations = [t.strip() for t in args.transformations.split(',') if t.strip()]
+    if args.transformations == "all":
+        transformations = ["baseline", "interleaved_context_line", "interleaved_context_word", 
+        "interleaved_context_symbol", "not_not", "opposites", "rail_fence", "sentence_reversal", "split_reversal", 
+        "word_reversal", "wrappers"]
     base_dir = os.path.dirname(os.path.abspath(__file__))
     
     table = PrettyTable()

@@ -443,6 +443,11 @@ def _strip_string(string):
     # remove spaces
     string = string.replace(" ", "")
 
+    # strip leading zeros from pure integers (e.g. "025" -> "25")
+    # but preserve "0" itself and non-integer strings like "0.5"
+    if string.lstrip('0').isdigit() and len(string) > 1:
+        string = string.lstrip('0') or '0'
+
     # \frac1b or \frac12 --> \frac{1}{b} and \frac{1}{2}, etc. Even works with \frac1{72} (but not \frac{72}1). Also does a/b --> \\frac{a}{b}
     string = _fix_fracs(string)
 
