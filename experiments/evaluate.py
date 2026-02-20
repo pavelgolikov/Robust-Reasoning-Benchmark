@@ -4,7 +4,7 @@ import json
 import time
 import random
 from datasets import load_dataset
-from util import get_prompts, remove_latex_comments, last_boxed_only_string, remove_boxed, is_equiv
+from util import get_prompts, remove_latex_comments, extract_and_grade
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset (Efficiency Optimized)")
@@ -193,12 +193,7 @@ def main():
     for exp_name in experiment_names:
         for entry in results_by_experiment[exp_name]:
             try:
-                boxed_str = last_boxed_only_string(entry['output'])
-                extracted = remove_boxed(boxed_str) if boxed_str else None
-                try:
-                    is_correct = is_equiv(extracted, entry['ground_truth'])
-                except:
-                    is_correct = False
+                extracted, is_correct = extract_and_grade(entry['output'], entry['ground_truth'])
             except Exception as e:
                 print(f"Error processing sample {entry['id']}: {e}")
                 extracted = f"ERROR: {str(e)}"

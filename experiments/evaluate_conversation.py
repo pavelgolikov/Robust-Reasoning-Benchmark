@@ -27,9 +27,7 @@ if project_dir not in sys.path:
 
 # Helper imports
 from experiments.util import (
-    last_boxed_only_string,
-    remove_boxed,
-    is_equiv,
+    extract_and_grade,
     remove_latex_comments, 
     BASELINE_SYSTEM_PROMPT
 )
@@ -545,12 +543,7 @@ def main():
         # SAVE PROGRESS
         for agent in active_agents:
             # Prepare data
-            boxed_str = last_boxed_only_string(agent.final_output)
-            extracted = remove_boxed(boxed_str) if boxed_str else None
-            try:
-                is_correct = is_equiv(extracted, agent.ground_truth)
-            except:
-                is_correct = False
+            extracted, is_correct = extract_and_grade(agent.final_output, agent.ground_truth)
             
             # Aggregate Token Usage
             distractor_tokens = [v for k, v in agent.token_usage.items() if k.startswith("distractor")]
@@ -591,12 +584,7 @@ def main():
         if newly_finished:
             print(f"Turn {step_num}: {len(newly_finished)} agents finished.")
             for agent in newly_finished:
-                 boxed_str = last_boxed_only_string(agent.final_output)
-                 extracted = remove_boxed(boxed_str) if boxed_str else None
-                 try:
-                    is_correct = is_equiv(extracted, agent.ground_truth)
-                 except:
-                    is_correct = False
+                 extracted, is_correct = extract_and_grade(agent.final_output, agent.ground_truth)
                  stats["total"] += 1
                  if is_correct: stats["correct"] += 1
                  else: stats["failures"] += 1

@@ -19,7 +19,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_dir, 'analysis'))
 
 from datasets import load_dataset
-from util import get_prompts, remove_latex_comments, last_boxed_only_string, remove_boxed, is_equiv
+from util import get_prompts, remove_latex_comments, extract_and_grade
 
 # ======================================================
 # PART 1: HELPER FUNCTIONS (Parser & Executor)
@@ -238,14 +238,9 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                 
                 # If finished in this step, save immediately
                 if agent.is_done:
-                     # Extract answer using MATH dataset logic
-                    boxed_str = last_boxed_only_string(agent.final_output)
-                    agent.extracted_answer = remove_boxed(boxed_str) if boxed_str else None
-                    
-                    try:
-                        is_corr = is_equiv(agent.extracted_answer, agent.ground_truth)
-                    except:
-                        is_corr = False
+                     # Extract and grade answer using Math-Verify
+                    extracted, is_corr = extract_and_grade(agent.final_output, agent.ground_truth)
+                    agent.extracted_answer = extracted
                     agent.is_correct = is_corr
                     
                     save_incremental_result(agent, incremental_file)

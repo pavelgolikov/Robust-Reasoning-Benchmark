@@ -5,7 +5,7 @@ import json
 import time
 import random
 from datasets import load_dataset
-from util import get_prompts, remove_latex_comments, BASELINE_SYSTEM_PROMPT, last_boxed_only_string, remove_boxed, is_equiv
+from util import get_prompts, remove_latex_comments, BASELINE_SYSTEM_PROMPT, extract_and_grade
 from api_utils import generate_response
 from trim_context import trim_context
 from transformers import AutoTokenizer
@@ -111,14 +111,7 @@ def main():
             
         output_len = len(generated_text) # Char count approximation for stats
         
-        boxed_str = last_boxed_only_string(generated_text)
-        extracted = remove_boxed(boxed_str) if boxed_str else None
-        
-        is_correct = False
-        try:
-             is_correct = is_equiv(extracted, job['ground_truth'])
-        except:
-             is_correct = False
+        extracted, is_correct = extract_and_grade(generated_text, job['ground_truth'])
         
         results.append({
             "id": job['id'],

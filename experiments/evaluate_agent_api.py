@@ -18,7 +18,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_dir, 'analysis'))
 
 from datasets import load_dataset
-from util import get_prompts, remove_latex_comments, last_boxed_only_string, remove_boxed, is_equiv
+from util import get_prompts, remove_latex_comments, extract_and_grade
 from api_utils import generate_response
 
 # ======================================================
@@ -140,13 +140,10 @@ def run_agent_loop(agent: AgentState, model_name: str, provider: str = None):
             agent.final_output = f"ERROR: {e}"
             agent.is_done = True
 
-    # Post-process
-    boxed_str = last_boxed_only_string(agent.final_output)
-    agent.extracted_answer = remove_boxed(boxed_str) if boxed_str else None
-    try:
-        agent.is_correct = is_equiv(agent.extracted_answer, agent.ground_truth)
-    except:
-        agent.is_correct = False
+    # Post-process using Math-Verify
+    extracted, is_correct = extract_and_grade(agent.final_output, agent.ground_truth)
+    agent.extracted_answer = extracted
+    agent.is_correct = is_correct
 
 # ======================================================
 # PART 4: MAIN

@@ -9,7 +9,7 @@ from prettytable import PrettyTable
 # Add local directory to path to import util
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from util import last_boxed_only_string, remove_boxed, is_equiv
+from util import extract_and_grade
 
 def get_latest_result_file(base_dir, exp_name, model_name, dataset_name, results_subdir="results"):
     # Sanitize names to match evaluate.py logic
@@ -55,26 +55,18 @@ def process_file(filepath):
     stats = {"correct": 0, "total": 0, "failures": 0}
     
     for res in results:
-        # Re-extract and Re-verify
+        # Re-extract and Re-verify using Math-Verify
         output = res.get('output', '')
         ground_truth = res.get('ground_truth')
         
-        # Use robust extraction/verification
-        # Use robust extraction/verification
-        boxed_str = last_boxed_only_string(output)
-        extracted = remove_boxed(boxed_str) if boxed_str else None
-        
-        try:
-             is_correct = is_equiv(extracted, ground_truth)
-        except:
-             is_correct = False
+        extracted, is_correct = extract_and_grade(output, ground_truth)
         
         stats['total'] += 1
         if is_correct:
             stats['correct'] += 1
         
-        # Failure tracking (optional output check)
-        if not extracted:
+        # Failure tracking
+        if not extracted or (isinstance(extracted, str) and extracted.startswith('ERROR')):
             stats['failures'] += 1
             
     return stats, None
