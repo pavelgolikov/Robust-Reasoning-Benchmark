@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:2
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=6:00:00
+#SBATCH --time=1:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
@@ -22,7 +22,7 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # export NCCL_DEBUG=INFO
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
-python evaluate.py --names rail_fence,split_reversal --n_samples 5 --num_gpus 2 &> eval_out.out
+python evaluate.py --names interleaved_context_line --n_samples 5 --num_gpus 2 &> eval_out.out
 
 # python evaluate_agent.py --max_model_length 65536 --n_samples 5 --names rail_fence --num_gpus 4 &> eval_out.out
 # python evaluate_context.py --limit 1 --n_samples 5 --context_size 8192 --context_type math --context_file context_math_1M.json --num_gpus 2 &> eval_out.out

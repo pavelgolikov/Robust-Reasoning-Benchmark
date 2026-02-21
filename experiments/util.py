@@ -9,7 +9,6 @@ from interleaved_context_symbol.transformation import apply_interleaved_context_
 from wrappers.transformation import apply_wrappers
 from context_saturation.transformation import apply_context_saturation
 from not_not.transformation import apply_not_not
-from word_split_swap.transformation import apply_word_split_swap
 from word_reversal.transformation import apply_word_reversal
 from sentence_reversal.transformation import apply_sentence_reversal
 from split_reversal.transformation import apply_split_reversal
@@ -144,8 +143,6 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         # return user_prompt_content, BASELINE_SYSTEM_PROMPT
     elif name == 'not_not':
         user_prompt_content = apply_not_not(problem)
-    elif name == 'word_split_swap':
-        user_prompt_content = apply_word_split_swap(problem)
     elif name == 'word_reversal':
         user_prompt_content = apply_word_reversal(problem)
     elif name == 'sentence_reversal':
