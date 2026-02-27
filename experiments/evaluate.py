@@ -71,16 +71,21 @@ def main():
 
     print(f"Starting Multi-Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
-    all_prompts = []
-    # prompt_metadata will store info to map back to specific experiment/problem
-    # Structure: list of dicts corresponding to all_prompts indices
-    prompt_metadata = [] 
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    safe_model_name = args.model.replace('/', '_').replace(' ', '_')
+    safe_dataset_name = args.dataset.replace('/', '_')
+    base_dir = os.path.dirname(os.path.abspath(__file__))
 
+    # Process each transformation independently: prepare -> generate -> grade -> save
     for exp_name in experiment_names:
-        print(f"Preparing prompts for: {exp_name}")
-        # Identify next_idx context if needed
-        # We process dataset again for each experiment
-        
+        print(f"\n{'='*60}")
+        print(f"Processing transformation: {exp_name}")
+        print(f"{'='*60}")
+
+        # 1. Prepare prompts for this transformation
+        prompts = []
+        prompt_metadata = []
+
         for i, example in enumerate(dataset):
             extra_context = None
             if exp_name in ['interleaved_context_word', 'interleaved_context_line', 'interleaved_context_symbol']:
@@ -103,11 +108,9 @@ def main():
             ground_truth = example['answer']
 
             if i == 0:
-                print("\n" + "-"*30)
-                print(f"Experiment: {exp_name}")
-                print(f"System Prompt:\n{system_prompt}")
+                print(f"\nSystem Prompt:\n{system_prompt}")
                 print(f"\nExample Problem Statement:\n{user_prompt}")
-                print("-" * 30 + "\n")
+                print("-" * 30)
             
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -117,81 +120,63 @@ def main():
             if not args.dry:
                 formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
             else:
-                formatted_prompt = messages # Stored as list for dry run inspection
+                formatted_prompt = messages
                 
-            # Create n samples
             for sample_idx in range(args.n_samples):
-                all_prompts.append(formatted_prompt)
+                prompts.append(formatted_prompt)
                 prompt_metadata.append({
-                    "experiment": exp_name,
                     "id": example.get('id', i),
                     "sample_idx": sample_idx,
                     "original": user_prompt,
                     "unmodified_original": example['problem'],
-                    "system_prompt": system_prompt, # Capture system prompt too
+                    "system_prompt": system_prompt,
                     "ground_truth": ground_truth
                 })
 
-    # Generate
-    print(f"Generating responses for {len(all_prompts)} total prompts across {len(experiment_names)} experiments...")
-    
-    if not args.dry:
-        # vLLM batch generation
-        outputs = llm.generate(all_prompts, sampling_params)
-    else:
-        outputs = [''] * len(all_prompts)
-
-    # Phase 1: Collect and Save Raw Outputs
-    results_by_experiment = {name: [] for name in experiment_names}
-    
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    safe_model_name = args.model.replace('/', '_').replace(' ', '_')
-    safe_dataset_name = args.dataset.replace('/', '_')
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-
-    for i, output in enumerate(outputs):
-        if not args.dry:
-            generated_text = output.outputs[0].text
-        else:
-            generated_text = "placeholder output from dry run"
-            
-        meta = prompt_metadata[i]
-        exp = meta['experiment']
+        # 2. Generate responses for this transformation
+        print(f"Generating responses for {len(prompts)} prompts...")
         
-        result_entry = {
-            "id": meta['id'],
-            "system_prompt": meta['system_prompt'],
-            "original": meta['original'],
-            "unmodified_original": meta['unmodified_original'],
-            "ground_truth": meta['ground_truth'],
-            "output": generated_text,
-            "extracted": None, # Placeholder
-            "correct": None    # Placeholder
-        }
-        results_by_experiment[exp].append(result_entry)
+        if not args.dry:
+            outputs = llm.generate(prompts, sampling_params)
+        else:
+            outputs = [''] * len(prompts)
 
-    # Save RAW results immediately (checkpointing)
-    print("\nSaving RAW outputs to disk before parsing...")
-    raw_files = {}
-    for exp_name in experiment_names:
+        # 3. Collect results
+        results = []
+        for i, output in enumerate(outputs):
+            if not args.dry:
+                generated_text = output.outputs[0].text
+            else:
+                generated_text = "placeholder output from dry run"
+                
+            meta = prompt_metadata[i]
+            
+            result_entry = {
+                "id": meta['id'],
+                "system_prompt": meta['system_prompt'],
+                "original": meta['original'],
+                "unmodified_original": meta['unmodified_original'],
+                "ground_truth": meta['ground_truth'],
+                "output": generated_text,
+                "extracted": None,
+                "correct": None
+            }
+            results.append(result_entry)
+
+        # 4. Save RAW results (checkpoint before grading)
         experiment_dir = os.path.join(base_dir, exp_name)
-        # New hierarchy: results/<model>/<dataset>/
         final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
         os.makedirs(final_output_dir, exist_ok=True)
         run_id = f"{safe_model_name}_{safe_dataset_name}_{exp_name}_s{args.seed}_{timestamp}"
         
         raw_json_file = os.path.join(final_output_dir, f"{run_id}_raw.json")
         with open(raw_json_file, "w") as f:
-            json.dump(results_by_experiment[exp_name], f, indent=2)
-        print(f"  Saved raw outputs to: {raw_json_file}")
-        raw_files[exp_name] = raw_json_file
+            json.dump(results, f, indent=2)
+        print(f"  Saved raw checkpoint: {raw_json_file}")
 
-    # Phase 2: Parse and Grade
-    print(f"\nProcessing and Grading {len(all_prompts)} responses...")
-    stats_by_experiment = {name: {"correct": 0, "total": 0, "failures": 0} for name in experiment_names}
-    
-    for exp_name in experiment_names:
-        for entry in results_by_experiment[exp_name]:
+        # 5. Grade results
+        stats = {"correct": 0, "total": 0, "failures": 0}
+        for entry in results:
             try:
                 extracted, is_correct = extract_and_grade(entry['output'], entry['ground_truth'])
             except Exception as e:
@@ -199,53 +184,42 @@ def main():
                 extracted = f"ERROR: {str(e)}"
                 is_correct = False
             
-            # Update entry
             entry['extracted'] = extracted
             entry['correct'] = is_correct
             
-            # Update stats
-            stats_by_experiment[exp_name]["total"] += 1
+            stats["total"] += 1
             if is_correct:
-                stats_by_experiment[exp_name]["correct"] += 1
+                stats["correct"] += 1
             if extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")):
-                stats_by_experiment[exp_name]["failures"] += 1
+                stats["failures"] += 1
 
-    # Save Results
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    print("\n=== Multi-Eval Summary ===")
-    for exp_name in experiment_names:
-        stats = stats_by_experiment[exp_name]
+        # 6. Save final graded results
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
-        print(f"Experiment: {exp_name}")
-        print(f"  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
+        print(f"\n  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
         print(f"  Failures: {stats['failures']}")
-        results_by_experiment[exp_name].append({
+        
+        results.append({
             "summary": {
                 "accuracy": acc,
                 "correct": stats["correct"],
                 "total": stats["total"],
-                "failures": stats["failures"]
+                "failures": stats["failures"],
+                "max_model_length": args.max_model_length,
+                "num_distractors": args.num_distractors,
+                "num_gpus": args.num_gpus,
+                "n_samples": args.n_samples,
             }
         })
         
-        # Save to file
-        run_id = f"{safe_model_name}_{safe_dataset_name}_{exp_name}_s{args.seed}_{timestamp}"
-        experiment_dir = os.path.join(base_dir, exp_name)
-        # New hierarchy: results/<model>/<dataset>/
-        final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
-        os.makedirs(final_output_dir, exist_ok=True)
-        
         json_file = os.path.join(final_output_dir, f"{run_id}.json")
         with open(json_file, "w") as f:
-            json.dump(results_by_experiment[exp_name], f, indent=2)
+            json.dump(results, f, indent=2)
         print(f"  Saved to: {json_file}")
 
-        # Reduce clutter: delete the raw file if the final file was successfully saved
-        if exp_name in raw_files and os.path.exists(raw_files[exp_name]):
+        # Cleanup raw checkpoint
+        if os.path.exists(raw_json_file):
             try:
-                os.remove(raw_files[exp_name])
-                print(f"  Deleted raw checkpoint: {raw_files[exp_name]}")
+                os.remove(raw_json_file)
             except OSError as e:
                 print(f"  Warning: Could not delete raw checkpoint: {e}")
 

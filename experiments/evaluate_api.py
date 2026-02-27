@@ -54,10 +54,19 @@ def main():
 
     print(f"Starting Multi-Evaluation on {len(dataset)} examples. Seed={args.seed}. Samples per problem={args.n_samples}")
 
-    jobs = []
-    
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    safe_model_name = args.model.replace('/', '_').replace(' ', '_')
+    safe_dataset_name = args.dataset.replace('/', '_')
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Process each transformation independently: prepare -> generate -> grade -> save
     for exp_name in experiment_names:
-        print(f"Preparing prompts for: {exp_name}")
+        print(f"\n{'='*60}")
+        print(f"Processing transformation: {exp_name}")
+        print(f"{'='*60}")
+
+        # 1. Prepare jobs for this transformation
+        jobs = []
         
         for i, example in enumerate(dataset):
             extra_context = None
@@ -81,21 +90,17 @@ def main():
             ground_truth = example['answer']
 
             if i == 0:
-                print("\n" + "-"*30)
-                print(f"Experiment: {exp_name}")
-                print(f"System Prompt:\n{system_prompt}")
+                print(f"\nSystem Prompt:\n{system_prompt}")
                 print(f"\nExample Problem Statement:\n{user_prompt}")
-                print("-" * 30 + "\n")
+                print("-" * 30)
             
             messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ]
             
-            # Create n samples
             for sample_idx in range(args.n_samples):
                 jobs.append({
-                    "experiment": exp_name,
                     "id": example.get('id', i),
                     "sample_idx": sample_idx,
                     "original": user_prompt,
@@ -105,48 +110,36 @@ def main():
                     "ground_truth": ground_truth
                 })
 
-    # Generate
-    print(f"Generating responses for {len(jobs)} jobs across {len(experiment_names)} experiments...")
-    
-    results_by_experiment = {name: [] for name in experiment_names}
-    
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    safe_model_name = args.model.replace('/', '_').replace(' ', '_')
-    safe_dataset_name = args.dataset.replace('/', '_')
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+        # 2. Generate responses for this transformation
+        print(f"Generating responses for {len(jobs)} jobs...")
+        
+        results = []
+        for i, job in enumerate(jobs):
+            try:
+                print(f"  Job {i+1}/{len(jobs)} (ID: {job['id']})...")
+                generated_text = generate_response(
+                    job['messages'], 
+                    args.model, 
+                    provider=args.provider, 
+                    max_tokens=args.max_tokens
+                )
+            except Exception as e:
+                print(f"  Error generating for job {i}: {e}")
+                generated_text = f"ERROR: {str(e)}"
+                
+            result_entry = {
+                "id": job['id'],
+                "system_prompt": job['system_prompt'],
+                "original": job['original'],
+                "unmodified_original": job['unmodified_original'],
+                "ground_truth": job['ground_truth'],
+                "output": generated_text,
+                "extracted": None,
+                "correct": None
+            }
+            results.append(result_entry)
 
-    # Execute jobs
-    total_jobs = len(jobs)
-    for i, job in enumerate(jobs):
-        try:
-            print(f"Processing job {i+1}/{total_jobs} (Exp: {job['experiment']}, ID: {job['id']})...")
-            # Call API
-            generated_text = generate_response(
-                job['messages'], 
-                args.model, 
-                provider=args.provider, 
-                max_tokens=args.max_tokens
-            )
-        except Exception as e:
-            print(f"Error generating for job {i}: {e}")
-            generated_text = f"ERROR: {str(e)}"
-            
-        result_entry = {
-            "id": job['id'],
-            "system_prompt": job['system_prompt'],
-            "original": job['original'],
-            "unmodified_original": job['unmodified_original'],
-            "ground_truth": job['ground_truth'],
-            "output": generated_text,
-            "extracted": None,
-            "correct": None
-        }
-        results_by_experiment[job['experiment']].append(result_entry)
-
-    # Save RAW results immediately (checkpointing)
-    print("\nSaving RAW outputs to disk before parsing...")
-    raw_files = {}
-    for exp_name in experiment_names:
+        # 3. Save RAW results (checkpoint before grading)
         experiment_dir = os.path.join(base_dir, exp_name)
         final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
         os.makedirs(final_output_dir, exist_ok=True)
@@ -154,16 +147,12 @@ def main():
         
         raw_json_file = os.path.join(final_output_dir, f"{run_id}_raw.json")
         with open(raw_json_file, "w") as f:
-            json.dump(results_by_experiment[exp_name], f, indent=2)
-        print(f"  Saved raw outputs to: {raw_json_file}")
-        raw_files[exp_name] = raw_json_file
+            json.dump(results, f, indent=2)
+        print(f"  Saved raw checkpoint: {raw_json_file}")
 
-    # Phase 2: Parse and Grade
-    print(f"\nProcessing and Grading...")
-    stats_by_experiment = {name: {"correct": 0, "total": 0, "failures": 0} for name in experiment_names}
-    
-    for exp_name in experiment_names:
-        for entry in results_by_experiment[exp_name]:
+        # 4. Grade results
+        stats = {"correct": 0, "total": 0, "failures": 0}
+        for entry in results:
             try:
                 extracted, is_correct = extract_and_grade(entry['output'], entry['ground_truth'])
             except Exception as e:
@@ -174,21 +163,18 @@ def main():
             entry['extracted'] = extracted
             entry['correct'] = is_correct
             
-            stats_by_experiment[exp_name]["total"] += 1
+            stats["total"] += 1
             if is_correct:
-                stats_by_experiment[exp_name]["correct"] += 1
+                stats["correct"] += 1
             if extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")):
-                stats_by_experiment[exp_name]["failures"] += 1
+                stats["failures"] += 1
 
-    # Save Final Results
-    print("\n=== Multi-Eval Summary ===")
-    for exp_name in experiment_names:
-        stats = stats_by_experiment[exp_name]
+        # 5. Save final graded results
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
-        print(f"Experiment: {exp_name}")
-        print(f"  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
+        print(f"\n  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
         print(f"  Failures: {stats['failures']}")
-        results_by_experiment[exp_name].append({
+        
+        results.append({
             "summary": {
                 "accuracy": acc,
                 "correct": stats["correct"],
@@ -197,20 +183,15 @@ def main():
             }
         })
         
-        run_id = f"{safe_model_name}_{safe_dataset_name}_{exp_name}_s{args.seed}_{timestamp}"
-        experiment_dir = os.path.join(base_dir, exp_name)
-        final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
-        os.makedirs(final_output_dir, exist_ok=True)
-        
         json_file = os.path.join(final_output_dir, f"{run_id}.json")
         with open(json_file, "w") as f:
-            json.dump(results_by_experiment[exp_name], f, indent=2)
+            json.dump(results, f, indent=2)
         print(f"  Saved to: {json_file}")
 
-        if exp_name in raw_files and os.path.exists(raw_files[exp_name]):
+        # Cleanup raw checkpoint
+        if os.path.exists(raw_json_file):
             try:
-                os.remove(raw_files[exp_name])
-                print(f"  Deleted raw checkpoint: {raw_files[exp_name]}")
+                os.remove(raw_json_file)
             except OSError as e:
                 print(f"  Warning: Could not delete raw checkpoint: {e}")
 
