@@ -20,8 +20,16 @@ def main():
     parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
     args = parser.parse_args()
     if args.names == 'all':
-        experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word', 'interleaved_context_symbol',
-        'not_not', 'opposites', 'sentence_reversal', 'word_reversal', 'wrappers', 'split_reversal' ]
+        experiment_names = ['interleaved_context_line',
+                            'interleaved_context_symbol',
+                            'interleaved_context_word',
+                            'not_not',
+                            'opposites',
+                            'rail_fence',
+                            'sentence_reversal',
+                            'split_reversal',
+                            'word_reversal',
+                            'wrappers']
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 
