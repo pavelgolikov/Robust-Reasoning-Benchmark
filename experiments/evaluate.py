@@ -26,7 +26,7 @@ def main():
             'sentence_reversal',
             'split_reversal',
             'word_reversal',
-            'wrappers'
+            'wrappers',
             'interleaved_context_line',
             'interleaved_context_word',
             'interleaved_context_symbol',
