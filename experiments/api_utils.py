@@ -22,7 +22,7 @@ class GoogleProvider(LLMProvider):
         from google import genai
         api_key = os.environ.get("GOOGLE_API_KEY")
         project = os.environ.get("GOOGLE_PROJECT_ID")
-        location = os.environ.get("GOOGLE_LOCATION", "us-central1")
+        location = os.environ.get("GOOGLE_LOCATION", "global")
         
         if project:
             # Vertex AI Mode
@@ -313,20 +313,32 @@ class GoogleBatchProvider(BatchProvider):
         from google import genai
         self.api_key = os.environ.get("GOOGLE_API_KEY")
         self.project = os.environ.get("GOOGLE_PROJECT_ID")
-        self.location = os.environ.get("GOOGLE_LOCATION", "us-central1")
+        self.location = os.environ.get("GOOGLE_LOCATION", "global")
         self.gcs_bucket = os.environ.get("GOOGLE_GCS_BUCKET")
+        
+        # We delay client initialization until create_batch because the model might dictate the mode
+        self.client = None
 
+    def _init_client(self, model_name):
+        from google import genai
+        
         if self.project:
             # Vertex AI Mode
             self.client = genai.Client(vertexai=True, project=self.project, location=self.location)
+            self.is_vertex = True
             print(f"Initialized GoogleBatchProvider in Vertex AI mode (project={self.project}, location={self.location})")
         else:
             # Gemini API (AI Studio) Mode
             if not self.api_key:
                 raise ValueError("Neither GOOGLE_PROJECT_ID nor GOOGLE_API_KEY environment variable set.")
             self.client = genai.Client(api_key=self.api_key)
+            self.is_vertex = False
+            print("Initialized GoogleBatchProvider in AI Studio mode")
 
     def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7):
+        if self.client is None:
+            self._init_client(model_name)
+            
         if max_tokens is None:
             raise ValueError("max_tokens must be explicitly provided.")
 
@@ -365,7 +377,7 @@ class GoogleBatchProvider(BatchProvider):
         print(f"Preparing batch file...")
         
         # Vertex AI mode needs the source file to be in GCS
-        if self.project:
+        if self.is_vertex:
             if not self.gcs_bucket:
                 raise ValueError("GOOGLE_GCS_BUCKET must be set when using Vertex AI mode (GOOGLE_PROJECT_ID).")
             
@@ -398,9 +410,12 @@ class GoogleBatchProvider(BatchProvider):
                     os.remove(tmp_path)
         
         print(f"Creating Google batch job using new SDK...")
-        if self.project:
-            # Vertex AI likes just the model name/ID or full resource path
-            full_model_name = model_name
+        if self.is_vertex:
+            # Vertex AI batch prediction requires the publishers/google/models/ prefix
+            if not model_name.startswith("publishers/") and not model_name.startswith("projects/"):
+                full_model_name = f"publishers/google/models/{model_name}"
+            else:
+                full_model_name = model_name
         else:
             # AI Studio likes the models/ prefix
             full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
@@ -410,7 +425,7 @@ class GoogleBatchProvider(BatchProvider):
             "src": src_uri
         }
         
-        if self.gcs_bucket:
+        if self.is_vertex and self.gcs_bucket:
             # Ensure bucket name doesn't have gs:// prefix for the config if the user added it by mistake
             bucket_path = self.gcs_bucket.replace("gs://", "").strip("/")
             # Use a unique subfolder for each job to avoid collisions

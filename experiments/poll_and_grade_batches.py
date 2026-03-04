@@ -55,7 +55,12 @@ def check_google_batch(batch_id):
     from google import genai
     api_key = os.environ.get("GOOGLE_API_KEY")
     project = os.environ.get("GOOGLE_PROJECT_ID")
-    location = os.environ.get("GOOGLE_LOCATION", "us-central1")
+    
+    # Derive location from the batch_id resource path (e.g. projects/.../locations/global/...)
+    # so polling always hits the correct region regardless of env defaults.
+    location = os.environ.get("GOOGLE_LOCATION", "global")
+    if "/locations/" in str(batch_id):
+        location = batch_id.split("/locations/")[1].split("/")[0]
     
     if project:
         client = genai.Client(vertexai=True, project=project, location=location)
@@ -80,7 +85,11 @@ def download_google_batch(batch_id, output_uri, out_path):
     from google import genai
     api_key = os.environ.get("GOOGLE_API_KEY")
     project = os.environ.get("GOOGLE_PROJECT_ID")
-    location = os.environ.get("GOOGLE_LOCATION", "us-central1")
+    
+    # Derive location from the batch_id resource path, same as check_google_batch
+    location = os.environ.get("GOOGLE_LOCATION", "global")
+    if "/locations/" in str(batch_id):
+        location = batch_id.split("/locations/")[1].split("/")[0]
     
     if not output_uri:
         if project:
@@ -142,34 +151,53 @@ def download_google_batch(batch_id, output_uri, out_path):
     return False
 
 def parse_openai_results(raw_path):
+    """Returns (outputs dict, refusals set of custom_ids)."""
     outputs = {}
+    refusals = set()
     with open(raw_path, 'r') as f:
         for line in f:
             if not line.strip(): continue
             data = json.loads(line)
             custom_id = data.get("custom_id")
             if "response" in data and "body" in data["response"] and "choices" in data["response"]["body"]:
-                msg_content = data["response"]["body"]["choices"][0]["message"]["content"]
-                outputs[custom_id] = msg_content
+                finish_reason = data["response"]["body"]["choices"][0].get("finish_reason", "")
+                if finish_reason == "content_filter":
+                    refusals.add(custom_id)
+                    outputs[custom_id] = "ERROR: Refused by content filter"
+                else:
+                    outputs[custom_id] = data["response"]["body"]["choices"][0]["message"]["content"]
             else:
                 outputs[custom_id] = "ERROR: " + str(data.get("error", "Unknown error"))
-    return outputs
+    return outputs, refusals
 
 def parse_anthropic_results(raw_path):
+    """Returns (outputs dict, refusals set of custom_ids)."""
     outputs = {}
+    refusals = set()
     with open(raw_path, 'r') as f:
         for line in f:
             if not line.strip(): continue
             data = json.loads(line)
             custom_id = data.get("custom_id")
-            if "result" in data and data["result"]["type"] == "succeeded":
-                outputs[custom_id] = data["result"]["message"]["content"][0]["text"]
+            if "result" in data and data.get("result", {}).get("type") == "succeeded":
+                msg = data["result"].get("message", {})
+                stop_reason = msg.get("stop_reason", "")
+                content = msg.get("content", [])
+                if stop_reason == "refusal":
+                    refusals.add(custom_id)
+                    outputs[custom_id] = "ERROR: Refused by model safety filter"
+                elif content and len(content) > 0 and "text" in content[0]:
+                    outputs[custom_id] = content[0]["text"]
+                else:
+                    outputs[custom_id] = "ERROR: Empty or malformed content block in Anthropic response"
             else:
                 outputs[custom_id] = "ERROR: " + str(data.get("result", {}).get("error", "Unknown error"))
-    return outputs
+    return outputs, refusals
 
 def parse_google_results(raw_path):
+    """Returns (outputs dict, refusals set of custom_ids)."""
     outputs = {}
+    refusals = set()
     idx = 0
     with open(raw_path, 'r') as f:
         for line in f:
@@ -179,9 +207,16 @@ def parse_google_results(raw_path):
             custom_id = data.get("request", {}).get("id") or data.get("id")
             
             msg_content = "ERROR: No response found"
+            is_refusal = False
             if "response" in data and "candidates" in data["response"]:
                 try:
-                    msg_content = data["response"]["candidates"][0]["content"]["parts"][0]["text"]
+                    candidate = data["response"]["candidates"][0]
+                    finish_reason = candidate.get("finishReason", "")
+                    if finish_reason in ("SAFETY", "RECITATION", "BLOCKLIST"):
+                        is_refusal = True
+                        msg_content = f"ERROR: Refused by safety filter ({finish_reason})"
+                    else:
+                        msg_content = candidate["content"]["parts"][0]["text"]
                 except:
                     msg_content = "ERROR: Could not parse nested candidate response"
             elif "error" in data:
@@ -189,10 +224,12 @@ def parse_google_results(raw_path):
             
             if custom_id:
                 outputs[custom_id] = msg_content
+                if is_refusal:
+                    refusals.add(custom_id)
             # Fallback for when ID is missing (Vertex AI often omits it if not in specific format)
             outputs[idx] = msg_content
             idx += 1
-    return outputs
+    return outputs, refusals
 
 
 def main():
@@ -314,12 +351,13 @@ def main():
             
         print(f"2. Parsing raw outputs...")
         parsed_outputs = {}
+        refusal_ids = set()
         if provider == "openai":
-            parsed_outputs = parse_openai_results(raw_output_path)
+            parsed_outputs, refusal_ids = parse_openai_results(raw_output_path)
         elif provider == "anthropic":
-            parsed_outputs = parse_anthropic_results(raw_output_path)
+            parsed_outputs, refusal_ids = parse_anthropic_results(raw_output_path)
         elif provider == "google":
-            parsed_outputs = parse_google_results(raw_output_path)
+            parsed_outputs, refusal_ids = parse_google_results(raw_output_path)
             
         print(f"3. Grading results...")
         with open(jobs_file, 'r') as f:
@@ -327,7 +365,7 @@ def main():
             
         # Reconstruct exactly like the sequential script output
         results = []
-        stats = {"correct": 0, "total": 0, "failures": 0}
+        stats = {"correct": 0, "total": 0, "failures": 0, "refusals": 0}
         for i, job in enumerate(jobs_data):
             custom_id = str(job['id']) + "_" + str(job.get('sample_idx', 0))
             
@@ -339,6 +377,8 @@ def main():
             if generated_text is None:
                 generated_text = "ERROR: Missing from batch results"
             
+            is_refusal = custom_id in refusal_ids
+
             try:
                 extracted, is_correct = extract_and_grade(generated_text, job['ground_truth'])
             except Exception as e:
@@ -353,24 +393,33 @@ def main():
                 "ground_truth": job['ground_truth'],
                 "output": generated_text,
                 "extracted": extracted,
-                "correct": is_correct
+                "correct": is_correct,
+                "refusal": is_refusal
             }
             results.append(result_entry)
             
             stats["total"] += 1
             if is_correct: stats["correct"] += 1
-            if extracted is None or (isinstance(extracted, str) and "ERROR" in extracted):
+            if is_refusal: stats["refusals"] += 1
+            if not is_refusal and (extracted is None or (isinstance(extracted, str) and "ERROR" in extracted)):
                 stats["failures"] += 1
 
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
-        print(f"   Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
-        print(f"   Failures: {stats['failures']}")
+        attempted = stats["total"] - stats["refusals"]
+        acc_attempted = stats["correct"] / attempted if attempted > 0 else 0
+        print(f"   Accuracy (all):      {acc:.2%} ({stats['correct']}/{stats['total']})")
+        print(f"   Accuracy (attempted): {acc_attempted:.2%} ({stats['correct']}/{attempted})")
+        print(f"   Refusals: {stats['refusals']}")
+        print(f"   Failures (non-refusal errors): {stats['failures']}")
         
         results.append({
             "summary": {
                 "accuracy": acc,
+                "accuracy_attempted": acc_attempted,
                 "correct": stats["correct"],
                 "total": stats["total"],
+                "attempted": attempted,
+                "refusals": stats["refusals"],
                 "failures": stats["failures"]
             }
         })
@@ -390,10 +439,17 @@ def main():
             
         print(f"4. Saved final graded results to: {final_json_file}")
         
-        # Mark tracking as totally done
-        data["status"] = "COMPLETED_AND_GRADED"
-        with open(tf, 'w') as f:
-            json.dump(data, f, indent=2)
+        # Clean up: remove batch tracking and jobs files
+        try:
+            os.remove(tf)
+            print(f"5. Removed tracking file: {tf}")
+        except Exception as e:
+            print(f"   Warning: Could not remove tracking file: {e}")
+        try:
+            os.remove(jobs_file)
+            print(f"   Removed jobs file: {jobs_file}")
+        except Exception as e:
+            print(f"   Warning: Could not remove jobs file: {e}")
             
     print("\nAll done!")
 
