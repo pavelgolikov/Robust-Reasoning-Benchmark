@@ -48,6 +48,10 @@ GAIR/LIMO-v2 - 32B
 Qwen/Qwen3-30B-A3B-Thinking-2507
 tiiuae/Falcon-H1R-7B
 
+Next experiments:
+1. Qwen 3.5 27B on AIME 2024
+2. R1 Distill Llama 70B on AIME 2024
+
 Closed:
 GPT-5.1
 Gemini 3 Pro
