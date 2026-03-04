@@ -90,7 +90,7 @@ def run_context_eval(context_type, dataset, tokenizer, args):
     for i, job in enumerate(jobs):
         print(f"[{context_type}] Processing job {i+1}/{total_jobs} (ID: {job['id']})...")
         try:
-            generated_text = generate_response(job['messages'], args.model)
+            generated_text = generate_response(job['messages'], args.model, max_tokens=args.max_tokens)
         except Exception as e:
             print(f"Error generating for job {i}: {e}")
             generated_text = f"ERROR: {str(e)}"
@@ -157,6 +157,7 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="Limit examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Samples per problem")
     parser.add_argument("--context_size", type=int, required=True, help="Target context size in tokens")
+    parser.add_argument("--max_tokens", type=int, required=True, help="Max output tokens (required).")
 
     args = parser.parse_args()
 

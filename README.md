@@ -48,9 +48,9 @@ GAIR/LIMO-v2 - 32B
 Qwen/Qwen3-30B-A3B-Thinking-2507
 tiiuae/Falcon-H1R-7B
 
+NOTE:
 Next experiments:
-1. Qwen 3.5 27B on AIME 2024
-2. R1 Distill Llama 70B on AIME 2024
+long context
 
 Closed:
 GPT-5.1
@@ -74,3 +74,5 @@ Confuse the model by introducing multiple block boundaries in the text? Like mul
 x, n, m, k - 4 lower_variables
 A, B, C, D - 4 upper_variables
 Alice, Bob, Carol, David - 4 names
+
+

@@ -6,7 +6,7 @@ import time
 import random
 from datasets import load_dataset
 from util import get_prompts, remove_latex_comments, extract_and_grade
-from api_utils import generate_response
+from api_utils import generate_response, submit_batch
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset (API Version)")
@@ -18,7 +18,8 @@ def main():
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
     parser.add_argument("--provider", type=str, default=None, help="API Provider (google, openai, anthropic). Optional if model name implies it.")
-    parser.add_argument("--max_tokens", type=int, default=4096, help="Max output tokens. Defaults to 4096.")
+    parser.add_argument("--max_tokens", type=int, default=32768, help="Max output tokens (required to avoid accidental truncation).")
+    parser.add_argument("--batch", action="store_true", help="Submit as an async batch job instead of running sequentially")
     
     args = parser.parse_args()
     
@@ -89,10 +90,10 @@ def main():
             )
             ground_truth = example['answer']
 
-            if i == 0:
-                print(f"\nSystem Prompt:\n{system_prompt}")
-                print(f"\nExample Problem Statement:\n{user_prompt}")
-                print("-" * 30)
+            # if i == 0:
+            #     print(f"\nSystem Prompt:\n{system_prompt}")
+            #     print(f"\nExample Problem Statement:\n{user_prompt}")
+            #     print("-" * 30)
             
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -111,6 +112,58 @@ def main():
                 })
 
         # 2. Generate responses for this transformation
+        if args.batch:
+            print(f"\nPreparing to submit {len(jobs)} jobs as a batch...")
+            samples = random.sample(jobs, min(2, len(jobs)))
+            print("\n" + "="*40 + " BATCH SUBMISSION PREVIEW " + "="*40)
+            print(f"Model: {args.model}")
+            print(f"Transformation: {exp_name}")
+            print(f"Total Jobs: {len(jobs)}")
+            print("\n--- Example 1 ---")
+            print(f"System Prompt:\n{samples[0]['system_prompt']}\n")
+            print(f"User Prompt:\n{samples[0]['original']}\n")
+            if len(samples) > 1:
+                print("\n--- Example 2 ---")
+                print(f"System Prompt:\n{samples[1]['system_prompt']}\n")
+                print(f"User Prompt:\n{samples[1]['original']}\n")
+            print("="*106 + "\n")
+            
+            user_input = input(f"Do you want to submit this batch of {len(jobs)} jobs to the cloud? Type 'Yes' to confirm: ")
+            if user_input.strip() != "Yes":
+                print("Skipping batch submission.")
+                continue
+                
+            batch_info = submit_batch(jobs, args.model, provider=args.provider, max_tokens=args.max_tokens)
+            print(f"Batch submitted successfully! Info: {batch_info}")
+            
+            experiment_dir = os.path.join(base_dir, exp_name)
+            final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
+            os.makedirs(final_output_dir, exist_ok=True)
+            
+            track_file = os.path.join(final_output_dir, f"batch_tracking_{timestamp}.json")
+            jobs_file = os.path.join(final_output_dir, f"jobs_{batch_info['batch_id'].replace('/', '_')}.json")
+            
+            tracking_data = {
+                "batch_id": batch_info["batch_id"],
+                "provider": batch_info.get("provider", args.provider),
+                "model": args.model,
+                "dataset": args.dataset,
+                "experiment": exp_name,
+                "timestamp": timestamp,
+                "jobs_file": jobs_file,
+                "status": batch_info.get("status", "SUBMITTED"),
+                "metadata": batch_info
+            }
+            
+            with open(track_file, "w") as f:
+                json.dump(tracking_data, f, indent=2)
+                
+            with open(jobs_file, "w") as f:
+                json.dump(jobs, f, indent=2)
+                
+            print(f"Saved batch tracking info to {track_file}")
+            continue
+
         print(f"Generating responses for {len(jobs)} jobs...")
         
         results = []

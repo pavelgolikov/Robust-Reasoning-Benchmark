@@ -101,13 +101,13 @@ class AgentState:
 # PART 3: AGENT LOOP
 # ======================================================
 
-def run_agent_loop(agent: AgentState, model_name: str, provider: str = None):
+def run_agent_loop(agent: AgentState, model_name: str, max_tokens: int, provider: str = None):
     while not agent.is_done and agent.step_count < agent.max_steps:
         print(f"  [Agent {agent.id}] Step {agent.step_count+1}...")
         
         try:
             # Generate response
-            response_text = generate_response(agent.history, model_name, provider=provider)
+            response_text = generate_response(agent.history, model_name, provider=provider, max_tokens=max_tokens)
             agent.step_count += 1
             
             # Append assistant message
@@ -159,6 +159,7 @@ def main():
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
     parser.add_argument("--provider", type=str, default=None, help="API Provider (google, openai, anthropic). Optional.")
+    parser.add_argument("--max_tokens", type=int, required=True, help="Max output tokens (required).")
 
     args = parser.parse_args()
 
@@ -251,7 +252,7 @@ def main():
         print(f"Running {len(agents)} agents for {exp_name}...")
         for j, agent in enumerate(agents):
             print(f"Agent {j+1}/{len(agents)} ({agent.id}) running...")
-            run_agent_loop(agent, args.model)
+            run_agent_loop(agent, args.model, max_tokens=args.max_tokens, provider=args.provider)
             
             # Collect result
             res = {
