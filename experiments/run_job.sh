@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=7:00:00
+#SBATCH --time=1:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
@@ -22,7 +22,7 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # export NCCL_DEBUG=INFO
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
-python evaluate.py --names all --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names baseline --model openai/gpt-oss-120b --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
 
 # python evaluate_agent.py --n_samples 5 --names rail_fence --num_gpus 4 &> eval_out.out
 
