@@ -35,7 +35,7 @@ def check_anthropic_batch(batch_id):
     from anthropic import Anthropic
     client = Anthropic()
     batch = client.messages.batches.retrieve(batch_id)
-    return batch.processing_status, getattr(batch.results_url, None) if hasattr(batch, 'results_url') else None
+    return batch.processing_status, getattr(batch, "results_url", None)
 
 def download_anthropic_batch(batch_id, out_path):
     from anthropic import Anthropic
@@ -54,7 +54,13 @@ def download_anthropic_batch(batch_id, out_path):
 def check_google_batch(batch_id):
     from google import genai
     api_key = os.environ.get("GOOGLE_API_KEY")
-    client = genai.Client(api_key=api_key)
+    project = os.environ.get("GOOGLE_PROJECT_ID")
+    location = os.environ.get("GOOGLE_LOCATION", "us-central1")
+    
+    if project:
+        client = genai.Client(vertexai=True, project=project, location=location)
+    else:
+        client = genai.Client(api_key=api_key)
     
     # In the new SDK, batch_id is the full resource name
     batch_job = client.batches.get(name=batch_id)
@@ -73,12 +79,20 @@ def check_google_batch(batch_id):
 def download_google_batch(batch_id, output_uri, out_path):
     from google import genai
     api_key = os.environ.get("GOOGLE_API_KEY")
+    project = os.environ.get("GOOGLE_PROJECT_ID")
+    location = os.environ.get("GOOGLE_LOCATION", "us-central1")
     
     if not output_uri:
-        client = genai.Client(api_key=api_key)
+        if project:
+            client = genai.Client(vertexai=True, project=project, location=location)
+        else:
+            client = genai.Client(api_key=api_key)
+            
         batch_job = client.batches.get(name=batch_id)
         if batch_job.dest and hasattr(batch_job.dest, 'file_name') and batch_job.dest.file_name:
             output_uri = f"https://generativelanguage.googleapis.com/v1beta/{batch_job.dest.file_name}"
+        elif batch_job.dest and hasattr(batch_job.dest, 'gcs_uri') and batch_job.dest.gcs_uri:
+            output_uri = batch_job.dest.gcs_uri
 
     if output_uri:
         if "generativelanguage.googleapis.com" in output_uri:
@@ -89,8 +103,42 @@ def download_google_batch(batch_id, output_uri, out_path):
                  f.write(res.content)
              return True
         elif output_uri.startswith("gs://"):
-             print(f"  Warning: Output is on GCS ({output_uri}). Please download manually or install gcloud.")
-             return False
+             print(f"  Detected GCS output folder/uri: {output_uri}")
+             try:
+                 from google.cloud import storage
+                 project = os.environ.get("GOOGLE_PROJECT_ID")
+                 client = storage.Client(project=project)
+                 
+                 # gs://bucket_name/prefix
+                 uri_no_prefix = output_uri.replace("gs://", "")
+                 if "/" in uri_no_prefix:
+                     bucket_name, prefix = uri_no_prefix.split("/", 1)
+                 else:
+                     bucket_name, prefix = uri_no_prefix, ""
+                 
+                 bucket = client.bucket(bucket_name)
+                 
+                 # List blobs to find the actual .jsonl output
+                 blobs = list(client.list_blobs(bucket, prefix=prefix))
+                 # Vertex AI results are typically in a subfolder with 'predictions.jsonl' 
+                 # or similar. Let's find the first jsonl file.
+                 result_blob = None
+                 for b in blobs:
+                     if b.name.endswith(".jsonl") and "input" not in b.name:
+                         result_blob = b
+                         break
+                 
+                 if result_blob:
+                     print(f"  Found result blob: {result_blob.name}")
+                     result_blob.download_to_filename(out_path)
+                     print(f"  Successfully downloaded to {out_path}")
+                     return True
+                 else:
+                     print(f"  Could not find any .jsonl results in {output_uri}")
+                     return False
+             except Exception as e:
+                 print(f"  Error downloading from GCS: {e}")
+                 return False
     return False
 
 def parse_openai_results(raw_path):
@@ -122,19 +170,28 @@ def parse_anthropic_results(raw_path):
 
 def parse_google_results(raw_path):
     outputs = {}
+    idx = 0
     with open(raw_path, 'r') as f:
         for line in f:
-            if not line.strip(): continue
+            line = line.strip()
+            if not line: continue
             data = json.loads(line)
             custom_id = data.get("request", {}).get("id") or data.get("id")
+            
+            msg_content = "ERROR: No response found"
             if "response" in data and "candidates" in data["response"]:
                 try:
                     msg_content = data["response"]["candidates"][0]["content"]["parts"][0]["text"]
-                    outputs[custom_id] = msg_content
                 except:
-                    outputs[custom_id] = "ERROR: Could not parse nested candidate response"
-            else:
-                outputs[custom_id] = "ERROR: " + str(data.get("error", "Unknown error"))
+                    msg_content = "ERROR: Could not parse nested candidate response"
+            elif "error" in data:
+                msg_content = "ERROR: " + str(data.get("error", "Unknown error"))
+            
+            if custom_id:
+                outputs[custom_id] = msg_content
+            # Fallback for when ID is missing (Vertex AI often omits it if not in specific format)
+            outputs[idx] = msg_content
+            idx += 1
     return outputs
 
 
@@ -266,15 +323,21 @@ def main():
             
         print(f"3. Grading results...")
         with open(jobs_file, 'r') as f:
-            jobs = json.load(f)
+            jobs_data = json.load(f)
             
         # Reconstruct exactly like the sequential script output
         results = []
         stats = {"correct": 0, "total": 0, "failures": 0}
-        
-        for job in jobs:
+        for i, job in enumerate(jobs_data):
             custom_id = str(job['id']) + "_" + str(job.get('sample_idx', 0))
-            generated_text = parsed_outputs.get(custom_id, "ERROR: Missing from batch results")
+            
+            # For Google, we try both ID and index because Vertex AI output formatting varies
+            generated_text = parsed_outputs.get(custom_id)
+            if generated_text is None and provider == "google":
+                generated_text = parsed_outputs.get(i)
+            
+            if generated_text is None:
+                generated_text = "ERROR: Missing from batch results"
             
             try:
                 extracted, is_correct = extract_and_grade(generated_text, job['ground_truth'])

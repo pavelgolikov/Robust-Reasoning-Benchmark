@@ -21,9 +21,18 @@ class GoogleProvider(LLMProvider):
     def __init__(self):
         from google import genai
         api_key = os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
-            raise ValueError("GOOGLE_API_KEY environment variable not set.")
-        self.client = genai.Client(api_key=api_key)
+        project = os.environ.get("GOOGLE_PROJECT_ID")
+        location = os.environ.get("GOOGLE_LOCATION", "us-central1")
+        
+        if project:
+            # Vertex AI Mode
+            self.client = genai.Client(vertexai=True, project=project, location=location)
+            print(f"Initialized GoogleProvider in Vertex AI mode (project={project}, location={location})")
+        else:
+            # Gemini API (AI Studio) Mode
+            if not api_key:
+                raise ValueError("Neither GOOGLE_PROJECT_ID nor GOOGLE_API_KEY environment variable set.")
+            self.client = genai.Client(api_key=api_key)
 
     def generate(self, messages, model_name, temperature=0.7, max_tokens=None):
         if max_tokens is None:
@@ -47,8 +56,13 @@ class GoogleProvider(LLMProvider):
             system_instruction=system_instruction
         )
         
+        if hasattr(self, 'client') and getattr(self.client, 'vertexai', False):
+             full_model_name = model_name
+        else:
+             full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
+
         response = self.client.models.generate_content(
-            model=model_name,
+            model=full_model_name,
             contents=contents,
             config=config
         )
@@ -298,9 +312,19 @@ class GoogleBatchProvider(BatchProvider):
     def __init__(self):
         from google import genai
         self.api_key = os.environ.get("GOOGLE_API_KEY")
-        if not self.api_key:
-            raise ValueError("GOOGLE_API_KEY environment variable not set.")
-        self.client = genai.Client(api_key=self.api_key)
+        self.project = os.environ.get("GOOGLE_PROJECT_ID")
+        self.location = os.environ.get("GOOGLE_LOCATION", "us-central1")
+        self.gcs_bucket = os.environ.get("GOOGLE_GCS_BUCKET")
+
+        if self.project:
+            # Vertex AI Mode
+            self.client = genai.Client(vertexai=True, project=self.project, location=self.location)
+            print(f"Initialized GoogleBatchProvider in Vertex AI mode (project={self.project}, location={self.location})")
+        else:
+            # Gemini API (AI Studio) Mode
+            if not self.api_key:
+                raise ValueError("Neither GOOGLE_PROJECT_ID nor GOOGLE_API_KEY environment variable set.")
+            self.client = genai.Client(api_key=self.api_key)
 
     def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7):
         if max_tokens is None:
@@ -333,32 +357,76 @@ class GoogleBatchProvider(BatchProvider):
                 body["system_instruction"] = {"parts": [{"text": system_instruction}]}
                 
             req = {
-                "request": body
+                "request": body,
+                "id": str(job['id']) + "_" + str(job.get('sample_idx', 0))
             }
             jsonl_lines.append(json.dumps(req))
             
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.jsonl', delete=False) as f:
-            f.write('\n'.join(jsonl_lines))
-            tmp_path = f.name
-
-        print(f"Uploading batch file to Google...")
-        try:
-            file_obj = self.client.files.upload(file=tmp_path, config={'mime_type': 'application/jsonl'})
-        finally:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
+        print(f"Preparing batch file...")
+        
+        # Vertex AI mode needs the source file to be in GCS
+        if self.project:
+            if not self.gcs_bucket:
+                raise ValueError("GOOGLE_GCS_BUCKET must be set when using Vertex AI mode (GOOGLE_PROJECT_ID).")
+            
+            from google.cloud import storage
+            storage_client = storage.Client()
+            bucket_name = self.gcs_bucket.replace("gs://", "").strip("/")
+            bucket = storage_client.bucket(bucket_name)
+            
+            # Use a unique name for the input file in GCS
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            blob_name = f"input/batch_{timestamp}.jsonl"
+            blob = bucket.blob(blob_name)
+            
+            print(f"Uploading batch file to GCS: gs://{bucket_name}/{blob_name}")
+            blob.upload_from_string('\n'.join(jsonl_lines), content_type='application/jsonl')
+            src_uri = f"gs://{bucket_name}/{blob_name}"
+            
+        else:
+            # Gemini API (AI Studio) mode uses the files API
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.jsonl', delete=False) as f:
+                f.write('\n'.join(jsonl_lines))
+                tmp_path = f.name
+            
+            print(f"Uploading batch file to Google...")
+            try:
+                file_obj = self.client.files.upload(file=tmp_path, config={'mime_type': 'application/jsonl'})
+                src_uri = file_obj.name
+            finally:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
         
         print(f"Creating Google batch job using new SDK...")
-        full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
+        if self.project:
+            # Vertex AI likes just the model name/ID or full resource path
+            full_model_name = model_name
+        else:
+            # AI Studio likes the models/ prefix
+            full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
         
-        batch_job = self.client.batches.create(
-            model=full_model_name,
-            src=file_obj.name
-        )
+        create_kwargs = {
+            "model": full_model_name,
+            "src": src_uri
+        }
+        
+        if self.gcs_bucket:
+            # Ensure bucket name doesn't have gs:// prefix for the config if the user added it by mistake
+            bucket_path = self.gcs_bucket.replace("gs://", "").strip("/")
+            # Use a unique subfolder for each job to avoid collisions
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            unique_dest = f"gs://{bucket_path}/results_{timestamp}/"
+            from google.genai import types
+            create_kwargs["config"] = types.CreateBatchJobConfig(
+                dest=unique_dest
+            )
+            print(f"Using GCS destination: {unique_dest}")
+
+        batch_job = self.client.batches.create(**create_kwargs)
         
         return {
             "batch_id": batch_job.name, 
-            "file_uri": file_obj.uri, 
+            "file_uri": src_uri, 
             "status": str(batch_job.state), 
             "provider": "google"
         }

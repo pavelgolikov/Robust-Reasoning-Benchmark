@@ -133,6 +133,7 @@ def main():
                 print("Skipping batch submission.")
                 continue
                 
+            batch_info = submit_batch(jobs, args.model, provider=args.provider, max_tokens=args.max_tokens)
             print(f"Batch submitted successfully! Info: {batch_info}")
             print(f"Max Tokens: {args.max_tokens}, Temperature: 0.7")
             
