@@ -211,10 +211,11 @@ def main():
         poll_results.append((tf, data, status, output_ref))
 
     # Identify downloadable ones
-    # OpenAI: "completed", Anthropic: "ended", Google: "SUCCEEDED"
+    # OpenAI: "completed", Anthropic: "ended", Google: "SUCCEEDED" / "JOB_STATE_SUCCEEDED"
     downloadable = []
     for idx, (tf, data, status, output_ref) in enumerate(poll_results):
-        if status.lower() in ["completed", "ended", "succeeded"]:
+        s_low = str(status).lower()
+        if "completed" in s_low or "ended" in s_low or "succeeded" in s_low:
             downloadable.append(idx)
 
     if not downloadable:

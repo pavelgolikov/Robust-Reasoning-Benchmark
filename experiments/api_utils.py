@@ -359,7 +359,7 @@ class GoogleBatchProvider(BatchProvider):
         return {
             "batch_id": batch_job.name, 
             "file_uri": file_obj.uri, 
-            "status": batch_job.state, 
+            "status": str(batch_job.state), 
             "provider": "google"
         }
 

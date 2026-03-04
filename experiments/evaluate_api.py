@@ -133,8 +133,8 @@ def main():
                 print("Skipping batch submission.")
                 continue
                 
-            batch_info = submit_batch(jobs, args.model, provider=args.provider, max_tokens=args.max_tokens)
             print(f"Batch submitted successfully! Info: {batch_info}")
+            print(f"Max Tokens: {args.max_tokens}, Temperature: 0.7")
             
             experiment_dir = os.path.join(base_dir, exp_name)
             final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
@@ -150,6 +150,8 @@ def main():
                 "dataset": args.dataset,
                 "experiment": exp_name,
                 "timestamp": timestamp,
+                "max_tokens": args.max_tokens,
+                "temperature": 0.7,
                 "jobs_file": jobs_file,
                 "status": batch_info.get("status", "SUBMITTED"),
                 "metadata": batch_info
@@ -226,13 +228,16 @@ def main():
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
         print(f"\n  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
         print(f"  Failures: {stats['failures']}")
+        print(f"  Max Tokens: {args.max_tokens}, Temperature: 0.7")
         
         results.append({
             "summary": {
                 "accuracy": acc,
                 "correct": stats["correct"],
                 "total": stats["total"],
-                "failures": stats["failures"]
+                "failures": stats["failures"],
+                "max_tokens": args.max_tokens,
+                "temperature": 0.7
             }
         })
         
