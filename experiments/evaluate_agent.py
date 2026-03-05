@@ -337,7 +337,7 @@ def main():
         )
         # Use same params as before
         sampling_params = SamplingParams(
-            temperature=0.0, 
+            temperature=0.3, 
             max_tokens=4096,
             stop=["```"] # Stop at end of code block to prevent rambling after code generation
         )
@@ -412,6 +412,7 @@ def main():
                         agentic=True
                     )
                     
+                    final_user_prompt = final_user_prompt + "\n\n```python\n"
                     
                     # Create Agent
                     agent_id = f"{prob_id}_sample_{sample_idx}"
