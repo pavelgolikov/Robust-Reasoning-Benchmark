@@ -1,0 +1,35 @@
+[
+  {
+    "id": 60,
+    "system_prompt": "",
+    "original": "Solve the following problem using regular mathematics.\nEvery morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.",
+    "unmodified_original": "Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.",
+    "ground_truth": "204",
+    "output": "Let $D$ be the distance of the walk, which is $D = 9$ kilometers.\nLet $s$ be Aya's walking speed in kilometers per hour.\nLet $t$ be the time spent in the coffee shop in minutes.\n\nThe total time for the walk includes the walking time and the time spent in the coffee shop.\nThe formula for time is distance divided by speed: $\\text{Time} = \\frac{\\text{Distance}}{\\text{Speed}}$.\nSince the speed is in km/h, the walking time will be in hours. The time spent in the coffee shop $t$ is in minutes, so we need to convert it to hours by dividing by 60: $\\frac{t}{60}$ hours.\n\n**Scenario 1:**\nSpeed = $s$ km/h\nTotal time = 4 hours\nWalking time = $\\frac{9}{s}$ hours\nTotal time = Walking time + Coffee shop time\n$4 = \\frac{9}{s} + \\frac{t}{60}$  (Equation 1)\n\n**Scenario 2:**\nSpeed = $s+2$ km/h\nTotal time = 2 hours and 24 minutes.\nFirst, convert 2 hours and 24 minutes to hours: $2 + \\frac{24}{60} = 2 + \\frac{2}{5} = 2 + 0.4 = 2.4$ hours.\nWalking time = $\\frac{9}{s+2}$ hours\nTotal time = Walking time + Coffee shop time\n$2.4 = \\frac{9}{s+2} + \\frac{t}{60}$  (Equation 2)\n\nNow we have a system of two equations with two unknowns ($s$ and $t$):\n1) $4 = \\frac{9}{s} + \\frac{t}{60}$\n2) $2.4 = \\frac{9}{s+2} + \\frac{t}{60}$\n\nSubtract Equation 2 from Equation 1 to eliminate $\\frac{t}{60}$:\n$4 - 2.4 = \\left(\\frac{9}{s} + \\frac{t}{60}\\right) - \\left(\\frac{9}{s+2} + \\frac{t}{60}\\right)$\n$1.6 = \\frac{9}{s} - \\frac{9}{s+2}$\n$1.6 = 9 \\left(\\frac{1}{s} - \\frac{1}{s+2}\\right)$\n$1.6 = 9 \\left(\\frac{s+2 - s}{s(s+2)}\\right)$\n$1.6 = 9 \\left(\\frac{2}{s(s+2)}\\right)$\n$1.6 = \\frac{18}{s(s+2)}$\n$1.6 s(s+2) = 18$\n$1.6 (s^2 + 2s) = 18$\n$s^2 + 2s = \\frac{18}{1.6}$\n$s^2 + 2s = \\frac{180}{16}$\n$s^2 + 2s = \\frac{45}{4}$\nMultiply by 4 to clear the fraction:\n$4s^2 + 8s = 45$\n$4s^2 + 8s - 45 = 0$\n\nWe can solve this quadratic equation for $s$ using the quadratic formula $s = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$:\n$s = \\frac{-8 \\pm \\sqrt{8^2 - 4(4)(-45)}}{2(4)}$\n$s = \\frac{-8 \\pm \\sqrt{64 + 720}}{8}$\n$s = \\frac{-8 \\pm \\sqrt{784}}{8}$\n$s = \\frac{-8 \\pm 28}{8}$\n\nWe have two possible values for $s$:\n$s_1 = \\frac{-8 + 28}{8} = \\frac{20}{8} = \\frac{5}{2} = 2.5$\n$s_2 = \\frac{-8 - 28}{8} = \\frac{-36}{8} = -\\frac{9}{2} = -4.5$\nSince speed cannot be negative, we take $s = 2.5$ km/h.\n\nNow substitute $s=2.5$ into Equation 1 to find $t$:\n$4 = \\frac{9}{2.5} + \\frac{t}{60}$\n$4 = 3.6 + \\frac{t}{60}$\n$0.4 = \\frac{t}{60}$\n$t = 0.4 \\times 60$\n$t = 24$ minutes.\n\n**Scenario 3:**\nAya walks at a speed of $s+\\frac{1}{2}$ km/h.\nSpeed = $2.5 + 0.5 = 3$ km/h.\nWe need to find the total time for the walk, including the $t$ minutes spent in the coffee shop.\nWalking time = $\\frac{9}{3} = 3$ hours.\nCoffee shop time = $t = 24$ minutes.\nTotal time in hours = Walking time + Coffee shop time (in hours)\nTotal time in hours = $3 + \\frac{24}{60} = 3 + 0.4 = 3.4$ hours.\n\nThe question asks for the number of minutes the walk takes her.\nTotal time in minutes = $3.4 \\times 60$\nTotal time in minutes = $204$ minutes.\n\nThe final answer is $\\boxed{204}$.",
+    "extracted": "204",
+    "correct": true,
+    "refusal": false
+  },
+  {
+    "id": 61,
+    "system_prompt": "",
+    "original": "Solve the following problem using regular mathematics.\nLet $ABC$ be a triangle inscribed in circle $\\omega$. Let the tangents to $\\omega$ at $B$ and $C$ intersect at point $D$, and let $\\overline{AD}$ intersect $\\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.",
+    "unmodified_original": "Let $ABC$ be a triangle inscribed in circle $\\omega$. Let the tangents to $\\omega$ at $B$ and $C$ intersect at point $D$, and let $\\overline{AD}$ intersect $\\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.",
+    "ground_truth": "113",
+    "output": "Let $R$ be the circumradius of $\\triangle ABC$. Let $a=BC=9$, $b=AC=10$, $c=AB=5$.\nThe semi-perimeter is $s = (5+9+10)/2 = 12$.\nThe area of $\\triangle ABC$ is $K = \\sqrt{s(s-a)(s-b)(s-c)} = \\sqrt{12(12-9)(12-10)(12-5)} = \\sqrt{12 \\cdot 3 \\cdot 2 \\cdot 7} = \\sqrt{504} = 6\\sqrt{14}$.\nThe circumradius is $R = \\frac{abc}{4K} = \\frac{5 \\cdot 9 \\cdot 10}{4 \\cdot 6\\sqrt{14}} = \\frac{450}{24\\sqrt{14}} = \\frac{75}{4\\sqrt{14}} = \\frac{75\\sqrt{14}}{56}$.\n\nLet $\\angle BAC = A$. By the Law of Cosines in $\\triangle ABC$:\n$a^2 = b^2+c^2-2bc \\cos A$\n$9^2 = 10^2+5^2-2(10)(5) \\cos A$\n$81 = 100+25-100 \\cos A$\n$81 = 125-100 \\cos A$\n$100 \\cos A = 44 \\implies \\cos A = \\frac{44}{100} = \\frac{11}{25}$.\nSince $\\cos A > 0$, $\\angle A$ is acute. This means that $A$ is on the major arc $BC$.\n\nIt is a well-known geometric property that the line $AD$, where $D$ is the intersection of tangents to $\\omega$ at $B$ and $C$, is the symmedian from vertex $A$ of $\\triangle ABC$.\nLet $K'$ be the intersection of the symmedian $AD$ with the side $BC$.\nThe symmedian from $A$ divides $BC$ in the ratio of the squares of the adjacent sides:\n$\\frac{BK'}{K'C} = \\frac{c^2}{b^2} = \\frac{5^2}{10^2} = \\frac{25}{100} = \\frac{1}{4}$.\nSince $BC=9$, we have $BK' = \\frac{1}{1+4} \\cdot 9 = \\frac{9}{5}$ and $K'C = \\frac{4}{1+4} \\cdot 9 = \\frac{36}{5}$.\n\nNext, we calculate the length of the symmedian segment $AK'$. We can use Stewart's theorem on $\\triangle ABC$ with cevian $AK'$.\n$c^",
+    "extracted": "[a*k, 'AK']",
+    "correct": false,
+    "refusal": false
+  },
+  {
+    "summary": {
+      "accuracy": 0.5,
+      "accuracy_attempted": 0.5,
+      "correct": 1,
+      "total": 2,
+      "attempted": 2,
+      "refusals": 0,
+      "failures": 0
+    }
+  }
+]

@@ -109,13 +109,13 @@ def download_google_batch(batch_id, output_uri, out_path):
         # Download via SDK
         print(f"  Downloading AI Studio batch output: {output_uri}")
         try:
-            response = client.files.download(name=output_uri)
+            content = client.files.download(file=output_uri)
             with open(out_path, 'wb') as f:
-                f.write(response)
+                f.write(content)
             print(f"  Downloaded to {out_path}")
             return True
         except Exception as e:
-            # Fallback: try HTTP download with API key
+            print(f"  SDK download failed ({e}), trying HTTP fallback...")
             api_key = os.environ.get("GOOGLE_API_KEY")
             try:
                 dl_url = f"https://generativelanguage.googleapis.com/v1beta/{output_uri}?alt=media&key={api_key}"
@@ -126,7 +126,7 @@ def download_google_batch(batch_id, output_uri, out_path):
                 print(f"  Downloaded (HTTP fallback) to {out_path}")
                 return True
             except Exception as e2:
-                print(f"  AI Studio download failed: {e} | fallback: {e2}")
+                print(f"  AI Studio download failed: SDK={e} | HTTP={e2}")
                 return False
 
     else:
@@ -415,9 +415,9 @@ def main():
                 
             result_entry = {
                 "id": job['id'],
-                "system_prompt": job['system_prompt'],
-                "original": job['original'],
-                "unmodified_original": job['unmodified_original'],
+                "system_prompt": job.get('system_prompt', ''),
+                "original": job.get('original', job.get('post_context_prompt', '')),
+                "unmodified_original": job.get('unmodified_original', job.get('post_context_prompt', '')),
                 "ground_truth": job['ground_truth'],
                 "output": generated_text,
                 "extracted": extracted,

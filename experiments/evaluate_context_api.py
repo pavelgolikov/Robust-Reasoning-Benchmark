@@ -93,6 +93,9 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
         return None, None
 
     common_context_str = tokenizer.apply_chat_template(trimmed_context, tokenize=False, add_generation_prompt=False)
+    # First 100 chars of the first distractor message (skip system at index 0)
+    first_distractor = next((m['content'] for m in trimmed_context if m['role'] != 'system'), '')
+    context_preview = first_distractor[:100]
 
     # Build context cache from the trimmed messages (always enabled)
     context_cache = build_context_cache_from_trimmed(
@@ -118,6 +121,7 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
                 "post_context_prompt": user_prompt,
                 "messages": messages,
                 "ground_truth": example['answer'],
+                "system_prompt": BASELINE_SYSTEM_PROMPT,
             })
 
     print(f"Generating answers for {len(jobs)} jobs...")
@@ -150,6 +154,7 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
             "distractor_token_count": context_token_count,
             "model_output_len_char": len(generated_text),
             "system_prompt": BASELINE_SYSTEM_PROMPT,
+            "context_preview": context_preview,
         })
         stats["total"] += 1
         if is_correct:
@@ -229,6 +234,8 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
                 "unmodified_original": example['problem'],
                 "context_type": context_type,
                 "distractor_token_count": context_token_count,
+                "system_prompt": BASELINE_SYSTEM_PROMPT,
+                "context_preview": context_preview,
             })
 
     print(f"\nPreparing to submit {len(jobs)} jobs for context_type='{context_type}' ({context_token_count} context tokens)...")
