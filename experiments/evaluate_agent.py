@@ -243,7 +243,13 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                         agent.final_output = response_text
                         agent.is_done = True
                     else:
-                        pass # Implicit continue
+                        # No code and no boxed answer yet: inject a nudge to keep
+                        # the conversation alternating (some templates reject consecutive
+                        # assistant turns) and remind the model to write code.
+                        agent.history.append({
+                            "role": "user",
+                            "content": "Please follow the protocol and write Python code in a ```python block to solve the problem."
+                        })
                 
                 # If finished in this step, save immediately
                 if agent.is_done:
@@ -340,7 +346,9 @@ def main():
             temperature=0.0,
             max_tokens=4096,
             repetition_penalty=1.5,
-            stop=["```"] # Stop at end of code block to prevent rambling after code generation
+            # No stop tokens: the stop=["```"] was firing on the *opening* ```python
+            # fence, so response_text never contained any code. Let the model generate
+            # fully; extract_python_code() handles both closed and open code blocks.
         )
         tokenizer = llm.get_tokenizer()
     except Exception as e:
