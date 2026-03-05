@@ -56,6 +56,7 @@ def execute_python_code(code_str, state_dict, stdin_input, timeout_sec=5):
     Enforces a timeout using signal.alarm.
     ALWAYS mocks stdin using stdin_input.
     """
+    print(f"Executing code with timeout {timeout_sec}s...")
     output_capture = io.StringIO()
     
     # Register signal handler
@@ -249,14 +250,6 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
             # Catch Validation/Context Errors (ValueError) or others
             print(f"\n[BATCH ERROR] Generation failed: {e}")
             
-            # 1. Identify which agent(s) caused the error (e.g. prompt too long)
-            # We must token-check to find the culprit(s).
-            try:
-                # max_len = llm.llm_engine.model_config.max_model_len
-                max_len = 65536
-            except:
-                max_len = 65536
-
             agents_marked_failed = 0
             for agent, prompt in zip(current_batch_agents, prompts):
                 try:
@@ -336,7 +329,7 @@ def main():
         )
         # Use same params as before
         sampling_params = SamplingParams(
-            temperature=0.0, 
+            temperature=0.3, 
             max_tokens=4096,
             stop=["```"] # Stop at end of code block to prevent rambling after code generation
         )
@@ -411,6 +404,7 @@ def main():
                         agentic=True
                     )
                     
+                    final_user_prompt = final_user_prompt + "\n\n```python\n"
                     
                     # Create Agent
                     agent_id = f"{prob_id}_sample_{sample_idx}"
