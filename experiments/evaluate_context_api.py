@@ -56,14 +56,11 @@ def prepare_trimmed_context(context_type, args, tokenizer):
     return trimmed, token_count, context_path
 
 
-def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, no_cache=False):
+def build_context_cache_from_trimmed(provider, trimmed_messages, model_name):
     """
     Given already-trimmed context messages, create the appropriate provider cache.
-    Returns context_cache dict {'type': ..., 'ref': ...} or None.
+    Returns context_cache dict {'type': ..., 'ref': ...}.
     """
-    if no_cache:
-        return None
-
     if provider == 'google':
         print("Creating Google AI Studio context cache from trimmed context...")
         cache_name = create_google_context_cache_from_messages(trimmed_messages, model_name, ttl_seconds=7200)
@@ -76,7 +73,7 @@ def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, no_
         return {'type': 'anthropic', 'ref': cached_msgs}
 
     else:
-        print(f"Warning: Context caching not implemented for provider '{provider}'. Running without cache.")
+        print(f"Warning: Context caching not implemented for provider '{provider}'. Context will not be sent.")
         return None
 
 
@@ -97,9 +94,9 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
 
     common_context_str = tokenizer.apply_chat_template(trimmed_context, tokenize=False, add_generation_prompt=False)
 
-    # Build context cache from the trimmed messages
+    # Build context cache from the trimmed messages (always enabled)
     context_cache = build_context_cache_from_trimmed(
-        args.provider, trimmed_context, args.model, no_cache=args.no_cache
+        args.provider, trimmed_context, args.model
     )
 
     jobs = []
@@ -108,7 +105,7 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
         user_prompt, _ = get_prompts(cleaned_problem, 'baseline')
         user_prompt = "Solve the following problem using regular mathematics.\n" + user_prompt
 
-        # Base messages = just the new question (context is in the cache or prepended by provider)
+        # Context is always delivered via cache; only send the new question
         messages = [
             {"role": "system", "content": BASELINE_SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},
@@ -207,7 +204,7 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
 
     # Build context cache from the trimmed messages
     context_cache = build_context_cache_from_trimmed(
-        args.provider, trimmed_context, args.model, no_cache=args.no_cache
+        args.provider, trimmed_context, args.model
     )
 
     jobs = []
@@ -216,6 +213,7 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
         user_prompt, _ = get_prompts(cleaned_problem, 'baseline')
         user_prompt = "Solve the following problem using regular mathematics.\n" + user_prompt
 
+        # Context is always delivered via cache; only send the new question
         messages = [
             {"role": "system", "content": BASELINE_SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},
@@ -234,10 +232,48 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
             })
 
     print(f"\nPreparing to submit {len(jobs)} jobs for context_type='{context_type}' ({context_token_count} context tokens)...")
-    cache_info = f"{context_cache['type']} cache" if context_cache else "no cache"
-    print(f"Context cache: {cache_info}")
+    cache_info = f"{context_cache['type']} cache ({context_cache['ref'] if context_cache['type'] == 'google' else str(len(context_cache['ref'])) + ' msgs'})" if context_cache else "no cache"
+
+    # Write a single randomly-picked full sample to a temp file for review before submitting
+    import tempfile
+    sample_job = random.choice(jobs)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, prefix='batch_preview_') as tmp:
+        tmp_path = tmp.name
+        tmp.write("=" * 80 + "\n")
+        tmp.write("BATCH SUBMISSION PREVIEW\n")
+        tmp.write("=" * 80 + "\n\n")
+        tmp.write(f"Model:           {args.model}\n")
+        tmp.write(f"Provider:        {args.provider}\n")
+        tmp.write(f"Context type:    {context_type}\n")
+        tmp.write(f"Context size:    {args.context_size} tokens (actual: ~{context_token_count} tokens)\n")
+        tmp.write(f"Context msgs:    {len(trimmed_context)}\n")
+        tmp.write(f"Cache:           {cache_info}\n")
+        tmp.write(f"Total jobs:      {len(jobs)}\n")
+        tmp.write(f"Max tokens:      {args.max_tokens}\n\n")
+        tmp.write("=" * 80 + "\n")
+        tmp.write("FULL SAMPLE (as it will be sent to the model):\n")
+        tmp.write("=" * 80 + "\n\n")
+        # Full context messages, untruncated
+        for m in trimmed_context:
+            tmp.write(f"[{m['role'].upper()}]\n{m['content']}\n\n")
+        # The actual question appended after context
+        tmp.write("-" * 80 + "\n")
+        tmp.write("[USER]\n")
+        tmp.write(sample_job['post_context_prompt'] + "\n\n")
+        tmp.write(f"[GROUND TRUTH] {sample_job['ground_truth']}\n")
+        tmp.write("=" * 80 + "\n")
+
+    print(f"\nPreview written to: {tmp_path}")
+    print("Open this file to review the context sample and example question.")
 
     user_input = input(f"\nSubmit {len(jobs)} jobs [{context_type}] to the cloud? Type 'Yes' to confirm: ")
+
+    # Always delete the temp preview file
+    try:
+        os.remove(tmp_path)
+    except OSError:
+        pass
+
     if user_input.strip() != 'Yes':
         print("Skipping.")
         return
@@ -303,8 +339,6 @@ def main():
                         help="Submit as async batch jobs instead of running sequentially.")
     parser.add_argument("--context_types", type=str, default="math,text",
                         help="Comma-separated context types to run. Default: 'math,text'.")
-    parser.add_argument("--no_cache", action="store_true",
-                        help="Disable context caching (sends full context with every request, expensive).")
 
     args = parser.parse_args()
 
@@ -319,7 +353,7 @@ def main():
     args.provider = provider
 
     print(f"Model: {args.model} | Provider: {provider} | Batch: {args.batch} | context_size: {args.context_size}")
-    print(f"Context types: {context_types} | Caching: {'DISABLED' if args.no_cache else 'ENABLED'}")
+    print(f"Context types: {context_types} | Caching: ENABLED")
 
     # Initialize tokenizer (shared for trimming)
     print("Initializing tokenizer for context trimming...")
@@ -328,6 +362,15 @@ def main():
     except Exception:
         print("  Could not load model-specific tokenizer. Falling back to gpt2 for token estimation.")
         tokenizer = AutoTokenizer.from_pretrained("gpt2")
+
+    # Ensure the tokenizer has a chat template (needed by trim_context).
+    # The gpt2 fallback has none, so inject a simple one for token counting.
+    if not getattr(tokenizer, 'chat_template', None):
+        tokenizer.chat_template = (
+            "{% for message in messages %}"
+            "{{ message['role'] + ': ' + message['content'] + '\n' }}"
+            "{% endfor %}"
+        )
 
     # Load dataset
     print(f"Loading dataset: {args.dataset}...")
