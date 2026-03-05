@@ -40,13 +40,21 @@ def timeout_handler(signum, frame):
 def extract_python_code(response_text):
     """
     Uses Regex to find content between ```python and ``` tags.
-    Returns None if no code block is found.
+    Also handles the case where the closing ``` is absent because it was
+    the vLLM stop token (i.e., generation stopped right before it).
     """
-    pattern = r"```python\n(.*?)```"
-    match = re.search(pattern, response_text, re.DOTALL)
-    
+    # Try closed block first (``` ... ```)
+    pattern_closed = r"```python\n(.*?)```"
+    match = re.search(pattern_closed, response_text, re.DOTALL)
     if match:
-        return match.group(1) # Return just the code inside
+        return match.group(1)
+    
+    # Fallback: match an unclosed block (stop token ate the closing ```)
+    pattern_open = r"```python\n(.*?)$"
+    match = re.search(pattern_open, response_text, re.DOTALL)
+    if match:
+        return match.group(1)
+    
     return None
 
 def execute_python_code(code_str, state_dict, stdin_input, timeout_sec=5):
@@ -56,6 +64,7 @@ def execute_python_code(code_str, state_dict, stdin_input, timeout_sec=5):
     Enforces a timeout using signal.alarm.
     ALWAYS mocks stdin using stdin_input.
     """
+    print(f"Executing code with timeout {timeout_sec}s...")
     output_capture = io.StringIO()
     
     # Register signal handler
@@ -249,14 +258,6 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
             # Catch Validation/Context Errors (ValueError) or others
             print(f"\n[BATCH ERROR] Generation failed: {e}")
             
-            # 1. Identify which agent(s) caused the error (e.g. prompt too long)
-            # We must token-check to find the culprit(s).
-            try:
-                # max_len = llm.llm_engine.model_config.max_model_len
-                max_len = 65536
-            except:
-                max_len = 65536
-
             agents_marked_failed = 0
             for agent, prompt in zip(current_batch_agents, prompts):
                 try:
