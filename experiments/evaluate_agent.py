@@ -338,7 +338,7 @@ def main():
         sampling_params = SamplingParams(
             temperature=0.0, 
             max_tokens=4096,
-            stop=[```] # Stop at end of code block to prevent rambling after code generation
+            stop=["```"] # Stop at end of code block to prevent rambling after code generation
         )
         tokenizer = llm.get_tokenizer()
     except Exception as e:
