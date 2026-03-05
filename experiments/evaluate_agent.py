@@ -13,6 +13,9 @@ import signal
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any
 
+# The prefix injected into the assistant turn when --prefill is used
+PREFILL_TEXT = "```python\n"
+
 
 # Fix path to include 'analysis' so 'variables' can be imported by util
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -164,9 +167,11 @@ def save_incremental_result(agent: AgentState, output_file: str):
     except Exception as e:
         print(f"FAILED TO SAVE INCREMENTAL RESULT: {e}")
 
-def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, incremental_file: str, debug: bool = False):
+def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, incremental_file: str, debug: bool = False, prefill: bool = False):
     """
     Runs the agent loop for multiple agents in parallel (batched inference).
+    When prefill=True, each generation is primed with a partial assistant message
+    (PREFILL_TEXT) so the model is steered to output Python code immediately.
     """
     active_agents = [a for a in agents if not a.is_done]
     
@@ -176,7 +181,19 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
         if not current_batch_agents:
             break
             
-        prompts = [a.get_vllm_prompt(tokenizer) for a in current_batch_agents]
+        if prefill:
+            # Append a partial assistant message and use add_generation_prompt=False
+            # so the model continues directly from the prefill prefix.
+            prompts = [
+                tokenizer.apply_chat_template(
+                    a.history + [{"role": "assistant", "content": PREFILL_TEXT}],
+                    tokenize=False,
+                    add_generation_prompt=False
+                )
+                for a in current_batch_agents
+            ]
+        else:
+            prompts = [a.get_vllm_prompt(tokenizer) for a in current_batch_agents]
         
         print(f"\n[Batch Step] Generating for {len(current_batch_agents)} agents...")
         
@@ -195,6 +212,10 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     continue
                     
                 response_text = out_obj.outputs[0].text
+                # When prefill is active the model continues from where PREFILL_TEXT
+                # left off, so we reconstruct the full code block for extraction.
+                if prefill:
+                    response_text = PREFILL_TEXT + response_text
                 agent.step_count += 1
                 
                 # Check Stop Conditions (Observation or Boxed)
@@ -313,6 +334,9 @@ def main():
     parser.add_argument("--max_model_length", type=int, default=65536, help="Max model length for vLLM")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
     parser.add_argument("--debug", action="store_true", help="Print live conversation logs")
+    parser.add_argument("--prefill", action="store_true",
+                        help="Prime each generation with '```python\\n' as a partial assistant message, "
+                             "steering the model to output Python code immediately (assistant pre-filling).")
 
     args = parser.parse_args()
 
@@ -460,7 +484,7 @@ def main():
         print(f"Streaming results to: {incremental_file}")
 
         # 2. Run Batch Loop
-        run_batch_execution(agents, llm, tokenizer, sampling_params, incremental_file, debug=args.debug)
+        run_batch_execution(agents, llm, tokenizer, sampling_params, incremental_file, debug=args.debug, prefill=args.prefill)
         
         # 3. Post-Process & Save (Optionally convert JSONL to JSON for legacy scripts, or just leave as is)
         # We'll make a final JSON summary as well for backward compatibility if needed.
