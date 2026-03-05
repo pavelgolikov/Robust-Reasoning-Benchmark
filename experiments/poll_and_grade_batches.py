@@ -51,104 +51,132 @@ def download_anthropic_batch(batch_id, out_path):
             f.write(json.dumps(r) + "\n")
     return True
 
-def check_google_batch(batch_id):
+def _is_ai_studio_batch(batch_id):
+    """AI Studio batch IDs look like 'batches/xxx', Vertex IDs look like 'projects/.../batchPredictionJobs/xxx'."""
+    return str(batch_id).startswith("batches/")
+
+
+def _get_google_client(batch_id):
+    """Return the right genai client based on the batch_id format."""
     from google import genai
-    api_key = os.environ.get("GOOGLE_API_KEY")
-    project = os.environ.get("GOOGLE_PROJECT_ID")
-    
-    # Derive location from the batch_id resource path (e.g. projects/.../locations/global/...)
-    # so polling always hits the correct region regardless of env defaults.
-    location = os.environ.get("GOOGLE_LOCATION", "global")
-    if "/locations/" in str(batch_id):
-        location = batch_id.split("/locations/")[1].split("/")[0]
-    
-    if project:
-        client = genai.Client(vertexai=True, project=project, location=location)
+    if _is_ai_studio_batch(batch_id):
+        api_key = os.environ.get("GOOGLE_API_KEY")
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY required to poll AI Studio batch jobs.")
+        return genai.Client(api_key=api_key), "ai_studio"
     else:
-        client = genai.Client(api_key=api_key)
-    
-    # In the new SDK, batch_id is the full resource name
+        project = os.environ.get("GOOGLE_PROJECT_ID")
+        location = os.environ.get("GOOGLE_LOCATION", "global")
+        if "/locations/" in str(batch_id):
+            location = batch_id.split("/locations/")[1].split("/")[0]
+        client = genai.Client(vertexai=True, project=project, location=location)
+        return client, "vertex"
+
+
+def check_google_batch(batch_id):
+    client, mode = _get_google_client(batch_id)
     batch_job = client.batches.get(name=batch_id)
-    
     status = batch_job.state
     output_uri = ""
-    # Look for output file in dest
-    if batch_job.dest:
-        if hasattr(batch_job.dest, 'file_name') and batch_job.dest.file_name:
-            output_uri = f"https://generativelanguage.googleapis.com/v1beta/{batch_job.dest.file_name}"
-        elif hasattr(batch_job.dest, 'gcs_uri') and batch_job.dest.gcs_uri:
-            output_uri = batch_job.dest.gcs_uri
-            
+
+    if mode == "ai_studio":
+        # AI Studio: output file referenced directly in the batch job object
+        if batch_job.dest and hasattr(batch_job.dest, 'file_name') and batch_job.dest.file_name:
+            output_uri = batch_job.dest.file_name  # e.g. 'files/abc123'
+    else:
+        # Vertex AI: output in GCS
+        if batch_job.dest:
+            if hasattr(batch_job.dest, 'gcs_uri') and batch_job.dest.gcs_uri:
+                output_uri = batch_job.dest.gcs_uri
+            elif hasattr(batch_job.dest, 'file_name') and batch_job.dest.file_name:
+                output_uri = f"https://generativelanguage.googleapis.com/v1beta/{batch_job.dest.file_name}"
+
     return status, output_uri
 
 def download_google_batch(batch_id, output_uri, out_path):
-    from google import genai
-    api_key = os.environ.get("GOOGLE_API_KEY")
-    project = os.environ.get("GOOGLE_PROJECT_ID")
-    
-    # Derive location from the batch_id resource path, same as check_google_batch
-    location = os.environ.get("GOOGLE_LOCATION", "global")
-    if "/locations/" in str(batch_id):
-        location = batch_id.split("/locations/")[1].split("/")[0]
-    
-    if not output_uri:
-        if project:
-            client = genai.Client(vertexai=True, project=project, location=location)
-        else:
-            client = genai.Client(api_key=api_key)
-            
-        batch_job = client.batches.get(name=batch_id)
-        if batch_job.dest and hasattr(batch_job.dest, 'file_name') and batch_job.dest.file_name:
-            output_uri = f"https://generativelanguage.googleapis.com/v1beta/{batch_job.dest.file_name}"
-        elif batch_job.dest and hasattr(batch_job.dest, 'gcs_uri') and batch_job.dest.gcs_uri:
-            output_uri = batch_job.dest.gcs_uri
+    client, mode = _get_google_client(batch_id)
 
-    if output_uri:
-        if "generativelanguage.googleapis.com" in output_uri:
-             dl_url = f"{output_uri}?alt=media&key={api_key}"
-             res = requests.get(dl_url)
-             res.raise_for_status()
-             with open(out_path, 'wb') as f:
-                 f.write(res.content)
-             return True
-        elif output_uri.startswith("gs://"):
-             print(f"  Detected GCS output folder/uri: {output_uri}")
-             try:
-                 from google.cloud import storage
-                 project = os.environ.get("GOOGLE_PROJECT_ID")
-                 client = storage.Client(project=project)
-                 
-                 # gs://bucket_name/prefix
-                 uri_no_prefix = output_uri.replace("gs://", "")
-                 if "/" in uri_no_prefix:
-                     bucket_name, prefix = uri_no_prefix.split("/", 1)
-                 else:
-                     bucket_name, prefix = uri_no_prefix, ""
-                 
-                 bucket = client.bucket(bucket_name)
-                 
-                 # List blobs to find the actual .jsonl output
-                 blobs = list(client.list_blobs(bucket, prefix=prefix))
-                 # Vertex AI results are typically in a subfolder with 'predictions.jsonl' 
-                 # or similar. Let's find the first jsonl file.
-                 result_blob = None
-                 for b in blobs:
-                     if b.name.endswith(".jsonl") and "input" not in b.name:
-                         result_blob = b
-                         break
-                 
-                 if result_blob:
-                     print(f"  Found result blob: {result_blob.name}")
-                     result_blob.download_to_filename(out_path)
-                     print(f"  Successfully downloaded to {out_path}")
-                     return True
-                 else:
-                     print(f"  Could not find any .jsonl results in {output_uri}")
-                     return False
-             except Exception as e:
-                 print(f"  Error downloading from GCS: {e}")
-                 return False
-    return False
+    if mode == "ai_studio":
+        # --- AI Studio path ---
+        # Re-fetch if we don't have the output URI yet
+        if not output_uri:
+            batch_job = client.batches.get(name=batch_id)
+            if batch_job.dest and hasattr(batch_job.dest, 'file_name') and batch_job.dest.file_name:
+                output_uri = batch_job.dest.file_name
+        if not output_uri:
+            print("  AI Studio batch: output file not available yet.")
+            return False
+        # Download via SDK
+        print(f"  Downloading AI Studio batch output: {output_uri}")
+        try:
+            response = client.files.download(name=output_uri)
+            with open(out_path, 'wb') as f:
+                f.write(response)
+            print(f"  Downloaded to {out_path}")
+            return True
+        except Exception as e:
+            # Fallback: try HTTP download with API key
+            api_key = os.environ.get("GOOGLE_API_KEY")
+            try:
+                dl_url = f"https://generativelanguage.googleapis.com/v1beta/{output_uri}?alt=media&key={api_key}"
+                res = requests.get(dl_url, timeout=120)
+                res.raise_for_status()
+                with open(out_path, 'wb') as f:
+                    f.write(res.content)
+                print(f"  Downloaded (HTTP fallback) to {out_path}")
+                return True
+            except Exception as e2:
+                print(f"  AI Studio download failed: {e} | fallback: {e2}")
+                return False
+
+    else:
+        # --- Vertex AI path (original) ---
+        if not output_uri:
+            batch_job = client.batches.get(name=batch_id)
+            if batch_job.dest and hasattr(batch_job.dest, 'file_name') and batch_job.dest.file_name:
+                output_uri = f"https://generativelanguage.googleapis.com/v1beta/{batch_job.dest.file_name}"
+            elif batch_job.dest and hasattr(batch_job.dest, 'gcs_uri') and batch_job.dest.gcs_uri:
+                output_uri = batch_job.dest.gcs_uri
+
+        if output_uri:
+            if "generativelanguage.googleapis.com" in output_uri:
+                api_key = os.environ.get("GOOGLE_API_KEY")
+                dl_url = f"{output_uri}?alt=media&key={api_key}"
+                res = requests.get(dl_url)
+                res.raise_for_status()
+                with open(out_path, 'wb') as f:
+                    f.write(res.content)
+                return True
+            elif output_uri.startswith("gs://"):
+                print(f"  Detected GCS output folder/uri: {output_uri}")
+                try:
+                    from google.cloud import storage
+                    project = os.environ.get("GOOGLE_PROJECT_ID")
+                    gcs_client = storage.Client(project=project)
+                    uri_no_prefix = output_uri.replace("gs://", "")
+                    if "/" in uri_no_prefix:
+                        bucket_name, prefix = uri_no_prefix.split("/", 1)
+                    else:
+                        bucket_name, prefix = uri_no_prefix, ""
+                    bucket = gcs_client.bucket(bucket_name)
+                    blobs = list(gcs_client.list_blobs(bucket, prefix=prefix))
+                    result_blob = None
+                    for b in blobs:
+                        if b.name.endswith(".jsonl") and "input" not in b.name:
+                            result_blob = b
+                            break
+                    if result_blob:
+                        print(f"  Found result blob: {result_blob.name}")
+                        result_blob.download_to_filename(out_path)
+                        print(f"  Successfully downloaded to {out_path}")
+                        return True
+                    else:
+                        print(f"  Could not find any .jsonl results in {output_uri}")
+                        return False
+                except Exception as e:
+                    print(f"  Error downloading from GCS: {e}")
+                    return False
+        return False
 
 def parse_openai_results(raw_path):
     """Returns (outputs dict, refusals set of custom_ids)."""
