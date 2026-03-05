@@ -167,6 +167,18 @@ def save_incremental_result(agent: AgentState, output_file: str):
     except Exception as e:
         print(f"FAILED TO SAVE INCREMENTAL RESULT: {e}")
 
+def _wants_code_prefill(agent: 'AgentState') -> bool:
+    """
+    Return True if the agent should be primed with a code prefill on this step.
+    Prefill is appropriate when the model is expected to write code (no Observation yet).
+    After an Observation is injected, the model should reason freely toward a \\boxed{} answer.
+    """
+    last_user = next((m for m in reversed(agent.history) if m['role'] == 'user'), None)
+    if last_user is None:
+        return True
+    return not last_user['content'].startswith('Observation:')
+
+
 def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_params, incremental_file: str, debug: bool = False, prefill: bool = False):
     """
     Runs the agent loop for multiple agents in parallel (batched inference).
@@ -182,18 +194,23 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
             break
             
         if prefill:
-            # Append a partial assistant message and use add_generation_prompt=False
-            # so the model continues directly from the prefill prefix.
-            prompts = [
-                tokenizer.apply_chat_template(
-                    a.history + [{"role": "assistant", "content": PREFILL_TEXT}],
-                    tokenize=False,
-                    add_generation_prompt=False
-                )
-                for a in current_batch_agents
-            ]
+            # Per-agent: only prefill when the model should write code (not after Observation)
+            prompts = []
+            agent_prefill_flags = []  # track which agents were actually prefilled this step
+            for a in current_batch_agents:
+                do_prefill = _wants_code_prefill(a)
+                agent_prefill_flags.append(do_prefill)
+                if do_prefill:
+                    prompts.append(tokenizer.apply_chat_template(
+                        a.history + [{"role": "assistant", "content": PREFILL_TEXT}],
+                        tokenize=False,
+                        add_generation_prompt=False
+                    ))
+                else:
+                    prompts.append(a.get_vllm_prompt(tokenizer))
         else:
             prompts = [a.get_vllm_prompt(tokenizer) for a in current_batch_agents]
+            agent_prefill_flags = [False] * len(current_batch_agents)
         
         print(f"\n[Batch Step] Generating for {len(current_batch_agents)} agents...")
         
@@ -203,7 +220,7 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
             outputs = llm.generate(prompts, sampling_params)
             
             # If successful, map outputs
-            for agent, out_obj in zip(current_batch_agents, outputs):
+            for agent, out_obj, was_prefilled in zip(current_batch_agents, outputs, agent_prefill_flags):
                 if not out_obj.outputs:
                     agent.final_output = "ERROR: vLLM returned no output"
                     agent.is_done = True
@@ -212,9 +229,8 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     continue
                     
                 response_text = out_obj.outputs[0].text
-                # When prefill is active the model continues from where PREFILL_TEXT
-                # left off, so we reconstruct the full code block for extraction.
-                if prefill:
+                # Reconstruct the full code block when prefill was active for this agent
+                if was_prefilled:
                     response_text = PREFILL_TEXT + response_text
                 agent.step_count += 1
                 
