@@ -27,21 +27,6 @@ import numpy as np
 
 # ── Configuration ────────────────────────────────────────────────────
 
-# Techniques whose `results/` directories to scan
-TECHNIQUES = [
-    "baseline",
-    "opposites",
-    "not_not",
-    "wrappers",
-    "split_reversal",
-    "word_reversal",
-    "sentence_reversal",
-    "rail_fence",
-    "interleaved_context_line",
-    "interleaved_context_word",
-    "interleaved_context_symbol",
-]
-
 # Pretty labels for subplot titles
 TECHNIQUE_LABELS = {
     "baseline":                     "Baseline",
@@ -55,6 +40,7 @@ TECHNIQUE_LABELS = {
     "interleaved_context_line":     "Interleave (Line)",
     "interleaved_context_word":     "Interleave (Word)",
     "interleaved_context_symbol":   "Interleave (Symbol)",
+    "context_saturation":           "Context Saturation",
 }
 
 # Shorten model names for x-axis
@@ -66,6 +52,9 @@ MODEL_SHORT_NAMES = {
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama\n(70B)",
     "Qwen_Qwen3-235B-A22B-Thinking-2507":               "Qwen3-235B",
     "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B",
+    "gemini-3.1-pro-preview":                           "Gemini 3.1\nPro",
+    "gemini-2.5-flash":                                 "Gemini 2.5\nFlash",
+    "claude-opus-4-6":                                  "Claude Opus\n4-6",
 }
 
 DATASET_SHORT_NAMES = {
@@ -88,25 +77,36 @@ def compute_accuracy(results_list):
 
 def pick_latest_file(json_files):
     """From a list of json file paths, pick the one with the latest timestamp in name."""
-    if not json_files:
+    # Filter out files that are known to be metadata/input files
+    actual_results = [f for f in json_files if not (os.path.basename(f).startswith("jobs_") or 
+                                                    os.path.basename(f).startswith("tracking_") or
+                                                    os.path.basename(f).startswith("batch_"))]
+    if not actual_results:
         return None
-    # Files have timestamps like _20260303_223355.json — sort lexicographically (works for YYYYMMDD_HHMMSS)
-    return sorted(json_files)[-1]
+    # Files have timestamps like _20260303_223355.json — sort lexicographically
+    return sorted(actual_results)[-1]
 
 
-def scan_results(experiments_dir):
+def scan_results(experiments_dir, aggregate=False):
     """
     Scan all technique directories under experiments_dir.
     Returns:
-        data[dataset][technique][model] = accuracy_pct
+    data[dataset][technique][model] = {
+        'accuracy': accuracy_pct,
+        'n_samples': n_samples
+    }
     """
     data = defaultdict(lambda: defaultdict(dict))
 
-    for technique in TECHNIQUES:
-        results_dir = os.path.join(experiments_dir, technique, "results")
-        if not os.path.isdir(results_dir):
-            continue
+    # Auto-discover techniques: any directory that has a 'results' subdirectory
+    discovered_techniques = []
+    for d in sorted(os.listdir(experiments_dir)):
+        if os.path.isdir(os.path.join(experiments_dir, d, "results")):
+            discovered_techniques.append(d)
 
+    for technique in discovered_techniques:
+        results_dir = os.path.join(experiments_dir, technique, "results")
+        
         # Walk: results/{model}/{dataset}/*.json
         for model_name in sorted(os.listdir(results_dir)):
             model_dir = os.path.join(results_dir, model_name)
@@ -119,35 +119,55 @@ def scan_results(experiments_dir):
                     continue
 
                 json_files = glob.glob(os.path.join(dataset_dir, "*.json"))
-                chosen = pick_latest_file(json_files)
-                if chosen is None:
-                    continue
-
-                try:
-                    with open(chosen) as f:
-                        results = json.load(f)
-                except Exception as e:
-                    print(f"  Warning: could not read {chosen}: {e}")
-                    continue
-
-                # Handle both list format and dict-with-results format
-                if isinstance(results, dict) and "results" in results:
-                    results_list = results["results"]
-                elif isinstance(results, list):
-                    results_list = results
+                
+                if aggregate:
+                    # Collect all valid result files
+                    target_files = [f for f in json_files if not (os.path.basename(f).startswith("jobs_") or 
+                                                                    os.path.basename(f).startswith("tracking_") or
+                                                                    os.path.basename(f).startswith("batch_"))]
                 else:
-                    print(f"  Warning: unexpected format in {chosen}")
+                    chosen = pick_latest_file(json_files)
+                    target_files = [chosen] if chosen else []
+                
+                if not target_files:
                     continue
 
-                correct, total, acc = compute_accuracy(results_list)
+                all_results = []
+                for fpath in target_files:
+                    try:
+                        with open(fpath) as f:
+                            content = json.load(f)
+                        
+                        # Handle both list format and dict-with-results format
+                        if isinstance(content, dict) and "results" in content:
+                            all_results.extend(content["results"])
+                        elif isinstance(content, list):
+                            all_results.extend(content)
+                        elif isinstance(content, dict):
+                            # Some might be mappings from ID to result
+                            all_results.extend(list(content.values()))
+                    except Exception as e:
+                        print(f"  Warning: could not read {fpath}: {e}")
+                        continue
+                
+                if not all_results:
+                    continue
+
+                correct, total, acc = compute_accuracy(all_results)
+                
+                # Calculate avg n_samples per problem
+                unique_ids = set(r.get('id') for r in all_results if r.get('id') is not None)
+                n_samples = total / len(unique_ids) if unique_ids else 0
 
                 # Merge typo alias
                 canonical_model = model_name
                 if model_name == "HAIR_LIMO-v2":
                     canonical_model = "GAIR_LIMO-v2"
 
-                data[dataset_name][technique][canonical_model] = acc
-                # print(f"  {technique}/{canonical_model}/{dataset_name}: {correct}/{total} = {acc:.1f}%")
+                data[dataset_name][technique][canonical_model] = {
+                    'accuracy': acc,
+                    'n_samples': n_samples
+                }
 
     return data
 
@@ -172,38 +192,39 @@ PALETTE = [
 
 # ── Plotting ─────────────────────────────────────────────────────────
 
-def plot_dataset(dataset_name, technique_data, outdir):
+def plot_dataset(dataset_name, technique_data, outdir, aggregate=False):
     """
     Create one large figure for a dataset with one subplot per technique (bar chart).
-    technique_data: dict[technique] -> dict[model] -> accuracy_pct
+    technique_data: dict[technique] -> dict[model] -> {accuracy, n_samples}
     """
     # Collect all models that appear in any technique for this dataset
-    all_models = set()
+    all_models_global = set()
     for td in technique_data.values():
-        all_models.update(td.keys())
-    all_models = sorted(all_models)
+        all_models_global.update(td.keys())
+    all_models_global = sorted(all_models_global)
 
-    if not all_models:
+    if not all_models_global:
         print(f"  No models found for dataset {dataset_name}, skipping.")
         return
 
     # Filter techniques that have data
-    techniques_with_data = [t for t in TECHNIQUES if t in technique_data and technique_data[t]]
+    techniques_with_data = sorted(technique_data.keys(), key=lambda t: (t != 'baseline', t))
+    
     n_techniques = len(techniques_with_data)
     if n_techniques == 0:
         print(f"  No techniques with data for dataset {dataset_name}, skipping.")
         return
 
-    # Assign consistent colors to models
+    # Assign consistent colors to all models globally for consistency across subplots
     model_colors = {}
-    for i, model in enumerate(all_models):
+    for i, model in enumerate(all_models_global):
         model_colors[model] = PALETTE[i % len(PALETTE)]
 
     # Layout: aim for roughly 3-4 columns
     ncols = min(4, n_techniques)
     nrows = (n_techniques + ncols - 1) // ncols
 
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5 * nrows))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5.5 * nrows))
 
     # Handle single-row/col case
     if n_techniques == 1:
@@ -211,35 +232,51 @@ def plot_dataset(dataset_name, technique_data, outdir):
     axes = np.atleast_2d(axes)
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    fig.suptitle(f"Model Accuracy — {dataset_label}", fontsize=18, fontweight='bold', y=0.98)
+    fig.suptitle(f"Model Accuracy — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
 
     for idx, technique in enumerate(techniques_with_data):
         row, col = divmod(idx, ncols)
         ax = axes[row, col]
 
         td = technique_data[technique]
+        
+        # "Don't have bars where we don't have data"
+        # Only models that are actually present in this technique
+        subplot_models = [m for m in all_models_global if m in td]
+        
+        if not subplot_models:
+            ax.text(0.5, 0.5, "No data", ha='center', va='center')
+            ax.set_title(TECHNIQUE_LABELS.get(technique, technique), fontsize=13, fontweight='bold', pad=8)
+            continue
 
-        x = np.arange(len(all_models))
+        x = np.arange(len(subplot_models))
         bar_width = 0.65
-        accuracies = [td.get(m, 0.0) for m in all_models]
-        colors = [model_colors[m] for m in all_models]
-        labels = [shorten(m, MODEL_SHORT_NAMES) for m in all_models]
+        accuracies = [td[m]['accuracy'] for m in subplot_models]
+        colors = [model_colors[m] for m in subplot_models]
+        
+        labels = []
+        for m in subplot_models:
+            short = shorten(m, MODEL_SHORT_NAMES)
+            if aggregate:
+                n = td[m]['n_samples']
+                n_str = str(int(n)) if n == int(n) else f"{n:.1f}"
+                labels.append(f"{short}\n(n={n_str})")
+            else:
+                labels.append(short)
 
         bars = ax.bar(x, accuracies, bar_width, color=colors, edgecolor='white', linewidth=0.5)
 
         # Annotate bars
         for bar, acc in zip(bars, accuracies):
-            if acc > 0:
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                        f"{acc:.0f}%", ha='center', va='bottom', fontsize=9, fontweight='bold')
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
+                    f"{acc:.0f}%", ha='center', va='bottom', fontsize=10, fontweight='bold')
 
-        ax.set_title(TECHNIQUE_LABELS.get(technique, technique), fontsize=13, fontweight='bold', pad=8)
+        title = TECHNIQUE_LABELS.get(technique, technique)
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=10)
         ax.set_xticks(x)
-        # Rotate x labels slightly and align to the right to avoid overlap.
-        ax.set_xticklabels(labels, fontsize=9, rotation=30, ha='right')
-        plt.setp(ax.get_xticklabels(), rotation=30, ha='right')
-        ax.set_ylabel("Accuracy (%)", fontsize=10)
-        ax.set_ylim(0, 105)
+        ax.set_xticklabels(labels, fontsize=10, rotation=35, ha='right')
+        ax.set_ylabel("Accuracy (%)", fontsize=11)
+        ax.set_ylim(0, 115)
         ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False)
@@ -250,8 +287,7 @@ def plot_dataset(dataset_name, technique_data, outdir):
         row, col = divmod(idx, ncols)
         axes[row, col].set_visible(False)
 
-    # Leave extra bottom space for rotated/staggered x-axis labels
-    plt.tight_layout(rect=[0, 0, 1, 0.90])
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
 
     os.makedirs(outdir, exist_ok=True)
     out_path = os.path.join(outdir, f"results_{dataset_name}.png")
@@ -269,6 +305,8 @@ def main():
                         help="Filter to a specific dataset (safe name, e.g. HuggingFaceH4_aime_2024)")
     parser.add_argument("--outdir", type=str, default=None,
                         help="Output directory for plots (defaults to analysis/plots/)")
+    parser.add_argument("--aggregate", action="store_true",
+                        help="Aggregate results across all JSON files for each model/technique (not just the latest)")
     args = parser.parse_args()
 
     # Resolve experiments directory
@@ -289,7 +327,7 @@ def main():
         outdir = os.path.join(experiments_dir, "analysis", "plots")
 
     print(f"Scanning results in: {experiments_dir}")
-    data = scan_results(experiments_dir)
+    data = scan_results(experiments_dir, aggregate=args.aggregate)
 
     if not data:
         print("No results found. Check that results/ directories exist under technique folders.")
@@ -308,7 +346,7 @@ def main():
 
     for dataset_name in datasets:
         print(f"Plotting: {dataset_name}")
-        plot_dataset(dataset_name, data[dataset_name], outdir)
+        plot_dataset(dataset_name, data[dataset_name], outdir, aggregate=args.aggregate)
 
     print("\nDone!")
 
