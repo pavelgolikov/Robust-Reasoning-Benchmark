@@ -23,16 +23,17 @@ def main():
     args = parser.parse_args()
     
     if args.names == 'all':
-        experiment_names = [ 'interleaved_context_line',
-                    'interleaved_context_word',
-                    'interleaved_context_symbol',
-                    'not_not',
-                    'opposites',
-                    'sentence_reversal',
-                    'word_reversal',
-                    'wrappers',
-                    'split_reversal',
-                    'rail_fence' ]
+        experiment_names = [ 'baseline',
+            'interleaved_context_line',
+            'interleaved_context_word',
+            'interleaved_context_symbol',
+            'not_not',
+            'opposites',
+            'sentence_reversal',
+            'word_reversal',
+            'wrappers',
+            'split_reversal',
+            'rail_fence' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 
