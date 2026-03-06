@@ -183,7 +183,7 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         return 'Not Implemented', ''
 
     # 2. Construct Protocol Prompt (Base64 + Rule)
-    transform_rule = TECHNIQUE_DESCRIPTIONS.get(name, "Unknown Transformation")
+    transform_rule = TECHNIQUE_DESCRIPTIONS.get(name, "No Transformation. Solve the problem as is.")
     
     if agentic:
         # Base64 Encode

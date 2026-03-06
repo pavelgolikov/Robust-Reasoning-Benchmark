@@ -720,4 +720,7 @@ def submit_batch(jobs, model_name, provider=None, temperature=0.7, max_tokens=No
         raise ValueError(f"Batch not supported for provider: {provider}")
         
     batch_provider = registry[provider]()
-    return batch_provider.create_batch(jobs, model_name, max_tokens, temperature, context_cache=context_cache)
+    if context_cache is not None and registry is CACHED_BATCH_PROVIDER_REGISTRY:
+        return batch_provider.create_batch(jobs, model_name, max_tokens, temperature, context_cache=context_cache)
+    else:
+        return batch_provider.create_batch(jobs, model_name, max_tokens, temperature)

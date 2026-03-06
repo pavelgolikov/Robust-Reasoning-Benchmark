@@ -16,7 +16,6 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
-    parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
     parser.add_argument("--provider", type=str, default=None, help="API Provider (google, openai, anthropic). Optional if model name implies it.")
     parser.add_argument("--max_tokens", type=int, default=32768, help="Max output tokens (required to avoid accidental truncation).")
     parser.add_argument("--batch", action="store_true", help="Submit as an async batch job instead of running sequentially")
@@ -24,8 +23,16 @@ def main():
     args = parser.parse_args()
     
     if args.names == 'all':
-        experiment_names = [ 'context_saturation', 'interleaved_context_line', 'interleaved_context_word', 'interleaved_context_symbol',
-        'not_not', 'opposites', 'sentence_reversal', 'word_reversal', 'wrappers', 'split_reversal' ]
+        experiment_names = [ 'interleaved_context_line',
+                    'interleaved_context_word',
+                    'interleaved_context_symbol',
+                    'not_not',
+                    'opposites',
+                    'sentence_reversal',
+                    'word_reversal',
+                    'wrappers',
+                    'split_reversal',
+                    'rail_fence' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 
@@ -86,7 +93,6 @@ def main():
                 extra_context, 
                 variables=current_vars,
                 seed=args.seed, 
-                num_distractors=args.num_distractors
             )
             ground_truth = example['answer']
 
