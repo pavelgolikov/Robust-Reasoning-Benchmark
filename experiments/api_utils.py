@@ -230,6 +230,16 @@ def generate_response(messages, model_name, provider=None, temperature=0.7, max_
 # CONTEXT CACHING UTILITIES
 # =====================================================================
 
+import re as _re
+
+def strip_thinking_tags(text):
+    """
+    Removes XML-style thinking/reasoning tags and their content from text.
+    Covers <think>, <thinking>, <reasoning>, <reflection>, and any similar tags.
+    """
+    return _re.sub(r'<(think|thinking|reasoning|reflection|scratchpad)[^>]*>.*?</\1>', '', text,
+                   flags=_re.DOTALL | _re.IGNORECASE).strip()
+
 def load_context_messages(context_file_path):
     """
     Loads a context JSON file. Returns (system_prompt_str, user_assistant_messages_list).
@@ -266,7 +276,8 @@ def create_google_context_cache(context_file_path, model_name, ttl_seconds=3600)
     contents = []
     for msg in conversation:
         role = 'model' if msg['role'] == 'assistant' else 'user'
-        contents.append(types.Content(role=role, parts=[types.Part(text=msg['content'])]))
+        cleaned = strip_thinking_tags(msg['content'])
+        contents.append(types.Content(role=role, parts=[types.Part(text=cleaned)]))
 
     full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
 
@@ -299,7 +310,7 @@ def prepare_anthropic_cached_messages(context_file_path):
     formatted = []
     for i, msg in enumerate(conversation):
         is_last = (i == len(conversation) - 1)
-        content_block = {"type": "text", "text": msg['content']}
+        content_block = {"type": "text", "text": strip_thinking_tags(msg['content'])}
         if is_last:
             content_block["cache_control"] = {"type": "ephemeral"}
         formatted.append({"role": msg['role'], "content": [content_block]})
@@ -330,7 +341,8 @@ def create_google_context_cache_from_messages(messages, model_name, ttl_seconds=
     contents = []
     for msg in conversation:
         role = 'model' if msg['role'] == 'assistant' else 'user'
-        contents.append(types.Content(role=role, parts=[types.Part(text=msg['content'])]))
+        cleaned = strip_thinking_tags(msg['content'])
+        contents.append(types.Content(role=role, parts=[types.Part(text=cleaned)]))
 
     full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
 
@@ -353,7 +365,7 @@ def prepare_anthropic_cached_messages_from_list(messages):
     formatted = []
     for i, msg in enumerate(conversation):
         is_last = (i == len(conversation) - 1)
-        content_block = {"type": "text", "text": msg['content']}
+        content_block = {"type": "text", "text": strip_thinking_tags(msg['content'])}
         if is_last:
             content_block["cache_control"] = {"type": "ephemeral"}
         formatted.append({"role": msg['role'], "content": [content_block]})

@@ -92,6 +92,12 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
         print(f"Error preparing context: {e}")
         return None, None
 
+    # Strip <think> and similar tags from all context messages in-place so the
+    # preview, context_preview, and cache all see clean content.
+    from api_utils import strip_thinking_tags
+    for msg in trimmed_context:
+        msg['content'] = strip_thinking_tags(msg['content'])
+
     common_context_str = tokenizer.apply_chat_template(trimmed_context, tokenize=False, add_generation_prompt=False)
     # First 100 chars of the first distractor message (skip system at index 0)
     first_distractor = next((m['content'] for m in trimmed_context if m['role'] != 'system'), '')
@@ -207,10 +213,19 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
         print(f"Error preparing context: {e}")
         return
 
+    # Strip <think> and similar tags from all context messages in-place.
+    from api_utils import strip_thinking_tags
+    for msg in trimmed_context:
+        msg['content'] = strip_thinking_tags(msg['content'])
+
     # Build context cache from the trimmed messages
     context_cache = build_context_cache_from_trimmed(
         args.provider, trimmed_context, args.model
     )
+
+    # First 100 chars of the first distractor message (skip system)
+    first_distractor = next((m['content'] for m in trimmed_context if m['role'] != 'system'), '')
+    context_preview = first_distractor[:100]
 
     jobs = []
     for i, example in enumerate(dataset):
