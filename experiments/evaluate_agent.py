@@ -14,7 +14,8 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any
 
 # The prefix injected into the assistant turn when --prefill is used
-PREFILL_TEXT = "```python\n"
+# PREFILL_TEXT = "```python\n"
+PREFILL_TEXT = "Here is the Python code:\n"
 
 
 # Fix path to include 'analysis' so 'variables' can be imported by util
@@ -279,14 +280,14 @@ def run_batch_execution(agents: List[AgentState], llm, tokenizer, sampling_param
                     elif agent.step_count >= agent.max_steps:
                         agent.final_output = response_text
                         agent.is_done = True
-                    else:
+                    # else:
                         # No code and no boxed answer yet: inject a nudge to keep
                         # the conversation alternating (some templates reject consecutive
                         # assistant turns) and remind the model to write code.
-                        agent.history.append({
-                            "role": "user",
-                            "content": "Please follow the protocol and write Python code in a ```python block to solve the problem."
-                        })
+                        # agent.history.append({
+                        #     "role": "user",
+                        #     "content": "Please follow the protocol and write Python code in a ```python block to solve the problem."
+                        # })
                 
                 # If finished in this step, save immediately
                 if agent.is_done:
@@ -383,9 +384,9 @@ def main():
         )
         # Use same params as before
         sampling_params = SamplingParams(
-            temperature=0.0,
+            temperature=0.7,
             max_tokens=4096,
-            repetition_penalty=1.5,
+            # repetition_penalty=1.5,
             # No stop tokens: the stop=["```"] was firing on the *opening* ```python
             # fence, so response_text never contained any code. Let the model generate
             # fully; extract_python_code() handles both closed and open code blocks.

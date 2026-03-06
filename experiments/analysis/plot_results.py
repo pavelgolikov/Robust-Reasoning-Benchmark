@@ -235,7 +235,9 @@ def plot_dataset(dataset_name, technique_data, outdir):
 
         ax.set_title(TECHNIQUE_LABELS.get(technique, technique), fontsize=13, fontweight='bold', pad=8)
         ax.set_xticks(x)
-        ax.set_xticklabels(labels, fontsize=9)
+        # Rotate x labels slightly and align to the right to avoid overlap.
+        ax.set_xticklabels(labels, fontsize=9, rotation=30, ha='right')
+        plt.setp(ax.get_xticklabels(), rotation=30, ha='right')
         ax.set_ylabel("Accuracy (%)", fontsize=10)
         ax.set_ylim(0, 105)
         ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
@@ -248,7 +250,8 @@ def plot_dataset(dataset_name, technique_data, outdir):
         row, col = divmod(idx, ncols)
         axes[row, col].set_visible(False)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.94])
+    # Leave extra bottom space for rotated/staggered x-axis labels
+    plt.tight_layout(rect=[0, 0, 1, 0.90])
 
     os.makedirs(outdir, exist_ok=True)
     out_path = os.path.join(outdir, f"results_{dataset_name}.png")
