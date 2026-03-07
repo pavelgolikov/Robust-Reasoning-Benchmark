@@ -15,32 +15,38 @@ from trim_context import trim_context
 from transformers import AutoTokenizer
 
 
-def resolve_context_path(context_type):
-    """Resolve the context file path for a given type ('math' or 'text')."""
+def resolve_context_path(context_type, context_size):
+    """Resolve the context file path for a given type and precomputed size."""
     base = os.path.dirname(os.path.abspath(__file__))
+    
+    if context_size == 1000000:
+        suffix = "1M"
+    else:
+        suffix = f"{context_size // 1000}K"
+        
+    filename = f"context_{context_type}_{suffix}.json"
+    
     candidates = [
-        os.path.join(base, f"context_{context_type}_1M.json"),
-        os.path.join(base, f"context_{context_type}.json"),
-        f"context_{context_type}_1M.json",
-        f"context_{context_type}.json",
+        os.path.join(base, filename),
+        filename,
     ]
     for path in candidates:
         if os.path.exists(path):
             return path
-    return None
+            
+    raise FileNotFoundError(f"Precomputed context file '{filename}' not found for type '{context_type}' and size {context_size}.")
 
 
 def prepare_trimmed_context(context_type, args, tokenizer):
     """
-    Load, trim to args.context_size tokens, and fix the system prompt.
+    Load precomputed context of args.context_size tokens, and fix the system prompt.
     Returns (trimmed_messages, context_token_count, context_path).
     """
-    context_path = resolve_context_path(context_type)
-    if context_path is None:
-        raise FileNotFoundError(f"Context file not found for type '{context_type}'.")
+    context_path = resolve_context_path(context_type, args.context_size)
 
-    print(f"Trimming '{context_type}' context to {args.context_size} tokens...")
-    trimmed = trim_context(context_path, args.model, args.context_size, tokenizer=tokenizer)
+    print(f"Loading precomputed '{context_type}' context ({args.context_size} tokens) from {context_path}...")
+    with open(context_path, 'r') as f:
+        trimmed = json.load(f)
 
     # Fix system prompt: always use BASELINE_SYSTEM_PROMPT as the system message
     if trimmed and trimmed[0]['role'] == 'system':
@@ -52,18 +58,55 @@ def prepare_trimmed_context(context_type, args, tokenizer):
         trimmed.insert(0, {'role': 'system', 'content': BASELINE_SYSTEM_PROMPT})
 
     token_count = len(tokenizer.apply_chat_template(trimmed, tokenize=True, add_generation_prompt=False))
-    print(f"  Trimmed context: {len(trimmed)} messages, ~{token_count} tokens")
+    print(f"  Loaded precomputed context: {len(trimmed)} messages, ~{token_count} tokens")
     return trimmed, token_count, context_path
 
 
-def build_context_cache_from_trimmed(provider, trimmed_messages, model_name):
+def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, context_type=None, context_size=None):
     """
     Given already-trimmed context messages, create the appropriate provider cache.
     Returns context_cache dict {'type': ..., 'ref': ...}.
     """
     if provider == 'google':
-        print("Creating Google AI Studio context cache from trimmed context...")
+        print("Checking for existing Google AI Studio context cache...")
+        
+        # Attempt to load from disk
+        base = os.path.dirname(os.path.abspath(__file__))
+        cache_dir = os.path.join(base, "context_caches")
+        os.makedirs(cache_dir, exist_ok=True)
+        
+        safe_model = model_name.replace('/', '_')
+        cache_record_file = os.path.join(cache_dir, f"google_cache_{safe_model}_{context_type}_{context_size}.json")
+        
+        if os.path.exists(cache_record_file):
+            try:
+                with open(cache_record_file, 'r') as f:
+                    record = json.load(f)
+                
+                # Check expiration (give 5 mins leeway)
+                if time.time() < (record['created_at'] + record['ttl_seconds'] - 300):
+                    print(f"Found active existing context cache: {record['cache_name']}")
+                    return {'type': 'google', 'ref': record['cache_name']}
+            except Exception as e:
+                print(f"Error reading existing cache record: {e}")
+                
+        print("Creating new Google AI Studio context cache from trimmed context...")
         cache_name = create_google_context_cache_from_messages(trimmed_messages, model_name, ttl_seconds=7200)
+        
+        # Save to disk
+        try:
+            with open(cache_record_file, 'w') as f:
+                json.dump({
+                    "cache_name": cache_name,
+                    "created_at": time.time(),
+                    "ttl_seconds": 7200,
+                    "model_name": model_name,
+                    "context_type": context_type,
+                    "context_size": context_size
+                }, f)
+        except Exception as e:
+            print(f"Could not save cache record: {e}")
+            
         return {'type': 'google', 'ref': cache_name}
 
     elif provider == 'anthropic':
@@ -105,7 +148,8 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
 
     # Build context cache from the trimmed messages (always enabled)
     context_cache = build_context_cache_from_trimmed(
-        args.provider, trimmed_context, args.model
+        args.provider, trimmed_context, args.model,
+        context_type=context_type, context_size=args.context_size
     )
 
     jobs = []
@@ -220,7 +264,8 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
 
     # Build context cache from the trimmed messages
     context_cache = build_context_cache_from_trimmed(
-        args.provider, trimmed_context, args.model
+        args.provider, trimmed_context, args.model,
+        context_type=context_type, context_size=args.context_size
     )
 
     # First 100 chars of the first distractor message (skip system)

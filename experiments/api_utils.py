@@ -265,10 +265,20 @@ def create_google_context_cache(context_file_path, model_name, ttl_seconds=3600)
     """
     from google import genai
     from google.genai import types
-    api_key = os.environ.get('GOOGLE_API_KEY')
-    if not api_key:
-        raise ValueError('GOOGLE_API_KEY must be set to use Google context caching (AI Studio mode).')
-    client = genai.Client(api_key=api_key)
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    project = os.environ.get("GOOGLE_PROJECT_ID")
+    location = os.environ.get("GOOGLE_LOCATION", "global")
+    
+    if project:
+        client = genai.Client(vertexai=True, project=project, location=location)
+        print(f"Creating cache in Vertex AI mode (project={project}, location={location})")
+        full_model_name = model_name
+    else:
+        if not api_key:
+            raise ValueError("Neither GOOGLE_PROJECT_ID nor GOOGLE_API_KEY environment variable set.")
+        client = genai.Client(api_key=api_key)
+        print("Creating cache in AI Studio mode")
+        full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
 
     system_prompt, conversation = load_context_messages(context_file_path)
 
@@ -278,8 +288,6 @@ def create_google_context_cache(context_file_path, model_name, ttl_seconds=3600)
         role = 'model' if msg['role'] == 'assistant' else 'user'
         cleaned = strip_thinking_tags(msg['content'])
         contents.append(types.Content(role=role, parts=[types.Part(text=cleaned)]))
-
-    full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
 
     create_config = types.CreateCachedContentConfig(
         contents=contents,
@@ -325,10 +333,22 @@ def create_google_context_cache_from_messages(messages, model_name, ttl_seconds=
     """
     from google import genai
     from google.genai import types
-    api_key = os.environ.get('GOOGLE_API_KEY')
-    if not api_key:
-        raise ValueError('GOOGLE_API_KEY must be set to use Google context caching (AI Studio mode).')
-    client = genai.Client(api_key=api_key)
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    project = os.environ.get("GOOGLE_PROJECT_ID")
+    location = os.environ.get("GOOGLE_LOCATION", "global")
+    
+    if project:
+        # Vertex AI Mode
+        client = genai.Client(vertexai=True, project=project, location=location)
+        print(f"Creating cache in Vertex AI mode (project={project}, location={location})")
+        full_model_name = model_name
+    else:
+        # AI Studio Mode
+        if not api_key:
+            raise ValueError("Neither GOOGLE_PROJECT_ID nor GOOGLE_API_KEY environment variable set.")
+        client = genai.Client(api_key=api_key)
+        print("Creating cache in AI Studio mode")
+        full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
 
     system_prompt = None
     conversation = []
@@ -343,8 +363,6 @@ def create_google_context_cache_from_messages(messages, model_name, ttl_seconds=
         role = 'model' if msg['role'] == 'assistant' else 'user'
         cleaned = strip_thinking_tags(msg['content'])
         contents.append(types.Content(role=role, parts=[types.Part(text=cleaned)]))
-
-    full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
 
     config_kwargs = dict(contents=contents, ttl=f"{ttl_seconds}s")
     if system_prompt:
