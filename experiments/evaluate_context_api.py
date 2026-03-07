@@ -151,12 +151,6 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
     first_distractor = next((m['content'] for m in trimmed_context if m['role'] != 'system'), '')
     context_preview = first_distractor[:100]
 
-    # Build context cache from the trimmed messages (always enabled)
-    context_cache = build_context_cache_from_trimmed(
-        args.provider, trimmed_context, args.model,
-        context_type=context_type, context_size=args.context_size
-    )
-
     jobs = []
     for i, example in enumerate(dataset):
         cleaned_problem = remove_latex_comments(example['problem'])
@@ -179,6 +173,61 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
                 "system_prompt": BASELINE_SYSTEM_PROMPT,
             })
 
+    print(f"\nPreparing to submit {len(jobs)} jobs for context_type='{context_type}' ({context_token_count} context tokens)...")
+    cache_info = f"will be generated upon confirmation"
+
+    # Write a single randomly-picked full sample to a temp file for review before submitting
+    import tempfile
+    import random
+    import os
+    sample_job = random.choice(jobs)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, prefix='seq_preview_') as tmp:
+        tmp_path = tmp.name
+        tmp.write("=" * 80 + "\n")
+        tmp.write("SEQUENTIAL SUBMISSION PREVIEW\n")
+        tmp.write("=" * 80 + "\n\n")
+        tmp.write(f"Model:           {args.model}\n")
+        tmp.write(f"Provider:        {args.provider}\n")
+        tmp.write(f"Context type:    {context_type}\n")
+        tmp.write(f"Context size:    {args.context_size} tokens (actual: ~{context_token_count} tokens)\n")
+        tmp.write(f"Context msgs:    {len(trimmed_context)}\n")
+        tmp.write(f"Cache:           {cache_info}\n")
+        tmp.write(f"Total jobs:      {len(jobs)}\n")
+        tmp.write(f"Max tokens:      {args.max_tokens}\n\n")
+        tmp.write("=" * 80 + "\n")
+        tmp.write("FULL SAMPLE (as it will be sent to the model):\n")
+        tmp.write("=" * 80 + "\n\n")
+        # Full context messages, untruncated
+        for m in trimmed_context:
+            tmp.write(f"[{m['role'].upper()}]\n{m['content']}\n\n")
+        # The actual question appended after context
+        tmp.write("-" * 80 + "\n")
+        tmp.write("[USER]\n")
+        tmp.write(sample_job['post_context_prompt'] + "\n\n")
+        tmp.write(f"[GROUND TRUTH] {sample_job['ground_truth']}\n")
+        tmp.write("=" * 80 + "\n")
+
+    print(f"\nPreview written to: {tmp_path}")
+    print("Open this file to review the context sample and example question.")
+
+    user_input = input(f"\nSubmit {len(jobs)} jobs [{context_type}] sequentially to the cloud? Type 'Yes' to confirm: ")
+
+    # Always delete the temp preview file
+    try:
+        os.remove(tmp_path)
+    except OSError:
+        pass
+
+    if user_input.strip() != 'Yes':
+        print("Skipping.")
+        return None, None
+
+    # Build context cache from the trimmed messages (always enabled)
+    context_cache = build_context_cache_from_trimmed(
+        args.provider, trimmed_context, args.model,
+        context_type=context_type, context_size=args.context_size
+    )
+
     print(f"Generating answers for {len(jobs)} jobs...")
     results = []
     stats = {"correct": 0, "total": 0, "failures": 0}
@@ -197,7 +246,7 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
             generated_text = f"ERROR: {str(e)}"
 
         extracted, is_correct = extract_and_grade(generated_text, job['ground_truth'])
-        results.append({
+        result_dict = {
             "id": job['id'],
             "sample_idx": job.get('sample_idx', 0),
             "output": generated_text,
@@ -210,12 +259,30 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
             "model_output_len_char": len(generated_text),
             "system_prompt": BASELINE_SYSTEM_PROMPT,
             "context_preview": context_preview,
-        })
+        }
+        results.append(result_dict)
+        
+        # Flush intermediate output securely behind loops for massive context iterations
+        safe_model = args.model.replace('/', '_')
+        safe_dataset = args.dataset.replace('/', '_')
+        out_dir = os.path.join(base_dir, "context_saturation", "results_context", safe_model, safe_dataset)
+        os.makedirs(out_dir, exist_ok=True)
+        filename = f"results_predef_{context_type}_{args.context_size}_{safe_model}_{timestamp}.json"
+        intermediate_path = os.path.join(out_dir, filename + ".incomplete")
+        
+        with open(intermediate_path, 'a') as f:
+            f.write(json.dumps(result_dict) + "\n")
+
         stats["total"] += 1
         if is_correct:
             stats["correct"] += 1
         else:
             stats["failures"] += 1
+
+        if args.sleep > 0 and i < len(jobs) - 1:
+            print(f"  Pacing sequential request: Sleeping for {args.sleep}s to respect Cloud TPM limits...")
+            import time
+            time.sleep(args.sleep)
 
     acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
     print(f"\n--- {context_type.upper()} Results ---")
@@ -244,6 +311,12 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
             "results": results,
         }, f, indent=2)
     print(f"Saved {context_type} results to {out_path}")
+    
+    try:
+        os.remove(intermediate_path)
+    except OSError:
+        pass
+        
     return stats, out_path
 
 
@@ -414,6 +487,8 @@ def main():
                         help="Submit as async batch jobs instead of running sequentially.")
     parser.add_argument("--context_types", type=str, default="math,text",
                         help="Comma-separated context types to run. Default: 'math,text'.")
+    parser.add_argument("--sleep", type=int, default=0,
+                        help="Seconds to sleep between each sequential API job (e.g. 60) to avoid TPM rate limits.")
 
     args = parser.parse_args()
 

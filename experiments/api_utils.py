@@ -127,7 +127,8 @@ class AnthropicProvider(LLMProvider):
     def __init__(self):
         from anthropic import Anthropic
         # Anthropic client automatically reads ANTHROPIC_API_KEY
-        self.client = Anthropic()
+        # Added Beta header to authorize the unlocked 1M Context Window tier for Opus 4.6
+        self.client = Anthropic(default_headers={"anthropic-beta": "context-1m-2025-08-07"})
 
     def generate(self, messages, model_name, temperature=0.7, max_tokens=None, cached_context_messages=None):
         system_prompt = ""
@@ -462,7 +463,8 @@ class OpenAIBatchProvider(BatchProvider):
 class AnthropicBatchProvider(BatchProvider):
     def __init__(self):
         from anthropic import Anthropic
-        self.client = Anthropic()
+        # Added Beta header to authorize the unlocked 1M Context Window tier for Opus 4.6
+        self.client = Anthropic(default_headers={"anthropic-beta": "context-1m-2025-08-07"})
 
     def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7, context_cache=None):
         requests_list = []
