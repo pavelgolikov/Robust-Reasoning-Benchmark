@@ -62,7 +62,7 @@ def prepare_trimmed_context(context_type, args, tokenizer):
     return trimmed, token_count, context_path
 
 
-def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, context_type=None, context_size=None):
+def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, context_type=None, context_size=None, ttl_seconds=7200):
     """
     Given already-trimmed context messages, create the appropriate provider cache.
     Returns context_cache dict {'type': ..., 'ref': ...}.
@@ -83,27 +83,32 @@ def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, con
                 with open(cache_record_file, 'r') as f:
                     record = json.load(f)
                 
-                # Check expiration (give 5 mins leeway)
-                if time.time() < (record['created_at'] + record['ttl_seconds'] - 300):
+                # Check expiration against our newly requested TTL
+                # (If they ask for 48 hours but the existing cache only has 1 hr left, we should re-create)
+                if time.time() < (record['created_at'] + record['ttl_seconds'] - ttl_seconds + 300):
                     print(f"Found active existing context cache: {record['cache_name']}")
                     return {'type': 'google', 'ref': record['cache_name']}
             except Exception as e:
                 print(f"Error reading existing cache record: {e}")
                 
         print("Creating new Google AI Studio context cache from trimmed context...")
-        cache_name = create_google_context_cache_from_messages(trimmed_messages, model_name, ttl_seconds=7200)
+        cache_name = create_google_context_cache_from_messages(trimmed_messages, model_name, ttl_seconds=ttl_seconds)
         
         # Save to disk
         try:
+            import datetime
+            creation_time = time.time()
             with open(cache_record_file, 'w') as f:
                 json.dump({
                     "cache_name": cache_name,
-                    "created_at": time.time(),
-                    "ttl_seconds": 7200,
+                    "created_at": creation_time,
+                    "created_at_human": datetime.datetime.fromtimestamp(creation_time).astimezone().isoformat(),
+                    "expires_at_human": datetime.datetime.fromtimestamp(creation_time + ttl_seconds).astimezone().isoformat(),
+                    "ttl_seconds": ttl_seconds,
                     "model_name": model_name,
                     "context_type": context_type,
                     "context_size": context_size
-                }, f)
+                }, f, indent=2)
         except Exception as e:
             print(f"Could not save cache record: {e}")
             
@@ -262,12 +267,6 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
     for msg in trimmed_context:
         msg['content'] = strip_thinking_tags(msg['content'])
 
-    # Build context cache from the trimmed messages
-    context_cache = build_context_cache_from_trimmed(
-        args.provider, trimmed_context, args.model,
-        context_type=context_type, context_size=args.context_size
-    )
-
     # First 100 chars of the first distractor message (skip system)
     first_distractor = next((m['content'] for m in trimmed_context if m['role'] != 'system'), '')
     context_preview = first_distractor[:100]
@@ -299,8 +298,8 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
             })
 
     print(f"\nPreparing to submit {len(jobs)} jobs for context_type='{context_type}' ({context_token_count} context tokens)...")
-    cache_info = f"{context_cache['type']} cache ({context_cache['ref'] if context_cache['type'] == 'google' else str(len(context_cache['ref'])) + ' msgs'})" if context_cache else "no cache"
-
+    cache_info = f"will be generated upon confirmation"
+    
     # Write a single randomly-picked full sample to a temp file for review before submitting
     import tempfile
     sample_job = random.choice(jobs)
@@ -344,6 +343,15 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
     if user_input.strip() != 'Yes':
         print("Skipping.")
         return
+
+    # Build context cache from the trimmed messages
+    # Give batches a 48-hour cache TTL so they survive queue delays
+    ttl_seconds = 172800 
+    context_cache = build_context_cache_from_trimmed(
+        args.provider, trimmed_context, args.model,
+        context_type=context_type, context_size=args.context_size,
+        ttl_seconds=ttl_seconds
+    )
 
     batch_info = submit_batch(
         jobs, args.model,
