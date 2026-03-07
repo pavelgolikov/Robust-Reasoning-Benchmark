@@ -217,9 +217,14 @@ def generate_response(messages, model_name, provider=None, temperature=0.7, max_
         except Exception as e:
             logging.warning(f"Attempt {attempt + 1}/{retries} failed for {provider}/{model_name}: {e}")
             if hasattr(e, 'status_code') and e.status_code == 429: # Rate limit
-                time.sleep(base_delay * (2 ** attempt))
+                print(f"  Hit Google Cloud quota limit. Pausing for {30 * (2 ** attempt)}s to let the window cool down...")
+                time.sleep(30 * (2 ** attempt))
             elif "429" in str(e):
-                 time.sleep(base_delay * (2 ** attempt))
+                print(f"  Hit Cloud quota limit. Pausing for {30 * (2 ** attempt)}s to let the window cool down...")
+                time.sleep(30 * (2 ** attempt))
+            elif "Quota exceeded" in str(e):
+                print(f"  Hit Quota limit. Pausing for {30 * (2 ** attempt)}s...")
+                time.sleep(30 * (2 ** attempt))
             else:
                 time.sleep(base_delay)
     
