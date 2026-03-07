@@ -78,10 +78,17 @@ class OpenAIProvider(LLMProvider):
         # OpenAI client automatically reads OPENAI_API_KEY and OPENAI_BASE_URL
         self.client = OpenAI()
 
-    def generate(self, messages, model_name, temperature=0.7, max_tokens=None):
+    def generate(self, messages, model_name, temperature=0.7, max_tokens=None, context_cache=None):
+        final_messages = []
+        if context_cache and context_cache.get('type') == 'openai':
+            final_messages.extend(context_cache['ref'])
+            final_messages.extend([m for m in messages if m['role'] != 'system'])
+        else:
+            final_messages = messages
+
         kwargs = {
             "model": model_name,
-            "messages": messages,
+            "messages": final_messages,
         }
         
         # Check if model supports standard parameters or requires new o1-style params
@@ -417,14 +424,21 @@ class OpenAIBatchProvider(BatchProvider):
         from openai import OpenAI
         self.client = OpenAI()
 
-    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7):
+    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7, context_cache=None):
         # 1. Create JSONL
         is_o1 = "o1" in model_name.lower()
         jsonl_lines = []
         for job in jobs:
+            final_messages = []
+            if context_cache and context_cache.get('type') == 'openai':
+                final_messages.extend(context_cache['ref'])
+                final_messages.extend([m for m in job['messages'] if m['role'] != 'system'])
+            else:
+                final_messages = job['messages']
+
             body = {
                 "model": model_name,
-                "messages": job['messages'],
+                "messages": final_messages,
             }
             if is_o1:
                 if max_tokens: body["max_completion_tokens"] = max_tokens

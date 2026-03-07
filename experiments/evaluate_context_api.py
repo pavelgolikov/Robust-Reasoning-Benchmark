@@ -120,6 +120,11 @@ def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, con
         print(f"  {len(cached_msgs)} context messages marked for caching.")
         return {'type': 'anthropic', 'ref': cached_msgs}
 
+    elif provider == 'openai':
+        print(f"Preparing OpenAI context messages (implicit caching via exact prefix match)...")
+        # For OpenAI, there is no explicit cache object, we just prepend the messages.
+        return {'type': 'openai', 'ref': trimmed_messages}
+
     else:
         print(f"Warning: Context caching not implemented for provider '{provider}'. Context will not be sent.")
         return None
