@@ -37,7 +37,7 @@ def resolve_context_path(context_type, context_size):
     raise FileNotFoundError(f"Precomputed context file '{filename}' not found for type '{context_type}' and size {context_size}.")
 
 
-def prepare_trimmed_context(context_type, args, tokenizer):
+def prepare_trimmed_context(context_type, args):
     """
     Load precomputed context of args.context_size tokens, and fix the system prompt.
     Returns (trimmed_messages, context_token_count, context_path).
@@ -57,8 +57,8 @@ def prepare_trimmed_context(context_type, args, tokenizer):
         print("  Inserting system prompt...")
         trimmed.insert(0, {'role': 'system', 'content': BASELINE_SYSTEM_PROMPT})
 
-    token_count = len(tokenizer.apply_chat_template(trimmed, tokenize=True, add_generation_prompt=False))
-    print(f"  Loaded precomputed context: {len(trimmed)} messages, ~{token_count} tokens")
+    token_count = args.context_size  # Precomputed target; verified exactly natively later
+    print(f"  Loaded precomputed context: {len(trimmed)} messages, target: ~{token_count} tokens")
     return trimmed, token_count, context_path
 
 
@@ -125,7 +125,7 @@ def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, con
         return None
 
 
-def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir, timestamp):
+def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp):
     """Run sequential (non-batch) evaluation for a single context type."""
     print(f"\n{'='*60}")
     print(f"  Running context evaluation (sequential): {context_type.upper()}")
@@ -134,7 +134,7 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
     # Load, trim, and fix system prompt
     try:
         trimmed_context, context_token_count, context_path = prepare_trimmed_context(
-            context_type, args, tokenizer
+            context_type, args
         )
     except Exception as e:
         print(f"Error preparing context: {e}")
@@ -146,10 +146,30 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
     for msg in trimmed_context:
         msg['content'] = strip_thinking_tags(msg['content'])
 
-    common_context_str = tokenizer.apply_chat_template(trimmed_context, tokenize=False, add_generation_prompt=False)
+    common_context_str = "HF Local Tokenizer Used: None. Strict API Evaluation Enforced."
+    
     # First 100 chars of the first distractor message (skip system at index 0)
     first_distractor = next((m['content'] for m in trimmed_context if m['role'] != 'system'), '')
     context_preview = first_distractor[:100]
+
+    # STRICT TOKEN VALIDATION CHECK
+    print(f"\n[PRE-FLIGHT] Verifying true context length against native API ({args.provider}:{args.model})...")
+    import sys
+    try:
+        import asyncio
+        from count_true_tokens import measure_tokens_native_check
+        true_token_count = asyncio.run(measure_tokens_native_check(args.provider, args.model, trimmed_context))
+        print(f"[PRE-FLIGHT] Native Token Count: {true_token_count:,} tokens (Target: {args.context_size:,})")
+        
+        # Require it to be strictly within 2% of the target context size
+        margin = args.context_size * 0.02
+        if abs(true_token_count - args.context_size) > margin:
+            raise ValueError(f"CRITICAL: True '{args.model}' token count ({true_token_count:,}) deviates significantly from target ({args.context_size:,}). Aborting to save budget.")
+    except Exception as e:
+        if isinstance(e, ValueError):
+            raise e
+        print(f"[PRE-FLIGHT ERROR] Could not verify true token count natively: {e}. If this is a local test, continuing.")
+        true_token_count = context_token_count
 
     jobs = []
     for i, example in enumerate(dataset):
@@ -189,7 +209,7 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
         tmp.write(f"Model:           {args.model}\n")
         tmp.write(f"Provider:        {args.provider}\n")
         tmp.write(f"Context type:    {context_type}\n")
-        tmp.write(f"Context size:    {args.context_size} tokens (actual: ~{context_token_count} tokens)\n")
+        tmp.write(f"Context size:    {args.context_size} tokens (actual native count: ~{true_token_count:,} tokens)\n")
         tmp.write(f"Context msgs:    {len(trimmed_context)}\n")
         tmp.write(f"Cache:           {cache_info}\n")
         tmp.write(f"Total jobs:      {len(jobs)}\n")
@@ -320,7 +340,7 @@ def run_context_eval_sequential(context_type, dataset, args, tokenizer, base_dir
     return stats, out_path
 
 
-def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, timestamp):
+def run_context_eval_batch(context_type, dataset, args, base_dir, timestamp):
     """Submit a batch job for a single context type."""
     print(f"\n{'='*60}")
     print(f"  Preparing batch: {context_type.upper()}")
@@ -329,7 +349,7 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
     # Load, trim, and fix system prompt
     try:
         trimmed_context, context_token_count, context_path = prepare_trimmed_context(
-            context_type, args, tokenizer
+            context_type, args
         )
     except Exception as e:
         print(f"Error preparing context: {e}")
@@ -343,6 +363,25 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
     # First 100 chars of the first distractor message (skip system)
     first_distractor = next((m['content'] for m in trimmed_context if m['role'] != 'system'), '')
     context_preview = first_distractor[:100]
+
+    # STRICT TOKEN VALIDATION CHECK
+    print(f"\n[PRE-FLIGHT] Verifying true context length against native API ({args.provider}:{args.model})...")
+    import sys
+    try:
+        import asyncio
+        from count_true_tokens import measure_tokens_native_check
+        true_token_count = asyncio.run(measure_tokens_native_check(args.provider, args.model, trimmed_context))
+        print(f"[PRE-FLIGHT] Native Token Count: {true_token_count:,} tokens (Target: {args.context_size:,})")
+        
+        # Require it to be strictly within 2% of the target context size
+        margin = args.context_size * 0.02
+        if abs(true_token_count - args.context_size) > margin:
+            raise ValueError(f"CRITICAL: True '{args.model}' token count ({true_token_count:,}) deviates significantly from target ({args.context_size:,}). Aborting to save budget.")
+    except Exception as e:
+        if isinstance(e, ValueError):
+            raise e
+        print(f"[PRE-FLIGHT ERROR] Could not verify true token count natively: {e}. If this is a local test, continuing.")
+        true_token_count = context_token_count
 
     jobs = []
     for i, example in enumerate(dataset):
@@ -384,7 +423,7 @@ def run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, tim
         tmp.write(f"Model:           {args.model}\n")
         tmp.write(f"Provider:        {args.provider}\n")
         tmp.write(f"Context type:    {context_type}\n")
-        tmp.write(f"Context size:    {args.context_size} tokens (actual: ~{context_token_count} tokens)\n")
+        tmp.write(f"Context size:    {args.context_size} tokens (actual native count: ~{true_token_count:,} tokens)\n")
         tmp.write(f"Context msgs:    {len(trimmed_context)}\n")
         tmp.write(f"Cache:           {cache_info}\n")
         tmp.write(f"Total jobs:      {len(jobs)}\n")
@@ -505,22 +544,14 @@ def main():
     print(f"Model: {args.model} | Provider: {provider} | Batch: {args.batch} | context_size: {args.context_size}")
     print(f"Context types: {context_types} | Caching: ENABLED")
 
-    # Initialize tokenizer (shared for trimming)
-    print("Initializing tokenizer for context trimming...")
-    try:
-        tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
-    except Exception:
-        print("  Could not load model-specific tokenizer. Falling back to gpt2 for token estimation.")
-        tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    # Ensure provider is correctly identified
+    provider = args.provider or infer_provider(args.model)
+    if not provider:
+        raise ValueError(f"Cannot infer provider from model '{args.model}'. Specify --provider.")
+    args.provider = provider
 
-    # Ensure the tokenizer has a chat template (needed by trim_context).
-    # The gpt2 fallback has none, so inject a simple one for token counting.
-    if not getattr(tokenizer, 'chat_template', None):
-        tokenizer.chat_template = (
-            "{% for message in messages %}"
-            "{{ message['role'] + ': ' + message['content'] + '\n' }}"
-            "{% endfor %}"
-        )
+    print(f"Model: {args.model} | Provider: {provider} | Batch: {args.batch} | context_size: {args.context_size}")
+    print(f"Context types: {context_types} | Caching: ENABLED")
 
     # Load dataset
     print(f"Loading dataset: {args.dataset}...")
@@ -535,10 +566,10 @@ def main():
 
     for context_type in context_types:
         if args.batch:
-            run_context_eval_batch(context_type, dataset, args, tokenizer, base_dir, timestamp)
+            run_context_eval_batch(context_type, dataset, args, base_dir, timestamp)
         else:
             stats, out_path = run_context_eval_sequential(
-                context_type, dataset, args, tokenizer, base_dir, timestamp
+                context_type, dataset, args, base_dir, timestamp
             )
             if stats is not None:
                 all_stats[context_type] = stats

@@ -240,11 +240,11 @@ import re as _re
 
 def strip_thinking_tags(text):
     """
-    Removes XML-style thinking/reasoning tags and their content from text.
+    Removes XML-style thinking/reasoning tags from text, but PRESERVES the content inside them.
     Covers <think>, <thinking>, <reasoning>, <reflection>, and any similar tags.
     """
-    return _re.sub(r'<(think|thinking|reasoning|reflection|scratchpad)[^>]*>.*?</\1>', '', text,
-                   flags=_re.DOTALL | _re.IGNORECASE).strip()
+    return _re.sub(r'</?(think|thinking|reasoning|reflection|scratchpad)[^>]*>', '', text,
+                   flags=_re.IGNORECASE).strip()
 
 def load_context_messages(context_file_path):
     """
