@@ -21,7 +21,11 @@ async def get_native_token_count(provider, model_name, messages):
     try:
         if provider == "openai":
             text = "".join(m['content'] for m in messages)
-            enc = tiktoken.encoding_for_model(model_name)
+            try:
+                enc = tiktoken.encoding_for_model(model_name)
+            except KeyError:
+                # Fallback to standard OpenAI tokenizer if exact model isn't mapped in tiktoken yet
+                enc = tiktoken.get_encoding('o200k_base')
             return len(enc.encode(text))
             
         elif provider == "anthropic":
@@ -112,7 +116,8 @@ async def build_provider_context(base_file, provider, model_name, target_tokens,
     # Save specific file
     filename = os.path.basename(base_file)
     context_type = filename.split('_')[1] # 'math' or 'text'
-    out_name = f"experiments/context_{context_type}_750K_{provider}.json"
+    size_str = f"{target_tokens // 1000}K" if target_tokens >= 1000 else str(target_tokens)
+    out_name = f"experiments/context_{context_type}_{size_str}_{provider}.json"
     
     print(f"Saving exactly {best_k} messages to {out_name}...")
     with open(out_name, 'w') as f:
@@ -121,22 +126,34 @@ async def build_provider_context(base_file, provider, model_name, target_tokens,
     return out_name
 
 async def main():
-    providers = [
-        ("anthropic", "claude-opus-4-6"),
-        ("google", "gemini-3.1-pro-preview"),
-        ("openai", "gpt-5.3-chat-latest")
-    ]
-    target = 750000
-    base_files = ["experiments/context_math_1M.json", "experiments/context_text_1M.json"]
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate native token-counted contexts.")
+    parser.add_argument("--model", type=str, required=True, help="API model name")
+    parser.add_argument("--provider", type=str, required=False, help="Explicit provider (inferred if None)")
+    parser.add_argument("--context_size", type=int, required=True, help="Target precise token size")
+    parser.add_argument("--context_type", type=str, required=True, help="math or text")
     
-    for base_file in base_files:
-        if not os.path.exists(base_file):
-            print(f"Skipping {base_file} (not found).")
-            continue
-            
-        for provider, model in providers:
-            await build_provider_context(base_file, provider, model, target)
-            print("-" * 50)
+    args = parser.parse_args()
+    
+    provider = args.provider
+    if not provider:
+        if "gemini" in args.model.lower(): provider = "google"
+        elif "claude" in args.model.lower(): provider = "anthropic"
+        elif "gpt" in args.model.lower() or "o1" in args.model.lower(): provider = "openai"
+        else: raise ValueError("Could not infer provider")
+
+    # Select base master file based on context_type
+    if args.context_type == "math":
+        base_file = "experiments/context_math_1M.json"
+    elif args.context_type == "text":
+        base_file = "experiments/context_text_1M.json"
+    else:
+        raise ValueError(f"Unknown context type: {args.context_type}")
+        
+    if not os.path.exists(base_file):
+        raise FileNotFoundError(f"Missing master file: {base_file}")
+        
+    await build_provider_context(base_file, provider, args.model, args.context_size)
 
 if __name__ == "__main__":
     asyncio.run(main())

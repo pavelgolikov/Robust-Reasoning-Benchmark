@@ -11,40 +11,23 @@ from api_utils import (
     create_google_context_cache_from_messages,
     prepare_anthropic_cached_messages_from_list,
 )
-from trim_context import trim_context
 from transformers import AutoTokenizer
 
 
-def resolve_context_path(context_type, context_size):
-    """Resolve the context file path for a given type and precomputed size."""
-    base = os.path.dirname(os.path.abspath(__file__))
-    
-    if context_size == 1000000:
-        suffix = "1M"
-    else:
-        suffix = f"{context_size // 1000}K"
-        
-    filename = f"context_{context_type}_{suffix}.json"
-    
-    candidates = [
-        os.path.join(base, filename),
-        filename,
-    ]
-    for path in candidates:
-        if os.path.exists(path):
-            return path
-            
-    raise FileNotFoundError(f"Precomputed context file '{filename}' not found for type '{context_type}' and size {context_size}.")
+
 
 
 def prepare_trimmed_context(context_type, args):
     """
-    Load precomputed context of args.context_size tokens, and fix the system prompt.
+    Load precomputed context from the specified file, and fix the system prompt.
     Returns (trimmed_messages, context_token_count, context_path).
     """
-    context_path = resolve_context_path(context_type, args.context_size)
+    context_path = args.context_file
 
-    print(f"Loading precomputed '{context_type}' context ({args.context_size} tokens) from {context_path}...")
+    print(f"Loading context from {context_path} (Target: {args.context_size} tokens)...")
+    if not os.path.exists(context_path):
+        raise FileNotFoundError(f"Context file not found: {context_path}")
+
     with open(context_path, 'r') as f:
         trimmed = json.load(f)
 
@@ -201,56 +184,60 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
     print(f"\nPreparing to submit {len(jobs)} jobs for context_type='{context_type}' ({context_token_count} context tokens)...")
     cache_info = f"will be generated upon confirmation"
 
-    # Write a single randomly-picked full sample to a temp file for review before submitting
-    import tempfile
-    import random
-    import os
-    sample_job = random.choice(jobs)
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, prefix='seq_preview_') as tmp:
-        tmp_path = tmp.name
-        tmp.write("=" * 80 + "\n")
-        tmp.write("SEQUENTIAL SUBMISSION PREVIEW\n")
-        tmp.write("=" * 80 + "\n\n")
-        tmp.write(f"Model:           {args.model}\n")
-        tmp.write(f"Provider:        {args.provider}\n")
-        tmp.write(f"Context type:    {context_type}\n")
-        tmp.write(f"Context size:    {args.context_size} tokens (actual native count: ~{true_token_count:,} tokens)\n")
-        tmp.write(f"Context msgs:    {len(trimmed_context)}\n")
-        tmp.write(f"Cache:           {cache_info}\n")
-        tmp.write(f"Total jobs:      {len(jobs)}\n")
-        tmp.write(f"Max tokens:      {args.max_tokens}\n\n")
-        tmp.write("=" * 80 + "\n")
-        tmp.write("FULL SAMPLE (as it will be sent to the model):\n")
-        tmp.write("=" * 80 + "\n\n")
-        # Full context messages, untruncated
-        for m in trimmed_context:
-            tmp.write(f"[{m['role'].upper()}]\n{m['content']}\n\n")
-        # The actual question appended after context
-        tmp.write("-" * 80 + "\n")
-        tmp.write("[USER]\n")
-        tmp.write(sample_job['post_context_prompt'] + "\n\n")
-        tmp.write(f"[GROUND TRUTH] {sample_job['ground_truth']}\n")
-        tmp.write("=" * 80 + "\n")
+    if not getattr(args, 'no_preview', False):
+        # Write a single randomly-picked full sample to a temp file for review before submitting
+        import tempfile
+        sample_job = random.choice(jobs)
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, prefix='seq_preview_') as tmp:
+            tmp_path = tmp.name
+            tmp.write("=" * 80 + "\n")
+            tmp.write("SEQUENTIAL SUBMISSION PREVIEW\n")
+            tmp.write("=" * 80 + "\n\n")
+            tmp.write(f"Model:           {args.model}\n")
+            tmp.write(f"Provider:        {args.provider}\n")
+            tmp.write(f"Context type:    {context_type}\n")
+            tmp.write(f"Context source:  {context_path}\n")
+            tmp.write(f"Context size:    {args.context_size} tokens (actual native count: ~{true_token_count:,} tokens)\n")
+            tmp.write(f"Context msgs:    {len(trimmed_context)}\n")
+            tmp.write(f"Cache:           {cache_info}\n")
+            tmp.write(f"Total jobs:      {len(jobs)}\n")
+            tmp.write(f"Max tokens:      {args.max_tokens}\n\n")
+            tmp.write("=" * 80 + "\n")
+            tmp.write("FULL SAMPLE (as it will be sent to the model):\n")
+            tmp.write("=" * 80 + "\n\n")
+            # Full context messages, untruncated
+            for m in trimmed_context:
+                tmp.write(f"[{m['role'].upper()}]\n{m['content']}\n\n")
+            # The actual question appended after context
+            tmp.write("-" * 80 + "\n")
+            tmp.write("[USER]\n")
+            tmp.write(sample_job['post_context_prompt'] + "\n\n")
+            tmp.write(f"[GROUND TRUTH] {sample_job['ground_truth']}\n")
+            tmp.write("=" * 80 + "\n")
 
-    print(f"\nPreview written to: {tmp_path}")
-    print("Open this file to review the context sample and example question.")
+        print(f"\nPreview written to: {tmp_path}")
+        print("Open this file to review the context sample and example question.")
 
-    user_input = input(f"\nSubmit {len(jobs)} jobs [{context_type}] sequentially to the cloud? Type 'Yes' to confirm: ")
+        user_input = input(f"\nSubmit {len(jobs)} jobs [{context_type}] sequentially to the cloud? Type 'Yes' to confirm: ")
 
-    # Always delete the temp preview file
-    try:
-        os.remove(tmp_path)
-    except OSError:
-        pass
+        # Always delete the temp preview file
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
 
-    if user_input.strip() != 'Yes':
-        print("Skipping.")
-        return None, None
+        if user_input.strip() != 'Yes':
+            print("Skipping.")
+            return None, None
+    else:
+        print(f"\nSkipping preview. Auto-submitting {len(jobs)} jobs [{context_type}] sequentially...")
 
     # Build context cache from the trimmed messages (always enabled)
+    ttl = args.cache_ttl if args.cache_ttl > 0 else 7200
     context_cache = build_context_cache_from_trimmed(
         args.provider, trimmed_context, args.model,
-        context_type=context_type, context_size=args.context_size
+        context_type=context_type, context_size=args.context_size,
+        ttl_seconds=ttl
     )
 
     print(f"Generating answers for {len(jobs)} jobs...")
@@ -417,53 +404,57 @@ def run_context_eval_batch(context_type, dataset, args, base_dir, timestamp):
     print(f"\nPreparing to submit {len(jobs)} jobs for context_type='{context_type}' ({context_token_count} context tokens)...")
     cache_info = f"will be generated upon confirmation"
     
-    # Write a single randomly-picked full sample to a temp file for review before submitting
-    import tempfile
-    sample_job = random.choice(jobs)
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, prefix='batch_preview_') as tmp:
-        tmp_path = tmp.name
-        tmp.write("=" * 80 + "\n")
-        tmp.write("BATCH SUBMISSION PREVIEW\n")
-        tmp.write("=" * 80 + "\n\n")
-        tmp.write(f"Model:           {args.model}\n")
-        tmp.write(f"Provider:        {args.provider}\n")
-        tmp.write(f"Context type:    {context_type}\n")
-        tmp.write(f"Context size:    {args.context_size} tokens (actual native count: ~{true_token_count:,} tokens)\n")
-        tmp.write(f"Context msgs:    {len(trimmed_context)}\n")
-        tmp.write(f"Cache:           {cache_info}\n")
-        tmp.write(f"Total jobs:      {len(jobs)}\n")
-        tmp.write(f"Max tokens:      {args.max_tokens}\n\n")
-        tmp.write("=" * 80 + "\n")
-        tmp.write("FULL SAMPLE (as it will be sent to the model):\n")
-        tmp.write("=" * 80 + "\n\n")
-        # Full context messages, untruncated
-        for m in trimmed_context:
-            tmp.write(f"[{m['role'].upper()}]\n{m['content']}\n\n")
-        # The actual question appended after context
-        tmp.write("-" * 80 + "\n")
-        tmp.write("[USER]\n")
-        tmp.write(sample_job['post_context_prompt'] + "\n\n")
-        tmp.write(f"[GROUND TRUTH] {sample_job['ground_truth']}\n")
-        tmp.write("=" * 80 + "\n")
+    if not getattr(args, 'no_preview', False):
+        # Write a single randomly-picked full sample to a temp file for review before submitting
+        import tempfile
+        sample_job = random.choice(jobs)
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, prefix='batch_preview_') as tmp:
+            tmp_path = tmp.name
+            tmp.write("=" * 80 + "\n")
+            tmp.write("BATCH SUBMISSION PREVIEW\n")
+            tmp.write("=" * 80 + "\n\n")
+            tmp.write(f"Model:           {args.model}\n")
+            tmp.write(f"Provider:        {args.provider}\n")
+            tmp.write(f"Context type:    {context_type}\n")
+            tmp.write(f"Context source:  {context_path}\n")
+            tmp.write(f"Context size:    {args.context_size} tokens (actual native count: ~{true_token_count:,} tokens)\n")
+            tmp.write(f"Context msgs:    {len(trimmed_context)}\n")
+            tmp.write(f"Cache:           {cache_info}\n")
+            tmp.write(f"Total jobs:      {len(jobs)}\n")
+            tmp.write(f"Max tokens:      {args.max_tokens}\n\n")
+            tmp.write("=" * 80 + "\n")
+            tmp.write("FULL SAMPLE (as it will be sent to the model):\n")
+            tmp.write("=" * 80 + "\n\n")
+            # Full context messages, untruncated
+            for m in trimmed_context:
+                tmp.write(f"[{m['role'].upper()}]\n{m['content']}\n\n")
+            # The actual question appended after context
+            tmp.write("-" * 80 + "\n")
+            tmp.write("[USER]\n")
+            tmp.write(sample_job['post_context_prompt'] + "\n\n")
+            tmp.write(f"[GROUND TRUTH] {sample_job['ground_truth']}\n")
+            tmp.write("=" * 80 + "\n")
 
-    print(f"\nPreview written to: {tmp_path}")
-    print("Open this file to review the context sample and example question.")
+        print(f"\nPreview written to: {tmp_path}")
+        print("Open this file to review the context sample and example question.")
 
-    user_input = input(f"\nSubmit {len(jobs)} jobs [{context_type}] to the cloud? Type 'Yes' to confirm: ")
+        user_input = input(f"\nSubmit {len(jobs)} jobs [{context_type}] to the cloud? Type 'Yes' to confirm: ")
 
-    # Always delete the temp preview file
-    try:
-        os.remove(tmp_path)
-    except OSError:
-        pass
+        # Always delete the temp preview file
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
 
-    if user_input.strip() != 'Yes':
-        print("Skipping.")
-        return
+        if user_input.strip() != 'Yes':
+            print("Skipping.")
+            return
+    else:
+        print(f"\nSkipping preview. Auto-submitting {len(jobs)} jobs [{context_type}] to the cloud...")
 
     # Build context cache from the trimmed messages
-    # Give batches a 48-hour cache TTL so they survive queue delays
-    ttl_seconds = 172800 
+    # Give batches a 48-hour cache TTL so they survive queue delays unless overridden
+    ttl_seconds = args.cache_ttl if args.cache_ttl > 0 else 172800 
     context_cache = build_context_cache_from_trimmed(
         args.provider, trimmed_context, args.model,
         context_type=context_type, context_size=args.context_size,
@@ -529,34 +520,26 @@ def main():
                         help="API provider (google, anthropic, openai). Inferred from model name if omitted.")
     parser.add_argument("--batch", action="store_true",
                         help="Submit as async batch jobs instead of running sequentially.")
-    parser.add_argument("--context_types", type=str, default="math,text",
-                        help="Comma-separated context types to run. Default: 'math,text'.")
+    parser.add_argument("--context_type", type=str, required=True,
+                        help="Type of the context being evaluated (e.g. math or text) for consistent logging.")
+    parser.add_argument("--context_file", type=str, required=True,
+                        help="Exact path to the specific context JSON wrapper file to use.")
     parser.add_argument("--sleep", type=int, default=0,
                         help="Seconds to sleep between each sequential API job (e.g. 60) to avoid TPM rate limits.")
+    parser.add_argument("--cache_ttl", type=int, default=0,
+                        help="Exact cache TTL in seconds. Default 0 uses 7200s (seq) or 172800s (batch).")
+    parser.add_argument("--no_preview", action="store_true",
+                        help="Skip terminal preview and manual user validation prompt.")
 
     args = parser.parse_args()
+    if not args.provider:
+        args.provider = infer_provider(args.model)
+    provider = args.provider
 
     random.seed(args.seed)
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    context_types = [t.strip() for t in args.context_types.split(',') if t.strip()]
-
-    # Infer provider
-    provider = args.provider or infer_provider(args.model)
-    if not provider:
-        raise ValueError(f"Cannot infer provider from model '{args.model}'. Specify --provider.")
-    args.provider = provider
-
     print(f"Model: {args.model} | Provider: {provider} | Batch: {args.batch} | context_size: {args.context_size}")
-    print(f"Context types: {context_types} | Caching: ENABLED")
-
-    # Ensure provider is correctly identified
-    provider = args.provider or infer_provider(args.model)
-    if not provider:
-        raise ValueError(f"Cannot infer provider from model '{args.model}'. Specify --provider.")
-    args.provider = provider
-
-    print(f"Model: {args.model} | Provider: {provider} | Batch: {args.batch} | context_size: {args.context_size}")
-    print(f"Context types: {context_types} | Caching: ENABLED")
+    print(f"Context file: {args.context_file} | Type: {args.context_type} | Caching: ENABLED")
 
     # Load dataset
     print(f"Loading dataset: {args.dataset}...")
@@ -569,16 +552,15 @@ def main():
     all_stats = {}
     all_paths = {}
 
-    for context_type in context_types:
-        if args.batch:
-            run_context_eval_batch(context_type, dataset, args, base_dir, timestamp)
-        else:
-            stats, out_path = run_context_eval_sequential(
-                context_type, dataset, args, base_dir, timestamp
-            )
-            if stats is not None:
-                all_stats[context_type] = stats
-                all_paths[context_type] = out_path
+    if args.batch:
+        run_context_eval_batch(args.context_type, dataset, args, base_dir, timestamp)
+    else:
+        stats, out_path = run_context_eval_sequential(
+            args.context_type, dataset, args, base_dir, timestamp
+        )
+        if stats is not None:
+            all_stats[args.context_type] = stats
+            all_paths[args.context_type] = out_path
 
     # Summary (sequential mode only)
     if not args.batch and all_stats:
