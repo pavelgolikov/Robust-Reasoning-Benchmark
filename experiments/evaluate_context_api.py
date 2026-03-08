@@ -575,20 +575,20 @@ def main():
         for ct, path in all_paths.items():
             print(f"  {ct}: {path}")
 
-        # Save combined comparison
-        safe_model = args.model.replace('/', '_')
-        safe_dataset = args.dataset.replace('/', '_')
-        dirs = os.path.join(base_dir, "context_saturation", "results_context", safe_model, safe_dataset)
-        os.makedirs(dirs, exist_ok=True)
-        comparison_path = os.path.join(dirs, f"comparison_{args.context_size}_{safe_model}_{timestamp}.json")
-        with open(comparison_path, 'w') as f:
-            json.dump({
-                "metadata": {"model": args.model, "dataset": args.dataset,
-                              "context_size": args.context_size, "context_types": list(all_stats.keys())},
-                "comparison": {ct: {"statistics": st, "results_file": all_paths[ct]}
-                               for ct, st in all_stats.items()},
-            }, f, indent=2)
-        print(f"\nSaved comparison to {comparison_path}")
+        # # Save combined comparison
+        # safe_model = args.model.replace('/', '_')
+        # safe_dataset = args.dataset.replace('/', '_')
+        # dirs = os.path.join(base_dir, "context_saturation", "results_context", safe_model, safe_dataset)
+        # os.makedirs(dirs, exist_ok=True)
+        # comparison_path = os.path.join(dirs, f"comparison_{args.context_size}_{safe_model}_{timestamp}.json")
+        # with open(comparison_path, 'w') as f:
+        #     json.dump({
+        #         "metadata": {"model": args.model, "dataset": args.dataset,
+        #                       "context_size": args.context_size, "context_types": list(all_stats.keys())},
+        #         "comparison": {ct: {"statistics": st, "results_file": all_paths[ct]}
+        #                        for ct, st in all_stats.items()},
+        #     }, f, indent=2)
+        # print(f"\nSaved comparison to {comparison_path}")
 
 
 if __name__ == "__main__":

@@ -1,13 +1,23 @@
+nohup: ignoring input
 /home/golikovp/Antigravity/Linguistic_traps/experiments/util.py:82: SyntaxWarning: invalid escape sequence '\%'
   """
 /home/golikovp/miniconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:827: UserWarning: Can't initialize NVML
   warnings.warn("Can't initialize NVML")
-2026-03-07 22:58:01,572 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:countTokens "HTTP/1.1 200 OK"
-2026-03-07 22:58:01,577 - INFO - The user provided project/location will take precedence over the Vertex AI API key from the environment variable.
-2026-03-07 22:58:01,604 - INFO - AFC is enabled with max remote calls: 10.
-2026-03-07 22:58:30,040 - INFO - HTTP Request: POST https://aiplatform.googleapis.com/v1beta1/projects/gen-lang-client-0380290667/locations/global/publishers/google/models/gemini-3.1-pro-preview:generateContent "HTTP/1.1 200 OK"
-2026-03-07 22:59:30,094 - INFO - The user provided project/location will take precedence over the Vertex AI API key from the environment variable.
-2026-03-07 22:59:30,117 - INFO - AFC is enabled with max remote calls: 10.
+2026-03-07 23:22:54,516 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:countTokens "HTTP/1.1 200 OK"
+2026-03-07 23:22:54,522 - INFO - The user provided project/location will take precedence over the Vertex AI API key from the environment variable.
+2026-03-07 23:22:57,632 - INFO - HTTP Request: POST https://aiplatform.googleapis.com/v1beta1/projects/gen-lang-client-0380290667/locations/global/cachedContents "HTTP/1.1 200 OK"
+2026-03-07 23:22:57,637 - INFO - The user provided project/location will take precedence over the Vertex AI API key from the environment variable.
+2026-03-07 23:22:57,678 - INFO - AFC is enabled with max remote calls: 10.
+2026-03-07 23:23:49,145 - INFO - HTTP Request: POST https://aiplatform.googleapis.com/v1beta1/projects/gen-lang-client-0380290667/locations/global/publishers/google/models/gemini-3.1-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026-03-07 23:24:49,199 - INFO - The user provided project/location will take precedence over the Vertex AI API key from the environment variable.
+2026-03-07 23:24:49,223 - INFO - AFC is enabled with max remote calls: 10.
+2026-03-07 23:26:51,977 - INFO - HTTP Request: POST https://aiplatform.googleapis.com/v1beta1/projects/gen-lang-client-0380290667/locations/global/publishers/google/models/gemini-3.1-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026-03-07 23:27:52,181 - INFO - The user provided project/location will take precedence over the Vertex AI API key from the environment variable.
+2026-03-07 23:27:52,204 - INFO - AFC is enabled with max remote calls: 10.
+2026-03-07 23:34:24,715 - INFO - HTTP Request: POST https://aiplatform.googleapis.com/v1beta1/projects/gen-lang-client-0380290667/locations/global/publishers/google/models/gemini-3.1-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026-03-07 23:35:24,807 - INFO - The user provided project/location will take precedence over the Vertex AI API key from the environment variable.
+2026-03-07 23:35:24,831 - INFO - AFC is enabled with max remote calls: 10.
+2026-03-07 23:40:24,720 - INFO - HTTP Request: POST https://aiplatform.googleapis.com/v1beta1/projects/gen-lang-client-0380290667/locations/global/publishers/google/models/gemini-3.1-pro-preview:generateContent "HTTP/1.1 200 OK"
 Model: gemini-3.1-pro-preview | Provider: google | Batch: False | context_size: 16000
 Context file: experiments/context_math_16K_google.json | Type: math | Caching: ENABLED
 Loading dataset: HuggingFaceH4/aime_2024...
@@ -26,104 +36,30 @@ Preparing to submit 4 jobs for context_type='math' (16000 context tokens)...
 
 Skipping preview. Auto-submitting 4 jobs [math] sequentially...
 Checking for existing Google AI Studio context cache...
-Found active existing context cache: projects/1077084806582/locations/global/cachedContents/4383026976110149632
+Creating new Google AI Studio context cache from trimmed context...
+Creating cache in Vertex AI mode (project=gen-lang-client-0380290667, location=global)
+Created Google context cache: projects/1077084806582/locations/global/cachedContents/8943132705055309824 (model=gemini-3.1-pro-preview, ttl=1200s, 9 messages)
 Generating answers for 4 jobs...
 [math] Job 1/4 (ID: 60)...
 Initialized GoogleProvider in Vertex AI mode (project=gen-lang-client-0380290667, location=global)
   Pacing sequential request: Sleeping for 60s to respect Cloud TPM limits...
 [math] Job 2/4 (ID: 61)...
 Initialized GoogleProvider in Vertex AI mode (project=gen-lang-client-0380290667, location=global)
-Traceback (most recent call last):
-  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 595, in <module>
-    main()
-  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 558, in main
-    stats, out_path = run_context_eval_sequential(
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 250, in run_context_eval_sequential
-    generated_text = generate_response(
-                     ^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/api_utils.py", line 224, in generate_response
-    return llm_provider.generate(messages, model_name, temperature, max_tokens, **extra_kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/api_utils.py", line 68, in generate
-    response = self.client.models.generate_content(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/google/genai/models.py", line 5644, in generate_content
-    response = self._generate_content(
-               ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/google/genai/models.py", line 4306, in _generate_content
-    response = self._api_client.request(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/google/genai/_api_client.py", line 1401, in request
-    response = self._request(http_request, http_options, stream=False)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/google/genai/_api_client.py", line 1237, in _request
-    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/tenacity/__init__.py", line 467, in __call__
-    do = self.iter(retry_state=retry_state)
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/tenacity/__init__.py", line 368, in iter
-    result = action(retry_state)
-             ^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/tenacity/__init__.py", line 390, in <lambda>
-    self._add_action_func(lambda rs: rs.outcome.result())
-                                     ^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/concurrent/futures/_base.py", line 449, in result
-    return self.__get_result()
-           ^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
-    raise self._exception
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/tenacity/__init__.py", line 470, in __call__
-    result = fn(*args, **kwargs)
-             ^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/google/genai/_api_client.py", line 1207, in _request_once
-    response = self._httpx_client.request(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
-    response = self._send_handling_auth(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
-    response = self._send_handling_redirects(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
-    response = self._send_single_request(request)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
-    response = transport.handle_request(request)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpx/_transports/default.py", line 250, in handle_request
-    resp = self._pool.handle_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
-    raise exc from None
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
-    response = connection.handle_request(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
-    return self._connection.handle_request(request)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 136, in handle_request
-    raise exc
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 106, in handle_request
-    ) = self._receive_response_headers(**kwargs)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 177, in _receive_response_headers
-    event = self._receive_event(timeout=timeout)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 217, in _receive_event
-    data = self._network_stream.read(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 128, in read
-    return self._sock.recv(max_bytes)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/ssl.py", line 1233, in recv
-    return self.read(buflen)
-           ^^^^^^^^^^^^^^^^^
-  File "/home/golikovp/miniconda3/lib/python3.12/ssl.py", line 1106, in read
-    return self._sslobj.read(len)
-           ^^^^^^^^^^^^^^^^^^^^^^
-KeyboardInterrupt
+  Pacing sequential request: Sleeping for 60s to respect Cloud TPM limits...
+[math] Job 3/4 (ID: 62)...
+Initialized GoogleProvider in Vertex AI mode (project=gen-lang-client-0380290667, location=global)
+  Pacing sequential request: Sleeping for 60s to respect Cloud TPM limits...
+[math] Job 4/4 (ID: 63)...
+Initialized GoogleProvider in Vertex AI mode (project=gen-lang-client-0380290667, location=global)
+
+--- MATH Results ---
+Accuracy: 50.00% (2/4)
+Saved math results to /home/golikovp/Antigravity/Linguistic_traps/experiments/context_saturation/results_context/gemini-3.1-pro-preview/HuggingFaceH4_aime_2024/results_predef_math_16000_gemini-3.1-pro-preview_20260307_232253.json
+
+============================================================
+  COMPARISON SUMMARY  (context_size=16000)
+============================================================
+Type     | Accuracy           | Correct    | Total 
+---------+--------------------+------------+-------
+math     | 50.00%             | 2          | 4     
+  math: /home/golikovp/Antigravity/Linguistic_traps/experiments/context_saturation/results_context/gemini-3.1-pro-preview/HuggingFaceH4_aime_2024/results_predef_math_16000_gemini-3.1-pro-preview_20260307_232253.json
