@@ -250,6 +250,7 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
             generated_text = generate_response(
                 job['messages'], args.model,
                 provider=args.provider,
+                temperature=args.temperature,
                 max_tokens=args.max_tokens,
                 context_cache=context_cache,
             )
@@ -464,6 +465,7 @@ def run_context_eval_batch(context_type, dataset, args, base_dir, timestamp):
     batch_info = submit_batch(
         jobs, args.model,
         provider=args.provider,
+        temperature=args.temperature,
         max_tokens=args.max_tokens,
         context_cache=context_cache,
     )
@@ -490,7 +492,7 @@ def run_context_eval_batch(context_type, dataset, args, base_dir, timestamp):
         "context_token_count": context_token_count,
         "timestamp": timestamp,
         "max_tokens": args.max_tokens,
-        "temperature": 0.7,
+        "temperature": args.temperature,
         "jobs_file": jobs_file,
         "status": batch_info.get("status", "SUBMITTED"),
         "metadata": batch_info,
@@ -516,6 +518,7 @@ def main():
     parser.add_argument("--context_size", type=int, required=True,
                         help="Target context size in tokens (e.g. 250000 for 25%% of 1M context).")
     parser.add_argument("--max_tokens", type=int, required=True, help="Max output tokens.")
+    parser.add_argument("--temperature", type=float, default=0.7, help="Generation temperature.")
     parser.add_argument("--provider", type=str, default=None,
                         help="API provider (google, anthropic, openai). Inferred from model name if omitted.")
     parser.add_argument("--batch", action="store_true",

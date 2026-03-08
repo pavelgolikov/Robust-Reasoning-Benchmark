@@ -18,6 +18,7 @@ def main():
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--provider", type=str, default=None, help="API Provider (google, openai, anthropic). Optional if model name implies it.")
     parser.add_argument("--max_tokens", type=int, default=32768, help="Max output tokens (required to avoid accidental truncation).")
+    parser.add_argument("--temperature", type=float, default=0.7, help="Generation temperature.")
     parser.add_argument("--batch", action="store_true", help="Submit as an async batch job instead of running sequentially")
     
     args = parser.parse_args()
@@ -140,9 +141,9 @@ def main():
                 print("Skipping batch submission.")
                 continue
                 
-            batch_info = submit_batch(jobs, args.model, provider=args.provider, max_tokens=args.max_tokens)
+            batch_info = submit_batch(jobs, args.model, provider=args.provider, max_tokens=args.max_tokens, temperature=args.temperature)
             print(f"Batch submitted successfully! Info: {batch_info}")
-            print(f"Max Tokens: {args.max_tokens}, Temperature: 0.7")
+            print(f"Max Tokens: {args.max_tokens}, Temperature: {args.temperature}")
             
             experiment_dir = os.path.join(base_dir, exp_name)
             final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
@@ -159,7 +160,7 @@ def main():
                 "experiment": exp_name,
                 "timestamp": timestamp,
                 "max_tokens": args.max_tokens,
-                "temperature": 0.7,
+                "temperature": args.temperature,
                 "jobs_file": jobs_file,
                 "status": batch_info.get("status", "SUBMITTED"),
                 "metadata": batch_info
@@ -184,6 +185,7 @@ def main():
                     job['messages'], 
                     args.model, 
                     provider=args.provider, 
+                    temperature=args.temperature,
                     max_tokens=args.max_tokens
                 )
             except Exception as e:
@@ -236,7 +238,7 @@ def main():
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
         print(f"\n  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
         print(f"  Failures: {stats['failures']}")
-        print(f"  Max Tokens: {args.max_tokens}, Temperature: 0.7")
+        print(f"  Max Tokens: {args.max_tokens}, Temperature: {args.temperature}")
         
         results.append({
             "summary": {
@@ -245,7 +247,7 @@ def main():
                 "total": stats["total"],
                 "failures": stats["failures"],
                 "max_tokens": args.max_tokens,
-                "temperature": 0.7
+                "temperature": args.temperature
             }
         })
         

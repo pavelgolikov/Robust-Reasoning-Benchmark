@@ -91,17 +91,17 @@ class OpenAIProvider(LLMProvider):
             "messages": final_messages,
         }
         
-        # Check if model supports standard parameters or requires new o1-style params
+        # Check if model supports standard parameters or requires new o1/gpt-5 style params
         is_o1 = "o1" in model_name.lower() or "gpt-5" in model_name.lower()
         
         if is_o1:
-            # o1 and newer models use 'max_completion_tokens' instead of 'max_tokens'
-            # and may not support 'temperature' (fixed at 1.0 often)
+            # Drop temperature entirely for reasoning models
+            # In GPT-5.4, reasoning models use 'max_completion_tokens'
             if max_tokens:
                 kwargs["max_completion_tokens"] = max_tokens
-            # Omit temperature for o1 unless supported in future
+            if "gpt-5" in model_name.lower():
+                kwargs["reasoning_effort"] = "high"
         else:
-            # Standard ChatCompletion models (gpt-4o, gpt-3.5, etc.) and compatible APIs
             if max_tokens:
                 kwargs["max_tokens"] = max_tokens
             kwargs["temperature"] = temperature
@@ -442,6 +442,8 @@ class OpenAIBatchProvider(BatchProvider):
             }
             if is_o1:
                 if max_tokens: body["max_completion_tokens"] = max_tokens
+                if "gpt-5" in model_name.lower():
+                    body["reasoning_effort"] = "high"
             else:
                 if max_tokens: body["max_tokens"] = max_tokens
                 body["temperature"] = temperature
