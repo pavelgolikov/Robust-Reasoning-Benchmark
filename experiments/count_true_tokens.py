@@ -73,7 +73,12 @@ async def measure_tokens_native_check(provider, model_name, raw_messages):
     try:
         if provider == "openai":
             text = "".join(m['content'] for m in raw_messages)
-            enc = tiktoken.encoding_for_model(model_name)
+            try:
+                enc = tiktoken.encoding_for_model(model_name)
+            except Exception:
+                # If the exact model name is unrecognized by tiktoken (e.g. gpt-5.4),
+                # fallback to the latest standard encoding.
+                enc = tiktoken.get_encoding("o200k_base")
             return len(enc.encode(text))
             
         elif provider == "anthropic":

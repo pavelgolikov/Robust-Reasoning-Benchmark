@@ -1,0 +1,87 @@
+/home/golikovp/Antigravity/Linguistic_traps/experiments/util.py:82: SyntaxWarning: invalid escape sequence '\%'
+  """
+/home/golikovp/miniconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:827: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+Model: claude-opus-4-6 | Provider: anthropic | Batch: True | context_size: 16000
+Context file: experiments/context_saturation/contexts/context_math_16K_anthropic.json | Type: math | Caching: ENABLED
+Loading dataset: HuggingFaceH4/aime_2024...
+Dataset size: 30 examples. Samples per problem: 1
+
+============================================================
+  Preparing batch: MATH
+============================================================
+Loading context from experiments/context_saturation/contexts/context_math_16K_anthropic.json (Target: 16000 tokens)...
+  Loaded precomputed context: 8 messages, target: ~16000 tokens
+
+[PRE-FLIGHT] Verifying true context length against native API (anthropic:claude-opus-4-6)...
+Traceback (most recent call last):
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 595, in <module>
+    main()
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 556, in main
+    run_context_eval_batch(args.context_type, dataset, args, base_dir, timestamp)
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 364, in run_context_eval_batch
+    from count_true_tokens import measure_tokens_native_check
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/count_true_tokens.py", line 4, in <module>
+    from anthropic import AsyncAnthropic
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/anthropic/__init__.py", line 99, in <module>
+    from .lib.tools import beta_tool, beta_async_tool
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/anthropic/lib/tools/__init__.py", line 1, in <module>
+    from ._beta_runner import BetaToolRunner, BetaAsyncToolRunner, BetaStreamingToolRunner, BetaAsyncStreamingToolRunner
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/anthropic/lib/tools/_beta_runner.py", line 24, in <module>
+    from ...types.beta import BetaMessage, BetaContentBlock, BetaMessageParam
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/anthropic/types/beta/__init__.py", line 49, in <module>
+    from .skill_retrieve_response import SkillRetrieveResponse as SkillRetrieveResponse
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/anthropic/types/beta/skill_retrieve_response.py", line 10, in <module>
+    class SkillRetrieveResponse(BaseModel):
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/pydantic/_internal/_model_construction.py", line 242, in __new__
+    set_model_fields(cls, config_wrapper=config_wrapper, ns_resolver=ns_resolver)
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/pydantic/_internal/_model_construction.py", line 566, in set_model_fields
+    fields, class_vars = collect_model_fields(cls, config_wrapper, ns_resolver, typevars_map=typevars_map)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py", line 283, in collect_model_fields
+    assigned_value = getattr(cls, ann_name, PydanticUndefined)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 7, in <module>
+    from datasets import load_dataset
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/datasets/__init__.py", line 17, in <module>
+    from .arrow_dataset import Column, Dataset
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/datasets/arrow_dataset.py", line 104, in <module>
+    from .formatting import format_table, get_format_type_from_alias, get_formatter, query_table
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/datasets/formatting/__init__.py", line 91, in <module>
+    from .torch_formatter import TorchFormatter
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/datasets/formatting/torch_formatter.py", line 32, in <module>
+    import torch
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/torch/__init__.py", line 2878, in <module>
+    _import_device_backends()
+  File "/home/golikovp/miniconda3/lib/python3.12/site-packages/torch/__init__.py", line 2828, in _import_device_backends
+    backend_extensions = entry_points(group=group_name)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 912, in entry_points
+    return EntryPoints(eps).select(**params)
+           ^^^^^^^^^^^^^^^^
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 910, in <genexpr>
+    dist.entry_points for dist in _unique(distributions())
+    ^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 471, in entry_points
+    return EntryPoints._from_text_for(self.read_text('entry_points.txt'), self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 312, in _from_text_for
+    return cls(ep._for(dist) for ep in cls._from_text(text))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 312, in <genexpr>
+    return cls(ep._for(dist) for ep in cls._from_text(text))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 316, in <genexpr>
+    return (
+           ^
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 103, in <genexpr>
+    return (
+           ^
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 113, in read
+    for value in lines:
+  File "/home/golikovp/miniconda3/lib/python3.12/importlib/metadata/__init__.py", line 120, in valid
+    @staticmethod
+
+KeyboardInterrupt

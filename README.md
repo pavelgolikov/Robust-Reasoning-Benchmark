@@ -29,6 +29,7 @@ non-transformed question is asked.
 For now we test context saturation only on the closed-source models as they are the most interesting to evaluate.
 Please familiarize yourself with the repo. Ask any questions you may have.
 
+
 Evaluation:
 Datasets:
 HuggingFaceH4/aime_2024 - 30/30
@@ -81,13 +82,36 @@ A, B, C, D - 4 upper_variables
 Alice, Bob, Carol, David - 4 names
 
 
-nohup python experiments/evaluate_context_api.py \
-   --model gemini-3.1-pro-preview \
+<!-- nohup python experiments/evaluate_context_api.py \
+   --model gemini-3-1-pro-preview \
    --context_size 750000 \
    --n_samples 1 \
    --max_tokens 32000 \
-   --context_file experiments/context_math_750K_google.json \
+   --context_file experiments/context_saturation/contexts/context_math_750K_google.json \
    --sleep 60 \
-   --cache_ttl 21600 \
+   --cache_ttl 7200 \
    --context_type math \
-   --no_preview &> eval_api.out &
+   --no_preview &> eval_api_gemini31.out & -->
+   
+   
+<!-- python experiments/evaluate_context_api.py \
+   --model claude-opus-4-6 \
+   --context_size 750000 \
+   --n_samples 1 \
+   --limit 4 \
+   --max_tokens 32000 \
+   --context_file experiments/context_saturation/contexts/context_math_750K_anthropic.json \
+   --context_type math \
+   --batch &> eval_api_claude46.out & -->
+
+
+python experiments/evaluate_context_api.py \
+   --model gpt-5-4 \
+   --context_size 16000 \
+   --n_samples 1 \
+   --limit 4 \
+   --max_tokens 32000 \
+   --context_file experiments/context_saturation/contexts/context_math_16K_openai.json \
+   --batch \
+   --context_type math \
+   --no_preview &> eval_api_gpt54.out &

@@ -92,10 +92,10 @@ class OpenAIProvider(LLMProvider):
         }
         
         # Check if model supports standard parameters or requires new o1-style params
-        is_o1 = "o1" in model_name.lower()
+        is_o1 = "o1" in model_name.lower() or "gpt-5" in model_name.lower()
         
         if is_o1:
-            # o1 models (beta) use 'max_completion_tokens' instead of 'max_tokens'
+            # o1 and newer models use 'max_completion_tokens' instead of 'max_tokens'
             # and may not support 'temperature' (fixed at 1.0 often)
             if max_tokens:
                 kwargs["max_completion_tokens"] = max_tokens
@@ -426,7 +426,7 @@ class OpenAIBatchProvider(BatchProvider):
 
     def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7, context_cache=None):
         # 1. Create JSONL
-        is_o1 = "o1" in model_name.lower()
+        is_o1 = "o1" in model_name.lower() or "gpt-5" in model_name.lower()
         jsonl_lines = []
         for job in jobs:
             final_messages = []

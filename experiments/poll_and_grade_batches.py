@@ -21,7 +21,9 @@ def check_openai_batch(batch_id):
     from openai import OpenAI
     client = OpenAI()
     batch = client.batches.retrieve(batch_id)
-    return batch.status, getattr(batch, "output_file_id", None)
+    # Return output_file_id if available, fallback to error_file_id if the batch failed structurally
+    output_ref = getattr(batch, "output_file_id", None) or getattr(batch, "error_file_id", None)
+    return batch.status, output_ref
 
 def download_openai_batch(file_id, out_path):
     from openai import OpenAI
@@ -418,6 +420,9 @@ def main():
                 "system_prompt": job.get('system_prompt', ''),
                 "original": job.get('original', job.get('post_context_prompt', '')),
                 "unmodified_original": job.get('unmodified_original', job.get('post_context_prompt', '')),
+                "context_preview": job.get('context_preview', ''),
+                "distractor_token_count": job.get('distractor_token_count', 0),
+                "context_type": job.get('context_type', ''),
                 "ground_truth": job['ground_truth'],
                 "output": generated_text,
                 "extracted": extracted,
