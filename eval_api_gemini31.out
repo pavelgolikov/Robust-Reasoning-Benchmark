@@ -1,0 +1,31 @@
+nohup: ignoring input
+/home/golikovp/Antigravity/Linguistic_traps/experiments/util.py:82: SyntaxWarning: invalid escape sequence '\%'
+  """
+/home/golikovp/miniconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:827: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+2026-03-08 11:54:24,984 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-1-pro-preview:countTokens "HTTP/1.1 404 Not Found"
+Token count error native: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-3-1-pro-preview is not found for API version v1beta, or is not supported for countTokens. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+Model: gemini-3-1-pro-preview | Provider: google | Batch: False | context_size: 750000
+Context file: experiments/context_saturation/contexts/context_math_750K_google.json | Type: math | Caching: ENABLED
+Loading dataset: HuggingFaceH4/aime_2024...
+Dataset size: 30 examples. Samples per problem: 3
+
+============================================================
+  Running context evaluation (sequential): MATH
+============================================================
+Loading context from experiments/context_saturation/contexts/context_math_750K_google.json (Target: 750000 tokens)...
+  Loaded precomputed context: 371 messages, target: ~750000 tokens
+
+[PRE-FLIGHT] Verifying true context length against native API (google:gemini-3-1-pro-preview)...
+[PRE-FLIGHT] Native Token Count: -1 tokens (Target: 750,000)
+Traceback (most recent call last):
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 595, in <module>
+    main()
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 558, in main
+    stats, out_path = run_context_eval_sequential(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 158, in run_context_eval_sequential
+    raise e
+  File "/home/golikovp/Antigravity/Linguistic_traps/experiments/evaluate_context_api.py", line 155, in run_context_eval_sequential
+    raise ValueError(f"CRITICAL: True '{args.model}' token count ({true_token_count:,}) deviates significantly from target ({args.context_size:,}). Aborting to save budget.")
+ValueError: CRITICAL: True 'gemini-3-1-pro-preview' token count (-1) deviates significantly from target (750,000). Aborting to save budget.

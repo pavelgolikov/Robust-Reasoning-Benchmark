@@ -82,7 +82,7 @@ A, B, C, D - 4 upper_variables
 Alice, Bob, Carol, David - 4 names
 
 
-<!-- nohup python experiments/evaluate_context_api.py \
+nohup python experiments/evaluate_context_api.py \
    --model gemini-3-1-pro-preview \
    --context_size 750000 \
    --n_samples 1 \
@@ -91,18 +91,17 @@ Alice, Bob, Carol, David - 4 names
    --sleep 60 \
    --cache_ttl 7200 \
    --context_type math \
-   --no_preview &> eval_api_gemini31.out & -->
+   --no_preview &> eval_api_gemini31.out &
    
    
-<!-- python experiments/evaluate_context_api.py \
+python experiments/evaluate_context_api.py \
    --model claude-opus-4-6 \
    --context_size 750000 \
    --n_samples 1 \
-   --limit 4 \
    --max_tokens 32000 \
    --context_file experiments/context_saturation/contexts/context_math_750K_anthropic.json \
    --context_type math \
-   --batch &> eval_api_claude46.out & -->
+   --batch
 
 
 python experiments/evaluate_context_api.py \
@@ -112,6 +111,6 @@ python experiments/evaluate_context_api.py \
    --limit 4 \
    --max_tokens 32000 \
    --context_file experiments/context_saturation/contexts/context_math_16K_openai.json \
-   --batch \
    --context_type math \
-   --no_preview &> eval_api_gpt54.out &
+   --batch \
+   --no_preview
