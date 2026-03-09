@@ -7,22 +7,81 @@ from datasets import load_dataset
 from util import get_prompts, remove_latex_comments, BASELINE_SYSTEM_PROMPT, extract_and_grade
 
 
-from trim_context import trim_context
+# from trim_context import trim_context
 
 
 def resolve_context_path(context_type):
     """Resolve the context file path for a given type ('math' or 'text')."""
-    # Try multiple naming conventions in both project-root and cwd-relative paths
-    candidates = [
-        f"experiments/context_{context_type}_1M.json",
-        f"experiments/context_{context_type}.json",
-        f"context_{context_type}_1M.json",
-        f"context_{context_type}.json",
-    ]
-    for path in candidates:
-        if os.path.exists(path):
-            return path
-    return None
+    base_path = "/home/golikovp/Antigravity/Linguistic_traps/experiments/context_saturation/contexts"
+    if context_type == "math":
+        path = os.path.join(base_path, "context_math_1M.json")
+    else:
+        path = os.path.join(base_path, "context_text_1M.json")
+    
+    if os.path.exists(path):
+        return path
+    raise FileNotFoundError(f"Required context file not found: {path}")
+
+
+def generate_trimmed_context(tokenizer, context_path, target_size):
+    """Binary search to find exact message count for target_size."""
+    with open(context_path, 'r') as f:
+        messages = json.load(f)
+    
+    # Strip any existing system prompts from the master file to avoid duplicates
+    messages = [m for m in messages if m['role'] != 'system']
+    
+    # Phase 1: Binary search on full messages
+    low = 0
+    high = len(messages)
+    best_k = 0
+    
+    system_msg = {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
+
+    print(f"  Phase 1: Binary search on {len(messages)} full messages for {target_size} tokens...")
+    
+    while low <= high:
+        mid = (low + high) // 2
+        test_chunk = [system_msg] + messages[:mid]
+        tokens = tokenizer.apply_chat_template(test_chunk, tokenize=True, add_generation_prompt=False)
+        if len(tokens) <= target_size:
+            best_k = mid
+            low = mid + 1
+        else:
+            high = mid - 1
+
+    result_msgs = [system_msg] + messages[:best_k]
+    current_tokens = len(tokenizer.apply_chat_template(result_msgs, tokenize=True, add_generation_prompt=False))
+    
+    # Phase 2: Word-level truncation of the NEXT message if we are still under target
+    if current_tokens < target_size and best_k < len(messages):
+        print(f"  Phase 2: Truncating next message (words) to fill remaining {target_size - current_tokens} tokens...")
+        next_msg = messages[best_k]
+        words = next_msg['content'].split()
+        
+        low_w = 0
+        high_w = len(words)
+        best_w = 0
+        
+        while low_w <= high_w:
+            mid_w = (low_w + high_w) // 2
+            partial_content = " ".join(words[:mid_w])
+            test_chunk = result_msgs + [{"role": next_msg['role'], "content": partial_content}]
+            tokens = tokenizer.apply_chat_template(test_chunk, tokenize=True, add_generation_prompt=False)
+            
+            if len(tokens) <= target_size:
+                best_w = mid_w
+                low_w = mid_w + 1
+            else:
+                high_w = mid_w - 1
+        
+        if best_w > 0:
+            result_msgs.append({"role": next_msg['role'], "content": " ".join(words[:best_w])})
+
+    final_count = len(tokenizer.apply_chat_template(result_msgs, tokenize=True, add_generation_prompt=False))
+    print(f"  Final context built: {len(result_msgs)} messages. Total tokens: {final_count} (Target: {target_size})")
+    
+    return result_msgs
 
 
 def run_context_eval(context_type, dataset, tokenizer, llm, sampling_params, args):
@@ -39,16 +98,8 @@ def run_context_eval(context_type, dataset, tokenizer, llm, sampling_params, arg
     print(f"{'='*60}")
 
     # Load and Truncate Context
-    trimmed_context = trim_context(context_path, args.model, args.context_size, tokenizer=tokenizer)
-
-    # Override System Prompt
-    if trimmed_context and trimmed_context[0]['role'] == 'system':
-        if context_type == 'text':
-            print(f"Overriding system prompt (was: {trimmed_context[0]['content'][:80]}...)")
-            trimmed_context[0]['content'] = BASELINE_SYSTEM_PROMPT
-    else:
-        print("Inserting system prompt...")
-        trimmed_context.insert(0, {'role': 'system', 'content': BASELINE_SYSTEM_PROMPT})
+    # trimmed_context = trim_context(context_path, args.model, args.context_size, tokenizer=tokenizer)
+    trimmed_context = generate_trimmed_context(tokenizer, context_path, args.context_size)
 
     # Calculate context tokens once
     context_token_count = len(tokenizer.apply_chat_template(trimmed_context, tokenize=True, add_generation_prompt=False))
@@ -117,8 +168,9 @@ def run_context_eval(context_type, dataset, tokenizer, llm, sampling_params, arg
             "correct": is_correct,
             "system_prompt": BASELINE_SYSTEM_PROMPT,
             "temperature": 0.7,
-            "max_model_length": args.max_model_length,
+            "context_win_total": args.context_win_total,
             "distractor_token_count": context_token_count,
+            "max_output_tokens": args.max_output_tokens,
             "model_output_token_count": output_len
         })
 
@@ -168,7 +220,8 @@ def main():
     parser.add_argument("--n_samples", type=int, default=1, help="Samples per problem")
     parser.add_argument("--context_size", type=int, required=True, help="Target context size in tokens")
     parser.add_argument("--num_gpus", type=int, default=1)
-    parser.add_argument("--max_model_length", type=int, default=65536)
+    parser.add_argument("--context_win_total", type=int, default=65536, help="Total context window capacity")
+    parser.add_argument("--max_output_tokens", type=int, default=4096, help="Max generated tokens")
     parser.add_argument("--dry", action="store_true", help="Dry run")
 
     args = parser.parse_args()
@@ -187,10 +240,10 @@ def main():
             model=args.model,
             tensor_parallel_size=args.num_gpus,
             trust_remote_code=True,
-            max_model_len=args.max_model_length,
+            max_model_len=args.context_win_total,
             dtype="bfloat16"
         )
-        sampling_params = SamplingParams(temperature=0.7, max_tokens=args.max_model_length)
+        sampling_params = SamplingParams(temperature=0.7, max_tokens=args.max_output_tokens)
         tokenizer = llm.get_tokenizer()
     else:
         print("Dry run: Skipping vLLM initialization. Loading tokenizer from huggingface...")
