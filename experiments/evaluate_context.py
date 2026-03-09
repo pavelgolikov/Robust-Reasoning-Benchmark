@@ -9,10 +9,111 @@ from util import get_prompts, remove_latex_comments, BASELINE_SYSTEM_PROMPT, ext
 
 # from trim_context import trim_context
 
+FALCON_CHAT_TEMPLATE = """{%- if messages and messages[0]['role'] == 'system' %}
+  {% set system_msg = messages[0]['content'] %}  
+  {%- set remaining_messages = messages[1:] %}
+{%- else %}
+  {% set system_msg = "You are Falcon, a helpful AI assistant created by Technology Innovation Institute (TII). To answer the user's question, you first think about the reasoning process and then provide the user with the answer. The reasoning process is enclosed within <think> </think> tags, i.e., <think> reasoning process here </think> answer here." %}
+  {%- set remaining_messages = messages %}
+{%- endif %}
+
+{%- if tools %}
+<|im_start|>system
+{{ system_msg }}
+# Tools
+You may call one or more functions to assist with the user query. You are provided with function signatures within <tools></tools> XML tags.
+<tools>
+{%- for tool in tools %}
+{{- "" }}
+{{ tool | tojson }}
+{%- endfor %}
+{{- "" }}
+</tools>
+For each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:
+<tool_call>
+{"name": <function-name>, "arguments": <args-json-object>}
+</tool_call>
+<|im_end|>
+
+{%- else %}
+<|im_start|>system
+{{ system_msg }}
+<|im_end|>
+{%- endif %}
+
+{# --- Render remaining messages --- #}
+{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}
+{%- for message in messages[::-1] %}
+    {%- set index = (messages|length - 1) - loop.index0 %}
+    {%- if ns.multi_step_tool and message.role == "user" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}
+        {%- set ns.multi_step_tool = false %}
+        {%- set ns.last_query_index = index %}
+    {%- endif %}
+{%- endfor %}{%- for message in remaining_messages %}
+  {%- set content = message.get('content','') %}
+  {%- if message['role'] == 'user' %}
+    {{- '<|im_start|>' + message['role'] + '\n' + content + '<|im_end|>\n' }}
+  {%- elif message['role'] == 'assistant' %}
+    {{- '<|im_start|>' + message.role + '\n' }}
+        {%- set reasoning_content = '' %}
+        {%- if message.reasoning_content is string %}
+            {%- set reasoning_content = message.reasoning_content %}
+        {%- else %}
+            {%- if '</think>' in content %}
+                {%- set reasoning_content = content.split('</think>')[0].rstrip('\n').split('<think>')[-1].lstrip('\n') %}
+                {%- set content = content.split('</think>')[-1].lstrip('\n') %}
+            {%- endif %}
+        {%- endif %}
+        {%- if loop.index0 > ns.last_query_index %}
+            {%- if loop.last or (not loop.last and reasoning_content) %}
+                {{- '<think>\n' + reasoning_content.strip('\n') + '\n</think>\n\n' + content.lstrip('\n') }}
+            {%- else %}
+                {{- content + '\n' }}
+            {%- endif %}
+        {%- else %}
+            {{- content + '\n' }}
+        {%- endif %}
+    {%- if tools and message.tool_calls %}
+      {%- for tool_call in message.tool_calls %}
+          {%- if tool_call.function is defined %}
+              {%- set tool_call = tool_call.function %}
+          {%- endif %}
+          {{-'<tool_call>\n' }}
+          {{- '{"name": "'+ tool_call.name + '", "arguments":' }}
+          {%- if tool_call.arguments is string -%}
+          {{ tool_call.arguments }}
+          {%- else -%}
+          {{ tool_call.arguments | tojson }}
+          {%- endif -%}
+          {{- '}' }}
+          {{- '\n</tool_call>\n' }}
+      {%- endfor %}
+    {%- endif %}
+    {%- if not loop.last %}
+      {{- '<|im_end|>' + '\n' }}
+    {%- else %}
+      {{- '<|im_end|>' }}
+    {%- endif %}
+  {%- elif message['role'] == 'tool' %}
+    {# Tool responses treated as user messages #}
+    {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != "tool") %}
+        {{- '<|im_start|>user' }}
+    {%- endif %}
+    {{- '\n<tool_response>\n' + message['content'] + '\n</tool_response>' }}
+    {%- if loop.last or (messages[loop.index0 + 1].role != "tool") %}
+        {{- '<|im_end|>\n' }}
+    {%- endif %}
+  {%- endif %}
+  {# --- Add generation prompt after last message if requested --- #}
+  {%- if loop.last and add_generation_prompt %}
+    {{- '<|im_start|>assistant\n' }}
+  {%- endif %}
+{%- endfor %}"""
+
 
 def resolve_context_path(context_type):
     """Resolve the context file path for a given type ('math' or 'text')."""
-    base_path = "/home/golikovp/Antigravity/Linguistic_traps/experiments/context_saturation/contexts"
+    base_path = "/home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/"
     if context_type == "math":
         path = os.path.join(base_path, "context_math_1M.json")
     else:
@@ -44,13 +145,21 @@ def generate_trimmed_context(tokenizer, context_path, target_size):
         mid = (low + high) // 2
         test_chunk = [system_msg] + messages[:mid]
         
-        # Tokenize using the model's chat template
-        tokens = tokenizer.apply_chat_template(test_chunk, tokenize=True, add_generation_prompt=False)
+        # Render to string first, then encode (avoids bugs in some tokenize=True implementations)
+        rendered = tokenizer.apply_chat_template(test_chunk, tokenize=False, add_generation_prompt=False)
+        tokens = tokenizer.encode(rendered, add_special_tokens=False)
         count = len(tokens)
         
         if (mid > 0 or len(system_msg['content']) > 0) and count <= 2:
+             # Diagnostic render to see what's happening
+             rendered = tokenizer.apply_chat_template(test_chunk, tokenize=False, add_generation_prompt=False)
              # If we have content but only get 2 tokens (BOS/EOS), the tokenizer/template is failing.
-             raise ValueError(f"Tokenizer returned only {count} tokens for {mid+1} messages. This usually means the chat template is missing or failing for model '{tokenizer.name_or_path}'.")
+             raise ValueError(
+                 f"Tokenizer returned only {count} tokens for {mid+1} messages. "
+                 f"Rendered length: {len(rendered)}. "
+                 f"Preview: {rendered[:100]!r}... "
+                 f"This usually means the chat template is missing or failing for model '{tokenizer.name_or_path}'."
+             )
 
         if count <= target_size:
             best_k = mid
@@ -59,7 +168,8 @@ def generate_trimmed_context(tokenizer, context_path, target_size):
             high = mid - 1
 
     result_msgs = [system_msg] + messages[:best_k]
-    current_tokens = len(tokenizer.apply_chat_template(result_msgs, tokenize=True, add_generation_prompt=False))
+    rendered_final = tokenizer.apply_chat_template(result_msgs, tokenize=False, add_generation_prompt=False)
+    current_tokens = len(tokenizer.encode(rendered_final, add_special_tokens=False))
     
     # Phase 2: Word-level truncation of the NEXT message if we are still under target
     if current_tokens < target_size and best_k < len(messages):
@@ -75,7 +185,8 @@ def generate_trimmed_context(tokenizer, context_path, target_size):
             mid_w = (low_w + high_w) // 2
             partial_content = " ".join(words[:mid_w])
             test_chunk = result_msgs + [{"role": next_msg['role'], "content": partial_content}]
-            tokens = tokenizer.apply_chat_template(test_chunk, tokenize=True, add_generation_prompt=False)
+            rendered_test = tokenizer.apply_chat_template(test_chunk, tokenize=False, add_generation_prompt=False)
+            tokens = tokenizer.encode(rendered_test, add_special_tokens=False)
             
             if len(tokens) <= target_size:
                 best_w = mid_w
@@ -86,7 +197,8 @@ def generate_trimmed_context(tokenizer, context_path, target_size):
         if best_w > 0:
             result_msgs.append({"role": next_msg['role'], "content": " ".join(words[:best_w])})
 
-    final_count = len(tokenizer.apply_chat_template(result_msgs, tokenize=True, add_generation_prompt=False))
+    rendered_absolute = tokenizer.apply_chat_template(result_msgs, tokenize=False, add_generation_prompt=False)
+    final_count = len(tokenizer.encode(rendered_absolute, add_special_tokens=False))
     print(f"  Final context built: {len(result_msgs)} messages. Total tokens: {final_count} (Target: {target_size})")
     
     return result_msgs
@@ -101,8 +213,8 @@ def run_context_eval(context_type, trimmed_context, dataset, tokenizer, llm, sam
     print(f"{'='*60}")
 
     # Calculate context tokens once
-    context_token_count = len(tokenizer.apply_chat_template(trimmed_context, tokenize=True, add_generation_prompt=False))
     common_context_str = tokenizer.apply_chat_template(trimmed_context, tokenize=False, add_generation_prompt=False)
+    context_token_count = len(tokenizer.encode(common_context_str, add_special_tokens=False))
 
     all_inputs = []
     metadata = []
@@ -117,7 +229,9 @@ def run_context_eval(context_type, trimmed_context, dataset, tokenizer, llm, sam
 
         full_conversation = trimmed_context + [{"role": "user", "content": user_prompt}]
 
-        final_input_ids = tokenizer.apply_chat_template(full_conversation, tokenize=True, add_generation_prompt=True)
+        # Render then encode for final prompt
+        final_prompt_str = tokenizer.apply_chat_template(full_conversation, tokenize=False, add_generation_prompt=True)
+        final_input_ids = tokenizer.encode(final_prompt_str, add_special_tokens=False)
 
         for sample_idx in range(args.n_samples):
             all_inputs.append(final_input_ids)
@@ -225,41 +339,26 @@ def main():
 
     args = parser.parse_args()
 
+    # context_types = ['math', 'text'] # Already defined at top of main scope if needed, but let's ensure it's here
     context_types = ['math', 'text']
 
-    # Initialize vLLM (once, shared across both context types)
-    llm = None
-    sampling_params = None
-    tokenizer = None
+    # 1. Load Tokenizer FIRST (independently of vLLM to allow context prep before model load)
+    print(f"Loading tokenizer for model: {args.model}...")
+    from transformers import AutoTokenizer
+    # No fallback: throw error if model tokenizer can't be loaded
+    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
+    print(f"Tokenizer loaded. Class: {tokenizer.__class__.__name__}, Vocab size: {tokenizer.vocab_size}")
+    
+    # Force explicit native chat template for Falcon-H1R models
+    # We do this because the Hub config often has it as null, which may trigger 
+    # a broken default in some transformers versions.
+    if "Falcon-H1R" in args.model:
+        print(f"FORCING explicit native chat template for reasoning model '{args.model}'...")
+        tokenizer.chat_template = FALCON_CHAT_TEMPLATE
+    elif tokenizer.chat_template is None:
+        print(f"Warning: No chat template found for model '{args.model}'.")
 
-    if not args.dry:
-        from vllm import LLM, SamplingParams
-        print(f"Initializing vLLM with model: {args.model}")
-        llm = LLM(
-            model=args.model,
-            tensor_parallel_size=args.num_gpus,
-            trust_remote_code=True,
-            max_model_len=args.context_win_total,
-            dtype="bfloat16"
-        )
-        sampling_params = SamplingParams(temperature=0.7, max_tokens=args.max_output_tokens)
-        tokenizer = llm.get_tokenizer()
-    else:
-        print("Dry run: Skipping vLLM initialization. Loading tokenizer from huggingface...")
-        from transformers import AutoTokenizer
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
-        except:
-            print("Failed to load specific tokenizer, falling back to gpt2 for dry run token counting.")
-            tokenizer = AutoTokenizer.from_pretrained("gpt2")
-
-    # Load Dataset (once, shared across both context types)
-    print(f"Loading dataset: {args.dataset}...")
-    dataset = load_dataset(args.dataset, split="train")
-    if args.limit:
-        dataset = dataset.select(range(min(args.limit, len(dataset))))
-
-    # 1. Prepare contexts at the very top
+    # 2. Prepare contexts at the very top (before heavy GPU load)
     print(f"\n{'='*60}")
     print(f"  PREPARING CONTEXTS")
     print(f"{'='*60}")
@@ -272,8 +371,31 @@ def main():
             prepped_contexts[context_type] = generate_trimmed_context(tokenizer, context_path, args.context_size)
         except Exception as e:
             print(f"Error preparing {context_type} context: {e}")
-            # We exit early because evaluation can't proceed with broken context
             exit(1)
+
+    # 3. Load Dataset
+    print(f"Loading dataset: {args.dataset}...")
+    dataset = load_dataset(args.dataset, split="train")
+    if args.limit:
+        dataset = dataset.select(range(min(args.limit, len(dataset))))
+
+    # 4. Initialize vLLM (only after everything else is ready)
+    llm = None
+    sampling_params = None
+
+    if not args.dry:
+        from vllm import LLM, SamplingParams
+        print(f"Initializing vLLM with model: {args.model}")
+        llm = LLM(
+            model=args.model,
+            tensor_parallel_size=args.num_gpus,
+            trust_remote_code=True,
+            max_model_len=args.context_win_total,
+            dtype="bfloat16"
+        )
+        sampling_params = SamplingParams(temperature=0.7, max_tokens=args.max_output_tokens)
+    else:
+        print("Dry run: Skipping vLLM initialization.")
 
     # Run evaluation for each context type
     all_stats = {}
