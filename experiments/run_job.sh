@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=golikovp_job
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:h100:2
+#SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
 #SBATCH --time=3:00:00
@@ -24,3 +24,39 @@ export NCCL_IGNORE_DISABLED_P2P=1
 
 # python evaluate.py --names baseline --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 2 &> eval_out.out
 
+python evaluate_context.py \
+  --model tiiuae/Falcon-H1R-7B \
+  --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_192K_tiiuae_Falcon-H1R-7B.json \
+  --context_type math \
+  --context_size 256000 \
+  --max_tokens 32000 \
+  --n_samples 16 \
+  --num_gpus 4 &>> eval_out.out
+
+
+python evaluate_context.py \
+  --model Qwen/Qwen3-30B-A3B-Thinking-2507 \
+  --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_192K_Qwen_Qwen3-30B-A3B-Thinking-2507.json \
+  --context_type math \
+  --context_size 256000 \
+  --max_tokens 32000 \
+  --n_samples 16 \
+  --num_gpus 4 &>> eval_out.out
+
+
+python evaluate_context.py \
+  --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B \
+  --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_deepseek-ai_DeepSeek-R1-Distill-Llama-70B.json \
+  --context_type math \
+  --context_size 128000 \
+  --max_tokens 32000 \
+  --n_samples 16 \
+  --num_gpus 4 &>> eval_out.out
+
+
+# python evaluate_context.py \
+#   --model tiiuae/Falcon-H1R-7B \
+#   --context_file context_saturation/contexts/context_math_16K_google.json \
+#   --context_type math \
+#   --context_size 256000 \
+#   --max_tokens 32000 \
