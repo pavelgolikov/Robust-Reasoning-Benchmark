@@ -20,15 +20,4 @@ mkdir -p $HF_HOME
 
 export NCCL_IGNORE_DISABLED_P2P=1
 
-# TODO: need to run rail_fence eval real quick
-# Running 5 samples per problem for averaging
-# python evaluate.py --names rail_fence --n_samples 5 --num_gpu 4 --limit 30 > eval_out2.out
-# python evaluate.py --names reversal --n_samples 5 --limit 30 --model "tiiuae/Falcon-H1R-7B" > eval_out.out
-
-# python evaluate_conversation.py --max_model_length 262000 --n_samples 5 --num_distractors 15 --distractors_per_query 5 --num_gpus 4 > eval_out2.out
-
-# python evaluate_conversation.py --max_model_length 262000 --n_samples 30 --context_fill_lvl 50 --distractors_per_query 4 --num_gpus 4 --new_run > eval_out2.out
-
-# python evaluate_context.py --limit 2 --n_samples 3 --context_size 8192 --context_type math --context_file context_math_1M.json --num_gpus 2 &> eval_out2.out
-
-python evaluate_agent.py --n_samples 5 --limit 1 --names rail_fence --num_gpus 2 &> eval_out2.out
+python evaluate.py --names baseline --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 2 &> eval_out2.out
