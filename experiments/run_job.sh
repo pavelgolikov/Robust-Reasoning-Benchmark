@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=golikovp_job
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:h100:1
+#SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=2:00:00
+#SBATCH --time=7:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
@@ -22,7 +22,7 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # export NCCL_DEBUG=INFO
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
-python evaluate.py --names baseline --model Qwen/Qwen3.5-27B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 1 &> eval_out.out
+python evaluate.py --names all --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
 
 # python evaluate_agent.py --names wrappers,split_reversal,sentence_reversal,word_reversal,rail_fence --model GAIR/LIMO-v2 --dataset HuggingFaceH4/aime_2024 --max_model_length 32000 --n_samples 16 --num_gpus 4 &> eval_out.out
 
