@@ -24,11 +24,9 @@ general reasoner) performance. Please analyze the repository for structure and i
 confuse language models. Analysis is a utility folder. Tell me when you have taken a look at the repo and ready to
 proceed. The main 3 scripts are evaluate.py, which tests model's ability to undo the transformations themselves;
 evaluate_api.py, which is used to evaluate closed-source models through api calls, and evaluate_context_api.py, which
-tests context pollution by supplying several math-based distractor questions and after the distractors, the real
-non-transformed question is asked.
-For now we test context saturation only on the closed-source models as they are the most interesting to evaluate.
-Please familiarize yourself with the repo. Ask any questions you may have.
-
+tests context pollution of closed-source models by supplying several math-based distractor questions and after the
+distractors, the real non-transformed question is asked. Please familiarize yourself with the repo. Ask any questions
+you may have. We will be working on evaluate_context.py.
 
 Evaluation:
 Datasets:

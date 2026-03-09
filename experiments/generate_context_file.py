@@ -1,132 +1,195 @@
+"""
+Generate a pre-trimmed context JSON file for a given model and target token size.
+
+Takes a master context file (~1M tokens of math or text distractor Q&A),
+trims it to an exact token count using the model's native tokenizer, and
+saves the result as a ready-to-use context JSON file.
+
+Output filename format:
+    context_{type}_{size}_{safe_model_name}.json
+
+Example:
+    python generate_context_file.py \
+        --model tiiuae/Falcon-H1R-7B \
+        --context_type math \
+        --context_size 16000
+"""
+
 import argparse
 import json
 import os
+import re
 import sys
 
-# Ensure vLLM internal utilities are available
-try:
-    from vllm.transformers_utils.tokenizer import get_tokenizer
-except ImportError:
-    print("Error: vLLM is not installed. Please install vllm to use this script.")
-    sys.exit(1)
-
+from transformers import AutoTokenizer
 from util import BASELINE_SYSTEM_PROMPT
+
+
+def strip_thinking_tags(text):
+    """Remove <think>, <thinking>, etc. tags that may appear in assistant responses."""
+    return re.sub(
+        r'</?(think|thinking|reasoning|reflection|scratchpad)[^>]*>',
+        '', text, flags=re.IGNORECASE
+    ).strip()
+
+
+def format_size(n_tokens):
+    """Convert token count to human-readable string: 16000 -> '16K', 750000 -> '750K'."""
+    if n_tokens >= 1000 and n_tokens % 1000 == 0:
+        return f"{n_tokens // 1000}K"
+    return str(n_tokens)
+
 
 def generate_trimmed_context(tokenizer, messages, target_size):
     """
-    Binary search to find exact message count for target_size.
-    Uses the model's native chat template and tokenizer.
+    Binary search to find the exact number of messages that fits within target_size tokens.
+    Phase 1: message-level binary search.
+    Phase 2: word-level truncation of the next message to fill remaining capacity.
     """
-    # Strip any existing system prompts
+    # Strip existing system prompts (we'll prepend our own)
     messages = [m for m in messages if m['role'] != 'system']
-    
+
+    # Strip thinking tags from all assistant messages
+    for msg in messages:
+        msg['content'] = strip_thinking_tags(msg['content'])
+
     system_msg = {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
-    
+
+    def count_tokens(msg_list):
+        rendered = tokenizer.apply_chat_template(msg_list, tokenize=False, add_generation_prompt=False)
+        return len(tokenizer.encode(rendered, add_special_tokens=False))
+
     # Phase 1: Binary search on full messages
     low = 0
     high = len(messages)
     best_k = 0
-    
-    print(f"Phase 1: Binary search on {len(messages)} full messages for {target_size} tokens...")
-    
+
+    print(f"  Phase 1: Binary search over {len(messages)} messages for {target_size:,} tokens...")
+
     while low <= high:
         mid = (low + high) // 2
         test_chunk = [system_msg] + messages[:mid]
-        
-        # Standard two-step tokenization (Render -> Encode)
-        # This is the most robust way to handle potentially buggy tokenize=True paths
-        try:
-            rendered = tokenizer.apply_chat_template(test_chunk, tokenize=False, add_generation_prompt=False)
-            tokens = tokenizer.encode(rendered, add_special_tokens=False)
-            count = len(tokens)
-        except Exception as e:
-            print(f"Error applying chat template: {e}")
-            raise
+        n_tokens = count_tokens(test_chunk)
 
-        if (mid > 0 or len(system_msg['content']) > 0) and count <= 2:
-             raise ValueError(
-                 f"Tokenizer failure: returned only {count} tokens for {mid} messages. "
-                 "This often means the model's 'tokenizer_config.json' on the Hub is missing a 'chat_template'."
-             )
+        # Sanity check: tokenizer should produce real output
+        if mid > 0 and n_tokens <= 2:
+            raise ValueError(
+                f"Tokenizer returned only {n_tokens} tokens for {mid} messages. "
+                f"This usually means the model's chat_template is missing or broken."
+            )
 
-        if count <= target_size:
+        if n_tokens <= target_size:
             best_k = mid
             low = mid + 1
         else:
             high = mid - 1
 
     result_msgs = [system_msg] + messages[:best_k]
-    rendered_final = tokenizer.apply_chat_template(result_msgs, tokenize=False, add_generation_prompt=False)
-    current_tokens = len(tokenizer.encode(rendered_final, add_special_tokens=False))
-    
-    # Phase 2: Word-level truncation
+    current_tokens = count_tokens(result_msgs)
+    print(f"  Phase 1 result: {best_k} messages, {current_tokens:,} tokens")
+
+    # Phase 2: Word-level truncation of the next message
     if current_tokens < target_size and best_k < len(messages):
-        print(f"Phase 2: Filling remaining {target_size - current_tokens} tokens with word-level truncation...")
+        gap = target_size - current_tokens
+        print(f"  Phase 2: Filling remaining ~{gap:,} tokens with word-level truncation...")
         next_msg = messages[best_k]
         words = next_msg['content'].split()
-        
+
         low_w = 0
         high_w = len(words)
         best_w = 0
-        
+
         while low_w <= high_w:
             mid_w = (low_w + high_w) // 2
             partial_content = " ".join(words[:mid_w])
             test_chunk = result_msgs + [{"role": next_msg['role'], "content": partial_content}]
-            rendered_test = tokenizer.apply_chat_template(test_chunk, tokenize=False, add_generation_prompt=False)
-            tokens = tokenizer.encode(rendered_test, add_special_tokens=False)
-            
-            if len(tokens) <= target_size:
+            n_tokens = count_tokens(test_chunk)
+
+            if n_tokens <= target_size:
                 best_w = mid_w
                 low_w = mid_w + 1
             else:
                 high_w = mid_w - 1
-        
+
         if best_w > 0:
             result_msgs.append({"role": next_msg['role'], "content": " ".join(words[:best_w])})
 
-    final_rendered = tokenizer.apply_chat_template(result_msgs, tokenize=False, add_generation_prompt=False)
-    final_count = len(tokenizer.encode(final_rendered, add_special_tokens=False))
-    print(f"Final context: {len(result_msgs)} messages, {final_count} tokens.")
-    
-    return result_msgs
+    final_tokens = count_tokens(result_msgs)
+    print(f"  Final: {len(result_msgs)} messages, {final_tokens:,} tokens (target: {target_size:,})")
+
+    return result_msgs, final_tokens
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate pre-trimmed context JSON using vLLM's internal tokenizer.")
-    parser.add_argument("--model", type=str, required=True, help="Model ID on HuggingFace Hub")
-    parser.add_argument("--context_type", type=str, choices=['math', 'text'], required=True, help="Type of context to use")
-    parser.add_argument("--context_size", type=int, required=True, help="Target token count")
-    parser.add_argument("--output_file", type=str, required=True, help="Path to save the JSON output")
-    parser.add_argument("--trust_remote_code", action="store_true", help="Trust remote code when loading tokenizer")
+    parser = argparse.ArgumentParser(
+        description="Generate a pre-trimmed context JSON file for local model evaluation."
+    )
+    parser.add_argument("--model", type=str, required=True,
+                        help="HuggingFace model ID (used to load the correct tokenizer)")
+    parser.add_argument("--context_type", type=str, choices=["math", "text"], required=True,
+                        help="Type of context to trim ('math' or 'text')")
+    parser.add_argument("--context_size", type=int, required=True,
+                        help="Target token count for the output context file")
+    parser.add_argument("--master_file", type=str, default=None,
+                        help="Path to master context JSON. Defaults to "
+                             "context_saturation/contexts/context_{type}_1M.json")
+    parser.add_argument("--output_dir", type=str, default=None,
+                        help="Output directory. Defaults to context_saturation/contexts/")
+    parser.add_argument("--trust_remote_code", action="store_true",
+                        help="Trust remote code when loading tokenizer")
     args = parser.parse_args()
 
-    print(f"Loading vLLM-aligned tokenizer for: {args.model}")
-    # Use vLLM's internal utility for perfect alignment
-    tokenizer = get_tokenizer(args.model, trust_remote_code=args.trust_remote_code)
+    # Resolve paths relative to this script's directory
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    if args.master_file is None:
+        args.master_file = os.path.join(
+            base_dir, "context_saturation", "contexts",
+            f"context_{args.context_type}_1M.json"
+        )
+
+    if args.output_dir is None:
+        args.output_dir = os.path.join(base_dir, "context_saturation", "contexts")
+
+    if not os.path.exists(args.master_file):
+        print(f"Error: Master context file not found: {args.master_file}")
+        sys.exit(1)
+
+    # 1. Load tokenizer
+    print(f"Loading tokenizer for: {args.model}")
+    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=args.trust_remote_code)
+    print(f"  Tokenizer: {tokenizer.__class__.__name__}, vocab size: {tokenizer.vocab_size}")
 
     if tokenizer.chat_template is None:
-        raise ValueError(f"Model '{args.model}' is missing a 'chat_template' in its configuration. Please check the Hub.")
+        print(f"WARNING: Model '{args.model}' has no chat_template. Results may be unreliable.")
 
-    # Load master file from the standard experiment location
-    base_path = "/home/golikovp/Antigravity/Linguistic_traps/experiments/context_saturation/contexts"
-    file_name = f"context_{args.context_type}_1M.json"
-    input_path = os.path.join(base_path, file_name)
-    
-    if not os.path.exists(input_path):
-        raise FileNotFoundError(f"Master context file not found: {input_path}")
-
-    print(f"Loading master context: {input_path}")
-    with open(input_path, 'r') as f:
+    # 2. Load master file
+    print(f"\nLoading master context: {args.master_file}")
+    with open(args.master_file, 'r') as f:
         master_messages = json.load(f)
+    print(f"  {len(master_messages)} messages loaded")
 
-    # Perform trimming
-    trimmed_messages = generate_trimmed_context(tokenizer, master_messages, args.context_size)
+    # 3. Trim
+    print(f"\nTrimming to {args.context_size:,} tokens...")
+    trimmed_messages, actual_tokens = generate_trimmed_context(
+        tokenizer, master_messages, args.context_size
+    )
 
-    # Save output
-    os.makedirs(os.path.dirname(os.path.abspath(args.output_file)), exist_ok=True)
-    with open(args.output_file, 'w') as f:
+    # 4. Save
+    safe_model = args.model.replace('/', '_')
+    size_str = format_size(args.context_size)
+    filename = f"context_{args.context_type}_{size_str}_{safe_model}.json"
+
+    os.makedirs(args.output_dir, exist_ok=True)
+    out_path = os.path.join(args.output_dir, filename)
+
+    with open(out_path, 'w') as f:
         json.dump(trimmed_messages, f, indent=2)
-    print(f"Successfully saved trimmed context to: {args.output_file}")
+
+    print(f"\nSaved: {out_path}")
+    print(f"  Messages: {len(trimmed_messages)}")
+    print(f"  Tokens:   {actual_tokens:,} (target: {args.context_size:,})")
+
 
 if __name__ == "__main__":
     main()
