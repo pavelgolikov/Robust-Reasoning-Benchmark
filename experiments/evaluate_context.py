@@ -10,138 +10,57 @@ from util import get_prompts, remove_latex_comments, BASELINE_SYSTEM_PROMPT, ext
 # from trim_context import trim_context
 
 
-def resolve_context_path(context_type):
-    """Resolve the context file path for a given type ('math' or 'text')."""
-    base_path = "/home/golikovp/Antigravity/Linguistic_traps/experiments/context_saturation/contexts"
-    if context_type == "math":
-        path = os.path.join(base_path, "context_math_1M.json")
-    else:
-        path = os.path.join(base_path, "context_text_1M.json")
-    
-    if os.path.exists(path):
-        return path
-    raise FileNotFoundError(f"Required context file not found: {path}")
-
-
-def generate_trimmed_context(tokenizer, context_path, target_size):
-    """Binary search to find exact message count for target_size."""
-    with open(context_path, 'r') as f:
-        messages = json.load(f)
-    
-    # Strip any existing system prompts from the master file to avoid duplicates
-    messages = [m for m in messages if m['role'] != 'system']
-    
-    # Phase 1: Binary search on full messages
-    low = 0
-    high = len(messages)
-    best_k = 0
-    
-    system_msg = {"role": "system", "content": BASELINE_SYSTEM_PROMPT}
-
-    print(f"  Phase 1: Binary search on {len(messages)} full messages for {target_size} tokens...")
-    
-    while low <= high:
-        mid = (low + high) // 2
-        test_chunk = [system_msg] + messages[:mid]
-        
-        # Tokenize using the model's chat template
-        tokens = tokenizer.apply_chat_template(test_chunk, tokenize=True, add_generation_prompt=False)
-        count = len(tokens)
-        
-        if (mid > 0 or len(system_msg['content']) > 0) and count <= 2:
-             # If we have content but only get 2 tokens (BOS/EOS), the tokenizer/template is failing.
-             raise ValueError(f"Tokenizer returned only {count} tokens for {mid+1} messages. This usually means the chat template is missing or failing for model '{tokenizer.name_or_path}'.")
-
-        if count <= target_size:
-            best_k = mid
-            low = mid + 1
-        else:
-            high = mid - 1
-
-    result_msgs = [system_msg] + messages[:best_k]
-    current_tokens = len(tokenizer.apply_chat_template(result_msgs, tokenize=True, add_generation_prompt=False))
-    
-    # Phase 2: Word-level truncation of the NEXT message if we are still under target
-    if current_tokens < target_size and best_k < len(messages):
-        print(f"  Phase 2: Truncating next message (words) to fill remaining {target_size - current_tokens} tokens...")
-        next_msg = messages[best_k]
-        words = next_msg['content'].split()
-        
-        low_w = 0
-        high_w = len(words)
-        best_w = 0
-        
-        while low_w <= high_w:
-            mid_w = (low_w + high_w) // 2
-            partial_content = " ".join(words[:mid_w])
-            test_chunk = result_msgs + [{"role": next_msg['role'], "content": partial_content}]
-            tokens = tokenizer.apply_chat_template(test_chunk, tokenize=True, add_generation_prompt=False)
-            
-            if len(tokens) <= target_size:
-                best_w = mid_w
-                low_w = mid_w + 1
-            else:
-                high_w = mid_w - 1
-        
-        if best_w > 0:
-            result_msgs.append({"role": next_msg['role'], "content": " ".join(words[:best_w])})
-
-    final_count = len(tokenizer.apply_chat_template(result_msgs, tokenize=True, add_generation_prompt=False))
-    print(f"  Final context built: {len(result_msgs)} messages. Total tokens: {final_count} (Target: {target_size})")
-    
-    return result_msgs
-
-
-def run_context_eval(context_type, trimmed_context, dataset, tokenizer, llm, sampling_params, args):
+def prepare_evaluation_data(tokenizer, trimmed_context, dataset, args):
     """
-    Run evaluation for a single context type. Returns (stats_dict, results_list, out_path).
+    Prepare all prompt token IDs and metadata upfront.
+    Returns (all_inputs, metadata).
     """
-    print(f"\n{'='*60}")
-    print(f"  Running context evaluation: {context_type.upper()}")
-    print(f"{'='*60}")
-
-    # Calculate context tokens once
-    context_token_count = len(tokenizer.apply_chat_template(trimmed_context, tokenize=True, add_generation_prompt=False))
-    common_context_str = tokenizer.apply_chat_template(trimmed_context, tokenize=False, add_generation_prompt=False)
-
     all_inputs = []
     metadata = []
 
-    print(f"Preparing {len(dataset)} examples for '{context_type}' context...")
-
     for i, example in enumerate(dataset):
         cleaned_problem = remove_latex_comments(example['problem'])
-
-        user_prompt, system_prompt = get_prompts(cleaned_problem, 'baseline')
+        user_prompt, _ = get_prompts(cleaned_problem, 'baseline')
         user_prompt = "Solve the following problem using regular mathematics.\n" + user_prompt
 
         full_conversation = trimmed_context + [{"role": "user", "content": user_prompt}]
 
-        final_input_ids = tokenizer.apply_chat_template(full_conversation, tokenize=True, add_generation_prompt=True)
+        # Render then encode to IDs once
+        prompt_str = tokenizer.apply_chat_template(full_conversation, tokenize=False, add_generation_prompt=True)
+        prompt_ids = tokenizer.encode(prompt_str, add_special_tokens=False)
 
         for sample_idx in range(args.n_samples):
-            all_inputs.append(final_input_ids)
+            all_inputs.append(prompt_ids)
             metadata.append({
                 "id": example.get('id', i),
                 "sample_idx": sample_idx,
                 "post_context_prompt": user_prompt,
                 "ground_truth": example['answer'],
             })
+    return all_inputs, metadata
+
+
+def run_context_eval(context_type, all_inputs, metadata, context_token_count, common_context_str, llm, sampling_params, args):
+    """
+    Run evaluation using pre-prepared token IDs.
+    """
+    print(f"\n{'='*60}")
+    print(f"  Running context evaluation: {context_type.upper()}")
+    print(f"{'='*60}")
 
     # Generate
-    print(f"Generating answers for {len(all_inputs)} prompts...")
+    print(f"Generating answers for {len(all_inputs)} prompts using prompt_token_ids...")
 
     if not args.dry:
-        print("Decoding token sequences to text for inference...")
-        decoded_prompts = [tokenizer.decode(ids, skip_special_tokens=False) for ids in all_inputs]
-        outputs = llm.generate(decoded_prompts, sampling_params=sampling_params)
+        # Pass IDs directly to vLLM to avoid redundant processing
+        # Note: vLLM generate accepts prompt_token_ids as a list of lists of IDs.
+        outputs = llm.generate(prompt_token_ids=all_inputs, sampling_params=sampling_params)
     else:
         print("Dry run: Skipping generation.")
         outputs = []
         class MockOutput:
             def __init__(self, text):
                 self.outputs = [type('obj', (object,), {'text': text, 'token_ids': [0]*10})]
-
         for _ in all_inputs:
             outputs.append(MockOutput("Mock Answer \\boxed{0}"))
 
@@ -184,7 +103,7 @@ def run_context_eval(context_type, trimmed_context, dataset, tokenizer, llm, sam
     # Save
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     safe_model = args.model.replace('/', '_')
-    filename = f"results_predef_{context_type}_{args.context_size}_{safe_model}_{timestamp}.json"
+    filename = f"results_predef_{context_type}_{context_token_count}_{safe_model}_{timestamp}.json"
 
     safe_dataset = args.dataset.replace('/', '_')
     dirs = f"context_saturation/results_context/{safe_model}/{safe_dataset}"
@@ -195,7 +114,9 @@ def run_context_eval(context_type, trimmed_context, dataset, tokenizer, llm, sam
         "metadata": {
             "model": args.model,
             "dataset": args.dataset,
-            "context_size": args.context_size,
+            "context_math_file": args.context_math_file,
+            "context_text_file": args.context_text_file,
+            "context_token_count": context_token_count,
             "context_type": context_type,
             "common_context": common_context_str
         },
@@ -217,7 +138,8 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Samples per problem")
-    parser.add_argument("--context_size", type=int, required=True, help="Target context size in tokens")
+    parser.add_argument("--context_math_file", type=str, required=True, help="Path to pre-trimmed MATH context JSON")
+    parser.add_argument("--context_text_file", type=str, required=True, help="Path to pre-trimmed TEXT context JSON")
     parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--context_win_total", type=int, default=65536, help="Total context window capacity")
     parser.add_argument("--max_output_tokens", type=int, default=4096, help="Max generated tokens")
@@ -259,29 +181,55 @@ def main():
     if args.limit:
         dataset = dataset.select(range(min(args.limit, len(dataset))))
 
-    # 1. Prepare contexts at the very top
+    # 1. Load context files
     print(f"\n{'='*60}")
-    print(f"  PREPARING CONTEXTS")
+    print(f"  LOADING CONTEXTS")
     print(f"{'='*60}")
     
     prepped_contexts = {}
-    for context_type in context_types:
-        try:
-            print(f"Preparing {context_type} context...")
-            context_path = resolve_context_path(context_type)
-            prepped_contexts[context_type] = generate_trimmed_context(tokenizer, context_path, args.context_size)
-        except Exception as e:
-            print(f"Error preparing {context_type} context: {e}")
-            # We exit early because evaluation can't proceed with broken context
-            exit(1)
+    context_paths = {'math': args.context_math_file, 'text': args.context_text_file}
+    for context_type, path in context_paths.items():
+        print(f"Loading {context_type} context from {path}...")
+        with open(path, 'r') as f:
+            prepped_contexts[context_type] = json.load(f)
 
-    # Run evaluation for each context type
+    # 2. Prepare Evaluation Data for BOTH upfront (very important for performance)
+    print(f"\n{'='*60}")
+    print(f"  PREPARING EVALUATION DATA")
+    print(f"{'='*60}")
+    
+    prepped_eval_data = {}
+    for context_type in context_types:
+        print(f"Preparing all prompts for '{context_type}' context...")
+        trimmed = prepped_contexts[context_type]
+        
+        # Calculate context info for metadata
+        common_context_str = tokenizer.apply_chat_template(trimmed, tokenize=False, add_generation_prompt=False)
+        context_token_count = len(tokenizer.encode(common_context_str, add_special_tokens=False))
+        
+        inputs, meta = prepare_evaluation_data(tokenizer, trimmed, dataset, args)
+        prepped_eval_data[context_type] = {
+            "inputs": inputs,
+            "metadata": meta,
+            "token_count": context_token_count,
+            "common_str": common_context_str
+        }
+
+    # Initialize all_stats and all_paths before the loop
     all_stats = {}
     all_paths = {}
 
     for context_type in context_types:
+        data = prepped_eval_data[context_type]
         stats, results, out_path = run_context_eval(
-            context_type, prepped_contexts[context_type], dataset, tokenizer, llm, sampling_params, args
+            context_type=context_type,
+            all_inputs=data["inputs"],
+            metadata=data["metadata"],
+            context_token_count=data["token_count"],
+            common_context_str=data["common_str"],
+            llm=llm,
+            sampling_params=sampling_params,
+            args=args
         )
         if stats is not None:
             all_stats[context_type] = stats
@@ -308,13 +256,14 @@ def main():
     safe_dataset = args.dataset.replace('/', '_')
     dirs = f"context_saturation/results_context/{safe_model}/{safe_dataset}"
     os.makedirs(dirs, exist_ok=True)
-    comparison_path = os.path.join(dirs, f"comparison_{args.context_size}_{safe_model}_{timestamp}.json")
+    comparison_path = os.path.join(dirs, f"comparison_{safe_model}_{timestamp}.json")
 
     comparison_output = {
         "metadata": {
             "model": args.model,
             "dataset": args.dataset,
-            "context_size": args.context_size,
+            "context_math_file": args.context_math_file,
+            "context_text_file": args.context_text_file,
             "context_types": list(all_stats.keys()),
         },
         "comparison": {ct: {"statistics": st, "results_file": all_paths[ct]} for ct, st in all_stats.items()},
