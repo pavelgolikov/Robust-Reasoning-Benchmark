@@ -28,10 +28,10 @@ def load_context(context_file):
 def prepare_inputs(dataset, trimmed_context, tokenizer, args):
     """
     For each dataset example, build the full conversation (context + question),
-    render via chat template, and encode to token IDs for vLLM.
-    Returns (all_input_ids, metadata).
+    render via chat template to a text string for vLLM.
+    Returns (all_prompts, metadata).
     """
-    all_input_ids = []
+    all_prompts = []
     metadata = []
 
     for i, example in enumerate(dataset):
@@ -41,22 +41,22 @@ def prepare_inputs(dataset, trimmed_context, tokenizer, args):
 
         full_conversation = trimmed_context + [{"role": "user", "content": user_prompt}]
 
-        # Render then encode (most robust approach across tokenizers)
+        # Render to text string via chat template (vLLM handles tokenization internally)
         rendered = tokenizer.apply_chat_template(
             full_conversation, tokenize=False, add_generation_prompt=True
         )
-        input_ids = tokenizer.encode(rendered, add_special_tokens=False)
 
         if i == 0:
+            input_tokens = len(tokenizer.encode(rendered, add_special_tokens=False))
             print(f"\n--- Example Prompt (problem 0) ---")
             print(f"  Context messages: {len(trimmed_context)}")
             print(f"  User question: {user_prompt[:120]}...")
-            print(f"  Total input tokens: {len(input_ids)}")
+            print(f"  Total input tokens: {input_tokens}")
             print(f"  Ground truth: {example['answer']}")
             print(f"---\n")
 
         for sample_idx in range(args.n_samples):
-            all_input_ids.append(input_ids)
+            all_prompts.append(rendered)
             metadata.append({
                 "id": example.get('id', i),
                 "sample_idx": sample_idx,
@@ -64,22 +64,22 @@ def prepare_inputs(dataset, trimmed_context, tokenizer, args):
                 "ground_truth": example['answer'],
             })
 
-    return all_input_ids, metadata
+    return all_prompts, metadata
 
 
-def run_evaluation(all_input_ids, metadata, context_token_count, llm, sampling_params, args):
+def run_evaluation(all_prompts, metadata, context_token_count, llm, sampling_params, args):
     """Generate responses and grade them."""
-    print(f"Generating answers for {len(all_input_ids)} prompts...")
+    print(f"Generating answers for {len(all_prompts)} prompts...")
 
     if not args.dry:
-        outputs = llm.generate(prompt_token_ids=all_input_ids, sampling_params=sampling_params)
+        outputs = llm.generate(all_prompts, sampling_params=sampling_params)
     else:
         print("Dry run: Skipping generation.")
         outputs = []
         class MockOutput:
             def __init__(self, text):
                 self.outputs = [type('obj', (object,), {'text': text, 'token_ids': [0] * 10})]
-        for _ in all_input_ids:
+        for _ in all_prompts:
             outputs.append(MockOutput("Mock Answer \\boxed{0}"))
 
     results = []
@@ -224,8 +224,8 @@ def main():
 
     # 4. Prepare all inputs (tokenize upfront before loading model onto GPU)
     print(f"\nPreparing inputs...")
-    all_input_ids, metadata = prepare_inputs(dataset, trimmed_context, tokenizer, args)
-    print(f"Prepared {len(all_input_ids)} total prompts.")
+    all_prompts, metadata = prepare_inputs(dataset, trimmed_context, tokenizer, args)
+    print(f"Prepared {len(all_prompts)} total prompts.")
 
     # 5. Initialize vLLM
     llm = None
@@ -251,7 +251,7 @@ def main():
     print(f"  RUNNING EVALUATION: {args.context_type.upper()}")
     print(f"{'='*60}")
     results, stats = run_evaluation(
-        all_input_ids, metadata, context_token_count, llm, sampling_params, args
+        all_prompts, metadata, context_token_count, llm, sampling_params, args
     )
 
     # 7. Save results
