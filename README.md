@@ -112,3 +112,15 @@ python experiments/evaluate_context_api.py \
    --context_type math \
    --batch \
    --no_preview
+
+
+
+Hello World I am math p
+.                     r
+n                     o
+a                     b
+c                     l
+                      e
+uoY .em evlos esaelP .m
+
+
