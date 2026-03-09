@@ -43,8 +43,16 @@ def generate_trimmed_context(tokenizer, context_path, target_size):
     while low <= high:
         mid = (low + high) // 2
         test_chunk = [system_msg] + messages[:mid]
+        
+        # Tokenize using the model's chat template
         tokens = tokenizer.apply_chat_template(test_chunk, tokenize=True, add_generation_prompt=False)
-        if len(tokens) <= target_size:
+        count = len(tokens)
+        
+        if (mid > 0 or len(system_msg['content']) > 0) and count <= 2:
+             # If we have content but only get 2 tokens (BOS/EOS), the tokenizer/template is failing.
+             raise ValueError(f"Tokenizer returned only {count} tokens for {mid+1} messages. This usually means the chat template is missing or failing for model '{tokenizer.name_or_path}'.")
+
+        if count <= target_size:
             best_k = mid
             low = mid + 1
         else:
@@ -84,22 +92,13 @@ def generate_trimmed_context(tokenizer, context_path, target_size):
     return result_msgs
 
 
-def run_context_eval(context_type, dataset, tokenizer, llm, sampling_params, args):
+def run_context_eval(context_type, trimmed_context, dataset, tokenizer, llm, sampling_params, args):
     """
     Run evaluation for a single context type. Returns (stats_dict, results_list, out_path).
     """
-    context_path = resolve_context_path(context_type)
-    if context_path is None:
-        print(f"Error: Context file not found for type '{context_type}'. Skipping.")
-        return None, None, None
-
     print(f"\n{'='*60}")
     print(f"  Running context evaluation: {context_type.upper()}")
     print(f"{'='*60}")
-
-    # Load and Truncate Context
-    # trimmed_context = trim_context(context_path, args.model, args.context_size, tokenizer=tokenizer)
-    trimmed_context = generate_trimmed_context(tokenizer, context_path, args.context_size)
 
     # Calculate context tokens once
     context_token_count = len(tokenizer.apply_chat_template(trimmed_context, tokenize=True, add_generation_prompt=False))
@@ -260,13 +259,29 @@ def main():
     if args.limit:
         dataset = dataset.select(range(min(args.limit, len(dataset))))
 
+    # 1. Prepare contexts at the very top
+    print(f"\n{'='*60}")
+    print(f"  PREPARING CONTEXTS")
+    print(f"{'='*60}")
+    
+    prepped_contexts = {}
+    for context_type in context_types:
+        try:
+            print(f"Preparing {context_type} context...")
+            context_path = resolve_context_path(context_type)
+            prepped_contexts[context_type] = generate_trimmed_context(tokenizer, context_path, args.context_size)
+        except Exception as e:
+            print(f"Error preparing {context_type} context: {e}")
+            # We exit early because evaluation can't proceed with broken context
+            exit(1)
+
     # Run evaluation for each context type
     all_stats = {}
     all_paths = {}
 
     for context_type in context_types:
         stats, results, out_path = run_context_eval(
-            context_type, dataset, tokenizer, llm, sampling_params, args
+            context_type, prepped_contexts[context_type], dataset, tokenizer, llm, sampling_params, args
         )
         if stats is not None:
             all_stats[context_type] = stats
