@@ -64,18 +64,16 @@ def main():
         return
 
     if args.names == 'all':
-        # experiment_names = ['context_saturation',
         experiment_names = ['interleaved_context_line',
                             'interleaved_context_word',
                             'interleaved_context_symbol',
                             'not_not',
                             'opposites',
+                            'rail_fence',
                             'sentence_reversal',
-                            'word_reversal',
-                            # 'word_split_swap',
-                            'wrappers',
                             'split_reversal',
-                            'rail_fence']
+                            'word_reversal',
+                            'wrappers' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
     
