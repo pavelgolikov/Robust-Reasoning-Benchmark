@@ -273,7 +273,7 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False):
         title = TECHNIQUE_LABELS.get(technique, technique)
         ax.set_title(title, fontsize=14, fontweight='bold', pad=10)
         ax.set_xticks(x)
-        ax.set_xticklabels(labels, fontsize=10, rotation=35, ha='right')
+        ax.set_xticklabels(labels, fontsize=8, rotation=45, ha='right')
         ax.set_ylabel("Accuracy (%)", fontsize=11)
         ax.set_ylim(0, 115)
         ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
