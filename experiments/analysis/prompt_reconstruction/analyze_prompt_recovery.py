@@ -163,7 +163,10 @@ def analyze_single_file(result_file: str, model, args) -> Dict[str, Any]:
         "recovered_cases": []
     }
 
-    for entry in tqdm(data, desc=f"Analyzing {os.path.basename(result_file)}", leave=False):
+    # ── Phase 1: Collect all targets and windows (CPU) ──
+    entries_to_analyze = []  # list of (entry_idx, entry, norm_target, windows_list)
+
+    for entry in data:
         is_orig_correct = entry.get('correct', False)
         if is_orig_correct:
             summary["original_correct"] += 1
@@ -193,11 +196,37 @@ def analyze_single_file(result_file: str, model, args) -> Dict[str, Any]:
         if not all_windows:
             continue
 
-        from sentence_transformers import util
-        target_embedding = model.encode(norm_target, convert_to_tensor=True, show_progress_bar=False)
-        window_embeddings = model.encode(all_windows, convert_to_tensor=True, show_progress_bar=False)
+        entries_to_analyze.append((entry, norm_target, all_windows))
 
-        cosine_scores = util.cos_sim(target_embedding, window_embeddings)[0]
+    if not entries_to_analyze:
+        summary["original_accuracy"] = summary["original_correct"] / total if total > 0 else 0
+        summary["semantic_accuracy"] = summary["semantic_correct"] / total if total > 0 else 0
+        return summary
+
+    # ── Phase 2: Batch-encode all targets and windows (GPU) ──
+    from sentence_transformers import util
+
+    all_targets = [norm_target for _, norm_target, _ in entries_to_analyze]
+    all_flat_windows = []
+    window_offsets = []  # (start_idx, end_idx) into all_flat_windows for each entry
+    for _, _, windows in entries_to_analyze:
+        start = len(all_flat_windows)
+        all_flat_windows.extend(windows)
+        window_offsets.append((start, len(all_flat_windows)))
+
+    print(f"    Batch encoding: {len(all_targets)} targets, {len(all_flat_windows)} windows...")
+    target_embeddings = model.encode(all_targets, convert_to_tensor=True,
+                                     show_progress_bar=False, batch_size=256)
+    window_embeddings = model.encode(all_flat_windows, convert_to_tensor=True,
+                                     show_progress_bar=False, batch_size=256)
+
+    # ── Phase 3: Compute similarities per entry ──
+    for i, (entry, norm_target, windows) in enumerate(entries_to_analyze):
+        start, end = window_offsets[i]
+        target_emb = target_embeddings[i].unsqueeze(0)
+        win_embs = window_embeddings[start:end]
+
+        cosine_scores = util.cos_sim(target_emb, win_embs)[0]
 
         best_idx = int(cosine_scores.argmax())
         max_score = float(cosine_scores[best_idx])
@@ -208,7 +237,7 @@ def analyze_single_file(result_file: str, model, args) -> Dict[str, Any]:
                 "id": entry.get('id'),
                 "score": max_score,
                 "target": norm_target,
-                "best_window": all_windows[best_idx]
+                "best_window": windows[best_idx]
             })
 
     summary["original_accuracy"] = summary["original_correct"] / total if total > 0 else 0
