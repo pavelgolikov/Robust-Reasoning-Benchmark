@@ -128,7 +128,7 @@ def save_results(results, stats, context_token_count, args, timestamp):
     safe_dataset = args.dataset.replace('/', '_')
     out_dir = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "context_saturation", "results_context", safe_model, safe_dataset
+        "context_saturation", "results", safe_model, safe_dataset
     )
     os.makedirs(out_dir, exist_ok=True)
 

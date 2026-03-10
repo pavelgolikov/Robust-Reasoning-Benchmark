@@ -76,7 +76,7 @@ def main():
     parser.add_argument("--transformations", type=str, required=True, help="Comma-separated list of transformation names")
     parser.add_argument("--model", type=str, default="tiiuae/Falcon-H1R-7B")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="Dataset name")
-    parser.add_argument("--results_subdir", type=str, default="results", help="Subdirectory for results (e.g. results, results_agent, results_context)")
+    parser.add_argument("--results_subdir", type=str, default="results", help="Subdirectory for results (e.g. results, results_agent)")
     
     args = parser.parse_args()
     

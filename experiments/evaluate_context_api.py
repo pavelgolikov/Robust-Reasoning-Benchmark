@@ -278,7 +278,7 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
         # Flush intermediate output securely behind loops for massive context iterations
         safe_model = args.model.replace('/', '_')
         safe_dataset = args.dataset.replace('/', '_')
-        out_dir = os.path.join(base_dir, "context_saturation", "results_context", safe_model, safe_dataset)
+        out_dir = os.path.join(base_dir, "context_saturation", "results", safe_model, safe_dataset)
         os.makedirs(out_dir, exist_ok=True)
         filename = f"results_predef_{context_type}_{args.context_size}_{safe_model}_{timestamp}.json"
         intermediate_path = os.path.join(out_dir, filename + ".incomplete")
@@ -304,7 +304,7 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
     # Save
     safe_model = args.model.replace('/', '_')
     safe_dataset = args.dataset.replace('/', '_')
-    out_dir = os.path.join(base_dir, "context_saturation", "results_context", safe_model, safe_dataset)
+    out_dir = os.path.join(base_dir, "context_saturation", "results", safe_model, safe_dataset)
     os.makedirs(out_dir, exist_ok=True)
     filename = f"results_predef_{context_type}_{args.context_size}_{safe_model}_{timestamp}.json"
     out_path = os.path.join(out_dir, filename)
@@ -474,7 +474,7 @@ def run_context_eval_batch(context_type, dataset, args, base_dir, timestamp):
     safe_model = args.model.replace('/', '_')
     safe_dataset = args.dataset.replace('/', '_')
     exp_name = f"context_saturation_{context_type}"
-    out_dir = os.path.join(base_dir, "context_saturation", "results_context", safe_model, safe_dataset)
+    out_dir = os.path.join(base_dir, "context_saturation", "results", safe_model, safe_dataset)
     os.makedirs(out_dir, exist_ok=True)
 
     track_file = os.path.join(out_dir, f"batch_tracking_{timestamp}_{context_type}.json")
@@ -581,7 +581,7 @@ def main():
         # # Save combined comparison
         # safe_model = args.model.replace('/', '_')
         # safe_dataset = args.dataset.replace('/', '_')
-        # dirs = os.path.join(base_dir, "context_saturation", "results_context", safe_model, safe_dataset)
+        # dirs = os.path.join(base_dir, "context_saturation", "results", safe_model, safe_dataset)
         # os.makedirs(dirs, exist_ok=True)
         # comparison_path = os.path.join(dirs, f"comparison_{args.context_size}_{safe_model}_{timestamp}.json")
         # with open(comparison_path, 'w') as f:
