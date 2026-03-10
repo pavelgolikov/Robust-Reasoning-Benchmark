@@ -21,6 +21,7 @@ def main():
     args = parser.parse_args()
     if args.names == 'all':
         experiment_names = [
+            'baseline',
             'not_not',
             'opposites',
             'sentence_reversal',

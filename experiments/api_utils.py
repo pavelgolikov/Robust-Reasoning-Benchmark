@@ -54,11 +54,11 @@ class GoogleProvider(LLMProvider):
             temperature=temperature,
             max_output_tokens=max_tokens,
         )
-        # Always pass system_instruction, even when using cached_content.
-        # Google's API lets the generate-time system_instruction override the
-        # one baked into the cache, so this reinforces formatting instructions
-        # (e.g. \boxed{}) that large contexts can drown out.
-        if system_instruction:
+        # Vertex AI forbids system_instruction alongside cached_content; the
+        # system prompt is baked into the cache at creation time instead.
+        # Bold-extraction fallback in extract_and_grade handles models that
+        # ignore the cached system prompt at large context sizes.
+        if system_instruction and not cached_content:
             config_kwargs['system_instruction'] = system_instruction
         if cached_content:
             config_kwargs['cached_content'] = cached_content

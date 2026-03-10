@@ -81,13 +81,13 @@ Alice, Bob, Carol, David - 4 names
 
 
 nohup python experiments/evaluate_context_api.py \
-   --model gemini-3-1-pro-preview \
+   --model gemini-3.1-pro-preview \
    --context_size 750000 \
-   --n_samples 1 \
+   --n_samples 4 \
    --max_tokens 32000 \
    --context_file experiments/context_saturation/contexts/context_math_750K_google.json \
-   --sleep 60 \
-   --cache_ttl 7200 \
+   --sleep 30 \
+   --cache_ttl 10800 \
    --context_type math \
    --no_preview &> eval_api_gemini31.out &
    
@@ -95,7 +95,7 @@ nohup python experiments/evaluate_context_api.py \
 python experiments/evaluate_context_api.py \
    --model claude-opus-4-6 \
    --context_size 750000 \
-   --n_samples 1 \
+   --n_samples 4 \
    --max_tokens 32000 \
    --context_file experiments/context_saturation/contexts/context_math_750K_anthropic.json \
    --context_type math \
@@ -104,15 +104,12 @@ python experiments/evaluate_context_api.py \
 
 python experiments/evaluate_context_api.py \
    --model gpt-5-4 \
-   --context_size 16000 \
-   --n_samples 1 \
-   --limit 4 \
+   --context_size 750000 \
+   --n_samples 4 \
    --max_tokens 32000 \
-   --context_file experiments/context_saturation/contexts/context_math_16K_openai.json \
+   --context_file experiments/context_saturation/contexts/context_math_750K_openai.json \
    --context_type math \
    --batch \
-   --no_preview
-
 
 
 Hello World I am math p
@@ -123,12 +120,13 @@ c                     l
                       e
 uoY .em evlos esaelP .m
 
+<!-- Launch Gemini and Anthropic jobs to get more results for context saturation. -->
 
-
-analysis script to analyze model's ability to decode the original problem statement. Run it on resutls folder to get
+analysis script to analyze model's ability to decode the original problem statement. Run it on results folder to get
 another set of graphs.
 
-script to analyze how many jobs from anthropic refused to execute due to safety filter.
+script to somehow express how Anthropic refused a lot of jobs on the plot. - or maybe separate plot for Anthropic
+specific.
 
-figures for transorms
+figures for transorms for section 3.
 

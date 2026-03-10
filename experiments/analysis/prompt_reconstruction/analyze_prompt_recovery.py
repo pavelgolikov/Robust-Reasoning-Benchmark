@@ -152,7 +152,6 @@ def main():
     args = parser.parse_args()
 
     # Determine techniques to process
-    # Determine techniques to process
     script_dir = os.path.dirname(os.path.abspath(__file__)) # experiments/analysis/prompt_reconstruction
     experiments_dir = os.path.dirname(os.path.dirname(os.path.dirname(script_dir))) # experiments
     
@@ -173,25 +172,45 @@ def main():
     
     # Always create output directory
     os.makedirs(output_dir, exist_ok=True)
+    
+    if args.names == 'all':
+        techniques = [
+            'not_not',
+            'opposites',
+            'sentence_reversal',
+            'split_reversal',
+            'word_reversal',
+            'wrappers',
+            'interleaved_context_line',
+            'interleaved_context_word',
+            'interleaved_context_symbol',
+            'rail_fence',
+        ]
+    else:
+        techniques = [n.strip() for n in args.names.split(',') if n.strip()]
 
-    techniques = args.names
-    if "all" in techniques:
-        # Auto-discover directories in experiments that have a 'results' subdir
-        techniques = []
-        excluded_dirs = {"analysis", "variables", "__pycache__", "baseline"}  # Exclude non-experiment dirs
-        for d in os.listdir(base_dir):
-            if d in excluded_dirs:
-                continue
-            dir_path = os.path.join(base_dir, d)
-            results_path = os.path.join(dir_path, "results")
-            # We don't strictly check for existence of the specific model/dataset subfolder here 
-            # to keep discovery lightweight, find_latest_result will return None if not found.
-            if os.path.isdir(dir_path) and os.path.exists(results_path):
-                techniques.append(d)
-        techniques.sort()
-        # Ensure baseline is included if it exists and we asked for 'all'
-        if os.path.exists(os.path.join(base_dir, "baseline", "results")):
-             techniques.insert(0, "baseline")
+
+    # techniques = args.names
+    # if "all" in techniques:
+    #     techniques = [
+
+    #     ]
+        # # Auto-discover directories in experiments that have a 'results' subdir
+        # techniques = []
+        # excluded_dirs = {"analysis", "variables", "__pycache__", "baseline"}  # Exclude non-experiment dirs
+        # for d in os.listdir(base_dir):
+        #     if d in excluded_dirs:
+        #         continue
+        #     dir_path = os.path.join(base_dir, d)
+        #     results_path = os.path.join(dir_path, "results")
+        #     # We don't strictly check for existence of the specific model/dataset subfolder here 
+        #     # to keep discovery lightweight, find_latest_result will return None if not found.
+        #     if os.path.isdir(dir_path) and os.path.exists(results_path):
+        #         techniques.append(d)
+        # techniques.sort()
+        # # Ensure baseline is included if it exists and we asked for 'all'
+        # if os.path.exists(os.path.join(base_dir, "baseline", "results")):
+        #      techniques.insert(0, "baseline")
 
     print(f"Techniques to analyze: {techniques}")
     print(f"Base Directory: {base_dir}")
