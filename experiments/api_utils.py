@@ -54,7 +54,11 @@ class GoogleProvider(LLMProvider):
             temperature=temperature,
             max_output_tokens=max_tokens,
         )
-        if system_instruction and not cached_content:
+        # Always pass system_instruction, even when using cached_content.
+        # Google's API lets the generate-time system_instruction override the
+        # one baked into the cache, so this reinforces formatting instructions
+        # (e.g. \boxed{}) that large contexts can drown out.
+        if system_instruction:
             config_kwargs['system_instruction'] = system_instruction
         if cached_content:
             config_kwargs['cached_content'] = cached_content

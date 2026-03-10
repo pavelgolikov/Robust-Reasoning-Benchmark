@@ -124,3 +124,11 @@ c                     l
 uoY .em evlos esaelP .m
 
 
+
+analysis script to analyze model's ability to decode the original problem statement. Run it on resutls folder to get
+another set of graphs.
+
+script to analyze how many jobs from anthropic refused to execute due to safety filter.
+
+figures for transorms
+

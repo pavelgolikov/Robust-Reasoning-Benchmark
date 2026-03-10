@@ -331,8 +331,13 @@ def is_equiv(str1, str2, verbose=False):
 def extract_and_grade(model_output, ground_truth):
     """Extract answer from model output and verify against ground truth using Math-Verify.
     
-    Uses last_boxed_only_string to extract the boxed answer first, then falls back
-    to Math-Verify's parse() for extraction if no boxed answer found.
+    Tries three extraction methods independently and returns correct if ANY matched:
+      1. \\boxed{} extraction (standard MATH format)
+      2. **bold** extraction (Gemini-style final answers)
+      3. Full-output parse via Math-Verify
+    
+    The extracted value logged comes from the first method that verified correct,
+    prioritising boxed > bold > full-output.
     
     Args:
         model_output: The full model output string.
@@ -342,29 +347,56 @@ def extract_and_grade(model_output, ground_truth):
         (extracted_answer_str, is_correct): Tuple of extracted answer string and correctness bool.
     """
     try:
-        # Try to extract boxed answer first (standard MATH format)
+        gold = parse(ground_truth)
+    except Exception:
+        return None, False
+
+    results = []  # list of (extracted_str, is_correct)
+
+    # --- Method 1: \\boxed{} ---
+    try:
         boxed_str = last_boxed_only_string(model_output)
-        extracted = remove_boxed(boxed_str) if boxed_str else None
-        
-        if extracted is not None:
-            # Use Math-Verify to compare
-            try:
-                gold = parse(ground_truth)
-                answer = parse(extracted)
-                is_correct = verify(gold, answer)
-            except Exception:
-                is_correct = False
-        else:
-            # No boxed answer found - try parsing entire output with Math-Verify
-            try:
-                gold = parse(ground_truth)
-                answer = parse(model_output)
-                is_correct = verify(gold, answer)
-                # Use string representation of parsed answer for logging
-                extracted = str(answer) if answer else None
-            except Exception:
-                is_correct = False
-        
-        return extracted, is_correct
-    except Exception as e:
-        return f"ERROR: {str(e)}", False
+        boxed_val = remove_boxed(boxed_str) if boxed_str else None
+        if boxed_val is not None:
+            answer = parse(boxed_val)
+            correct = verify(gold, answer)
+            results.append((boxed_val, correct))
+    except Exception:
+        pass
+
+    # --- Method 2: **bold** notation ---
+    try:
+        bold_matches = re.findall(r'\*\*([^*]{1,40})\*\*', model_output)
+        if bold_matches:
+            for candidate in reversed(bold_matches):
+                candidate = candidate.strip().rstrip('.')
+                if not re.search(r'\d', candidate):
+                    continue
+                # Reject section headers (alphabetic words of 4+ chars)
+                if re.search(r'[A-Za-z]{4,}', candidate):
+                    continue
+                answer = parse(candidate)
+                correct = verify(gold, answer)
+                results.append((candidate, correct))
+                break
+    except Exception:
+        pass
+
+    # --- Method 3: full-output parse ---
+    try:
+        answer = parse(model_output)
+        correct = verify(gold, answer)
+        extracted_str = str(answer) if answer else None
+        results.append((extracted_str, correct))
+    except Exception:
+        pass
+
+    # Pick the best: first correct result (boxed > bold > full), else first result
+    for extracted, correct in results:
+        if correct:
+            return extracted, True
+
+    # None matched — return the first extraction attempt for logging
+    if results:
+        return results[0][0], False
+    return None, False

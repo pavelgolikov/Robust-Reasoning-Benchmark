@@ -9,9 +9,9 @@
     "common_context": "HF Local Tokenizer Used: None. Strict API Evaluation Enforced."
   },
   "statistics": {
-    "correct": 2,
+    "correct": 3,
     "total": 4,
-    "failures": 2
+    "failures": 1
   },
   "results": [
     {
@@ -33,9 +33,9 @@
       "sample_idx": 0,
       "output": "To find the length of $AP$, we can use the properties of the symmedian of a triangle. \n\nLet $\\omega$ be the circumcircle of $\\triangle ABC$. The tangents to $\\omega$ at $B$ and $C$ intersect at $D$. A well-known geometric lemma states that the line segment connecting a vertex of a triangle to the intersection of the tangents to the circumcircle at the other two vertices is the symmedian from that vertex. Therefore, $AD$ is the $A$-symmedian of $\\triangle ABC$.\n\nThe line $AD$ intersects the circumcircle $\\omega$ again at $P$. The length of the symmedian chord $AP$ in a triangle can be found using the side lengths of the triangle. Let $a = BC = 9$, $b = AC = 10$, and $c = AB = 5$. \n\nThe length of the $A$-symmedian chord $AP$ is given by the formula:\n$$AP = \\frac{bc}{m_a}$$\nwhere $m_a$ is the length of the median from $A$ to $BC$. \n\nFirst, we calculate the length of the median $m_a$ using Apollonius's Theorem (or the median formula):\n$$m_a = \\frac{1}{2}\\sqrt{2b^2 + 2c^2 - a^2}$$\n\nSubstitute the given side lengths into the formula:\n$$m_a = \\frac{1}{2}\\sqrt{2(10)^2 + 2(5)^2 - (9)^2}$$\n$$m_a = \\frac{1}{2}\\sqrt{2(100) + 2(25) - 81}$$\n$$m_a = \\frac{1}{2}\\sqrt{200 + 50 - 81}$$\n$$m_a = \\frac{1}{2}\\sqrt{169}$$\n$$m_a = \\frac{13}{2}$$\n\nNow we can find the length of the symmedian chord $AP$:\n$$AP = \\frac{bc}{m_a}$$\n$$AP = \\frac{10 \\times 5}{\\frac{13}{2}}$$\n$$AP = \\frac{50}{\\frac{13}{2}}$$\n$$AP = \\frac{100}{13}$$\n\nThe length $AP$ is written in the form $\\frac{m}{n}$ where $m = 100$ and $n = 13$. Since $13$ is a prime number and does not divide $100$, $m$ and $n$ are relatively prime integers.\n\nWe are asked to find the sum $m + n$:\n$$m + n = 100 + 13 = 113$$\n\n**Final Answer:**\nThe value of $m + n$ is **113**.",
       "post_context_prompt": "Solve the following problem using regular mathematics.\nLet $ABC$ be a triangle inscribed in circle $\\omega$. Let the tangents to $\\omega$ at $B$ and $C$ intersect at point $D$, and let $\\overline{AD}$ intersect $\\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.",
-      "extracted": "[m + n, 'm + n']",
+      "extracted": "113",
       "ground_truth": "113",
-      "correct": false,
+      "correct": true,
       "context_type": "math",
       "distractor_token_count": 16000,
       "model_output_len_char": 1722,
