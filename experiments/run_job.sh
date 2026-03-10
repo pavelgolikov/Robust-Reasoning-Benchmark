@@ -53,10 +53,3 @@ python evaluate_context.py \
   --n_samples 16 \
   --num_gpus 4 &>> eval_out.out
 
-
-# python evaluate_context.py \
-#   --model tiiuae/Falcon-H1R-7B \
-#   --context_file context_saturation/contexts/context_math_16K_google.json \
-#   --context_type math \
-#   --context_size 256000 \
-#   --max_tokens 32000 \
