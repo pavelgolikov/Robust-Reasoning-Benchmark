@@ -26,17 +26,19 @@ export NCCL_IGNORE_DISABLED_P2P=1
 #   --model openai/gpt-oss-120b \
 #   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_openai_gpt-oss-120b.json \
 #   --context_type math \
-#   --context_size 128000 \
+#   --max_model_len 128000 \
+#   --context_size 98304 \
 #   --max_tokens 32000 \
-#   --n_samples 16 \
+#   --n_samples 8 \
 #   --num_gpus 4 &>> eval_out2.out
 
 
-python evaluate_context.py \
-  --model GAIR/LIMO-v2 \
-  --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_GAIR_LIMO-v2.json \
-  --context_type math \
-  --context_size 128000 \
-  --max_tokens 32000 \
-  --n_samples 16 \
-  --num_gpus 4 &> eval_out2.out
+# python evaluate_context.py \
+#   --model GAIR/LIMO-v2 \
+#   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_16K_openai.json \
+#   --context_type math \
+#   --max_model_len 128000 \
+#   --context_size 16000 \
+#   --max_tokens 8192 \
+#   --n_samples 8 \
+#   --num_gpus 4 &> eval_out2.out

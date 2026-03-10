@@ -172,11 +172,10 @@ def main():
                         help="Type of context (e.g. 'math' or 'text') for logging.")
     parser.add_argument("--context_size", type=int, required=True,
                         help="Target context size in tokens (used for validation and logging).")
-    parser.add_argument("--max_tokens", type=int, default=4096,
+    parser.add_argument("--max_tokens", type=int, default=32000,
                         help="Max output tokens for generation.")
     parser.add_argument("--num_gpus", type=int, default=1)
-    parser.add_argument("--max_model_len", type=int, default=None,
-                        help="Max model context length for vLLM. "
+    parser.add_argument("--max_model_len", type=int, default=None, help="Max model context length for vLLM. "
                              "Defaults to context_size + max_tokens + 512.")
     parser.add_argument("--dry", action="store_true", help="Dry run (skip model loading and generation)")
     args = parser.parse_args()
