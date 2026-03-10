@@ -10,6 +10,7 @@ from api_utils import (
     generate_response, submit_batch, infer_provider,
     create_google_context_cache_from_messages,
     prepare_anthropic_cached_messages_from_list,
+    start_cache_renewal_thread,
 )
 from transformers import AutoTokenizer
 
@@ -240,6 +241,13 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
         ttl_seconds=ttl
     )
 
+    # Start auto-renewal thread for Google caches to prevent expiry during long runs
+    cache_renewal_stop = None
+    if context_cache and context_cache['type'] == 'google':
+        _, cache_renewal_stop = start_cache_renewal_thread(
+            context_cache['ref'], ttl_seconds=ttl
+        )
+
     print(f"Generating answers for {len(jobs)} jobs...")
     results = []
     stats = {"correct": 0, "total": 0, "failures": 0}
@@ -255,7 +263,9 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
                 context_cache=context_cache,
             )
         except Exception as e:
-            print(f"  Error: {e}")
+            # Reaches here only for safety filter blocks or exhausted transient retries
+            # (quota/rate-limit errors are retried indefinitely inside generate_response)
+            print(f"  Error (non-retryable): {e}")
             generated_text = f"ERROR: {str(e)}"
 
         extracted, is_correct = extract_and_grade(generated_text, job['ground_truth'])
@@ -296,6 +306,11 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
             print(f"  Pacing sequential request: Sleeping for {args.sleep}s to respect Cloud TPM limits...")
             import time
             time.sleep(args.sleep)
+
+    # Stop cache renewal thread
+    if cache_renewal_stop:
+        cache_renewal_stop.set()
+        print("  [Cache renewal] Stopped auto-renewal thread.")
 
     acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
     print(f"\n--- {context_type.upper()} Results ---")

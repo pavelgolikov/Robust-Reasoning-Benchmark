@@ -213,12 +213,30 @@ def generate_response(messages, model_name, provider=None, temperature=0.7, max_
     except Exception as e:
         raise RuntimeError(f"Failed to initialize provider '{provider}': {e}")
     
-    retries = 5
+    max_transient_retries = 5
     base_delay = 2
+    quota_attempt = 0
 
-    for attempt in range(retries):
+    def _is_quota_error(exc):
+        """Check if exception is a rate-limit / quota error (transient, retryable forever)."""
+        e_str = str(exc)
+        if hasattr(exc, 'status_code') and exc.status_code == 429:
+            return True
+        if '429' in e_str or 'RESOURCE_EXHAUSTED' in e_str or 'Quota exceeded' in e_str:
+            return True
+        if 'rate limit' in e_str.lower() or 'rate_limit' in e_str.lower():
+            return True
+        return False
+
+    def _is_safety_error(exc):
+        """Check if exception is a content safety / policy block (non-retryable)."""
+        e_str = str(exc).lower()
+        return any(kw in e_str for kw in ['safety', 'blocked', 'content_filter',
+                                           'content policy', 'harm', 'responsible_ai'])
+
+    transient_attempt = 0
+    while True:
         try:
-            # Pass context cache to the appropriate provider method
             extra_kwargs = {}
             if context_cache:
                 if context_cache['type'] == 'google' and provider == 'google':
@@ -227,20 +245,28 @@ def generate_response(messages, model_name, provider=None, temperature=0.7, max_
                     extra_kwargs['cached_context_messages'] = context_cache['ref']
             return llm_provider.generate(messages, model_name, temperature, max_tokens, **extra_kwargs)
         except Exception as e:
-            logging.warning(f"Attempt {attempt + 1}/{retries} failed for {provider}/{model_name}: {e}")
-            if hasattr(e, 'status_code') and e.status_code == 429: # Rate limit
-                print(f"  Hit Google Cloud quota limit. Pausing for {30 * (2 ** attempt)}s to let the window cool down...")
-                time.sleep(30 * (2 ** attempt))
-            elif "429" in str(e):
-                print(f"  Hit Cloud quota limit. Pausing for {30 * (2 ** attempt)}s to let the window cool down...")
-                time.sleep(30 * (2 ** attempt))
-            elif "Quota exceeded" in str(e):
-                print(f"  Hit Quota limit. Pausing for {30 * (2 ** attempt)}s...")
-                time.sleep(30 * (2 ** attempt))
-            else:
-                time.sleep(base_delay)
-    
-    raise RuntimeError(f"Failed to generate response after {retries} retries.")
+            if _is_safety_error(e):
+                # Safety filter — don't retry, let caller handle
+                logging.warning(f"Safety filter block for {provider}/{model_name}: {e}")
+                raise
+
+            if _is_quota_error(e):
+                # Quota / rate limit — retry forever with exponential backoff, capped at 5 min
+                quota_attempt += 1
+                wait = min(30 * (2 ** (quota_attempt - 1)), 300)
+                logging.warning(f"Quota/rate limit hit (attempt {quota_attempt}) for "
+                                f"{provider}/{model_name}: {e}")
+                print(f"  Quota limit hit. Waiting {wait}s before retry (attempt {quota_attempt})...")
+                time.sleep(wait)
+                continue
+
+            # Other transient error — limited retries
+            transient_attempt += 1
+            logging.warning(f"Attempt {transient_attempt}/{max_transient_retries} failed for "
+                            f"{provider}/{model_name}: {e}")
+            if transient_attempt >= max_transient_retries:
+                raise RuntimeError(f"Failed after {max_transient_retries} retries: {e}")
+            time.sleep(base_delay * transient_attempt)
 
 
 # =====================================================================
@@ -387,6 +413,58 @@ def create_google_context_cache_from_messages(messages, model_name, ttl_seconds=
     cache = client.caches.create(model=full_model_name, config=types.CreateCachedContentConfig(**config_kwargs))
     print(f"Created Google context cache: {cache.name} (model={model_name}, ttl={ttl_seconds}s, {len(contents)} messages)")
     return cache.name
+
+
+def renew_google_cache_ttl(cache_name, ttl_seconds=3600):
+    """
+    Renew (extend) the TTL of an existing Google context cache.
+    Uses client.caches.update() with a new ttl value.
+    """
+    from google import genai
+    from google.genai import types
+    project = os.environ.get("GOOGLE_PROJECT_ID")
+    location = os.environ.get("GOOGLE_LOCATION", "global")
+    api_key = os.environ.get("GOOGLE_API_KEY")
+
+    if project:
+        client = genai.Client(vertexai=True, project=project, location=location)
+    elif api_key:
+        client = genai.Client(api_key=api_key)
+    else:
+        raise ValueError("Neither GOOGLE_PROJECT_ID nor GOOGLE_API_KEY set.")
+
+    config = types.UpdateCachedContentConfig(ttl=f"{ttl_seconds}s")
+    client.caches.update(name=cache_name, config=config)
+    print(f"  [Cache renewal] Extended TTL for {cache_name} by {ttl_seconds}s")
+
+
+def start_cache_renewal_thread(cache_name, ttl_seconds, stop_event=None):
+    """
+    Spawn a daemon thread that renews the cache TTL at ttl/2 intervals.
+    Returns (thread, stop_event) — call stop_event.set() when done to stop renewal.
+    """
+    import threading
+
+    if stop_event is None:
+        stop_event = threading.Event()
+
+    renewal_interval = 3600  # renew every hour
+
+    def _renewal_loop():
+        while not stop_event.is_set():
+            stop_event.wait(renewal_interval)
+            if stop_event.is_set():
+                break
+            try:
+                renew_google_cache_ttl(cache_name, ttl_seconds=3600)  # renew for 1hr only
+            except Exception as e:
+                print(f"  [Cache renewal] WARNING: renewal failed: {e}")
+
+    thread = threading.Thread(target=_renewal_loop, daemon=True,
+                              name=f"cache-renewal-{cache_name[-8:]}")
+    thread.start()
+    print(f"  [Cache renewal] Started auto-renewal thread (every {renewal_interval}s)")
+    return thread, stop_event
 
 
 def prepare_anthropic_cached_messages_from_list(messages):

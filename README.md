@@ -86,8 +86,8 @@ nohup python experiments/evaluate_context_api.py \
    --n_samples 4 \
    --max_tokens 32000 \
    --context_file experiments/context_saturation/contexts/context_math_750K_google.json \
-   --sleep 30 \
-   --cache_ttl 10800 \
+   --sleep 60 \
+   --cache_ttl 36000 \
    --context_type math \
    --no_preview &> eval_api_gemini31.out &
    
