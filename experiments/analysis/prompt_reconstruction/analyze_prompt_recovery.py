@@ -306,7 +306,7 @@ def scan_recovery_results(base_dir: str, techniques: List[str], safe_dataset: st
     return data
 
 
-def plot_recovery(technique_data, dataset_name, outdir):
+def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False):
     """
     Produce a bar-chart grid of prompt recovery rates by model.
     technique_data: dict[technique] -> dict[model] -> {recovery_rate, n_samples}
@@ -390,10 +390,7 @@ def plot_recovery(technique_data, dataset_name, outdir):
 
     fig.suptitle(f"Prompt Recovery Rate by Model — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
 
-    for idx, model_name in enumerate(all_models):
-        row, col = divmod(idx, ncols)
-        ax = axes[row, col]
-
+    def _plot_model_on_ax(ax, model_name):
         rates = []
         bar_colors = []
         for t in ordered_techniques:
@@ -424,6 +421,10 @@ def plot_recovery(technique_data, dataset_name, outdir):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
+    for idx, model_name in enumerate(all_models):
+        row, col = divmod(idx, ncols)
+        _plot_model_on_ax(axes[row, col], model_name)
+
     for idx in range(n_models, nrows * ncols):
         row, col = divmod(idx, ncols)
         axes[row, col].set_visible(False)
@@ -435,6 +436,23 @@ def plot_recovery(technique_data, dataset_name, outdir):
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"  Saved plot: {out_path}")
+    
+    # ── Per-model PDFs ──
+    if per_model_pdfs:
+        pdf_dir = os.path.join(outdir, "per_model")
+        os.makedirs(pdf_dir, exist_ok=True)
+        for model_name in all_models:
+            fig_m, ax_m = plt.subplots(figsize=(max(8, n_techniques * 0.8), 5.5))
+            _plot_model_on_ax(ax_m, model_name)
+            model_label = MODEL_SHORT_NAMES.get(model_name, model_name).replace('\n', ' ')
+            fig_m.suptitle(f"Prompt Recovery — {model_label} — {dataset_label}", fontsize=16, fontweight='bold')
+            plt.tight_layout(rect=[0, 0, 1, 0.93])
+            safe_model = model_name.replace('/', '_').replace(' ', '_')
+            pdf_path = os.path.join(pdf_dir, f"{safe_model}_recovery_{dataset_name}.pdf")
+            fig_m.savefig(pdf_path, bbox_inches='tight', facecolor='white')
+            plt.close(fig_m)
+            print(f"  Saved PDF: {pdf_path}")
+
     return out_path
 
 
@@ -455,6 +473,8 @@ def main():
                         help="Skip analysis, just plot from existing recovery JSONs")
     parser.add_argument("--skip_existing", action="store_true",
                         help="Skip model/technique combos that already have a recovery JSON")
+    parser.add_argument("--per_model_pdfs", action="store_true",
+                        help="Generate separate PDF plots for each model")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -477,7 +497,7 @@ def main():
             print("No recovery reports found. Run analysis first.")
             return
         outdir = os.path.join(base_dir, "analysis", "plots")
-        plot_recovery(recovery_data, safe_dataset, outdir)
+        plot_recovery(recovery_data, safe_dataset, outdir, per_model_pdfs=args.per_model_pdfs)
         return
 
     # ── Determine models ──
@@ -570,7 +590,7 @@ def main():
     recovery_data = scan_recovery_results(base_dir, techniques, safe_dataset)
     if recovery_data:
         outdir = os.path.join(base_dir, "analysis", "plots")
-        plot_recovery(recovery_data, safe_dataset, outdir)
+        plot_recovery(recovery_data, safe_dataset, outdir, per_model_pdfs=args.per_model_pdfs)
     else:
         print("No recovery data found to plot.")
 
