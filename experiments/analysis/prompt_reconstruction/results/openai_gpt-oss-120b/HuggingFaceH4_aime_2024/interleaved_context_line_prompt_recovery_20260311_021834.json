@@ -1,0 +1,742 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_line/results/openai_gpt-oss-120b/HuggingFaceH4_aime_2024/openai_gpt-oss-120b_HuggingFaceH4_aime_2024_interleaved_context_line_s42_20260303_145000.json",
+  "total_samples": 481,
+  "original_correct": 335,
+  "semantic_correct": 457,
+  "recovered_cases": [
+    {
+      "id": 60,
+      "score": 0.965045690536499,
+      "target": "Every morning Aya goes for a 9-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of s kilometers per hour, the walk takes her 4 hours, including t minutes spent in the coffee shop. When she walks s+2 kilometers per hour, the walk takes her 2 hours and 24 minutes, including t minutes spent in the coffee shop. Suppose Aya walks at s+frac{1}{2} kilometers per hour. Find the number of minutes the walk takes her, including the t minutes spent in the coffee shop.",
+      "best_window": "full problem A statement: \"Every morning Aya goes for a 9-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of s kilometers per hour, the walk takes her 4 hours, including t minutes spent in the coffee shop. When she walks s+2 kilometers per hour, the walk takes her 2 hours and 24 minutes, including t minutes spent in the coffee shop. Suppose Aya walks at s+\u00bd kilometers per hour. Find the number of minutes the walk takes her, including the t minutes spent"
+    },
+    {
+      "id": 61,
+      "score": 0.9561322331428528,
+      "target": "Let ABC be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.",
+      "best_window": "triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m+n.\" That's problem A. Now solve geometry."
+    },
+    {
+      "id": 61,
+      "score": 0.9735978841781616,
+      "target": "Let ABC be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.",
+      "best_window": "be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.\" Check missing"
+    },
+    {
+      "id": 61,
+      "score": 0.965485155582428,
+      "target": "Let ABC be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.",
+      "best_window": "B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.\" We need to correct \"Let th e tangents\" => \"Let the tangents\". So full problem: Let ABC be a triangle inscribed in circle omega. Let"
+    },
+    {
+      "id": 62,
+      "score": 0.9837390184402466,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is (dfrac{m}{n}), where (m) and (n) are relatively prime positive integers. What is (m+n)?* --- Let"
+    },
+    {
+      "id": 62,
+      "score": 0.9634389877319336,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is frac{m}{n}, where m and n are relatively prime positive integers. What is m+n?\" We need to compute probability that after"
+    },
+    {
+      "id": 62,
+      "score": 0.9757689237594604,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is frac{m}{n}, where m and n are relatively prime positive integers. What is m+n?\" Check segment 2:"
+    },
+    {
+      "id": 62,
+      "score": 0.9642011523246765,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is frac{m}{n}, where m and n are relatively prime positive integers. What is m+n?\" That seems plausible. Thus the"
+    },
+    {
+      "id": 62,
+      "score": 0.9837390780448914,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is (dfrac{m}{n}), where (m) and (n) are relatively prime positive integers. What is (m+n)?* --- Let"
+    },
+    {
+      "id": 62,
+      "score": 0.9607542157173157,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "statement: Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n, where m and n are relatively prime positive integers. What is m+n? Thus problem: We have regular octagon with 8 vertices. Each"
+    },
+    {
+      "id": 62,
+      "score": 0.9762440919876099,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is frac{m}{n}, where m and n are relatively prime positive integers. What is m+n?\" Great. Now"
+    },
+    {
+      "id": 62,
+      "score": 0.9625035524368286,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is frac{m}{n}, where m and n are relatively prime positive integers. What is m+n?\" That makes sense. Thus final problem A: Regular octagon vertices colored independently red or blue with equal"
+    },
+    {
+      "id": 62,
+      "score": 0.9773160219192505,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "\"Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?\""
+    },
+    {
+      "id": 62,
+      "score": 0.9701430797576904,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "\"Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is frac{m}{n}, where m and n are relatively prime positive integers. What is m+n?\""
+    },
+    {
+      "id": 63,
+      "score": 0.985429048538208,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y)))].\" Check the"
+    },
+    {
+      "id": 63,
+      "score": 0.9338361024856567,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "Segment1: \"Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1{\" Segment2: \"4}|. Find the number of intersections of the graphs of [y=\" Segment3: \"4 g(f(sin (2 pi x))) quadtext{ and }quad"
+    },
+    {
+      "id": 63,
+      "score": 0.9718351364135742,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi"
+    },
+    {
+      "id": 63,
+      "score": 0.9392374753952026,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "g(x)=|| x|-tfrac{1/\" Segment3: \"4}|. Find the number of intersections of the graphs of [y=\" Segment5: \"4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (\" Segment7: \"3"
+    },
+    {
+      "id": 63,
+      "score": 0.9738154411315918,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "\"3 pi y))).]\" Now combine: \"Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y)))].\""
+    },
+    {
+      "id": 63,
+      "score": 0.9857121706008911,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "fully: Full A: Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos"
+    },
+    {
+      "id": 63,
+      "score": 0.9938846826553345,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "\"Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y)))].\""
+    },
+    {
+      "id": 63,
+      "score": 0.986444890499115,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y= 4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y)))].\" But need"
+    },
+    {
+      "id": 63,
+      "score": 0.9907516241073608,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y)))].\" Check"
+    },
+    {
+      "id": 63,
+      "score": 0.9039512872695923,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=\". Thus g(x)=||x| - 1/4|? Actually \"|| x| - 1/4|\". Good. Segment5: \"4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos"
+    },
+    {
+      "id": 63,
+      "score": 0.9913177490234375,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "\"Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1/4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y)))].\""
+    },
+    {
+      "id": 63,
+      "score": 0.978456974029541,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos"
+    },
+    {
+      "id": 63,
+      "score": 0.9876480102539062,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y)))]. But need to"
+    },
+    {
+      "id": 63,
+      "score": 0.9700275659561157,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "x|-tfrac{1{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi"
+    },
+    {
+      "id": 63,
+      "score": 0.9420080184936523,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "and g(x)=|| x|-tfrac{1}{\" 2. \"<Problem A> 4}|. Find the number of intersections of the graphs of [y=\" 3. \"<Problem A> 4 g(f(sin (2 pi x))) quadtext{ and }quad"
+    },
+    {
+      "id": 63,
+      "score": 0.9566845893859863,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{\" Segment3: \"4}|. Find the number of intersections of the graphs of [y=\" Segment5: \"4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (\""
+    },
+    {
+      "id": 64,
+      "score": 0.9898606538772583,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.\" But we"
+    },
+    {
+      "id": 64,
+      "score": 0.9789896011352539,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible"
+    },
+    {
+      "id": 64,
+      "score": 0.975932240486145,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "is: \"Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by"
+    },
+    {
+      "id": 64,
+      "score": 0.9888794422149658,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "\"Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.\""
+    },
+    {
+      "id": 64,
+      "score": 0.988027811050415,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.\" That seems"
+    },
+    {
+      "id": 64,
+      "score": 0.9886858463287354,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.\" Thus problem: find"
+    },
+    {
+      "id": 64,
+      "score": 0.968447208404541,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "there exists a positive integer n such that n^{4}+1 is divisible by p^{2}.\" Then \"Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.\" Thus problem A: Determine the smallest prime p"
+    },
+    {
+      "id": 65,
+      "score": 0.9599577188491821,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "that AB = CD = sqrt41, AC = BD = sqrt80, and BC = AD = sqrt89. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. The distance can be written in the form (m sqrt n)/p, where m,n,p positive integers, m and p relatively prime, n not divisible by square of any prime. Find m+n+p. Thus problem: In a tetrahedron"
+    },
+    {
+      "id": 65,
+      "score": 0.9878579378128052,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\" Yes that"
+    },
+    {
+      "id": 65,
+      "score": 0.984467089176178,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. The distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\" Yes."
+    },
+    {
+      "id": 65,
+      "score": 0.9663434028625488,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "AB=CD= sqrt{41}, A C=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\" Note there is a stray \"A\""
+    },
+    {
+      "id": 65,
+      "score": 0.9888166189193726,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "be a tetrahedron such that AB=CD= sqrt{41}, A C=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\" But"
+    },
+    {
+      "id": 65,
+      "score": 0.9565508365631104,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}.\" Next: \"There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\" Thus problem: Find"
+    },
+    {
+      "id": 65,
+      "score": 0.9888166189193726,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "be a tetrahedron such that AB=CD= sqrt{41}, A C=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\" But"
+    },
+    {
+      "id": 65,
+      "score": 0.9655987024307251,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. The distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\" But note there is a formatting glitch: after \"AB=CD= sqrt{41}, A\" then next continues \"C=BD= sqrt{80}\". Actually"
+    },
+    {
+      "id": 65,
+      "score": 0.9859621524810791,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "ABCD be a tetrahedron such that AB=CD= sqrt{41}, A C=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. The distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\""
+    },
+    {
+      "id": 65,
+      "score": 0.9641063213348389,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "= CD = sqrt{41}, AC = BD = sqrt{80}, and BC = AD = sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. The distance can be written in the form frac{msqrt{n}}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\" Yes."
+    },
+    {
+      "id": 67,
+      "score": 0.9089211821556091,
+      "target": "There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.",
+      "best_window": "exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=1. Find xy.\" Thus"
+    },
+    {
+      "id": 70,
+      "score": 0.9492062926292419,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16, AB=107, FG=17, and EF=184, what is the length of CE?\" We need to parse:"
+    },
+    {
+      "id": 70,
+      "score": 0.9498683214187622,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16, AB=107, FG=17, and EF=184, what is the length of CE?\" Need to"
+    },
+    {
+      "id": 73,
+      "score": 0.9532278776168823,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n. Find"
+    },
+    {
+      "id": 73,
+      "score": 0.9582582116127014,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\" We need to interpret problem: There is a triangle ABC. Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC respectively."
+    },
+    {
+      "id": 73,
+      "score": 0.9324771165847778,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n ... Find m+n.\" Interpretation: There's a triangle ABC. There are eight circles of"
+    },
+    {
+      "id": 73,
+      "score": 0.9766915440559387,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\" We need to"
+    },
+    {
+      "id": 73,
+      "score": 0.955524742603302,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "Now combine: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\" We need to understand the geometry: eight circles radius"
+    },
+    {
+      "id": 73,
+      "score": 0.9786235094070435,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\" But there is"
+    },
+    {
+      "id": 73,
+      "score": 0.9024107456207275,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m"
+    },
+    {
+      "id": 73,
+      "score": 0.9519731998443604,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "Find m+n.\" Now full statement: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively"
+    },
+    {
+      "id": 73,
+      "score": 0.9577174782752991,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius (34) are sequentially tangent, and two of the circles are tangent to (AB) and (BC) of triangle (ABC), respectively. (2024) circles of radius (1) can be arranged in the same manner. The inradius of triangle (ABC) can be expressed as (frac{m}{n}), where (m) and (n) are relatively prime positive integers. Find (m+n).* Solving the"
+    },
+    {
+      "id": 73,
+      "score": 0.9829900860786438,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "\"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.9377508163452148,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "m+n.\" Now concatenate: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive"
+    },
+    {
+      "id": 73,
+      "score": 0.9829901456832886,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "\"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.9608911871910095,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" But need to understand"
+    },
+    {
+      "id": 76,
+      "score": 0.9751852750778198,
+      "target": "Let triangle ABC have circumcenter O and incenter I with overline{IA}perpoverline{OI}, circumradius 13, and inradius 6. Find ABcdot AC.",
+      "best_window": "\"Let triangle ABC have circumcenter O and incenter I with overline{IA}perpoverline{OI}, circumradius 13, and inradius 6. Find ABcdot AC.\" Yes. Now solve"
+    },
+    {
+      "id": 77,
+      "score": 0.9312621355056763,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "+ b^2a + b^2c + c^2a + c^2b = 6,000,000.; end{equ\" 4. \"<Problem A> ation*}\" 5. \"<Problem A> Find the number of triples of nonnegative integers ((a,b,c)\" 6. \"<Problem A> ) satisfying (a + b + c = 300)"
+    },
+    {
+      "id": 77,
+      "score": 0.9440453052520752,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "the number of triples of non\u2011negative integers ((a,b,c)) satisfying* [ a+b+c=300qquadtext{and}qquad 2b+a^{2}c+b^{2}a+b^{2}c+c^{2}a+c^{2}b=6,000,000 . ] --- **Solution** From (a+b+c=300) we have (a=300-b-c). Substituting this into the second"
+    },
+    {
+      "id": 77,
+      "score": 0.9300329089164734,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "6,000,000. Wait there is also a term maybe a^2 b? Not present. Let's accept as given. Thus problem A: Find number of nonnegative integer triples (a,b,c) such that a + b + c = 300 and a^2 c +"
+    },
+    {
+      "id": 77,
+      "score": 0.9589353799819946,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "number of triples of nonnegative integers (a,b,c) satisfying a + b + c = 300 and; a^2 b + a^2 c + b^2 a + b^2 c + c^2 a + c^2 b = 6,000,000.\" But we need check"
+    },
+    {
+      "id": 77,
+      "score": 0.9507158994674683,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "*Find the number of triples of non\u2011negative integers ((a,b,c)) satisfying* [ a+b+c=300qquadtext{and}qquad 2b + a^{2}c + b^{2}a + b^{2}c + c^{2}a + c^{2}b = 6,000,000 ."
+    },
+    {
+      "id": 77,
+      "score": 0.9651997685432434,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "number of triples of nonnegative integers (a,b,c) satisfying a + b + c = 300 and a^2 b + b^2 a + b^2 c + c^2 a + c^2 b = 6,000,000.\" But"
+    },
+    {
+      "id": 81,
+      "score": 0.9203881025314331,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "number of rectangles that can be formed inside a fi\" Segment 3: \"xed regular dodecagon (12-gon) where each side of the rect\" Segment 5: \"angle lies on either a side or a diagonal of the dodecagon. \" Segment 7: \"The diagram below shows three of those rectangles.; [asy] un\" Segment 9: \"itsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4\" Segment 11: \"+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330))\" Segment 13: \"; filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle,"
+    },
+    {
+      "id": 81,
+      "score": 0.9217652082443237,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "as they appear: 1. \"Find the number of rectangles that can be formed inside a fi\" 2. \"xed regular dodecagon (12-gon) where each side of the rect\" 3. \"angle lies on either a side or a diagonal of the dodecagon. \" 4. \"The diagram below shows three of those rectangles.; [asy] un\" 5. \"itsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4\" 6. \"+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330))\" 7. \"; filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle,"
+    },
+    {
+      "id": 81,
+      "score": 0.9668370485305786,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles.; [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]\" There are"
+    },
+    {
+      "id": 81,
+      "score": 0.9230457544326782,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "1. \"Find the number of rectangles that can be formed inside a fi\" 2. \"xed regular dodecagon (12-gon) where each side of the rect\" 3. \"angle lies on either a side or a diagonal of the dodecagon. \" 4. \"The diagram below shows three of those rectangles.; [asy] un\" 5. \"itsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4\" 6. \"+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330))\" 7. \"; filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, medi\" 8. \"umgray,"
+    },
+    {
+      "id": 81,
+      "score": 0.9758163690567017,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "join: \"Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles.; [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediummgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidt"
+    },
+    {
+      "id": 81,
+      "score": 0.9357074499130249,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "side or a diagonal of the dodecagon. \" 4. \"The diagram below shows three of those rectangles.; [asy] un\" 5. \"itsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4\" 6. \"+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330))\" 7. \"; filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, medi\" 8. \"umgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidt\" 9. \"h(1.5)); [/asy]\" Combine to reconstruct full problem statement: \"Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side"
+    },
+    {
+      "id": 81,
+      "score": 0.9402110576629639,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "\"Find the number of rectangles that can be formed inside a fi\" 2. \"xed regular dodecagon (12-gon) where each side of the rect\" 3. \"angle lies on either a side or a diagonal of the dodecagon.\" 4. \"The diagram below shows three of those rectangles.; [asy] un\" 5. \"itsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4\" 6. \"+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330))\" 7. \"; filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, medi\" 8. \"umgray, linewidth(1.5)); draw((0,0.366)--(0.366,0),"
+    },
+    {
+      "id": 81,
+      "score": 0.9558700323104858,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "(remove line breaks). Let's piece: \"Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles.; [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle,"
+    },
+    {
+      "id": 81,
+      "score": 0.9115149974822998,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "\"Find the number of rectangles that can be formed inside a fi\" Line3: \"xed regular dodecagon (12-gon) where each side of the rect\" Line5: \"angle lies on either a side or a diagonal of the dodecagon. \" Line7: \"The diagram below shows three of those rectangles.; [asy] un\" Line9: \"itsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4\" Line11: \"+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330))\" Line13: \"; filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, medi\" Line15: \"umgray, linewidth(1.5));"
+    },
+    {
+      "id": 81,
+      "score": 0.9285740256309509,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "sequentially: 1: \"Find the number of rectangles that can be formed inside a fi\" 3: \"xed regular dodecagon (12-gon) where each side of the rect\" 5: \"angle lies on either a side or a diagonal of the dodecagon. \" 7: \"The diagram below shows three of those rectangles.; [asy] un\" 9: \"itsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4\" 11: \"+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330))\" 13: \"; filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, medi\" 15:"
+    },
+    {
+      "id": 81,
+      "score": 0.9316487312316895,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "a side or a diagonal of the dodecagon. \" Line4: \"The diagram below shows three of those rectangles.; [asy] un\" Line5: \"itsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4\" Line6: \"+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330))\" Line7: \"; filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, medi\" Line8: \"umgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidt\" Line9: \"h(1.5)); [/asy]\" Now join: \"Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle"
+    },
+    {
+      "id": 82,
+      "score": 0.9678733348846436,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "integers has the following properties:; \" 3: \"bullet The sum of the items in the list is 30.; bullet\" 5: \" The unique mode of the list is 9.; bullet The median \" 7: \"of the list is a positive integer that does not appear in th\" 9: \"e list itself.; Find the sum of the squares of all the"
+    },
+    {
+      "id": 82,
+      "score": 0.970055341720581,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "positive integers has the following properties:; \" 3: \"bullet The sum of the items in the list is 30.; bullet\" 5: \" The unique mode of the list is 9.; bullet The median \" 7: \"of the list is a positive integer that does not appear in th\" 9: \"e list itself.; Find the sum of the squares of all"
+    },
+    {
+      "id": 82,
+      "score": 0.9677987098693848,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "integers has the following properties:; \" 2. \"bullet The sum of the items in the list is 30.; bullet\" 3. \" The unique mode of the list is 9.; bullet The median \" 4. \"of the list is a positive integer that does not appear in th\" 5. \"e list itself.; Find the sum of the squares of all the"
+    },
+    {
+      "id": 82,
+      "score": 0.9506484270095825,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "positive integers has the following properties: The sum of the items in the list is 30. The unique mode of the list is 9. The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.\" That seems coherent. So problem A:"
+    },
+    {
+      "id": 85,
+      "score": 0.9545334577560425,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "\"Let ABCDEF be a convex equilateral hexagon in which all pair s of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 20, 240, and 300. Find the side length of the"
+    },
+    {
+      "id": 85,
+      "score": 0.9724379777908325,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "problem: Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 20, 240, and 300. Find the side length of the hexagon. We need to find side length of"
+    },
+    {
+      "id": 85,
+      "score": 0.9669637680053711,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "sense. So problem: Let ABCDEF be a convex equilateral hexagon (so all sides equal) in which all pairs of opposite sides are parallel. The triangle formed by the extensions of AB, CD, and EF has side lengths 20, 240, and 300. Find the side length of the hexagon. We need"
+    },
+    {
+      "id": 85,
+      "score": 0.9642911553382874,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "side length of the hexagon. Thus problem A: Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle formed by the extensions of segments AB, CD, and EF has side lengths 20, 240, and 300. Find the side length of the hexagon."
+    },
+    {
+      "id": 85,
+      "score": 0.9320025444030762,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 20, 240, and 300. Find the side length of the hexagon.\" Yes that makes sense:"
+    },
+    {
+      "id": 85,
+      "score": 0.9339999556541443,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "Segment1: \"Let ABCDEF be a convex equilateral hexagon in which all pair\" Segment2: \"s of opposite sides are parallel. The triangle whose sides a\" Segment3: \"re extensions of segments AB, CD, and EF has side lengths 20\" Segment4: \"0, 240, and 300. Find the side length of the hexagon.\" We"
+    },
+    {
+      "id": 85,
+      "score": 0.9517325758934021,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "join them: \"Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 20 0, 240, and 300. Find the side length of the hexagon.\" But there is likely missing"
+    },
+    {
+      "id": 85,
+      "score": 0.9526273608207703,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a convex equilateral hexagon (all sides equal) with all pairs of opposite sides parallel. The triangle formed by extensions of AB, CD, EF has side lengths 20, 240, 300. Find the side length of the hexagon. We need side length of"
+    },
+    {
+      "id": 85,
+      "score": 0.9565596580505371,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "ABCDEF be a convex equilateral hexagon in which all pair s of opposite sides are parallel. The triangle whose sides a re extensions of segments AB, CD, and EF has side lengths 20 0, 240, and 300. Find the side length of the hexagon.\" But there may be some missing"
+    },
+    {
+      "id": 85,
+      "score": 0.9627021551132202,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 20, 240, and 300. Find the side length of the hexagon. We need side length of hexagon (equilateral means all sides equal)."
+    },
+    {
+      "id": 85,
+      "score": 0.9649462103843689,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon. We need"
+    },
+    {
+      "id": 85,
+      "score": 0.9433705806732178,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 20, 240, and 300. Find the side length of the hexagon.\" Thus problem: equilateral convex hexagon"
+    },
+    {
+      "id": 85,
+      "score": 0.9563171863555908,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 20, 240, and 300. Find the side length of the hexagon.\" We need"
+    },
+    {
+      "id": 85,
+      "score": 0.9444149136543274,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "a convex equilateral hexagon in which all pair\" 2: \"s of opposite sides are parallel. The triangle whose sides a\" 3: \"re extensions of segments AB, CD, and EF has side lengths 20\" 4: \"0, 240, and 300. Find the side length of the hexagon.\" Combine: \"Let ABCDEF be a"
+    },
+    {
+      "id": 85,
+      "score": 0.9710403084754944,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "Thus full problem A: \"Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" We need to solve:"
+    },
+    {
+      "id": 88,
+      "score": 0.9148998260498047,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "1. \"Torus T is the surface produced by revolving a circle with\" 2. \" radius 3 around an axis in the plane of the circle that i\" 3. \" s a distance 6 from the center of the circle (so like a do\" 4. \" nut). Let S be a sphere with a radius 11. When T rests\" 5. \" on the outside of S, it is externally tangent to S alon\" 6. \" g a circle with radius r_i, and when T rests on the outs\" 7. \" ide of S, it is externally tangent to S along a circle w\" 8. \" ith radius r_o. The difference r_i-r_o can be written as\" 9. \" tfrac{m}{n}, where m and n are relatively prime posi\" 10. \" tive integers. Find m+n.; [asy] unitsize(0.3 inch); draw(e\" 11. \" llipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.\" 12. \" 4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); d\" 13. \""
+    },
+    {
+      "id": 88,
+      "score": 0.9730386734008789,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "Let's join them: \"Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n.; [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1,"
+    },
+    {
+      "id": 88,
+      "score": 0.9798864126205444,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "Full statement: \"Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i - r_o can be written as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.; [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0),"
+    },
+    {
+      "id": 88,
+      "score": 0.9035518169403076,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "each Problem A line in order: 1. \"Torus T is the surface produced by revolving a circle with\" 2. \" radius 3 around an axis in the plane of the circle that i\" 3. \" s a distance 6 from the center of the circle (so like a do\" 4. \" nut). Let S be a sphere with a radius 11. When T rests\" 5. \" on the outside of S, it is externally tangent to S alon\" 6. \" g a circle with radius r_i, and when T rests on the outs\" 7. \" ide of S, it is externally tangent to S along a circle w\" 8. \" ith radius r_o. The difference r_i-r_o can be written as\" 9. \" tfrac{m}{n}, where m and n are relatively prime posi\" 10. \" tive integers. Find m+n.; [asy] unitsize(0.3 inch); draw(e\" 11. \" llipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.\""
+    },
+    {
+      "id": 88,
+      "score": 0.9010646939277649,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "A lines in order as they appear: 1. \"Torus T is the surface produced by revolving a circle with\" 2. \" radius 3 around an axis in the plane of the circle that i\" 3. \" s a distance 6 from the center of the circle (so like a do\" 4. \" nut). Let S be a sphere with a radius 11. When T rests\" 5. \" on the outside of S, it is externally tangent to S alon\" 6. \" g a circle with radius r_i, and when T rests on the outs\" 7. \" ide of S, it is externally tangent to S along a circle w\" 8. \" ith radius r_o. The difference r_i-r_o can be written as\" 9. \" tfrac{m}{n}, where m and n are relatively prime posi\" 10. \" tive integers. Find m+n.; [asy] unitsize(0.3 inch); draw(e\" 11. \" llipse((0,0), 3, 1.75));"
+    },
+    {
+      "id": 88,
+      "score": 0.9257086515426636,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "appear: 1: \"Torus T is the surface produced by revolving a circle with\" 2: \" radius 3 around an axis in the plane of the circle that i\" 3: \" s a distance 6 from the center of the circle (so like a do\" 4: \" nut). Let S be a sphere with a radius 11. When T rests\" 5: \" on the outside of S, it is externally tangent to S alon\" 6: \" g a circle with radius r_i, and when T rests on the outs\" 7: \" ide of S, it is externally tangent to S along a circle w\" 8: \" ith radius r_o. The difference r_i-r_o can be written as\" 9: \" tfrac{m}{n}, where m and n are relatively prime posi\" 10: \" tive integers. Find m+n.; [asy] unitsize(0.3 inch); draw(e\" 11: \" llipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.\" 12: \" 4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); d\" 13:"
+    },
+    {
+      "id": 88,
+      "score": 0.9021660685539246,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9));\" 16. \"<Problem A> draw((2.03,-0.02)--(2.9,-0.4)); [/asy]\" Now combine into full statement (removing line breaks). Let's concatenate: \"Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers."
+    },
+    {
+      "id": 88,
+      "score": 0.9080163240432739,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "Problem A in order: 1. \"Torus T is the surface produced by revolving a circle with\" 2. \" radius 3 around an axis in the plane of the circle that i\" 3. \" s a distance 6 from the center of the circle (so like a do\" 4. \" nut). Let S be a sphere with a radius 11. When T rests\" 5. \" on the outside of S, it is externally tangent to S alon\" 6. \" g a circle with radius r_i, and when T rests on the outs\" 7. \" ide of S, it is externally tangent to S along a circle w\" 8. \" ith radius r_o. The difference r_i-r_o can be written as\" 9. \" tfrac{m}{n}, where m and n are relatively prime posi\" 10. \" tive integers. Find m+n.; [asy] unitsize(0.3 inch); draw(e\" 11. \" llipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.\" 12. \""
+    },
+    {
+      "id": 88,
+      "score": 0.9148998260498047,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "1. \"Torus T is the surface produced by revolving a circle with\" 2. \" radius 3 around an axis in the plane of the circle that i\" 3. \" s a distance 6 from the center of the circle (so like a do\" 4. \" nut). Let S be a sphere with a radius 11. When T rests\" 5. \" on the outside of S, it is externally tangent to S alon\" 6. \" g a circle with radius r_i, and when T rests on the outs\" 7. \" ide of S, it is externally tangent to S along a circle w\" 8. \" ith radius r_o. The difference r_i-r_o can be written as\" 9. \" tfrac{m}{n}, where m and n are relatively prime posi\" 10. \" tive integers. Find m+n.; [asy] unitsize(0.3 inch); draw(e\" 11. \" llipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.\" 12. \" 4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); d\" 13. \""
+    },
+    {
+      "id": 88,
+      "score": 0.9215614795684814,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "\" ); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9));\" 16. \" draw((2.03,-0.02)--(2.9,-0.4)); [/asy]\" Thus full problem A: \"Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i - r_o can be written as m/n, where m and n are relatively prime positive integers. Find m +"
+    },
+    {
+      "id": 89,
+      "score": 0.9749748706817627,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "is a collection of (25) indistinguishable white chips and (25) indistinguishable black chips. Find the number of ways to place some of these chips in the (25) unit cells of a (5times5) grid such that 1. each cell contains at most one chip; 2. all chips in the same row and all chips in the same column have the same colour; 3. any additional chip placed on the grid would violate one or more of the previous"
+    },
+    {
+      "id": 89,
+      "score": 0.9693808555603027,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5\u00d75 grid such that: each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two conditions.\" Yes that seems"
+    },
+    {
+      "id": 89,
+      "score": 0.9616981744766235,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5\u00d75 grid such that: each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two conditions.\" We need to interpret:"
+    },
+    {
+      "id": 89,
+      "score": 0.9750657081604004,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "combine: \"There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: ; ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the"
+    },
+    {
+      "id": 89,
+      "score": 0.9898170232772827,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: ; ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two conditions. There is"
+    },
+    {
+      "id": 89,
+      "score": 0.9893540143966675,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "\"There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: ; ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous"
+    },
+    {
+      "id": 89,
+      "score": 0.9590189456939697,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5\u00d75 grid such that: each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate"
+    },
+    {
+      "id": 89,
+      "score": 0.9903661012649536,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: ; ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two"
+    },
+    {
+      "id": 89,
+      "score": 0.9677489995956421,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: ; ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would"
+    },
+    {
+      "id": 89,
+      "score": 0.9582030773162842,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5\u00d75 grid such that: each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two conditions.\" We need to interpret: We have"
+    },
+    {
+      "id": 89,
+      "score": 0.9933905601501465,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: ; ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two conditions.\""
+    },
+    {
+      "id": 89,
+      "score": 0.9893540143966675,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "\"There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: ; ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous"
+    }
+  ],
+  "original_accuracy": 0.6964656964656964,
+  "semantic_accuracy": 0.9501039501039501
+}

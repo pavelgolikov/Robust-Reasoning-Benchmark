@@ -403,7 +403,7 @@ def main():
                         help="Model name (e.g. GAIR/LIMO-v2) or 'all' to auto-discover")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024")
     parser.add_argument("--embedding_model", type=str, default="all-MiniLM-L6-v2")
-    parser.add_argument("--step_size", type=int, default=5)
+    parser.add_argument("--step_size", type=int, default=10)
     parser.add_argument("--threshold", type=float, default=0.90)
     parser.add_argument("--dry", action="store_true", help="Dry run: mock analysis")
     parser.add_argument("--plot_only", action="store_true",

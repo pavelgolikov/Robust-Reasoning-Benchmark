@@ -1,0 +1,28 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_symbol/results/openai_gpt-oss-120b/HuggingFaceH4_aime_2024/openai_gpt-oss-120b_HuggingFaceH4_aime_2024_interleaved_context_symbol_s42_20260303_145000.json",
+  "total_samples": 481,
+  "original_correct": 6,
+  "semantic_correct": 9,
+  "recovered_cases": [
+    {
+      "id": 63,
+      "score": 0.9039158821105957,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "Define f(x)=||x| - 1/2| and g(x)=||x| - 1/4|. Find the number of intersections of the graphs of y = 4 g( f( sin(\u03c0 x) ) ). But we"
+    },
+    {
+      "id": 70,
+      "score": 0.9110027551651001,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "out: \"Rectangles ABCD and EFGH 16 rhat such taat D,E,C,F are collinear. Also A, D, H, G upper right circle. If BC=16, AB=107, FG=17, the number of of , what is the length"
+    },
+    {
+      "id": 83,
+      "score": 0.9016456007957458,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "in each cell of a 2x3 grid so that the sum of the two numbers for each ... reading left to right is 999, and the ...\"? Hmm. Maybe the intended problem: \"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers for each row reading"
+    }
+  ],
+  "original_accuracy": 0.012474012474012475,
+  "semantic_accuracy": 0.018711018711018712
+}

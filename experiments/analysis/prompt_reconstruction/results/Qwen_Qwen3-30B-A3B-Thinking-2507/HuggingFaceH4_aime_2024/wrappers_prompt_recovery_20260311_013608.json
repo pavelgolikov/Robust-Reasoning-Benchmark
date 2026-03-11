@@ -1,0 +1,484 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/wrappers/results/Qwen_Qwen3-30B-A3B-Thinking-2507/HuggingFaceH4_aime_2024/Qwen_Qwen3-30B-A3B-Thinking-2507_HuggingFaceH4_aime_2024_wrappers_s42_20260309_044638.json",
+  "total_samples": 481,
+  "original_correct": 325,
+  "semantic_correct": 404,
+  "recovered_cases": [
+    {
+      "id": 61,
+      "score": 0.9814184904098511,
+      "target": "Let ABC be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.",
+      "best_window": "a triangle inscribed in a circle omega. Let the tangents to omega at B and C intersect at a point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.\" Wait,"
+    },
+    {
+      "id": 62,
+      "score": 0.9048328399658203,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "\"Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{2m}{3n}, where m and n are relatively prime positive integers. What is 3m"
+    },
+    {
+      "id": 62,
+      "score": 0.921486496925354,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is frac{2m}{3n}, where m and n are relatively prime positive integers. What is 3m +"
+    },
+    {
+      "id": 62,
+      "score": 0.9774837493896484,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is 2m/3n, where m and n are relatively prime positive integers. What is m + n?\""
+    },
+    {
+      "id": 62,
+      "score": 0.979640543460846,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{2(m)}{3(n)}, where m and n are relatively prime positive integers. What is m + n?\" Wait,"
+    },
+    {
+      "id": 62,
+      "score": 0.9611612558364868,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "\"Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{2m}{3n}, where m and n are relatively prime positive integers. What is m + n?\" Wait, the problem says \"3(m) + 8(n)\", but let's"
+    },
+    {
+      "id": 62,
+      "score": 0.9754840135574341,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is frac{2m}{3n}, where m and n are relatively prime positive integers. What is m + n?\" Wait,"
+    },
+    {
+      "id": 62,
+      "score": 0.925866961479187,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{2m}{3n}, where m and n are relatively prime positive integers. What is 3m +"
+    },
+    {
+      "id": 62,
+      "score": 0.9794670343399048,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{2m}{3n}, where m and n are relatively prime positive integers. What is m + n?\" Wait, let's"
+    },
+    {
+      "id": 62,
+      "score": 0.9682009816169739,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is 2m/3n, where m and n are relatively prime positive integers. What is m + n? Wait, the problem mentions"
+    },
+    {
+      "id": 62,
+      "score": 0.9133729934692383,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{2m}{3n}, where m and n are relatively prime positive integers. What is 3m + 8n?\" Wait, let's"
+    },
+    {
+      "id": 62,
+      "score": 0.9774837493896484,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is 2m/3n, where m and n are relatively prime positive integers. What is m + n?\""
+    },
+    {
+      "id": 62,
+      "score": 0.9217583537101746,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is 2m/(3n), where m and n are relatively prime positive integers. What is 3m + 8n?\" Wait, \"all of the blue vertices end up at positions where there"
+    },
+    {
+      "id": 62,
+      "score": 0.9415726065635681,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{2m}{3n}, where m and n are relatively prime positive integers. What is m + n?\" Wait, but the question asks for 3(m)"
+    },
+    {
+      "id": 62,
+      "score": 0.9169278144836426,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is 2m/(3n), where m and n are relatively prime positive integers. What is 3m + 8n? Okay,"
+    },
+    {
+      "id": 63,
+      "score": 0.9364446401596069,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "quad g(x) = ||x| - tfrac{1}{4}| And the task becomes: > Find the **number of intersections** of the graphs of: y = 4g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y))) --- ###"
+    },
+    {
+      "id": 63,
+      "score": 0.9183768630027771,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "g(x) = left| |x| - frac{1}{4} right| . > Find the **number of intersections** of the graphs of > y = 4g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y))). --- ### Step"
+    },
+    {
+      "id": 63,
+      "score": 0.9214056730270386,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "- frac{1}{2} right|, quad g(x) = left| |x| - frac{1}{4} right| Find the **number of intersections** of the graphs of: y = 4g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y))) --- ###"
+    },
+    {
+      "id": 63,
+      "score": 0.9080110788345337,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "= ||x| - 1/2| and g(x) = ||x| - 1/4|. Find the number of intersections of the graphs of: y = 4g(f(sin(2\u03c0x))) and x = 4g(f(cos(3\u03c0y))). Now, let's"
+    },
+    {
+      "id": 63,
+      "score": 0.9325676560401917,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "||x| - tfrac{1}{2}|, quad g(x) = ||x| - tfrac{1}{4}| Find the **number of intersections** of the graphs of: y = 4 cdot g(f(sin(2pi x))) quad text{and} quad x = 4 cdot g(f(cos(3pi y)))"
+    },
+    {
+      "id": 63,
+      "score": 0.9228302836418152,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "and g(x) = ||x| - tfrac{1}{4}| . > Find the **number of intersections** of the graphs of: > > y = 4g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y))) > --- ###"
+    },
+    {
+      "id": 63,
+      "score": 0.9225015640258789,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "> Define f(x) = ||x| - frac{1}{2}| and g(x) = ||x| - frac{1}{4}| . > Find the **number of intersections** of the graphs of > y = 4g(f(sin(2pi x))) quad text{and} quad x"
+    },
+    {
+      "id": 63,
+      "score": 0.9332736730575562,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "and g(x) = | |x| - frac{1}{4} |. Find the number of intersections of the graphs of > y = 4g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y))) --- ### **Step 2:"
+    },
+    {
+      "id": 63,
+      "score": 0.9374949932098389,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "Define f(x) = ||x| - tfrac{1}{2}| and g(x) = ||x| - tfrac{1}{4}| . > Find the **number of intersections** of the graphs of: > > y = 4g(f(sin(2pi x))) quad text{and} quad x"
+    },
+    {
+      "id": 63,
+      "score": 0.9133350253105164,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "- frac{1}{2}| and g(x) = ||x| - frac{1}{4}| . Find the **number** of **intersections** of the graphs of > y = 4g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y))). --- ### \u2705"
+    },
+    {
+      "id": 64,
+      "score": 0.9680572748184204,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "prime number for which there exists a positive integer n such that n^4 + 1 is divisible by p^2 . Find the least positive integer m such that m^4 + 1 is divisible by p^2"
+    },
+    {
+      "id": 64,
+      "score": 0.9752188324928284,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "get: > Let p be the least prime number for which there exists a positive integer n such that n^4 + 1 is divisible by p^2. > Find the least positive integer m such that m^4 + 1 is divisible by p^2."
+    },
+    {
+      "id": 64,
+      "score": 0.9685541987419128,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "least prime number for which there exists a positive integer n such that n^4 + 1 is divisible by p^2 . Find the least positive integer m such that m^4 + 1 is divisible by"
+    },
+    {
+      "id": 65,
+      "score": 0.9339752197265625,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "ABCD be a **tetrahedron** such that: > - AB = CD = sqrt{41}, > - AC = BD = sqrt{80}, > - BC = AD = sqrt{89}. > > There exists a **point** I inside the **tetrahedron** such that the **distances** from I to each of the **faces** of the **tetrahedron** are all equal. > This **distance** can be written in the **form** frac{m sqrt{2n}}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. > Find"
+    },
+    {
+      "id": 66,
+      "score": 0.9532507658004761,
+      "target": "Let mathcal{B} be the set of rectangular boxes with surface area 54 and volume 23. Let r be the radius of the smallest sphere that can contain each of the rectangular boxes that are elements of mathcal{B}. The value of r^2 can be written as frac{p}{q}, where p and q are relatively prime positive integers. Find p+q.",
+      "best_window": "of rectangular boxes with surface area 54 and volume 23. Let r be the radius of the smallest sphere that can contain each of the rectangular boxes that are elements of mathcal{B}. The value of r^2 can be written as frac{p}{q}, where p and q"
+    },
+    {
+      "id": 66,
+      "score": 0.9832172393798828,
+      "target": "Let mathcal{B} be the set of rectangular boxes with surface area 54 and volume 23. Let r be the radius of the smallest sphere that can contain each of the rectangular boxes that are elements of mathcal{B}. The value of r^2 can be written as frac{p}{q}, where p and q are relatively prime positive integers. Find p+q.",
+      "best_window": "> Let mathcal{B} be the set of rectangular boxes with surface area 54 and volume 23. Let r be the radius of the smallest sphere that can contain each of the rectangular boxes that are elements of mathcal{B} . The value of r^2 can be written as frac{p}{3q} , where p and q are relatively prime positive integers. Find p + q . --- ### \u2705 Step 2:"
+    },
+    {
+      "id": 70,
+      "score": 0.9331954717636108,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "F are collinear. Also, A, D, H, G all lie on a circle. If BC = 16, AB = 107, FG = 17, and EF = 184, what is the length of CE?"
+    },
+    {
+      "id": 73,
+      "score": 0.9769969582557678,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/(2n), where m and n are relatively prime positive integers. Find m +"
+    },
+    {
+      "id": 73,
+      "score": 0.9835300445556641,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find m + n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.976469099521637,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find m + n. --- ###"
+    },
+    {
+      "id": 73,
+      "score": 0.9835301041603088,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find m + n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.9863632917404175,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find m + n."
+    },
+    {
+      "id": 73,
+      "score": 0.9769969582557678,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/(2n), where m and n are relatively prime positive integers. Find m +"
+    },
+    {
+      "id": 73,
+      "score": 0.9143205285072327,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "to the transformed input: > \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find m + n.\" --- ### Step 2:"
+    },
+    {
+      "id": 73,
+      "score": 0.974765956401825,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/(2n), where m and n are relatively prime positive integers. Find m + n.\" Wait,"
+    },
+    {
+      "id": 73,
+      "score": 0.9835300445556641,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find m + n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.9688736200332642,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "> \"8 circles of radius 34 are sequentially tangent, and 2 of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find"
+    },
+    {
+      "id": 73,
+      "score": 0.9747658967971802,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/(2n), where m and n are relatively prime positive integers. Find m + n.\" Wait,"
+    },
+    {
+      "id": 73,
+      "score": 0.9766323566436768,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC , respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n} , where m and n are relatively prime positive integers. Find m"
+    },
+    {
+      "id": 73,
+      "score": 0.9798876047134399,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find m + n. ---"
+    },
+    {
+      "id": 73,
+      "score": 0.9821556210517883,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/(2n), where m and n are relatively prime positive integers. Find m + n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.9812107682228088,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n}, where m and n are relatively prime positive integers. Find m + n.\"**"
+    },
+    {
+      "id": 73,
+      "score": 0.9799202680587769,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "reinterpret the problem as follows: > \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC , respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{2n} , where m and n are relatively prime positive integers. Find m + n .\""
+    },
+    {
+      "id": 74,
+      "score": 0.9450747966766357,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "> Let A , B , C , and D be **points** on the **hyperbola** > > frac{x^2}{20} - frac{y^2}{24} = 1 > > such that ABCD is a **rhombus** whose **diagonals** intersect at the **origin**. > Find the greatest real"
+    },
+    {
+      "id": 74,
+      "score": 0.9674829840660095,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "problem: Let A, B, C, and D be points on the hyperbola x\u00b2/20 - y\u00b2/24 = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD\u00b2 for all"
+    },
+    {
+      "id": 77,
+      "score": 0.9103075861930847,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "**triples** of nonnegative **integers** (a, b, c) satisfying > a + b + c = 300 and 2a^2b + 2a^2c + ab^2 + b^2c + ac^2 + bc^2 = 6,000,000 --- ### Step"
+    },
+    {
+      "id": 78,
+      "score": 0.9018428921699524,
+      "target": "Let (O=(0,0)), (A=left(tfrac{1}{2},0right)), and (B=left(0,tfrac{sqrt{3}}{2}right)) be points in the coordinate plane. Let (mathcal{F}) be the family of segments (overline{PQ}) of unit length lying in the first quadrant with (P) on the (x)-axis and (Q) on the (y)-axis. There is a unique point (C) on (overline{AB}), distinct from (A) and (B), that does not belong to any segment from (mathcal{F}) other than (overline{AB}). Then (OC^2=tfrac{p}{q}), where (p) and (q) are relatively prime positive integers. Find (p+q).",
+      "best_window": "0, frac{sqrt{3}}{2} right) be points in the coordinate plane. Let mathcal{F} be the family of segments overline{PQ} of unit length lying in the first quadrant with P on the x -axis and Q on the y -axis. There is a unique point C on segment overline{AB} , distinct from A and B , that does not belong to any other segment in mathcal{F} other than overline{AB} . Then OC^2 = frac{p}{q} , where p and q are relatively prime positive integers. Find p + q . --- ### Step 2:"
+    },
+    {
+      "id": 81,
+      "score": 0.9648666381835938,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "the text: \"Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles.; [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0),"
+    },
+    {
+      "id": 82,
+      "score": 0.9609216451644897,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "positive integers has the following properties: - The sum of the items in the list is 30. - The unique mode of the list is 9. - The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.\" Wait, let me"
+    },
+    {
+      "id": 82,
+      "score": 0.929832935333252,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "following properties: - The sum of the items in the list is 30. - The unique mode of the list is 9. - The median of the list is a positive integer that does not appear in the list itself. Find the **sum of the squares** of all"
+    },
+    {
+      "id": 84,
+      "score": 0.9003612995147705,
+      "target": "Let x,y and z be positive real numbers that satisfy the following system of equations: [log_2left({x over yz}right) = {1 over 2}][log_2left({y over xz}right) = {1 over 3}][log_2left({z over xy}right) = {1 over 4}] Then the value of left|log_2(x^4y^3z^2)right| is tfrac{m}{n} where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "and z be positive real numbers that satisfy the following system of equations:; [log_9(2)left( frac{x}{yz} right) = frac{1}{2}][log_6(2)left( frac{y}{xz} right) = frac{1}{3}][log_9(2)left( frac{z}{xy} right) = frac{1}{4}]; Then the value of (left| log_9(2) cdot x^4 y^3 z^2 right|) is (frac{m}{n}) where m and n are relatively prime positive integers. Find m + n.\""
+    },
+    {
+      "id": 85,
+      "score": 0.9663881659507751,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are the extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" Wait,"
+    },
+    {
+      "id": 85,
+      "score": 0.979075014591217,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are the extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\""
+    },
+    {
+      "id": 85,
+      "score": 0.9480982422828674,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The extensions of segments AB, CD, and EF have side lengths 200, 240, and 300. Find the side length of the hexagon.\" Wait, but the problem mentions \"the"
+    },
+    {
+      "id": 85,
+      "score": 0.9510715007781982,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are the extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon. --- ###"
+    },
+    {
+      "id": 85,
+      "score": 0.9499107599258423,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "\u2192 \"hexagon\" So putting it all together: \"Let ABCDEF be a convex equilateral hexagon in which all 6 pairs of opposite sides are parallel. The triangle whose sides are 3 extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the"
+    },
+    {
+      "id": 85,
+      "score": 0.985914409160614,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are the extensions of segments AB , CD , and EF has side lengths 200, 240, and 300. Find the side length of the hexagon. --- ### \ud83e\uddee **Step 2:"
+    },
+    {
+      "id": 85,
+      "score": 0.9436937570571899,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "### \u2705 Reconstructed Problem Statement: > Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB , CD , and EF has side lengths 200, 240, and 300. Find the side length of the hexagon."
+    },
+    {
+      "id": 85,
+      "score": 0.9285610914230347,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" Now, search for \"convex equilateral hexagon opposite sides parallel"
+    },
+    {
+      "id": 85,
+      "score": 0.9135811924934387,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "the problem becomes: > Let **ABCDEF** be a **convex equilateral hexagon** in which all **pairs of opposite sides** are parallel. The **triangle** whose **sides** are the **extensions** of segments **AB**, **CD**, and **EF** has side lengths **200**, **240**, and **300**. Find the **side length** of the **hexagon**. This is now"
+    },
+    {
+      "id": 85,
+      "score": 1.0000001192092896,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon."
+    },
+    {
+      "id": 85,
+      "score": 0.979075014591217,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are the extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\""
+    },
+    {
+      "id": 85,
+      "score": 0.9787729382514954,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be: Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The extensions of segments AB, CD, and EF have side lengths 200, 240, and 300. Find the side length of the hexagon. Wait, but the"
+    },
+    {
+      "id": 85,
+      "score": 0.9654188752174377,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "\"Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The extensions of segments AB, CD, and EF have lengths 200, 240, and 300. Find the side length of the hexagon.\" Wait, but the problem says"
+    },
+    {
+      "id": 85,
+      "score": 0.979075014591217,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are the extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\""
+    },
+    {
+      "id": 85,
+      "score": 0.9742757081985474,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "problem is: Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of"
+    },
+    {
+      "id": 87,
+      "score": 0.9880788326263428,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q +"
+    },
+    {
+      "id": 87,
+      "score": 0.9946537017822266,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q + R. Now,"
+    },
+    {
+      "id": 87,
+      "score": 0.9887009263038635,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q + R.\" Wait, let's"
+    },
+    {
+      "id": 87,
+      "score": 0.9766396284103394,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q"
+    },
+    {
+      "id": 87,
+      "score": 0.9733487367630005,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "together: \"Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q + R.\" Wait, let's check the other parts:"
+    },
+    {
+      "id": 88,
+      "score": 0.9035568237304688,
+      "target": "Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i-r_o can be written as tfrac{m}{n}, where m and n are relatively prime positive integers. Find m+n. [asy] unitsize(0.3 inch); draw(ellipse((0,0), 3, 1.75)); draw((-1.2,0.1)..(-0.8,-0.03)..(-0.4,-0.11)..(0,-0.15)..(0.4,-0.11)..(0.8,-0.03)..(1.2,0.1)); draw((-1,0.04)..(-0.5,0.12)..(0,0.16)..(0.5,0.12)..(1,0.04)); draw((0,2.4)--(0,-0.15)); draw((0,-0.15)--(0,-1.75), dashed); draw((0,-1.75)--(0,-2.25)); draw(ellipse((2,0), 1, 0.9)); draw((2.03,-0.02)--(2.9,-0.4)); [/asy]",
+      "best_window": "2(0).7(3) 5(inch), but probably irrelevant. Let's go back to the problem statement after unremapping: \"Torus T is the surface produced by revolving a circle with radius 3 around an axis in the plane of the circle that is a distance 6 from the center of the circle (so like a donut). Let S be a sphere with a radius 11. When T rests on the outside of S, it is externally tangent to S along a circle with radius r_i, and when T rests on the outside of S, it is externally tangent to S along a circle with radius r_o. The difference r_i - r_o can be written as m/n, where m and n are relatively prime positive integers. Find m +"
+    },
+    {
+      "id": 89,
+      "score": 0.9688324928283691,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5\u00d75 grid such that: - Each cell contains at most one chip; - All chips in the same row and all chips in the same column have the same colour; - Any additional chip placed on the grid would violate one or more of the previous two conditions. Wait,"
+    },
+    {
+      "id": 89,
+      "score": 0.9705483913421631,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5\u00d75 grid such that: - each cell contains at most one chip; - all chips in the same row and all chips in the same column have the same colour; - any additional chip placed on the grid would violate one or more of the previous two"
+    }
+  ],
+  "original_accuracy": 0.6756756756756757,
+  "semantic_accuracy": 0.83991683991684
+}

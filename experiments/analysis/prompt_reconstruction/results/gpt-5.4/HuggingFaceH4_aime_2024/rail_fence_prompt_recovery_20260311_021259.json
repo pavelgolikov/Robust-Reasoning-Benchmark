@@ -1,0 +1,46 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/rail_fence/results/gpt-5.4/HuggingFaceH4_aime_2024/gpt-5.4_HuggingFaceH4_aime_2024_rail_fence_20260309_000007.json",
+  "total_samples": 121,
+  "original_correct": 95,
+  "semantic_correct": 101,
+  "recovered_cases": [
+    {
+      "id": 70,
+      "score": 0.9266800284385681,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "that (D,E,F) are collinear. Also, (A,D,H,G) all lie on a circle. If (BC=16), (AB=10), (FG=17), and (EF=184), what is the length of (CE)? Now solve: Since (ABCD) is a rectangle, [ CD=AB=10,qquad AD=BC=16."
+    },
+    {
+      "id": 70,
+      "score": 0.9255729913711548,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "(EFGH) are drawn such that (D,E,C,F) are collinear. Also (A,D,H,G) all lie on a circle. If (BC=16), (AB=10), (FG=17), and (EF=184), what is the length of (CE)?\u201d Now"
+    },
+    {
+      "id": 70,
+      "score": 0.9044399261474609,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "Decoded problem: \u201cRectangle (ABCD) and (EFGH) are drawn such that (D,E,C,F) are collinear. Also, (A,D,H,G) all lie on a circle. If (BC=16), (AB=10), (FG=17), and (EF=184), what is the length of (CE)?\u201d Let"
+    },
+    {
+      "id": 75,
+      "score": 0.9734001755714417,
+      "target": "Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.",
+      "best_window": "195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 243 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.\u201d Let the four items be: - (D): diamond"
+    },
+    {
+      "id": 89,
+      "score": 0.9628581404685974,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "a collection of (25) distinguishable white chips and (25) indistinguishable black chips. Find the number of ways to place some of these chips in the (25) cells of a (5times 5) grid such that: > - each cell contains at most one chip; > - all chips in the same row and all chips in the same column have the same colour; > - any additional chip placed on the grid would violate one or more of"
+    },
+    {
+      "id": 89,
+      "score": 0.9396502375602722,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "distinguishable white chips and (25) distinguishable black chips. Find the number of ways to place some of these chips in the (25) unit cells of a (5times5) grid such that: > 1. each cell contains at most one chip; > 2. all chips in the same row and all chips in the same column have the same colour; > 3. any additional chip placed on the grid would violate one or more of the previous two conditions."
+    }
+  ],
+  "original_accuracy": 0.7851239669421488,
+  "semantic_accuracy": 0.8347107438016529
+}

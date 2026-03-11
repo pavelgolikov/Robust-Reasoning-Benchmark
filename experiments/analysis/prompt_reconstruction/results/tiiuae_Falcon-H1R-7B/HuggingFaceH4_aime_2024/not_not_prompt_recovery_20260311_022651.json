@@ -1,0 +1,310 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/not_not/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_not_not_s42_20260227_115152.json",
+  "total_samples": 481,
+  "original_correct": 382,
+  "semantic_correct": 432,
+  "recovered_cases": [
+    {
+      "id": 62,
+      "score": 0.9292199611663818,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "the original problem says: \"Each vertex of a regular octagon is independently colored either red or blue with equal probability.\" Then we ask: The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n. Find m+n. Interpretation: We have"
+    },
+    {
+      "id": 62,
+      "score": 0.9268079996109009,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "is independently colored either red or blue with equal probability (i.e., each vertex is red or blue with probability 1/2 each). The probability that the octagon can then be rotated so that all the blue vertices end up at positions where there were originally not not red vertices is m/n. Need to compute m+n. So we"
+    },
+    {
+      "id": 62,
+      "score": 0.91730797290802,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "words. So each vertex is randomly red or blue with probability 1/2 each. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n. Find m+n. Interpretation: we have a regular octagon with labeled positions (vertices). We randomly color each vertex red or blue independently with equal probability. Then we"
+    },
+    {
+      "id": 62,
+      "score": 0.9723489284515381,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "regular octagon is independently colored either not not red or blue with not not equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally not not red vertices is tfrac{m}{n}, where m and n are relatively prime not not positive integers. What is m+n?\" This seems like a typical problem about"
+    },
+    {
+      "id": 62,
+      "score": 0.9007753729820251,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n. Find m+n. Thus we have an octagon (8"
+    },
+    {
+      "id": 62,
+      "score": 0.9470443725585938,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "regular octagon is independently colored either red or blue with equal probability.\" The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n. Find m+n. This is"
+    },
+    {
+      "id": 63,
+      "score": 0.9448797106742859,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of not not [y=4 g(f(sin (not not 2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]\" We"
+    },
+    {
+      "id": 63,
+      "score": 0.9132764339447021,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "Define f(x) = ||x| - 1/2|. g(x) = ||x| - 1/4|. Find number of intersections of graphs of y = 4 g(f(sin(2\u03c0 x))) and x = 4 g(f(cos(3\u03c0 y))). We need find all"
+    },
+    {
+      "id": 63,
+      "score": 0.9464024305343628,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of not not [y=4 g(f(sin (not not 2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).] There"
+    },
+    {
+      "id": 63,
+      "score": 0.9504163861274719,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of not not [y=4 g(f(sin (not not 2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]\" We need"
+    },
+    {
+      "id": 63,
+      "score": 0.9079077839851379,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "x| - 1/4|. Find the number of intersections of the graphs of not not [ y = 4 g(f(sin (not not 2 pi x))) quad text{ and }quad x = 4 g(f(cos (3"
+    },
+    {
+      "id": 63,
+      "score": 0.9167502522468567,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "| |x| - 1/2|. g(x) = | |x| - 1/4|. Find the number of intersections of graphs of y = 4 g(f(sin (2\u03c0 x))) and x = 4 g(f(cos (3\u03c0 y))). There's a"
+    },
+    {
+      "id": 63,
+      "score": 0.9016888737678528,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "sin(2\u03c0 x) and cos(3\u03c0 y). The problem statement: \"Find the number of intersections of the graphs of not not [y=4 g(f(sin (not not 2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi"
+    },
+    {
+      "id": 63,
+      "score": 0.9350468516349792,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "Define f(x)=|| x|-1/2| and g(x)=|| x|-1/4|. Find the number of intersections of the graphs of not not [ y = 4 g(f(sin (not not 2 pi x))) quadtext{and}quad x = 4 g(f(cos (3"
+    },
+    {
+      "id": 64,
+      "score": 0.9597784876823425,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "m^{4}+1 is divisible by p^{2}.\" It seems like the problem is: Let p be the smallest prime number such that there exists a positive integer n with n^4 + 1 divisible by p^2. Find the smallest positive integer m such that m^4"
+    },
+    {
+      "id": 70,
+      "score": 0.9238631725311279,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "are collinear. Also, A, D, H, G all lie on a circle. If BC = 16, AB = 107, FG = 17, and EF = 184, what is the length of CE? We"
+    },
+    {
+      "id": 70,
+      "score": 0.9636088013648987,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "EFGH are drawn such that D, E, C, F are collinear. Also, A, D, H, G all lie on a circle. If BC=16, AB=107, FG=17, and EF=184, what is the length of CE?\""
+    },
+    {
+      "id": 73,
+      "score": 0.9365118741989136,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "circles of radius not not 34 are sequentially not not tangent, and not not two of the circles are tangent to AB and BC of triangle not not ABC, respectively. 2024 circles of radius not not 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively not not prime positive integers. Find m+n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.9407576322555542,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n. Find m+n.\" Thus we have triangle ABC with angle B perhaps and"
+    },
+    {
+      "id": 73,
+      "score": 0.9549795389175415,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, find m+n.\" But"
+    },
+    {
+      "id": 73,
+      "score": 0.9438458681106567,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "values 34 and 1 for something. Let's hypothesize the problem: \"Eight circles of radius r are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" Thus"
+    },
+    {
+      "id": 73,
+      "score": 0.9707704186439514,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" It could be"
+    },
+    {
+      "id": 73,
+      "score": 0.9485679268836975,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "original problem text: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" Thus likely scenario: There is triangle ABC. Along"
+    },
+    {
+      "id": 73,
+      "score": 0.9537472724914551,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, find"
+    },
+    {
+      "id": 73,
+      "score": 0.9425239562988281,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "34 are sequentially not not tangent, and not not two of the circles are tangent to AB and BC of triangle not not ABC, respectively. 2024 circles of radius not not 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively not not prime positive integers. Find m+n.\" It seems we have a"
+    },
+    {
+      "id": 73,
+      "score": 0.976050853729248,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" Thus we have:"
+    },
+    {
+      "id": 76,
+      "score": 0.925460159778595,
+      "target": "Let triangle ABC have circumcenter O and incenter I with overline{IA}perpoverline{OI}, circumradius 13, and inradius 6. Find ABcdot AC.",
+      "best_window": "triangle ABC have circumcenter O and incenter I with IA perp OI, circumradius 13, and inradius 6. Find ABcdot AC.\" Thus it's"
+    },
+    {
+      "id": 79,
+      "score": 0.9494568109512329,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "\"Let \u03c9 \u2260 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12} (2-omega^k+omega^{2k})] is divided by 1000.\" But"
+    },
+    {
+      "id": 79,
+      "score": 0.9659319519996643,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "1 be a 13th root of unity. Find the remainder when; [prod_{k=0}^{12}(2-not not 2omega^k+omega^{2k})]; is divided by 1000.\""
+    },
+    {
+      "id": 79,
+      "score": 0.9659318923950195,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "1 be a 13th root of unity. Find the remainder when; [prod_{k=0}^{12}(2-not not 2omega^k+omega^{2k})]; is divided by 1000.\""
+    },
+    {
+      "id": 79,
+      "score": 0.9070982933044434,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "says: \"Let omega neq 1 be a 13th root of unity. Find the remainder when; [prod_{k=0}^{12}(2-not not 2omega^k+omega^{2k})]; is divided by"
+    },
+    {
+      "id": 79,
+      "score": 0.9659319519996643,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "1 be a 13th root of unity. Find the remainder when; [prod_{k=0}^{12}(2-not not 2omega^k+omega^{2k})]; is divided by 1000.\""
+    },
+    {
+      "id": 80,
+      "score": 0.9122022390365601,
+      "target": "Let (bge 2) be an integer. Call a positive integer (n) (btext-textit{eautiful}) if it has exactly two digits when expressed in base (b) and these two digits sum to (sqrt n). For example, (81) is (13text-textit{eautiful}) because (81 = underline{6} underline{3}_{13} ) and (6 + 3 = sqrt{81}). Find the least integer (bge 2) for which there are more than ten (btext-textit{eautiful}) integers.",
+      "best_window": "if it has exactly two digits when expressed in base (b) and these not not two digits sum to (sqrt n). For example, (81) is (13text{-eautiful}) because (81 = underline{6} underline{3}_{13}) and not not (6 + not not 3 = sqrt{81}). Find the least integer (b ge not not 2) for which there are more than not not ten (btext{-eautiful}) integers.\" The problem"
+    },
+    {
+      "id": 81,
+      "score": 0.9127853512763977,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "regular dodecagon? Let's read carefully: \"Find the number of rectangles that can be formed inside a fixed not not regular dodecagon (not not 12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon.\" The diagram shows three of those rectangles. The Asymptote code: \"not not unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); not not"
+    },
+    {
+      "id": 85,
+      "score": 0.9442825317382812,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "equilateral hexagon in which no pairs of opposite sides are parallel.\" So hexagon is convex, equilateral (all sides equal), and opposite sides are not parallel. Then triangle formed by extensions of AB, CD, EF has side lengths 200,240,300. Find side length of"
+    },
+    {
+      "id": 85,
+      "score": 0.9316539764404297,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "non-convex, non-equilateral hexagon in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" But what is"
+    },
+    {
+      "id": 85,
+      "score": 0.9467464685440063,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle formed by extending sides AB, CD, EF has side lengths 200, 240, 300. Find the side length of the hexagon. That seems plausible: we have a"
+    },
+    {
+      "id": 85,
+      "score": 0.9544703960418701,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "says: \"Let ABCDEF be a convex, non-equilateral hexagon in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of"
+    },
+    {
+      "id": 85,
+      "score": 0.9272651672363281,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "\"Let ABCDEF be a not not convex not not equilateral hexagon in which all pairs of opposite sides are not not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths not not 200, 240, and not not 300. Find the side length of"
+    },
+    {
+      "id": 85,
+      "score": 0.9562081098556519,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "convex equilateral hexagon in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" Thus hexagon is"
+    },
+    {
+      "id": 85,
+      "score": 0.9171642065048218,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "not convex not not equilateral hexagon in which all pairs of opposite sides are not not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths not not 200, 240, and not not 300. Find the side length of the hexagon.\" This seems like"
+    },
+    {
+      "id": 85,
+      "score": 0.9739556908607483,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "is a convex equilateral hexagon with opposite sides parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon. Thus we have a convex equilateral hexagon ABCDEF, with all sides equal length s (unknown)."
+    },
+    {
+      "id": 85,
+      "score": 0.9192373156547546,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a not not convex not not equilateral hexagon in which all pairs of opposite sides are not not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths not not 200, 240, and not not 300. Find the side length of the hexagon.\""
+    },
+    {
+      "id": 85,
+      "score": 0.9575190544128418,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "a convex equilateral hexagon in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" Thus we"
+    },
+    {
+      "id": 85,
+      "score": 0.9202471971511841,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "a disguised problem: \"Let ABCDEF be a convex hexagon in which opposite sides are not parallel.\" The triangle formed by extending sides AB, CD, and EF has side lengths 200, 240, 300. Find the side length of the hexagon. But what side"
+    },
+    {
+      "id": 85,
+      "score": 0.9416768550872803,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "convex and not equilateral (maybe not needed). All pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths not 200, 240, and not 300. Find the side length of the hexagon. Probably there is a known result: For"
+    },
+    {
+      "id": 85,
+      "score": 0.9097235798835754,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "convex not not equilateral hexagon in which all pairs of opposite sides are not not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths not not 200, 240, and not not 300. Find the side length of the hexagon.\" It seems there is"
+    },
+    {
+      "id": 85,
+      "score": 0.9764325022697449,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "problem: \"Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" Thus we have hexagon where AB is"
+    },
+    {
+      "id": 85,
+      "score": 0.954484760761261,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "ABCDEF be a not necessarily convex, not necessarily equilateral hexagon in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" Possibly the answer is"
+    },
+    {
+      "id": 85,
+      "score": 0.9530119895935059,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "likely have: Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon. We need find side length"
+    }
+  ],
+  "original_accuracy": 0.7941787941787942,
+  "semantic_accuracy": 0.8981288981288982
+}
