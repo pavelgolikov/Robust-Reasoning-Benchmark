@@ -14,6 +14,7 @@ from tqdm import tqdm
 # ── Configuration (mirrored from plot_results.py) ────────────────────
 
 TECHNIQUE_LABELS = {
+    "baseline":                     "Baseline",
     "opposites":                    "Opposites",
     "not_not":                      "Not-Not",
     "wrappers":                     "Wrappers",
@@ -24,6 +25,7 @@ TECHNIQUE_LABELS = {
     "interleaved_context_line":     "Interleave (Line)",
     "interleaved_context_word":     "Interleave (Word)",
     "interleaved_context_symbol":   "Interleave (Symbol)",
+    "context_saturation":           "Context Saturation",
     "rectangle_perimeter":          "Rectangle Perimeter",
 }
 
@@ -45,23 +47,29 @@ DATASET_SHORT_NAMES = {
 }
 
 PALETTE = [
-    "#4C72B0", "#DD8452", "#55A868", "#C44E52",
-    "#8172B3", "#937860", "#DA8BC3", "#64B5CD", "#CCB974",
+    "#4C72B0",  # Steel blue
+    "#DD8452",  # Sandy brown
+    "#55A868",  # Muted green
+    "#C44E52",  # Brick red
+    "#8172B3",  # Soft purple
+    "#937860",  # Dusty brown
+    "#DA8BC3",  # Soft pink
+    "#64B5CD",  # Teal
+    "#CCB974",  # Gold
+    "#414451",  # Dark slate
+    "#9932CC",  # Deep violet
+    "#006400",  # Dark green
+    "#8B0000",  # Dark red
 ]
 
-# Ordered list of techniques for analysis (no baseline / context_saturation)
+# Ordered list of techniques for analysis
 TECHNIQUES_LIST = [
-    'not_not',
-    'opposites',
-    'sentence_reversal',
-    'split_reversal',
-    'word_reversal',
-    'wrappers',
-    'interleaved_context_line',
-    'interleaved_context_word',
-    'interleaved_context_symbol',
-    'rail_fence',
-    'rectangle_perimeter',
+    "baseline",
+    "not_not", "opposites", "wrappers",
+    "interleaved_context_line", "interleaved_context_word", "interleaved_context_symbol",
+    "context_saturation",
+    "sentence_reversal", "word_reversal", "split_reversal",
+    "rail_fence",
 ]
 
 
@@ -300,7 +308,7 @@ def scan_recovery_results(base_dir: str, techniques: List[str], safe_dataset: st
 
 def plot_recovery(technique_data, dataset_name, outdir):
     """
-    Produce a bar-chart grid of prompt recovery rates, mirroring plot_results.py style.
+    Produce a bar-chart grid of prompt recovery rates by model.
     technique_data: dict[technique] -> dict[model] -> {recovery_rate, n_samples}
     """
     import matplotlib
@@ -312,81 +320,118 @@ def plot_recovery(technique_data, dataset_name, outdir):
     all_models = set()
     for td in technique_data.values():
         all_models.update(td.keys())
-    all_models = sorted(all_models)
 
     if not all_models:
         print("  No recovery data found. Run analysis first.")
         return
+    
 
-    techniques_with_data = [t for t in TECHNIQUES_LIST if t in technique_data and technique_data[t]]
-    n_techniques = len(techniques_with_data)
-    if n_techniques == 0:
+    # Sort models by average accuracy from plot_results to match the other plots' order
+    try:
+        import sys
+        analysis_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if analysis_dir not in sys.path:
+            sys.path.append(analysis_dir)
+        from plot_results import scan_results
+
+        experiments_dir = os.path.dirname(analysis_dir)
+        # Suppress prints from scan_results to keep output clean
+        import io
+        from contextlib import redirect_stdout
+        with redirect_stdout(io.StringIO()):
+            accuracy_data_all = scan_results(experiments_dir, aggregate=False)
+        
+        accuracy_data = accuracy_data_all.get(dataset_name, {})
+
+        def _avg_accuracy(model):
+            accs = [accuracy_data[t][model]['accuracy']
+                    for t in accuracy_data if model in accuracy_data[t]]
+            return sum(accs) / len(accs) if accs else 0
+
+        all_models = sorted(all_models, key=_avg_accuracy, reverse=True)
+    except Exception as e:
+        print(f"  Warning: Could not fetch accuracy data for sorting models ({e}). Falling back to alphabetical.")
+        all_models = sorted(all_models)
+
+    # Force display of all canonical techniques, even if they have zero data
+    ordered_techniques = TECHNIQUES_LIST.copy()
+    available_techniques = set(technique_data.keys())
+    
+    for t in sorted(available_techniques):
+        if t not in ordered_techniques:
+            ordered_techniques.append(t)
+    
+    if not ordered_techniques:
         print("  No techniques with recovery data found.")
         return
 
-    model_colors = {}
-    for i, model in enumerate(all_models):
-        model_colors[model] = PALETTE[i % len(PALETTE)]
+    n_techniques = len(ordered_techniques)
+    technique_labels = [TECHNIQUE_LABELS.get(t, t) for t in ordered_techniques]
 
-    ncols = min(4, n_techniques)
-    nrows = (n_techniques + ncols - 1) // ncols
+    # Assign consistent colors per technique (anchored to TECHNIQUES_LIST to prevent shifting)
+    technique_colors = {}
+    for t in ordered_techniques:
+        if t in TECHNIQUES_LIST:
+            idx = TECHNIQUES_LIST.index(t)
+        else:
+            idx = len(TECHNIQUES_LIST) + ordered_techniques.index(t)  # fallback
+        technique_colors[t] = PALETTE[idx % len(PALETTE)]
+
+    dataset_label = DATASET_SHORT_NAMES.get(dataset_name, dataset_name)
+    
+    n_models = len(all_models)
+    ncols = min(4, n_models)
+    nrows = (n_models + ncols - 1) // ncols
 
     fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5.5 * nrows))
-    if n_techniques == 1:
+    if n_models == 1:
         axes = np.array([axes])
     axes = np.atleast_2d(axes)
 
-    dataset_label = DATASET_SHORT_NAMES.get(dataset_name, dataset_name)
-    fig.suptitle(f"Prompt Recovery Rate — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
+    fig.suptitle(f"Prompt Recovery Rate by Model — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
 
-    for idx, technique in enumerate(techniques_with_data):
+    for idx, model_name in enumerate(all_models):
         row, col = divmod(idx, ncols)
         ax = axes[row, col]
-        td = technique_data[technique]
 
-        subplot_models = [m for m in all_models if m in td]
-        if not subplot_models:
-            ax.text(0.5, 0.5, "No data", ha='center', va='center')
-            ax.set_title(TECHNIQUE_LABELS.get(technique, technique), fontsize=13, fontweight='bold', pad=8)
-            continue
+        rates = []
+        bar_colors = []
+        for t in ordered_techniques:
+            td = technique_data.get(t, {})
+            if model_name in td:
+                rates.append(td[model_name]['recovery_rate'])
+            else:
+                rates.append(100)
+            bar_colors.append(technique_colors[t])
 
-        x = np.arange(len(subplot_models))
+        x = np.arange(n_techniques)
         bar_width = 0.65
-        rates = [td[m]['recovery_rate'] for m in subplot_models]
-        colors = [model_colors[m] for m in subplot_models]
-
-        labels = []
-        for m in subplot_models:
-            short = MODEL_SHORT_NAMES.get(m, m)
-            n = td[m]['n_samples']
-            n_str = str(int(n)) if n == int(n) else f"{n:.1f}"
-            labels.append(f"{short}\n(n={n_str})")
-
-        bars = ax.bar(x, rates, bar_width, color=colors, edgecolor='white', linewidth=0.5)
+        bars = ax.bar(x, rates, bar_width, color=bar_colors, edgecolor='white', linewidth=0.5)
 
         for bar, rate in zip(bars, rates):
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                    f"{rate:.0f}%", ha='center', va='bottom', fontsize=10, fontweight='bold')
+            if rate > 0:
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
+                        f"{rate:.0f}%", ha='center', va='bottom', fontsize=9, fontweight='bold')
 
-        title = TECHNIQUE_LABELS.get(technique, technique)
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=10)
+        model_label = MODEL_SHORT_NAMES.get(model_name, model_name).replace('\n', ' ')
+        ax.set_title(model_label, fontsize=13, fontweight='bold', pad=10)
         ax.set_xticks(x)
-        ax.set_xticklabels(labels, fontsize=8, rotation=45, ha='right')
-        ax.set_ylabel("Recovery Rate (%)", fontsize=11)
+        ax.set_xticklabels(technique_labels, fontsize=8, rotation=45, ha='right')
+        ax.set_ylabel("Recovery Rate (%)", fontsize=10)
         ax.set_ylim(0, 115)
         ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
-    for idx in range(n_techniques, nrows * ncols):
+    for idx in range(n_models, nrows * ncols):
         row, col = divmod(idx, ncols)
         axes[row, col].set_visible(False)
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
 
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"prompt_recovery_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, f"prompt_recovery_by_model_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"  Saved plot: {out_path}")

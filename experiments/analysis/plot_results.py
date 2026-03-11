@@ -197,6 +197,10 @@ PALETTE = [
     "#DA8BC3",  # Soft pink
     "#64B5CD",  # Teal
     "#CCB974",  # Gold
+    "#414451",  # Dark slate
+    "#9932CC",  # Deep violet
+    "#006400",  # Dark green
+    "#8B0000",  # Dark red
 ]
 
 # ── Plotting ─────────────────────────────────────────────────────────
@@ -329,10 +333,11 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
 
     all_models = sorted(all_models, key=_avg_accuracy, reverse=True)
 
-    # Use canonical ordering, only include techniques that have data
+    # Use canonical ordering, FORCE all techniques to be displayed
+    ordered_techniques = TECHNIQUE_ORDER.copy()
     available_techniques = set(technique_data.keys())
-    ordered_techniques = [t for t in TECHNIQUE_ORDER if t in available_techniques]
-    # Append any techniques not in TECHNIQUE_ORDER
+    
+    # Append any techniques not in TECHNIQUE_ORDER that have data
     for t in sorted(available_techniques):
         if t not in ordered_techniques:
             ordered_techniques.append(t)
@@ -344,10 +349,14 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
     n_techniques = len(ordered_techniques)
     technique_labels = [TECHNIQUE_LABELS.get(t, t) for t in ordered_techniques]
 
-    # Assign consistent colors per technique
+    # Assign consistent colors per technique (anchored to TECHNIQUE_ORDER to prevent shifting)
     technique_colors = {}
-    for i, t in enumerate(ordered_techniques):
-        technique_colors[t] = PALETTE[i % len(PALETTE)]
+    for t in ordered_techniques:
+        if t in TECHNIQUE_ORDER:
+            idx = TECHNIQUE_ORDER.index(t)
+        else:
+            idx = len(TECHNIQUE_ORDER) + ordered_techniques.index(t)  # fallback for unknown
+        technique_colors[t] = PALETTE[idx % len(PALETTE)]
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
 
