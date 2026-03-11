@@ -68,10 +68,25 @@ def build_context_cache_from_trimmed(provider, trimmed_messages, model_name, con
                     record = json.load(f)
                 
                 # Check expiration against our newly requested TTL
-                # (If they ask for 48 hours but the existing cache only has 1 hr left, we should re-create)
                 if time.time() < (record['created_at'] + record['ttl_seconds'] - ttl_seconds + 300):
-                    print(f"Found active existing context cache: {record['cache_name']}")
-                    return {'type': 'google', 'ref': record['cache_name']}
+                    # Verify cache actually exists on the server before trusting local record
+                    try:
+                        from google import genai
+                        from google.genai import types
+                        project = os.environ.get("GOOGLE_PROJECT_ID")
+                        location = os.environ.get("GOOGLE_LOCATION", "global")
+                        api_key = os.environ.get("GOOGLE_API_KEY")
+                        if project:
+                            client = genai.Client(vertexai=True, project=project, location=location)
+                        else:
+                            client = genai.Client(api_key=api_key)
+                        client.caches.get(name=record['cache_name'])
+                        print(f"Verified active context cache on server: {record['cache_name']}")
+                        return {'type': 'google', 'ref': record['cache_name']}
+                    except Exception as verify_err:
+                        print(f"  Cache {record['cache_name']} no longer exists on server: {verify_err}")
+                        print(f"  Deleting stale record and creating new cache...")
+                        os.remove(cache_record_file)
             except Exception as e:
                 print(f"Error reading existing cache record: {e}")
                 
@@ -254,19 +269,47 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
 
     for i, job in enumerate(jobs):
         print(f"[{context_type}] Job {i+1}/{len(jobs)} (ID: {job['id']})...")
-        try:
-            generated_text = generate_response(
-                job['messages'], args.model,
-                provider=args.provider,
-                temperature=args.temperature,
-                max_tokens=args.max_tokens,
-                context_cache=context_cache,
-            )
-        except Exception as e:
-            # Reaches here only for safety filter blocks or exhausted transient retries
-            # (quota/rate-limit errors are retried indefinitely inside generate_response)
-            print(f"  Error (non-retryable): {e}")
-            generated_text = f"ERROR: {str(e)}"
+
+        # Retry loop: handles cache expiry by rebuilding and retrying the same job
+        while True:
+            try:
+                generated_text = generate_response(
+                    job['messages'], args.model,
+                    provider=args.provider,
+                    temperature=args.temperature,
+                    max_tokens=args.max_tokens,
+                    context_cache=context_cache,
+                )
+                break  # success — exit retry loop
+            except Exception as e:
+                if 'CACHE_EXPIRED' in str(e):
+                    # ── Self-healing: rebuild the cache and retry this job ──
+                    print(f"  ⚠ Cache expired! Rebuilding cache and retrying job {i+1}...")
+
+                    # Stop old renewal thread
+                    if cache_renewal_stop:
+                        cache_renewal_stop.set()
+
+                    # Rebuild cache
+                    context_cache = build_context_cache_from_trimmed(
+                        args.provider, trimmed_context, args.model,
+                        context_type=context_type, context_size=args.context_size,
+                        ttl_seconds=ttl
+                    )
+
+                    # Restart renewal thread
+                    cache_renewal_stop = None
+                    if context_cache and context_cache['type'] == 'google':
+                        _, cache_renewal_stop = start_cache_renewal_thread(
+                            context_cache['ref'], ttl_seconds=ttl
+                        )
+
+                    continue  # retry same job with new cache
+                else:
+                    # Non-cache error (safety filter, exhausted transient retries)
+                    print(f"  Error (non-retryable): {e}")
+                    generated_text = f"ERROR: {str(e)}"
+                    break
 
         extracted, is_correct = extract_and_grade(generated_text, job['ground_truth'])
         result_dict = {

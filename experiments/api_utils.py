@@ -234,6 +234,12 @@ def generate_response(messages, model_name, provider=None, temperature=0.7, max_
         return any(kw in e_str for kw in ['safety', 'blocked', 'content_filter',
                                            'content policy', 'harm', 'responsible_ai'])
 
+    def _is_cache_expired_error(exc):
+        """Check if error indicates an expired or deleted context cache."""
+        e_str = str(exc).lower()
+        return any(kw in e_str for kw in ['is expired', 'is not found', 'cache expired',
+                                           'cached content', 'cachedcontents'])
+
     transient_attempt = 0
     while True:
         try:
@@ -249,6 +255,11 @@ def generate_response(messages, model_name, provider=None, temperature=0.7, max_
                 # Safety filter — don't retry, let caller handle
                 logging.warning(f"Safety filter block for {provider}/{model_name}: {e}")
                 raise
+
+            if _is_cache_expired_error(e):
+                # Cache expired or deleted — don't retry, caller must recreate
+                logging.warning(f"Cache expired/not found for {provider}/{model_name}: {e}")
+                raise RuntimeError(f"CACHE_EXPIRED: {e}")
 
             if _is_quota_error(e):
                 # Quota / rate limit — retry forever with exponential backoff, capped at 5 min
@@ -448,7 +459,7 @@ def start_cache_renewal_thread(cache_name, ttl_seconds, stop_event=None):
     if stop_event is None:
         stop_event = threading.Event()
 
-    renewal_interval = 3600  # renew every hour
+    renewal_interval = ttl_seconds * 0.8  # renew every 80% of ttl
 
     def _renewal_loop():
         while not stop_event.is_set():
@@ -456,7 +467,7 @@ def start_cache_renewal_thread(cache_name, ttl_seconds, stop_event=None):
             if stop_event.is_set():
                 break
             try:
-                renew_google_cache_ttl(cache_name, ttl_seconds=3600)  # renew for 1hr only
+                renew_google_cache_ttl(cache_name, ttl_seconds=7200)  # renew for 2hrs only
             except Exception as e:
                 print(f"  [Cache renewal] WARNING: renewal failed: {e}")
 

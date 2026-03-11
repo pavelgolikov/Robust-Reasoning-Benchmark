@@ -128,3 +128,5 @@ specific.
 
 figures for transorms for section 3.
 
+Replace everything in Section 3 as Mark suggested.
+Redo the plots as Mark suggested as well.

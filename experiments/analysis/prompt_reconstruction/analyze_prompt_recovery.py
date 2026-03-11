@@ -166,7 +166,7 @@ def analyze_single_file(result_file: str, model, args) -> Dict[str, Any]:
     # ── Phase 1: Collect all targets and windows (CPU) ──
     entries_to_analyze = []  # list of (entry_idx, entry, norm_target, windows_list)
 
-    for entry in data:
+    for entry in tqdm(data, desc="  Collecting windows", leave=False):
         is_orig_correct = entry.get('correct', False)
         if is_orig_correct:
             summary["original_correct"] += 1
@@ -218,10 +218,10 @@ def analyze_single_file(result_file: str, model, args) -> Dict[str, Any]:
     target_embeddings = model.encode(all_targets, convert_to_tensor=True,
                                      show_progress_bar=False, batch_size=256)
     window_embeddings = model.encode(all_flat_windows, convert_to_tensor=True,
-                                     show_progress_bar=False, batch_size=256)
+                                     show_progress_bar=True, batch_size=256)
 
     # ── Phase 3: Compute similarities per entry ──
-    for i, (entry, norm_target, windows) in enumerate(entries_to_analyze):
+    for i, (entry, norm_target, windows) in enumerate(tqdm(entries_to_analyze, desc="  Computing similarities", leave=False)):
         start, end = window_offsets[i]
         target_emb = target_embeddings[i].unsqueeze(0)
         win_embs = window_embeddings[start:end]
@@ -386,7 +386,7 @@ def plot_recovery(technique_data, dataset_name, outdir):
     plt.tight_layout(rect=[0, 0, 1, 0.94])
 
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"prompt_recovery_{dataset_name}.png")
+    out_path = os.path.join(outdir, f"prompt_recovery_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"  Saved plot: {out_path}")
