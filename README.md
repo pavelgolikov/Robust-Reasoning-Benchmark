@@ -131,3 +131,5 @@ figures for transorms for section 3.
 
 Replace everything in Section 3 as Mark suggested.
 Redo the plots as Mark suggested as well.
+Another interesting value to look at - accuracy in relation to total response output. Do transforms that induce longer
+thoughts reduce accuracy more? 
