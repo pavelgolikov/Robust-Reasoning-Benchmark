@@ -45,6 +45,7 @@ TECHNIQUE_LABELS = {
 
 # Canonical ordering of techniques for by-model plots
 TECHNIQUE_ORDER = [
+    "baseline",
     "not_not", "opposites", "wrappers",
     "interleaved_context_line", "interleaved_context_word", "interleaved_context_symbol",
     "context_saturation",
