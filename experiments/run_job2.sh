@@ -32,13 +32,3 @@ export NCCL_IGNORE_DISABLED_P2P=1
 #   --n_samples 8 \
 #   --num_gpus 4 &>> eval_out2.out
 
-
-# python evaluate_context.py \
-#   --model GAIR/LIMO-v2 \
-#   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_16K_openai.json \
-#   --context_type math \
-#   --max_model_len 128000 \
-#   --context_size 16000 \
-#   --max_tokens 8192 \
-#   --n_samples 8 \
-#   --num_gpus 4 &> eval_out2.out
