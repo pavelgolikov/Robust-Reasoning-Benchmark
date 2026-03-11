@@ -38,7 +38,7 @@ def _apply_not_not(text, k=2):
             continue
             
         # RULE: Never insert 'not not' before a Protected Math Block
-        if t_text_lower.startswith("mathblock"):
+        if "mathblock" in t_text_lower:
             continue
 
         if token.pos_ in ["ADJ", "NUM"]:
@@ -55,26 +55,25 @@ def _apply_not_not(text, k=2):
             insertion_indices.add(idx)
             
     output_tokens = []
+    
+    def unmask_func(match):
+        idx = int(match.group(1))
+        if idx < len(latex_blocks):
+            return latex_blocks[idx]
+        return match.group(0)
+
     for i, token in enumerate(doc):
         # 2. Check for insertion
         if i in insertion_indices:
             output_tokens.append("not not ")
             
-        t_text = token.text
-        # 3. Unmask LaTeX if this token is a placeholder
-        if t_text.startswith("MATHBLOCK"):
-            try:
-                # Extract index from MATHBLOCKN
-                idx = int(t_text[9:])
-                original_math = latex_blocks[idx]
-                # Preserve following whitespace from the original tokenization
-                ws = token.text_with_ws[len(t_text):]
-                output_tokens.append(original_math + ws)
-            except (ValueError, IndexError):
-                # Fallback to token text if something went wrong
-                output_tokens.append(token.text_with_ws)
+        t_text_ws = token.text_with_ws
+        # 3. Unmask LaTeX if this token contains placeholder(s)
+        if "MATHBLOCK" in t_text_ws:
+            restored = re.sub(r'MATHBLOCK(\d+)', unmask_func, t_text_ws)
+            output_tokens.append(restored)
         else:
-            output_tokens.append(token.text_with_ws)
+            output_tokens.append(t_text_ws)
         
     return "".join(output_tokens)
 

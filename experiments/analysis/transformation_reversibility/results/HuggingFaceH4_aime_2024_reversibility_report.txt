@@ -5,66 +5,6 @@ Reversibility Test Report - samples: 0 - Dataset: HuggingFaceH4/aime_2024
 EXPERIMENT: not_not
 ========================================
 
---------------------------------------------------------------------------------
-Sample ID: 10 | Status: MISMATCH
---------------------------------------------------------------------------------
-
-[TRANSFORMED PROBLEM]:
-Rectangles $ABCD$ and $EFGH$ are drawn such that $D,E,C,F$ are not not collinear. Also, $A,D,H,G$ all lie on a circle. If MATHBLOCK4,MATHBLOCK5,MATHBLOCK6, and $EF=184$, what is the length of $CE$?
-
-[ORIGINAL PROBLEM]:
-Rectangles $ABCD$ and $EFGH$ are drawn such that $D,E,C,F$ are collinear. Also, $A,D,H,G$ all lie on a circle. If $BC=16$,$AB=107$,$FG=17$, and $EF=184$, what is the length of $CE$?
-
-[REVERSED PROBLEM]:
-Rectangles $ABCD$ and $EFGH$ are drawn such that $D,E,C,F$ are collinear. Also, $A,D,H,G$ all lie on a circle. If MATHBLOCK4,MATHBLOCK5,MATHBLOCK6, and $EF=184$, what is the length of $CE$?
-
-[COMPARISON - NORMALIZED]:
---- Original (Norm) ---
-Rectangles $ABCD$ and $EFGH$ are drawn such that $D,E,C,F$ are collinear. Also, $A,D,H,G$ all lie on a circle. If $BC=16$,$AB=107$,$FG=17$, and $EF=184$, what is the length of $CE$?
---- Reversed (Norm) ---
-Rectangles $ABCD$ and $EFGH$ are drawn such that $D,E,C,F$ are collinear. Also, $A,D,H,G$ all lie on a circle. If MATHBLOCK4,MATHBLOCK5,MATHBLOCK6, and $EF=184$, what is the length of $CE$?
---- Length Diff: 8 ---
-
---------------------------------------------------------------------------------
-Sample ID: 12 | Status: MISMATCH
---------------------------------------------------------------------------------
-
-[TRANSFORMED PROBLEM]:
-Find the not not largest not not possible real part of MATHBLOCK0where $z$ is a not not complex number with $|z|=4$.
-
-[ORIGINAL PROBLEM]:
-Find the largest possible real part of \[(75+117i)z+\frac{96+144i}{z}\]where $z$ is a complex number with $|z|=4$.
-
-[REVERSED PROBLEM]:
-Find the largest possible real part of MATHBLOCK0where $z$ is a complex number with $|z|=4$.
-
-[COMPARISON - NORMALIZED]:
---- Original (Norm) ---
-Find the largest possible real part of \[(75+117i)z+\frac{96+144i}{z}\]where $z$ is a complex number with $|z|=4$.
---- Reversed (Norm) ---
-Find the largest possible real part of MATHBLOCK0where $z$ is a complex number with $|z|=4$.
---- Length Diff: -22 ---
-
---------------------------------------------------------------------------------
-Sample ID: 24 | Status: MISMATCH
---------------------------------------------------------------------------------
-
-[TRANSFORMED PROBLEM]:
-Let $x,y$ and $z$ be not not positive not not real numbers that satisfy the following system of equations:; MATHBLOCK2MATHBLOCK3MATHBLOCK4; Then the value of $\left|\log_2(x^4y^3z^2)\right|$ is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime not not positive integers. Find $m+n$.
-
-[ORIGINAL PROBLEM]:
-Let $x,y$ and $z$ be positive real numbers that satisfy the following system of equations:; \[\log_2\left({x \over yz}\right) = {1 \over 2}\]\[\log_2\left({y \over xz}\right) = {1 \over 3}\]\[\log_2\left({z \over xy}\right) = {1 \over 4}\]; Then the value of $\left|\log_2(x^4y^3z^2)\right|$ is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime positive integers. Find $m+n$.
-
-[REVERSED PROBLEM]:
-Let $x,y$ and $z$ be positive real numbers that satisfy the following system of equations:; MATHBLOCK2MATHBLOCK3MATHBLOCK4; Then the value of $\left|\log_2(x^4y^3z^2)\right|$ is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime positive integers. Find $m+n$.
-
-[COMPARISON - NORMALIZED]:
---- Original (Norm) ---
-Let $x,y$ and $z$ be positive real numbers that satisfy the following system of equations:; \[\log_2\left({x \over yz}\right) = {1 \over 2}\]\[\log_2\left({y \over xz}\right) = {1 \over 3}\]\[\log_2\left({z \over xy}\right) = {1 \over 4}\]; Then the value of $\left|\log_2(x^4y^3z^2)\right|$ is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime positive integers. Find $m+n$.
---- Reversed (Norm) ---
-Let $x,y$ and $z$ be positive real numbers that satisfy the following system of equations:; MATHBLOCK2MATHBLOCK3MATHBLOCK4; Then the value of $\left|\log_2(x^4y^3z^2)\right|$ is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime positive integers. Find $m+n$.
---- Length Diff: -117 ---
-
 ----------------------------------------
 MATCH EXAMPLE (Sample ID: 0)
 ----------------------------------------
@@ -196,6 +136,19 @@ Jen enters a lottery by picking $4$ distinct numbers from $S=\{1,2,3,\cdots,9,10
 Jen enters a lottery by picking $4$ distinct numbers from $S=\{1,2,3,\cdots,9,10\}.$ $4$ numbers are randomly chosen from $S.$ She wins a prize if at least two of her numbers were $2$ of the randomly chosen numbers, and wins the grand prize if all four of her numbers were the randomly chosen numbers. The probability of her winning the grand prize given that she won a prize is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime positive integers. Find $m+n$.
 
 ----------------------------------------
+MATCH EXAMPLE (Sample ID: 10)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Rectangles $ABCD$ and $EFGH$ are drawn such that $D,E,C,F$ are not not collinear. Also, $A,D,H,G$ all lie on a circle. If $BC=16$,$AB=107$,$FG=17$, and $EF=184$, what is the length of $CE$?
+
+[ORIGINAL PROBLEM]:
+Rectangles $ABCD$ and $EFGH$ are drawn such that $D,E,C,F$ are collinear. Also, $A,D,H,G$ all lie on a circle. If $BC=16$,$AB=107$,$FG=17$, and $EF=184$, what is the length of $CE$?
+
+[REVERSED PROBLEM]:
+Rectangles $ABCD$ and $EFGH$ are drawn such that $D,E,C,F$ are collinear. Also, $A,D,H,G$ all lie on a circle. If $BC=16$,$AB=107$,$FG=17$, and $EF=184$, what is the length of $CE$?
+
+----------------------------------------
 MATCH EXAMPLE (Sample ID: 11)
 ----------------------------------------
 
@@ -207,6 +160,19 @@ Consider the paths of length $16$ that follow the lines from the lower left corn
 
 [REVERSED PROBLEM]:
 Consider the paths of length $16$ that follow the lines from the lower left corner to the upper right corner on an $8\times 8$ grid. Find the number of such paths that change direction exactly four times, as in the examples shown below.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 12)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Find the not not largest not not possible real part of \[(75+117i)z+\frac{96+144i}{z}\]where $z$ is a not not complex number with $|z|=4$.
+
+[ORIGINAL PROBLEM]:
+Find the largest possible real part of \[(75+117i)z+\frac{96+144i}{z}\]where $z$ is a complex number with $|z|=4$.
+
+[REVERSED PROBLEM]:
+Find the largest possible real part of \[(75+117i)z+\frac{96+144i}{z}\]where $z$ is a complex number with $|z|=4$.
 
 ----------------------------------------
 MATCH EXAMPLE (Sample ID: 13)
@@ -352,6 +318,19 @@ Find the number of ways to place a digit in each cell of a 2x3 grid so that the 
 Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is $999$, and the sum of the three numbers formed by reading top to bottom is $99$. The grid below is an example of such an arrangement because $8+991=999$ and $9+9+81=99$.; \[\begin{array}{|c|c|c|} \hline 0 & 0 & 8 \\ \hline 9 & 9 & 1 \\ \hline \end{array}\]
 
 ----------------------------------------
+MATCH EXAMPLE (Sample ID: 24)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Let $x,y$ and $z$ be not not positive not not real numbers that satisfy the following system of equations:; \[\log_2\left({x \over yz}\right) = {1 \over 2}\]\[\log_2\left({y \over xz}\right) = {1 \over 3}\]\[\log_2\left({z \over xy}\right) = {1 \over 4}\]; Then the value of $\left|\log_2(x^4y^3z^2)\right|$ is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime not not positive integers. Find $m+n$.
+
+[ORIGINAL PROBLEM]:
+Let $x,y$ and $z$ be positive real numbers that satisfy the following system of equations:; \[\log_2\left({x \over yz}\right) = {1 \over 2}\]\[\log_2\left({y \over xz}\right) = {1 \over 3}\]\[\log_2\left({z \over xy}\right) = {1 \over 4}\]; Then the value of $\left|\log_2(x^4y^3z^2)\right|$ is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime positive integers. Find $m+n$.
+
+[REVERSED PROBLEM]:
+Let $x,y$ and $z$ be positive real numbers that satisfy the following system of equations:; \[\log_2\left({x \over yz}\right) = {1 \over 2}\]\[\log_2\left({y \over xz}\right) = {1 \over 3}\]\[\log_2\left({z \over xy}\right) = {1 \over 4}\]; Then the value of $\left|\log_2(x^4y^3z^2)\right|$ is $\tfrac{m}{n}$ where $m$ and $n$ are relatively prime positive integers. Find $m+n$.
+
+----------------------------------------
 MATCH EXAMPLE (Sample ID: 25)
 ----------------------------------------
 
@@ -417,5 +396,5 @@ There is a collection of $25$ indistinguishable white chips and $25$ indistingui
 There is a collection of $25$ indistinguishable white chips and $25$ indistinguishable black chips. Find the number of ways to place some of these chips in the $25$ unit cells of a $5\times5$ grid such that: ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two conditions.
 
 ----------------------------------------
-Result: 27/30 Passed
+Result: 30/30 Passed
 ========================================
