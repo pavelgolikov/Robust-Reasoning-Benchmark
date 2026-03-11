@@ -59,11 +59,11 @@ MODEL_SHORT_NAMES = {
     "tiiuae_Falcon-H1R-7B":                             "Falcon-H1R\n(7B)",
     "openai_gpt-oss-120b":                              "GPT-OSS\n(120B)",
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama\n(70B)",
-    "Qwen_Qwen3.5-35B-A3B":                             "Qwen3.5-35B",
     "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B",
     "gemini-3.1-pro-preview":                           "Gemini 3.1\nPro",
-    "gemini-2.5-flash":                                 "Gemini 2.5\nFlash",
     "claude-opus-4-6":                                  "Claude Opus\n4-6",
+    # "gemini-2.5-flash":                                 "Gemini 2.5\nFlash",
+    # "Qwen_Qwen3.5-35B-A3B":                             "Qwen3.5-35B",
 }
 
 DATASET_SHORT_NAMES = {
