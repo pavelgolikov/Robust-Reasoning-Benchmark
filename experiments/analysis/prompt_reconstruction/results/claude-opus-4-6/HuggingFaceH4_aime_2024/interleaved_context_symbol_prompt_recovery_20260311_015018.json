@@ -1,0 +1,40 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_symbol/results/claude-opus-4-6/HuggingFaceH4_aime_2024/claude-opus-4-6_HuggingFaceH4_aime_2024_interleaved_context_symbol_20260309_000512.json",
+  "total_samples": 121,
+  "original_correct": 39,
+  "semantic_correct": 44,
+  "recovered_cases": [
+    {
+      "id": 65,
+      "score": 0.9517168998718262,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "checking problem B makes sense: \"Let ABCD be a tetrahedron such that AB=CD=sqrt{41}, AC=BD=sqrt{80}, and BC=AD=sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{msqrt{n}}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.\""
+    },
+    {
+      "id": 76,
+      "score": 0.9146401882171631,
+      "target": "Let triangle ABC have circumcenter O and incenter I with overline{IA}perpoverline{OI}, circumradius 13, and inradius 6. Find ABcdot AC.",
+      "best_window": "incenter I with overline{IA} perp overline{OI}; circumradius 13; and inradius 6. Find AB cdot AC.\" So we have a triangle with circumradius"
+    },
+    {
+      "id": 77,
+      "score": 0.9869878888130188,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "integers (a, b, c) satisfying (a + b + c = 300) and; begin{equation*}; a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000.; end{equation*}Find the number of triples of nonnegative integers (a, b, c) satisfying"
+    },
+    {
+      "id": 77,
+      "score": 0.9897443652153015,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "6,000,000.; end{equation*}Find the number of triples of nonnegative integers (a, b, c) satisfying (a + b + c = 300) and; begin{equation*}; a^2b + a^2c + b^2a + b^2c + c^2a + c^2b"
+    },
+    {
+      "id": 77,
+      "score": 0.9869878888130188,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "integers (a, b, c) satisfying (a + b + c = 300) and; begin{equation*}; a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000.; end{equation*}Find the number of triples of nonnegative integers (a, b, c) satisfying"
+    }
+  ],
+  "original_accuracy": 0.32231404958677684,
+  "semantic_accuracy": 0.36363636363636365
+}

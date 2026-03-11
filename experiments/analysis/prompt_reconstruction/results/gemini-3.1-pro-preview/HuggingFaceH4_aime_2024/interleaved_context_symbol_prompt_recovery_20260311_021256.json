@@ -1,0 +1,100 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/interleaved_context_symbol/results/gemini-3.1-pro-preview/HuggingFaceH4_aime_2024/gemini-3.1-pro-preview_HuggingFaceH4_aime_2024_interleaved_context_symbol_20260306_142122.json",
+  "total_samples": 121,
+  "original_correct": 78,
+  "semantic_correct": 93,
+  "recovered_cases": [
+    {
+      "id": 63,
+      "score": 0.950417160987854,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "Statement:** Define f(x) = ||x| - frac{1}{2}| and g(x) = ||x| - frac{1}{4}|. Find the number of intersections of the graphs of [y = g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y))).]"
+    },
+    {
+      "id": 63,
+      "score": 0.9051579236984253,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "solve):** \"Define f(x)=||x|-frac{1}{2}| and g(x)=||x|-frac{1}{4}|. Find the number of intersections of the graphs of [y=4g(f(x))quad text{and}quad y=4f(x)].\" *(Note: As stated in the"
+    },
+    {
+      "id": 64,
+      "score": 0.9710026979446411,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "least prime number for which there exists a positive integer n such that n^4+1 is divisible by p^2. Find the least positive integer m such that m^4+1 is divisible by p^2.\"** *(Note: The other problem,"
+    },
+    {
+      "id": 66,
+      "score": 0.9783918857574463,
+      "target": "Let mathcal{B} be the set of rectangular boxes with surface area 54 and volume 23. Let r be the radius of the smallest sphere that can contain each of the rectangular boxes that are elements of mathcal{B}. The value of r^2 can be written as frac{p}{q}, where p and q are relatively prime positive integers. Find p+q.",
+      "best_window": "set of rectangular boxes with surface area 54 and volume 23. Let r be the radius of the smallest sphere that can contain each of the rectangular boxes that are elements of mathcal{B}. The value of r^2 can be written as frac{p}{q}, where p and q are relatively prime positive integers. Find p+q.\" *(Note: The second problem"
+    },
+    {
+      "id": 68,
+      "score": 0.9814231395721436,
+      "target": "Alice and Bob play the following game. A stack of n tokens lies before them. The players take turns with Alice going first. On each turn, the player removes either 1 token or 4 tokens from the stack. Whoever removes the last token wins. Find the number of positive integers n less than or equal to 2024 for which there exists a strategy for Bob that guarantees that Bob will win the game regardless of Alice's play.",
+      "best_window": "the following game. A stack of n tokens lies before them. The players take turns with Alice going first. On each turn, the player removes either 1 token or 2 tokens from the stack. Whoever removes the last token wins. Find the number of positive integers n less than or equal to 2024 for which there exists a strategy for Bob that guarantees that Bob will win the game regardless of Alice's play.\" *(Note: The text for"
+    },
+    {
+      "id": 68,
+      "score": 0.983784019947052,
+      "target": "Alice and Bob play the following game. A stack of n tokens lies before them. The players take turns with Alice going first. On each turn, the player removes either 1 token or 4 tokens from the stack. Whoever removes the last token wins. Find the number of positive integers n less than or equal to 2024 for which there exists a strategy for Bob that guarantees that Bob will win the game regardless of Alice's play.",
+      "best_window": "and Bob play the following game. A stack of n tokens is before them. The players take turns with Alice going first. On each turn, the player removes either 1 token or 2 tokens from the stack. Whoever removes the last token wins. Find the number of positive integers n less than or equal to 2024 for which there exists a strategy for Bob that guarantees that Bob will win the game regardless of Alice's play.\" **Step-by-step"
+    },
+    {
+      "id": 69,
+      "score": 0.9041852951049805,
+      "target": "Jen enters a lottery by picking 4 distinct numbers from S={1,2,3,cdots,9,10}. 4 numbers are randomly chosen from S. She wins a prize if at least two of her numbers were 2 of the randomly chosen numbers, and wins the grand prize if all four of her numbers were the randomly chosen numbers. The probability of her winning the grand prize given that she won a prize is tfrac{m}{n} where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "\"Jen enters a lottery by picking 4 distinct numbers from S={1,2,3,dots,9,10}. 4 numbers are randomly chosen from S. She wins a prize if at least two of her numbers were 2 of the randomly chosen numbers, and she wins the grand prize if all four of her numbers were all the randomly chosen numbers. The probability of her winning the grand prize given that she won a prize is frac{m}{n} where m and n are relatively prime positive integers. Find m+n.\" Wait, \"were 2 of the randomly chosen numbers\" or \"were among the randomly"
+    },
+    {
+      "id": 73,
+      "score": 0.9031167030334473,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "3 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\" --- **Step-by-step Solution:** The"
+    },
+    {
+      "id": 73,
+      "score": 0.9643778204917908,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "A:** \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find"
+    },
+    {
+      "id": 75,
+      "score": 0.9881819486618042,
+      "target": "Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.",
+      "best_window": "A:** \"Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 532 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these"
+    },
+    {
+      "id": 79,
+      "score": 0.9456626772880554,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "a 13th root of unity. Find the remainder when [ prod_{k=0}^{12} (2 - omega^k + omega^{2k}) ] is divided by 1000.\""
+    },
+    {
+      "id": 79,
+      "score": 0.9497586488723755,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "a 13th root of unity. Find the remainder when [ prod_{k=0}^{12} (2 - omega^k + omega^{2k}) ] is divided by 1000.\"**"
+    },
+    {
+      "id": 79,
+      "score": 0.9507858157157898,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "1 be a 13th root of unity. Find the remainder when prod_{k=0}^{12} (2 - omega^k + omega^{2k}) is divided by 1000.\""
+    },
+    {
+      "id": 79,
+      "score": 0.9224210977554321,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "neq 1 be a 13th root of unity. Find the remainder when [ prod_{k=0}^{12} (2 - 2omega^k + omega^{2k}) ] is"
+    },
+    {
+      "id": 82,
+      "score": 0.9771745204925537,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode is 9, and this mode appears 2 times. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.\" *(Note:"
+    }
+  ],
+  "original_accuracy": 0.6446280991735537,
+  "semantic_accuracy": 0.768595041322314
+}

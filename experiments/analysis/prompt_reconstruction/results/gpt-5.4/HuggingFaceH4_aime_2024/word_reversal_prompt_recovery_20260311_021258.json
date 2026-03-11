@@ -1,0 +1,28 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/word_reversal/results/gpt-5.4/HuggingFaceH4_aime_2024/gpt-5.4_HuggingFaceH4_aime_2024_word_reversal_20260309_000007.json",
+  "total_samples": 121,
+  "original_correct": 113,
+  "semantic_correct": 116,
+  "recovered_cases": [
+    {
+      "id": 61,
+      "score": 0.9466820955276489,
+      "target": "Let ABC be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.",
+      "best_window": "a triangle inscribed in circle (omega). Let the tangents to (omega) at (B) and (C) intersect at point (D), and let (overline{AD}) intersect (omega) at (P). If (AB=5), (BC=9), and (AC=10), (AP) can be written in the form (frac{m}{n}), where (m) and (n) are relatively prime integers. Find (m+n).\u201d Now solve: Since (D) is the intersection of the tangents at (B) and (C), line"
+    },
+    {
+      "id": 61,
+      "score": 0.9481452703475952,
+      "target": "Let ABC be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.",
+      "best_window": "(ABC) be a triangle inscribed in circle (omega). Let the tangents to (omega) at (B) and (C) intersect at point (D), and let (overline{AD}) intersect (omega) at (P). If (AB=5), (BC=9), and (AC=10), (AP) can be written as (frac{m}{n}), where (m) and (n) are relatively prime integers. Find (m+n). Now solve: Because (D) is the intersection of the tangents at (B) and (C), line"
+    },
+    {
+      "id": 62,
+      "score": 0.9350677728652954,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is (tfrac{m}{n}), where (m) and (n) are relatively prime positive integers. What is (m+n)?\u201d Now solve it. Let (B) be the set of blue vertices. We want a rotation such that every blue"
+    }
+  ],
+  "original_accuracy": 0.9338842975206612,
+  "semantic_accuracy": 0.9586776859504132
+}
