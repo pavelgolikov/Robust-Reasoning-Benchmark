@@ -15,8 +15,8 @@ def _apply_not_not(text, k=2):
     """
     # 1. Mask LaTeX blocks to protect them
     latex_blocks = []
-    # Match $...$, $$...$$, \[...\], \(...\)
-    pattern = r'(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\]|\\\(.*?\\\))'
+    # Match $...$, $$...$$, \[...\], \(...\) and [asy]...[/asy]
+    pattern = r'(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\]|\\\(.*?\\\)|\[asy\].*?\[/asy\])'
     
     def mask_func(match):
         placeholder = f"MATHBLOCK{len(latex_blocks)}"
