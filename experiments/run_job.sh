@@ -22,7 +22,11 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # export NCCL_DEBUG=INFO
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
-# python evaluate.py --names baseline --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 2 &> eval_out.out
+python evaluate.py --names not_not --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names not_not --model openai/gpt-oss-120b --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names not_not --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names not_not --model GAIR/LIMO-v2 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names not_not --model tiiuae/Falcon-H1R-7B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
 
 # python analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all
 
@@ -37,15 +41,15 @@ export NCCL_IGNORE_DISABLED_P2P=1
 #   --num_gpus 4 &> eval_out.out
 
 
-python evaluate_context.py \
-  --model GAIR/LIMO-v2 \
-  --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_24K_GAIR_LIMO-v2.json \
-  --context_type math \
-  --max_model_len 32000 \
-  --context_size 24000 \
-  --max_tokens 8192 \
-  --n_samples 8 \
-  --num_gpus 4 &> eval_out.out
+# python evaluate_context.py \
+#   --model GAIR/LIMO-v2 \
+#   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_24K_GAIR_LIMO-v2.json \
+#   --context_type math \
+#   --max_model_len 32000 \
+#   --context_size 24000 \
+#   --max_tokens 8192 \
+#   --n_samples 8 \
+#   --num_gpus 4 &> eval_out.out
 
 # python evaluate_context.py \
 #   --model Qwen/Qwen3-30B-A3B-Thinking-2507 \
