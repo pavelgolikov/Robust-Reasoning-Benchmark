@@ -289,8 +289,8 @@ PALETTE = [
     "#DA8BC3",  # Soft pink
     "#64B5CD",  # Teal
     "#CCB974",  # Gold
-    "#414451",  # Dark slate
-    "#9932CC",  # Deep violet
+    "#636363",  # Grey
+    "#764978",  # Deep violet
     "#006400",  # Dark green
     "#8B0000",  # Dark red
 ]
@@ -370,7 +370,7 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='
             else:
                 labels.append(short)
 
-        bars = ax.bar(x, accuracies, bar_width, color=colors, edgecolor='white', linewidth=0.5)
+        bars = ax.bar(x, accuracies, bar_width, color=colors, edgecolor='black', linewidth=0.5)
 
         if failures_on_top and metric == 'accuracy':
             fail_rates = [td[m]['failure_rate'] for m in subplot_models]
@@ -487,7 +487,7 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
 
         x = np.arange(n_techniques)
         bar_width = 0.65
-        bars = ax.bar(x, accuracies, bar_width, color=bar_colors, edgecolor='white', linewidth=0.5)
+        bars = ax.bar(x, accuracies, bar_width, color=bar_colors, edgecolor='black', linewidth=0.5)
 
         if failures_on_top and metric == 'accuracy':
             ax.bar(x, fail_rates, bar_width, bottom=accuracies, color=bar_colors, 
@@ -537,7 +537,7 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
     plt.tight_layout(rect=[0, 0, 1, 0.94])
 
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"accuracy_by_model_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, f"{metric}_by_model_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"  Saved summary: {out_path}")
@@ -553,7 +553,7 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
             fig_m.suptitle(f"{model_label} — {dataset_label}", fontsize=16, fontweight='bold')
             plt.tight_layout(rect=[0, 0, 1, 0.93])
             safe_model = model_name.replace('/', '_').replace(' ', '_')
-            pdf_path = os.path.join(pdf_dir, f"{safe_model}_{dataset_name}.pdf")
+            pdf_path = os.path.join(pdf_dir, f"{safe_model}_{metric}_{dataset_name}.pdf")
             fig_m.savefig(pdf_path, bbox_inches='tight', facecolor='white')
             plt.close(fig_m)
             print(f"  Saved PDF: {pdf_path}")
@@ -610,7 +610,7 @@ def scan_recovery_results(base_dir: str, techniques: List[str], safe_dataset: st
     return data
 
 
-def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False):
+def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False, accuracy_overlay=False):
     """
     Produce a bar-chart grid of prompt recovery rates by model.
     technique_data: dict[technique] -> dict[model] -> {recovery_rate, n_samples}
@@ -707,7 +707,18 @@ def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False):
 
         x = np.arange(n_techniques)
         bar_width = 0.65
-        bars = ax.bar(x, rates, bar_width, color=bar_colors, edgecolor='white', linewidth=0.5)
+        bars = ax.bar(x, rates, bar_width, color=bar_colors, edgecolor='black', linewidth=0.5)
+
+        if accuracy_overlay:
+            # Overlap mesh bar of same height as accuracy score
+            acc_overlay_rates = []
+            for t in ordered_techniques:
+                # get accuracy for this tech/model
+                acc = accuracy_data.get(t, {}).get(model_name, {}).get('accuracy', 0)
+                acc_overlay_rates.append(acc)
+            
+            ax.bar(x, acc_overlay_rates, bar_width, color='none', edgecolor='black', 
+                   linewidth=0.5, hatch='///', alpha=0.6)
 
         for bar, rate, missing in zip(bars, rates, is_missing):
             text = "N/A" if missing else f"{rate:.0f}%"
@@ -780,9 +791,14 @@ def main():
                         help="Plot response output length (tokens) instead of accuracy")
     parser.add_argument("--failures_on_top", action="store_true",
                         help="Plot failure rates (refusals/parsing errors) as an overlay on accuracy bars")
+    parser.add_argument("--accuracy_overlay", action="store_true",
+                        help="Plot accuracy as a mesh overlay on recovery plots (requires --recovery)")
     parser.add_argument("--output_length_force_scan", action="store_true",
                         help="Force a full scan of raw results, bypassing mirrored cache")
     args = parser.parse_args()
+
+    if getattr(args, 'accuracy_overlay', False):
+        assert getattr(args, 'recovery', False), "--accuracy_overlay requires --recovery"
 
     # Resolve experiments directory
     if args.experiments_dir:
@@ -830,7 +846,9 @@ def main():
         if getattr(args, 'recovery', False):
             recovery_data = scan_recovery_results(experiments_dir, TECHNIQUE_ORDER, dataset_name)
             if recovery_data:
-                plot_recovery(recovery_data, dataset_name, outdir, per_model_pdfs=args.per_model_pdfs)
+                plot_recovery(recovery_data, dataset_name, outdir, 
+                              per_model_pdfs=args.per_model_pdfs, 
+                              accuracy_overlay=getattr(args, 'accuracy_overlay', False))
             else:
                 print(f"  No recovery data found for {dataset_name}")
         elif args.by_model:

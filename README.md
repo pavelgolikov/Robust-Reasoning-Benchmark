@@ -124,3 +124,7 @@ uoY .em evlos esaelP .m
 
 Another interesting value to look at - accuracy in relation to total response length. Do transforms that induce longer
 thoughts reduce accuracy more? 
+
+
+
+Another plotting feature please. It will be triggered with --accuracy_on_top parameter. It will be valid only when --recovery feature is active (add assert please). Similar to how we have opaque bars for failure on top of accuracy, I want . Do you have any questions? Do you understand what is required?
