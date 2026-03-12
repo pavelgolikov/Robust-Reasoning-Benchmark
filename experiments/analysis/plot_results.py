@@ -26,6 +26,7 @@ import matplotlib
 matplotlib.use("Agg")  # non-interactive backend
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import matplotlib.patheffects as patheffects
 import numpy as np
 
 # ── Configuration ────────────────────────────────────────────────────
@@ -122,6 +123,16 @@ def pick_latest_file(json_files):
         return None
     # Files have timestamps like _20260303_223355.json — sort lexicographically
     return sorted(actual_results)[-1]
+
+
+def format_length_label(model_name, value):
+    """Shorthand notation for token counts (e.g. 21K), excluding specific models."""
+    model_lower = model_name.lower()
+    # if "gemini" in model_lower or "claude" in model_lower or "gpt-5.4" in model_lower:
+        # return f"{value:.0f}"
+    # if value >= 1000:
+    return f"{value/1000:.1f}K"
+    # return f"{value:.0f}"
 
 
 def scan_results(experiments_dir, aggregate=False, calc_length=False, force_scan=False):
@@ -302,11 +313,16 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='
     Create one large figure for a dataset with one subplot per technique (bar chart).
     technique_data: dict[technique] -> dict[model] -> {accuracy, failure_rate, n_samples, length}
     """
-    # Collect all models that appear in any technique for this dataset
     all_models_global = set()
     for td in technique_data.values():
         all_models_global.update(td.keys())
-    all_models_global = sorted(all_models_global)
+    
+    # Sort models by average accuracy across transforms (consistent with other plots)
+    def _avg_accuracy_global(model):
+        accs = [technique_data[t][model]['accuracy']
+                for t in technique_data if model in technique_data[t]]
+        return sum(accs) / len(accs) if accs else 0
+    all_models_global = sorted(all_models_global, key=_avg_accuracy_global, reverse=True)
 
     if not all_models_global:
         print(f"  No models found for dataset {dataset_name}, skipping.")
@@ -383,8 +399,17 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='
                    edgecolor='black', linewidth=0.5, alpha=0.4, hatch='///')
 
         # Annotate bars
-        for bar, acc in zip(bars, accuracies):
-            text_str = f"{acc:.0f}" if metric == 'length' else f"{acc:.0f}%"
+        for bar, val, m in zip(bars, accuracies, subplot_models):
+            if metric == 'length':
+                text_str = format_length_label(m, val)
+                # Accuracy in the middle
+                acc_val = td[m]['accuracy']
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() / 2,
+                        f"{acc_val:.0f}%", ha='center', va='center', fontsize=9, color='white', fontweight='bold',
+                        path_effects=[patheffects.withStroke(linewidth=2, foreground='black')])
+            else:
+                text_str = f"{val:.0f}%"
+
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
                     text_str, ha='center', va='bottom', fontsize=10, fontweight='bold')
 
@@ -433,7 +458,7 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
 
     # Sort models by average accuracy across transforms (strongest first)
     def _avg_accuracy(model):
-        accs = [technique_data[t][model][metric]
+        accs = [technique_data[t][model]['accuracy']
                 for t in technique_data if model in technique_data[t]]
         return sum(accs) / len(accs) if accs else 0
 
@@ -494,8 +519,19 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
                    edgecolor='black', linewidth=0.5, alpha=0.4, hatch='///')
 
         # Annotate bars
-        for bar, acc, missing in zip(bars, accuracies, is_missing):
-            text = "N/A" if missing else (f"{acc:.0f}" if metric == 'length' else f"{acc:.0f}%")
+        for bar, acc, missing, t in zip(bars, accuracies, is_missing, ordered_techniques):
+            if missing:
+                text = "N/A"
+            elif metric == 'length':
+                text = format_length_label(model_name, acc)
+                # Accuracy in the middle
+                acc_val = technique_data[t][model_name]['accuracy']
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() / 2,
+                        f"{acc_val:.0f}", ha='center', va='center', fontsize=10, color='white', fontweight='bold',
+                        path_effects=[patheffects.withStroke(linewidth=2, foreground='black')])
+            else:
+                text = f"{acc:.0f}%"
+
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
                     text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
@@ -615,11 +651,6 @@ def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False, ac
     Produce a bar-chart grid of prompt recovery rates by model.
     technique_data: dict[technique] -> dict[model] -> {recovery_rate, n_samples}
     """
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import matplotlib.ticker as mticker
-    import numpy as np
 
     all_models = set()
     for td in technique_data.values():
@@ -718,7 +749,7 @@ def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False, ac
                 acc_overlay_rates.append(acc)
             
             ax.bar(x, acc_overlay_rates, bar_width, color='none', edgecolor='black', 
-                   linewidth=0.5, hatch='///', alpha=0.6)
+                   linewidth=0.5, hatch='//', alpha=0.6)
 
         for bar, rate, missing in zip(bars, rates, is_missing):
             text = "N/A" if missing else f"{rate:.0f}%"
