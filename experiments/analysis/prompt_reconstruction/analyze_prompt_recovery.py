@@ -35,7 +35,7 @@ MODEL_SHORT_NAMES = {
     "openai_gpt-oss-120b":                              "GPT-OSS\n(120B)",
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama\n(70B)",
     "Qwen_Qwen3.5-35B-A3B":                             "Qwen3.5-35B",
-    "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B",
+    "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B-A3B",
     "gemini-3.1-pro-preview":                           "Gemini 3.1\nPro",
     "gemini-2.5-flash":                                 "Gemini 2.5\nFlash",
     "claude-opus-4-6":                                  "Claude Opus\n4-6",
@@ -393,22 +393,29 @@ def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False):
     def _plot_model_on_ax(ax, model_name):
         rates = []
         bar_colors = []
+        is_missing = []
         for t in ordered_techniques:
             td = technique_data.get(t, {})
             if model_name in td:
                 rates.append(td[model_name]['recovery_rate'])
-            else:
+                is_missing.append(False)
+            elif t in ["baseline", "context_saturation"]:
                 rates.append(100)
+                is_missing.append(False)
+            else:
+                rates.append(0)
+                is_missing.append(True)
+                print(f"  Warning: Missing recovery data for model '{model_name}', transform '{t}'")
             bar_colors.append(technique_colors[t])
 
         x = np.arange(n_techniques)
         bar_width = 0.65
         bars = ax.bar(x, rates, bar_width, color=bar_colors, edgecolor='white', linewidth=0.5)
 
-        for bar, rate in zip(bars, rates):
-            if rate > 0:
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                        f"{rate:.0f}%", ha='center', va='bottom', fontsize=9, fontweight='bold')
+        for bar, rate, missing in zip(bars, rates, is_missing):
+            text = "N/A" if missing else f"{rate:.0f}%"
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
+                    text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
         model_label = MODEL_SHORT_NAMES.get(model_name, model_name).replace('\n', ' ')
         ax.set_title(model_label, fontsize=13, fontweight='bold', pad=10)

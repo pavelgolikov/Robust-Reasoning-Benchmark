@@ -59,7 +59,7 @@ MODEL_SHORT_NAMES = {
     "tiiuae_Falcon-H1R-7B":                             "Falcon-H1R\n(7B)",
     "openai_gpt-oss-120b":                              "GPT-OSS\n(120B)",
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama\n(70B)",
-    "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B",
+    "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B-A3B",
     "gemini-3.1-pro-preview":                           "Gemini 3.1\nPro",
     "claude-opus-4-6":                                  "Claude Opus\n4-6",
     # "gemini-2.5-flash":                                 "Gemini 2.5\nFlash",
@@ -364,12 +364,16 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
     def _plot_model_on_ax(ax, model_name):
         accuracies = []
         bar_colors = []
+        is_missing = []
         for t in ordered_techniques:
             td = technique_data.get(t, {})
             if model_name in td:
                 accuracies.append(td[model_name]['accuracy'])
+                is_missing.append(False)
             else:
                 accuracies.append(0)
+                is_missing.append(True)
+                print(f"  Warning: Missing data for model '{model_name}', transform '{t}'")
             bar_colors.append(technique_colors[t])
 
         x = np.arange(n_techniques)
@@ -377,10 +381,10 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
         bars = ax.bar(x, accuracies, bar_width, color=bar_colors, edgecolor='white', linewidth=0.5)
 
         # Annotate bars
-        for bar, acc in zip(bars, accuracies):
-            if acc > 0:
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                        f"{acc:.0f}%", ha='center', va='bottom', fontsize=9, fontweight='bold')
+        for bar, acc, missing in zip(bars, accuracies, is_missing):
+            text = "N/A" if missing else f"{acc:.0f}%"
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
+                    text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
         model_label = shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' ')
         ax.set_title(model_label, fontsize=13, fontweight='bold', pad=10)
