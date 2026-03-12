@@ -129,6 +129,7 @@ def scan_results(experiments_dir, aggregate=False, calc_length=False):
     Returns:
     data[dataset][technique][model] = {
         'accuracy': accuracy_pct,
+        'failure_rate': failure_pct,
         'n_samples': n_samples,
         'length': avg_length
     }
@@ -185,6 +186,19 @@ def scan_results(experiments_dir, aggregate=False, calc_length=False):
             continue
 
         correct, total, acc = compute_accuracy(all_results)
+        
+        # Calculate failure rate
+        # Failure: explicit refusal OR (not correct AND no extraction)
+        n_failures = 0
+        for r in all_results:
+            if r.get("id") is None and "summary" in r:
+                continue
+            if r.get("refusal") is True:
+                n_failures += 1
+            elif not r.get("correct", False) and r.get("extracted") is None:
+                n_failures += 1
+        fail_rate = 100.0 * n_failures / total if total > 0 else 0
+
         unique_ids = set(r.get('id') for r in all_results if r.get('id') is not None)
         n_samples = total / len(unique_ids) if unique_ids else 0
 
@@ -198,6 +212,7 @@ def scan_results(experiments_dir, aggregate=False, calc_length=False):
 
         data[dataset_name][technique][canonical_model] = {
             'accuracy': acc,
+            'failure_rate': fail_rate,
             'n_samples': n_samples,
             'length': avg_length
         }
@@ -229,10 +244,10 @@ PALETTE = [
 
 # ── Plotting ─────────────────────────────────────────────────────────
 
-def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='accuracy'):
+def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='accuracy', failures_on_top=False):
     """
     Create one large figure for a dataset with one subplot per technique (bar chart).
-    technique_data: dict[technique] -> dict[model] -> {accuracy, n_samples, length}
+    technique_data: dict[technique] -> dict[model] -> {accuracy, failure_rate, n_samples, length}
     """
     # Collect all models that appear in any technique for this dataset
     all_models_global = set()
@@ -304,6 +319,16 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='
 
         bars = ax.bar(x, accuracies, bar_width, color=colors, edgecolor='white', linewidth=0.5)
 
+        if failures_on_top and metric == 'accuracy':
+            fail_rates = [td[m]['failure_rate'] for m in subplot_models]
+            # Opaque bars behind with thin black border
+            # We plot them "on top" in terms of Y value, but literally "behind" by plotting them first if we wanted,
+            # but usually zorder or just standard stacking works.
+            # User said "let the opaque bar be behind the accuracy values"
+            # Plotting failures stacked on top of accuracies
+            ax.bar(x, fail_rates, bar_width, bottom=accuracies, color=colors, 
+                   edgecolor='black', linewidth=0.5, alpha=0.4, hatch='///')
+
         # Annotate bars
         for bar, acc in zip(bars, accuracies):
             text_str = f"{acc:.0f}" if metric == 'length' else f"{acc:.0f}%"
@@ -338,11 +363,11 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='
     return out_path
 
 
-def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_model_pdfs=False, metric='accuracy'):
+def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_model_pdfs=False, metric='accuracy', failures_on_top=False):
     """
     Create a figure with one subplot per model, x-axis = transforms, y-axis = accuracy.
     Also optionally saves separate PDF files per model.
-    technique_data: dict[technique] -> dict[model] -> {accuracy, n_samples, length}
+    technique_data: dict[technique] -> dict[model] -> {accuracy, failure_rate, n_samples, length}
     """
     # Pivot: model -> technique -> accuracy
     all_models = set()
@@ -391,15 +416,18 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
     # ── Helper to plot a single model on an axis ──
     def _plot_model_on_ax(ax, model_name):
         accuracies = []
+        fail_rates = []
         bar_colors = []
         is_missing = []
         for t in ordered_techniques:
             td = technique_data.get(t, {})
             if model_name in td:
                 accuracies.append(td[model_name][metric])
+                fail_rates.append(td[model_name].get('failure_rate', 0))
                 is_missing.append(False)
             else:
                 accuracies.append(0)
+                fail_rates.append(0)
                 is_missing.append(True)
                 print(f"  Warning: Missing data for model '{model_name}', transform '{t}'")
             bar_colors.append(technique_colors[t])
@@ -407,6 +435,10 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
         x = np.arange(n_techniques)
         bar_width = 0.65
         bars = ax.bar(x, accuracies, bar_width, color=bar_colors, edgecolor='white', linewidth=0.5)
+
+        if failures_on_top and metric == 'accuracy':
+            ax.bar(x, fail_rates, bar_width, bottom=accuracies, color=bar_colors, 
+                   edgecolor='black', linewidth=0.5, alpha=0.4, hatch='///')
 
         # Annotate bars
         for bar, acc, missing in zip(bars, accuracies, is_missing):
@@ -693,6 +725,8 @@ def main():
                         help="Plot prompt recovery rates instead of accuracy")
     parser.add_argument("--length", action="store_true",
                         help="Plot response output length (tokens) instead of accuracy")
+    parser.add_argument("--failures_on_top", action="store_true",
+                        help="Plot failure rates (refusals/parsing errors) as an overlay on accuracy bars")
     args = parser.parse_args()
 
     # Resolve experiments directory
@@ -743,9 +777,11 @@ def main():
                 print(f"  No recovery data found for {dataset_name}")
         elif args.by_model:
             plot_by_model(dataset_name, data[dataset_name], outdir,
-                          aggregate=args.aggregate, per_model_pdfs=args.per_model_pdfs, metric=metric_val)
+                          aggregate=args.aggregate, per_model_pdfs=args.per_model_pdfs, 
+                          metric=metric_val, failures_on_top=getattr(args, 'failures_on_top', False))
         else:
-            plot_dataset(dataset_name, data[dataset_name], outdir, aggregate=args.aggregate, metric=metric_val)
+            plot_dataset(dataset_name, data[dataset_name], outdir, aggregate=args.aggregate, 
+                         metric=metric_val, failures_on_top=getattr(args, 'failures_on_top', False))
 
     print("\nDone!")
 
