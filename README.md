@@ -121,15 +121,8 @@ c                     l
 uoY .em evlos esaelP .m
 
 
-analysis script to analyze model's ability to decode the original problem statement. Run it on results folder to get
-another set of graphs.
-
 script to somehow express how Anthropic refused a lot of jobs on the plot. - or maybe separate plot for Anthropic
 specific.
-
-figures for transorms for section 3.
-
-Redo the plots as Mark suggested as well.
 
 Another interesting value to look at - accuracy in relation to total response length. Do transforms that induce longer
 thoughts reduce accuracy more? 

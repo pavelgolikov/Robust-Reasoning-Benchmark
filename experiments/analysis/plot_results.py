@@ -19,6 +19,7 @@ import os
 import glob
 import sys
 from collections import defaultdict
+import tqdm
 
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend
@@ -76,6 +77,31 @@ DATASET_SHORT_NAMES = {
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
+import tiktoken
+
+def compute_avg_length(results_list):
+    try:
+        enc = tiktoken.get_encoding("cl100k_base")
+    except Exception:
+        return 0
+    total_tokens = 0
+    count = 0
+    for r in results_list:
+        if r.get("id") is None and "summary" in r:
+            continue
+        out_text = r.get("output", "")
+        if isinstance(out_text, str) and out_text:
+            toks = r.get('output_tokens')
+            if toks is not None:
+                total_tokens += toks
+            else:
+                try:
+                    total_tokens += len(enc.encode(out_text, disallowed_special=()))
+                except Exception:
+                    pass
+            count += 1
+    return total_tokens / count if count > 0 else 0
+
 def compute_accuracy(results_list):
     """Given a list of result dicts, return (correct, total, accuracy%)."""
     total = len(results_list)
@@ -97,13 +123,14 @@ def pick_latest_file(json_files):
     return sorted(actual_results)[-1]
 
 
-def scan_results(experiments_dir, aggregate=False):
+def scan_results(experiments_dir, aggregate=False, calc_length=False):
     """
     Scan all technique directories under experiments_dir.
     Returns:
     data[dataset][technique][model] = {
         'accuracy': accuracy_pct,
-        'n_samples': n_samples
+        'n_samples': n_samples,
+        'length': avg_length
     }
     """
     data = defaultdict(lambda: defaultdict(dict))
@@ -114,24 +141,19 @@ def scan_results(experiments_dir, aggregate=False):
         if os.path.isdir(os.path.join(experiments_dir, d, "results")):
             discovered_techniques.append(d)
 
+    # First pass: collect all tasks
+    tasks = []
     for technique in discovered_techniques:
         results_dir = os.path.join(experiments_dir, technique, "results")
-        
-        # Walk: results/{model}/{dataset}/*.json
         for model_name in sorted(os.listdir(results_dir)):
             model_dir = os.path.join(results_dir, model_name)
-            if not os.path.isdir(model_dir):
-                continue
-
+            if not os.path.isdir(model_dir): continue
             for dataset_name in sorted(os.listdir(model_dir)):
                 dataset_dir = os.path.join(model_dir, dataset_name)
-                if not os.path.isdir(dataset_dir):
-                    continue
-
-                json_files = glob.glob(os.path.join(dataset_dir, "*.json"))
+                if not os.path.isdir(dataset_dir): continue
                 
+                json_files = glob.glob(os.path.join(dataset_dir, "*.json"))
                 if aggregate:
-                    # Collect all valid result files
                     target_files = [f for f in json_files if not (os.path.basename(f).startswith("jobs_") or 
                                                                     os.path.basename(f).startswith("tracking_") or
                                                                     os.path.basename(f).startswith("batch_"))]
@@ -139,45 +161,46 @@ def scan_results(experiments_dir, aggregate=False):
                     chosen = pick_latest_file(json_files)
                     target_files = [chosen] if chosen else []
                 
-                if not target_files:
-                    continue
+                if target_files:
+                    tasks.append((technique, model_name, dataset_name, target_files))
 
-                all_results = []
-                for fpath in target_files:
-                    try:
-                        with open(fpath) as f:
-                            content = json.load(f)
-                        
-                        # Handle both list format and dict-with-results format
-                        if isinstance(content, dict) and "results" in content:
-                            all_results.extend(content["results"])
-                        elif isinstance(content, list):
-                            all_results.extend(content)
-                        elif isinstance(content, dict):
-                            # Some might be mappings from ID to result
-                            all_results.extend(list(content.values()))
-                    except Exception as e:
-                        print(f"  Warning: could not read {fpath}: {e}")
-                        continue
-                
-                if not all_results:
-                    continue
+    # Second pass: process with tqdm
+    for technique, model_name, dataset_name, target_files in tqdm.tqdm(tasks, desc="Scanning results"):
+        all_results = []
+        for fpath in target_files:
+            try:
+                with open(fpath) as f:
+                    content = json.load(f)
+                if isinstance(content, dict) and "results" in content:
+                    all_results.extend(content["results"])
+                elif isinstance(content, list):
+                    all_results.extend(content)
+                elif isinstance(content, dict):
+                    all_results.extend(list(content.values()))
+            except Exception as e:
+                print(f"  Warning: could not read {fpath}: {e}")
+                continue
+        
+        if not all_results:
+            continue
 
-                correct, total, acc = compute_accuracy(all_results)
-                
-                # Calculate avg n_samples per problem
-                unique_ids = set(r.get('id') for r in all_results if r.get('id') is not None)
-                n_samples = total / len(unique_ids) if unique_ids else 0
+        correct, total, acc = compute_accuracy(all_results)
+        unique_ids = set(r.get('id') for r in all_results if r.get('id') is not None)
+        n_samples = total / len(unique_ids) if unique_ids else 0
 
-                # Merge typo alias
-                canonical_model = model_name
-                if model_name == "HAIR_LIMO-v2":
-                    canonical_model = "GAIR_LIMO-v2"
+        canonical_model = model_name
+        if model_name == "HAIR_LIMO-v2":
+            canonical_model = "GAIR_LIMO-v2"
+        
+        avg_length = 0
+        if calc_length:
+            avg_length = compute_avg_length(all_results)
 
-                data[dataset_name][technique][canonical_model] = {
-                    'accuracy': acc,
-                    'n_samples': n_samples
-                }
+        data[dataset_name][technique][canonical_model] = {
+            'accuracy': acc,
+            'n_samples': n_samples,
+            'length': avg_length
+        }
 
     return data
 
@@ -206,10 +229,10 @@ PALETTE = [
 
 # ── Plotting ─────────────────────────────────────────────────────────
 
-def plot_dataset(dataset_name, technique_data, outdir, aggregate=False):
+def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='accuracy'):
     """
     Create one large figure for a dataset with one subplot per technique (bar chart).
-    technique_data: dict[technique] -> dict[model] -> {accuracy, n_samples}
+    technique_data: dict[technique] -> dict[model] -> {accuracy, n_samples, length}
     """
     # Collect all models that appear in any technique for this dataset
     all_models_global = set()
@@ -246,7 +269,8 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False):
     axes = np.atleast_2d(axes)
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    fig.suptitle(f"Model Accuracy — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
+    title_prefix = 'Model Output Length' if metric == 'length' else 'Model Accuracy'
+    fig.suptitle(f"{title_prefix} — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
 
     for idx, technique in enumerate(techniques_with_data):
         row, col = divmod(idx, ncols)
@@ -265,7 +289,7 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False):
 
         x = np.arange(len(subplot_models))
         bar_width = 0.65
-        accuracies = [td[m]['accuracy'] for m in subplot_models]
+        accuracies = [td[m][metric] for m in subplot_models]
         colors = [model_colors[m] for m in subplot_models]
         
         labels = []
@@ -282,16 +306,19 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False):
 
         # Annotate bars
         for bar, acc in zip(bars, accuracies):
+            text_str = f"{acc:.0f}" if metric == 'length' else f"{acc:.0f}%"
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                    f"{acc:.0f}%", ha='center', va='bottom', fontsize=10, fontweight='bold')
+                    text_str, ha='center', va='bottom', fontsize=10, fontweight='bold')
 
         title = TECHNIQUE_LABELS.get(technique, technique)
         ax.set_title(title, fontsize=14, fontweight='bold', pad=10)
         ax.set_xticks(x)
         ax.set_xticklabels(labels, fontsize=8, rotation=45, ha='right')
-        ax.set_ylabel("Accuracy (%)", fontsize=11)
-        ax.set_ylim(0, 115)
-        ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
+        y_label = "Output Length (tokens)" if metric == 'length' else "Accuracy (%)"
+        ax.set_ylabel(y_label, fontsize=11)
+        if metric != 'length':
+            ax.set_ylim(0, 115)
+            ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -304,18 +331,18 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False):
     plt.tight_layout(rect=[0, 0, 1, 0.94])
 
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"results_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, f"{metric}_results_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"  Saved: {out_path}")
     return out_path
 
 
-def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_model_pdfs=False):
+def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_model_pdfs=False, metric='accuracy'):
     """
     Create a figure with one subplot per model, x-axis = transforms, y-axis = accuracy.
     Also optionally saves separate PDF files per model.
-    technique_data: dict[technique] -> dict[model] -> {accuracy, n_samples}
+    technique_data: dict[technique] -> dict[model] -> {accuracy, n_samples, length}
     """
     # Pivot: model -> technique -> accuracy
     all_models = set()
@@ -328,7 +355,7 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
 
     # Sort models by average accuracy across transforms (strongest first)
     def _avg_accuracy(model):
-        accs = [technique_data[t][model]['accuracy']
+        accs = [technique_data[t][model][metric]
                 for t in technique_data if model in technique_data[t]]
         return sum(accs) / len(accs) if accs else 0
 
@@ -369,7 +396,7 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
         for t in ordered_techniques:
             td = technique_data.get(t, {})
             if model_name in td:
-                accuracies.append(td[model_name]['accuracy'])
+                accuracies.append(td[model_name][metric])
                 is_missing.append(False)
             else:
                 accuracies.append(0)
@@ -383,7 +410,7 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
 
         # Annotate bars
         for bar, acc, missing in zip(bars, accuracies, is_missing):
-            text = "N/A" if missing else f"{acc:.0f}%"
+            text = "N/A" if missing else (f"{acc:.0f}" if metric == 'length' else f"{acc:.0f}%")
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
                     text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
@@ -391,9 +418,11 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
         ax.set_title(model_label, fontsize=13, fontweight='bold', pad=10)
         ax.set_xticks(x)
         ax.set_xticklabels(technique_labels, fontsize=8, rotation=45, ha='right')
-        ax.set_ylabel("Accuracy (%)", fontsize=10)
-        ax.set_ylim(0, 115)
-        ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
+        y_label = "Output Length (tokens)" if metric == 'length' else "Accuracy (%)"
+        ax.set_ylabel(y_label, fontsize=10)
+        if metric != 'length':
+            ax.set_ylim(0, 115)
+            ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -408,7 +437,8 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
         axes = np.array([axes])
     axes = np.atleast_2d(axes)
 
-    fig.suptitle(f"Accuracy by Transform — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
+    title_prefix = 'Output Length' if metric == 'length' else 'Accuracy'
+    fig.suptitle(f"{title_prefix} by Transform — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
 
     for idx, model_name in enumerate(all_models):
         row, col = divmod(idx, ncols)
@@ -457,7 +487,8 @@ def scan_recovery_results(base_dir: str, techniques: List[str], safe_dataset: st
         return data
 
     # Walk: results/{model}/{dataset}/*_prompt_recovery*.json
-    for model_dir_name in sorted(os.listdir(report_base)):
+    model_dirs = sorted(os.listdir(report_base))
+    for model_dir_name in tqdm.tqdm(model_dirs, desc="Scanning recovery"):
         model_dataset_dir = os.path.join(report_base, model_dir_name, safe_dataset)
         if not os.path.isdir(model_dataset_dir):
             continue
@@ -660,6 +691,8 @@ def main():
                         help="When --by_model is set, also save separate PDF files per model")
     parser.add_argument("--recovery", action="store_true",
                         help="Plot prompt recovery rates instead of accuracy")
+    parser.add_argument("--length", action="store_true",
+                        help="Plot response output length (tokens) instead of accuracy")
     args = parser.parse_args()
 
     # Resolve experiments directory
@@ -680,7 +713,7 @@ def main():
         outdir = os.path.join(experiments_dir, "analysis", "plots")
 
     print(f"Scanning results in: {experiments_dir}")
-    data = scan_results(experiments_dir, aggregate=args.aggregate)
+    data = scan_results(experiments_dir, aggregate=args.aggregate, calc_length=getattr(args, 'length', False))
 
     if not data:
         print("No results found. Check that results/ directories exist under technique folders.")
@@ -701,6 +734,7 @@ def main():
 
     for dataset_name in datasets:
         print(f"Plotting: {dataset_name}")
+        metric_val = 'length' if getattr(args, 'length', False) else 'accuracy'
         if getattr(args, 'recovery', False):
             recovery_data = scan_recovery_results(experiments_dir, TECHNIQUE_ORDER, dataset_name)
             if recovery_data:
@@ -709,9 +743,9 @@ def main():
                 print(f"  No recovery data found for {dataset_name}")
         elif args.by_model:
             plot_by_model(dataset_name, data[dataset_name], outdir,
-                          aggregate=args.aggregate, per_model_pdfs=args.per_model_pdfs)
+                          aggregate=args.aggregate, per_model_pdfs=args.per_model_pdfs, metric=metric_val)
         else:
-            plot_dataset(dataset_name, data[dataset_name], outdir, aggregate=args.aggregate)
+            plot_dataset(dataset_name, data[dataset_name], outdir, aggregate=args.aggregate, metric=metric_val)
 
     print("\nDone!")
 

@@ -1,5 +1,10 @@
 #!/bin/bash
 
-python plot_results.py --model all --by_model
-python ../prompt_reconstruction/analyze
+# accuracy plots
+python plot_results.py --model all --by_model --aggregate
 
+# output length plots
+python plot_results.py --model all --by_model --aggregate --length
+
+# prompt recovery plots
+python plot_results.py --model all --by_model --aggregate --recovery
