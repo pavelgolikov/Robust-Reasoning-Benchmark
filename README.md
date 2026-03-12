@@ -121,8 +121,6 @@ c                     l
 uoY .em evlos esaelP .m
 
 
-script to somehow express how Anthropic refused a lot of jobs on the plot. - or maybe separate plot for Anthropic
-specific.
 
 Another interesting value to look at - accuracy in relation to total response length. Do transforms that induce longer
 thoughts reduce accuracy more? 

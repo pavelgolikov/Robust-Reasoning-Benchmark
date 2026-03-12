@@ -18,6 +18,7 @@ import json
 import os
 import glob
 import sys
+import time
 from collections import defaultdict
 import tqdm
 
@@ -123,7 +124,7 @@ def pick_latest_file(json_files):
     return sorted(actual_results)[-1]
 
 
-def scan_results(experiments_dir, aggregate=False, calc_length=False):
+def scan_results(experiments_dir, aggregate=False, calc_length=False, force_scan=False):
     """
     Scan all technique directories under experiments_dir.
     Returns:
@@ -139,8 +140,12 @@ def scan_results(experiments_dir, aggregate=False, calc_length=False):
     # Auto-discover techniques: any directory that has a 'results' subdirectory
     discovered_techniques = []
     for d in sorted(os.listdir(experiments_dir)):
+        if d == "analysis": continue
         if os.path.isdir(os.path.join(experiments_dir, d, "results")):
             discovered_techniques.append(d)
+
+    # Mirrored analysis results directory
+    analysis_results_dir = os.path.join(experiments_dir, "analysis", "output_length", "results")
 
     # First pass: collect all tasks
     tasks = []
@@ -150,9 +155,39 @@ def scan_results(experiments_dir, aggregate=False, calc_length=False):
             model_dir = os.path.join(results_dir, model_name)
             if not os.path.isdir(model_dir): continue
             for dataset_name in sorted(os.listdir(model_dir)):
+                if dataset_name in ["non_paper", "not_paper"]: continue
                 dataset_dir = os.path.join(model_dir, dataset_name)
                 if not os.path.isdir(dataset_dir): continue
+
+                # Check for cached summary first
+                summary_folder = os.path.join(analysis_results_dir, model_name, dataset_name)
+                summary_pattern = os.path.join(summary_folder, f"{technique}_summary_*.json")
+                summaries = glob.glob(summary_pattern)
                 
+                if summaries and not force_scan:
+                    # Load latest summary
+                    latest_summary = sorted(summaries)[-1]
+                    try:
+                        with open(latest_summary) as f:
+                            summary_data = json.load(f)
+                        
+                        canonical_model = model_name
+                        if model_name == "HAIR_LIMO-v2":
+                            canonical_model = "GAIR_LIMO-v2"
+                        
+                        # Only use cache if it has the length calc we need
+                        if not calc_length or 'length' in summary_data:
+                            data[dataset_name][technique][canonical_model] = {
+                                'accuracy': summary_data.get('accuracy', 0),
+                                'failure_rate': summary_data.get('failure_rate', 0),
+                                'n_samples': summary_data.get('n_samples', 0),
+                                'length': summary_data.get('length', 0)
+                            }
+                            continue
+                    except Exception as e:
+                        print(f"  Warning: could not read cache {latest_summary}: {e}")
+
+                # If no cache or force_scan or missing field, add to scan tasks
                 json_files = glob.glob(os.path.join(dataset_dir, "*.json"))
                 if aggregate:
                     target_files = [f for f in json_files if not (os.path.basename(f).startswith("jobs_") or 
@@ -206,9 +241,7 @@ def scan_results(experiments_dir, aggregate=False, calc_length=False):
         if model_name == "HAIR_LIMO-v2":
             canonical_model = "GAIR_LIMO-v2"
         
-        avg_length = 0
-        if calc_length:
-            avg_length = compute_avg_length(all_results)
+        avg_length = compute_avg_length(all_results)
 
         data[dataset_name][technique][canonical_model] = {
             'accuracy': acc,
@@ -216,6 +249,26 @@ def scan_results(experiments_dir, aggregate=False, calc_length=False):
             'n_samples': n_samples,
             'length': avg_length
         }
+
+        # Save to cache
+        summary_folder = os.path.join(analysis_results_dir, model_name, dataset_name)
+        os.makedirs(summary_folder, exist_ok=True)
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        summary_path = os.path.join(summary_folder, f"{technique}_summary_{timestamp}.json")
+        try:
+            with open(summary_path, 'w') as f:
+                json.dump({
+                    "technique": technique,
+                    "model": model_name,
+                    "dataset": dataset_name,
+                    "accuracy": acc,
+                    "failure_rate": fail_rate,
+                    "n_samples": n_samples,
+                    "length": avg_length,
+                    "timestamp": timestamp
+                }, f, indent=2)
+        except Exception as e:
+            print(f"  Warning: could not write summary {summary_path}: {e}")
 
     return data
 
@@ -727,6 +780,8 @@ def main():
                         help="Plot response output length (tokens) instead of accuracy")
     parser.add_argument("--failures_on_top", action="store_true",
                         help="Plot failure rates (refusals/parsing errors) as an overlay on accuracy bars")
+    parser.add_argument("--output_length_force_scan", action="store_true",
+                        help="Force a full scan of raw results, bypassing mirrored cache")
     args = parser.parse_args()
 
     # Resolve experiments directory
@@ -747,7 +802,10 @@ def main():
         outdir = os.path.join(experiments_dir, "analysis", "plots")
 
     print(f"Scanning results in: {experiments_dir}")
-    data = scan_results(experiments_dir, aggregate=args.aggregate, calc_length=getattr(args, 'length', False))
+    data = scan_results(experiments_dir, 
+                        aggregate=args.aggregate, 
+                        calc_length=getattr(args, 'length', False),
+                        force_scan=getattr(args, 'output_length_force_scan', False))
 
     if not data:
         print("No results found. Check that results/ directories exist under technique folders.")
