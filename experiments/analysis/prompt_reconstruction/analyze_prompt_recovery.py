@@ -254,19 +254,6 @@ def analyze_single_file(result_file: str, model, args) -> Dict[str, Any]:
     return summary
 
 
-# ── Plotting ─────────────────────────────────────────────────────────
-
-def scan_recovery_results(base_dir: str, techniques: List[str], safe_dataset: str):
-    """
-    Scan prompt_recovery JSON reports that were previously generated.
-    Returns: data[technique][model] = {'recovery_rate': pct, 'n_samples': n}
-    """
-    report_base = os.path.join(base_dir, "analysis", "prompt_reconstruction", "results")
-
-    data = defaultdict(dict)
-
-    if not os.path.isdir(report_base):
-        return data
 
     # Walk: results/{model}/{dataset}/*_prompt_recovery*.json
     for model_dir_name in sorted(os.listdir(report_base)):
@@ -476,12 +463,8 @@ def main():
     parser.add_argument("--step_size", type=int, default=10)
     parser.add_argument("--threshold", type=float, default=0.90)
     parser.add_argument("--dry", action="store_true", help="Dry run: mock analysis")
-    parser.add_argument("--plot_only", action="store_true",
-                        help="Skip analysis, just plot from existing recovery JSONs")
     parser.add_argument("--skip_existing", action="store_true",
                         help="Skip model/technique combos that already have a recovery JSON")
-    parser.add_argument("--per_model_pdfs", action="store_true",
-                        help="Generate separate PDF plots for each model")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -496,13 +479,6 @@ def main():
     else:
         techniques = [n.strip() for n in args.names.split(',') if n.strip()]
 
-    # ── Plot-only mode ──
-    if args.plot_only:
-        print("Plot-only mode: scanning existing recovery JSONs...")
-        recovery_data = scan_recovery_results(base_dir, techniques, safe_dataset)
-        if not recovery_data:
-            print("No recovery reports found. Run analysis first.")
-            return
         outdir = os.path.join(base_dir, "analysis", "plots")
         plot_recovery(recovery_data, safe_dataset, outdir, per_model_pdfs=args.per_model_pdfs)
         return
@@ -592,21 +568,13 @@ def main():
             for row in table_rows:
                 print(f"{row['name']:<30} | {row['total']:<8} | {row['orig_acc']:<10.2%} | {row['sem_acc']:<10.2%} | {row['recovered']:<10} | {row['file']}")
 
-    # ── Generate plot from all collected results ──
-    print("\n\nGenerating prompt recovery plot...")
-    recovery_data = scan_recovery_results(base_dir, techniques, safe_dataset)
-    if recovery_data:
-        outdir = os.path.join(base_dir, "analysis", "plots")
-        plot_recovery(recovery_data, safe_dataset, outdir, per_model_pdfs=args.per_model_pdfs)
-    else:
-        print("No recovery data found to plot.")
 
-    # Append to summary file
-    summary_file = os.path.join(base_dir, "analysis", "prompt_reconstruction", "prompt_recovery_analysis.txt")
-    timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")
-    with open(summary_file, "a") as f:
-        f.write(f"\n\nAnalysis Run: {timestamp_str} (Models: {models}, Dataset: {args.dataset})\n")
-    print(f"\nSummary appended to: {summary_file}")
+    # # Append to summary file
+    # summary_file = os.path.join(base_dir, "analysis", "prompt_reconstruction", "prompt_recovery_analysis.txt")
+    # timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")
+    # with open(summary_file, "a") as f:
+    #     f.write(f"\n\nAnalysis Run: {timestamp_str} (Models: {models}, Dataset: {args.dataset})\n")
+    # print(f"\nSummary appended to: {summary_file}")
 
 
 if __name__ == "__main__":
