@@ -26,7 +26,7 @@ proceed. The main 3 scripts are evaluate.py, which tests model's ability to undo
 evaluate_api.py, which is used to evaluate closed-source models through api calls, and evaluate_context_api.py, which
 tests context pollution of closed-source models by supplying several math-based distractor questions and after the
 distractors, the real non-transformed question is asked. Please familiarize yourself with the repo. Ask any questions
-you may have. We will be working on evaluate_context.py.
+you may have.
 
 Evaluation:
 Datasets:
