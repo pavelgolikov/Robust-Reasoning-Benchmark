@@ -422,7 +422,7 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
     plt.tight_layout(rect=[0, 0, 1, 0.94])
 
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"by_model_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, f"accuracy_by_model_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"  Saved summary: {out_path}")
@@ -455,6 +455,43 @@ def scan_recovery_results(base_dir: str, techniques: List[str], safe_dataset: st
 
     if not os.path.isdir(report_base):
         return data
+
+    # Walk: results/{model}/{dataset}/*_prompt_recovery*.json
+    for model_dir_name in sorted(os.listdir(report_base)):
+        model_dataset_dir = os.path.join(report_base, model_dir_name, safe_dataset)
+        if not os.path.isdir(model_dataset_dir):
+            continue
+
+        for fname in sorted(os.listdir(model_dataset_dir)):
+            if not fname.endswith('.json') or 'prompt_recovery' not in fname:
+                continue
+
+            # Match technique from filename: {technique}_prompt_recovery_{timestamp}.json
+            matched_technique = None
+            for t in techniques:
+                if fname.startswith(t + "_prompt_recovery"):
+                    matched_technique = t
+                    break
+
+            if not matched_technique:
+                continue
+
+            fpath = os.path.join(model_dataset_dir, fname)
+            try:
+                with open(fpath) as f:
+                    report = json.load(f)
+
+                sem_acc = report.get('semantic_accuracy', 0) * 100  # to pct
+                n = report.get('total_samples', 0)
+
+                # Keep latest report per technique/model (filenames sort by timestamp)
+                data[matched_technique][model_dir_name] = {
+                    'recovery_rate': sem_acc, 'n_samples': n
+                }
+            except Exception as e:
+                print(f"  Warning: could not read {fpath}: {e}")
+
+    return data
 
 
 def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False):
