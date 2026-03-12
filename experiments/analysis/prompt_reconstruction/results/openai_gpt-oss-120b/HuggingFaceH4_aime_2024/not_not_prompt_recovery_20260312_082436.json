@@ -1,0 +1,274 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/not_not/results/openai_gpt-oss-120b/HuggingFaceH4_aime_2024/openai_gpt-oss-120b_HuggingFaceH4_aime_2024_not_not_s42_20260311_192740.json",
+  "total_samples": 481,
+  "original_correct": 332,
+  "semantic_correct": 376,
+  "recovered_cases": [
+    {
+      "id": 62,
+      "score": 0.9151567816734314,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "So each vertex of a regular octagon is independently colored either red or blue with equal probability (i.e., 1/2 each). The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n. Wait: \"so that all of the blue vertices"
+    },
+    {
+      "id": 62,
+      "score": 0.9149588942527771,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n...\". But"
+    },
+    {
+      "id": 62,
+      "score": 0.9486638307571411,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "Each vertex of a regular octagon (since \"not not regular octagon\"? likely just regular octagon) is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all the blue vertices end up at positions where there were originally red vertices is m/n. Find m+n. Interpretation: We"
+    },
+    {
+      "id": 64,
+      "score": 0.9494386911392212,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "smallest prime such that there exists n with p^2 | n^4+1. Find the least positive integer m such that m^4+1 is divisible by p^2. So we need to find smallest prime p for which n^4"
+    },
+    {
+      "id": 64,
+      "score": 0.9558007121086121,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "p is the least prime for which there exists n with p^2 | n^4+1. We need to find the least positive integer m such that m^4+1 is divisible"
+    },
+    {
+      "id": 64,
+      "score": 0.9297208786010742,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "exists n with p^2 | n^4+1. We need to find the least positive integer m such that m^4+1 is divisible by p^2 (i.e., p^2 | m^4+1). So basically find smallest prime p such that p^2"
+    },
+    {
+      "id": 70,
+      "score": 0.9127916097640991,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "E, C, F are not collinear. Also A, D, H, G lie on a circle. Given sides lengths: BC=16, AB=107, FG=17, EF=184. Need CE length. We need to"
+    },
+    {
+      "id": 70,
+      "score": 0.9147288799285889,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "not collinear. Also A,D,H,G all lie on a circle. Given side lengths: BC=16, AB=107 (so rectangle ABCD dimensions 107 by 16). FG=17, EF=184 (rectangle EFGH dimensions 184 by 17). Need length of CE"
+    },
+    {
+      "id": 73,
+      "score": 0.9224984645843506,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially not not tangent, and two of the circles are not not tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the not not same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" Probably means: We have a triangle ABC."
+    },
+    {
+      "id": 73,
+      "score": 0.9485828876495361,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "circles of radius 34 are sequentially not not tangent, and two of the circles are not not tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the not not same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" Likely a known problem: we have"
+    },
+    {
+      "id": 73,
+      "score": 0.9119824171066284,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "analysisWe need to parse the problem: \"Eight circles of radius 34 are sequentially not not tangent, and two of the circles are not not tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the not not same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find"
+    },
+    {
+      "id": 73,
+      "score": 0.9487241506576538,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the not not same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" Probably the actual problem: There are eight circles of radius 34 placed sequentially tangent to"
+    },
+    {
+      "id": 73,
+      "score": 0.9367266297340393,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "be: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, find m+n.\" So we have a triangle ABC, with circles"
+    },
+    {
+      "id": 73,
+      "score": 0.9690154790878296,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the not not same manner. The inradius of triangle ABC can be expressed as m/n, relatively prime positive integers. Find m+n.\" Probably original problem: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC"
+    },
+    {
+      "id": 73,
+      "score": 0.9273909330368042,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "problem originally: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n. Find m+n.\" Thus we have triangle ABC with incircle"
+    },
+    {
+      "id": 73,
+      "score": 0.9318195581436157,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially not not tangent, and two of the circles are not not tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the not not same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" Probably means: There are eight circles of radius"
+    },
+    {
+      "id": 73,
+      "score": 0.9601309299468994,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n. Find m+n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.9119824171066284,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "analysisWe need to parse the problem: \"Eight circles of radius 34 are sequentially not not tangent, and two of the circles are not not tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the not not same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find"
+    },
+    {
+      "id": 73,
+      "score": 0.9640817642211914,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. Then 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC expressed as m/n. Find m+n."
+    },
+    {
+      "id": 73,
+      "score": 0.9750266075134277,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n. Find m+n."
+    },
+    {
+      "id": 74,
+      "score": 0.9228074550628662,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse problem: hyperbola x^2/20 - y^2/24 = 1 (standard hyperbola opening left-right). Points A, B, C, D on hyperbola such that ABCD is a rhombus whose diagonals do NOT intersect at the origin. Find the greatest real number that is not less than BD^2 for all"
+    },
+    {
+      "id": 74,
+      "score": 0.9292524456977844,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse problem: There's hyperbola x^2/20 - y^2/24 =1 (standard hyperbola opening left-right). Points A,B,C,D on hyperbola form a rhombus ABCD (order maybe cyclic). Diagonals do not intersect at origin. Find the greatest real number that is not less than BD^2 for all such rhombi. That is"
+    },
+    {
+      "id": 74,
+      "score": 0.9330260753631592,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse problem: hyperbola x^2/20 - y^2/24 = 1. Points A,B,C,D on hyperbola such that ABCD is a rhombus whose diagonals do not intersect at the origin. Find the greatest real number that is not less than BD^2 for"
+    },
+    {
+      "id": 74,
+      "score": 0.9356635808944702,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse the problem: Hyperbola x^2/20 - y^2/24 = 1 (center at origin). Points A,B,C,D on hyperbola such that ABCD is a rhombus whose diagonals do not intersect at the origin. Find the greatest real number that is not less than BD^2 for all such rhombi. Essentially"
+    },
+    {
+      "id": 74,
+      "score": 0.9419196844100952,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse the problem: There's hyperbola x^2/20 - y^2/24 = 1. Points A,B,C,D on hyperbola such that ABCD is a rhombus whose diagonals do NOT intersect at the origin. Find the greatest real number that is not less than BD^2 for all such rhombi. Basically we need"
+    },
+    {
+      "id": 74,
+      "score": 0.9337434768676758,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse problem: hyperbola x^2/20 - y^2/24 = 1. Points A,B,C,D on hyperbola such that ABCD is a rhombus whose diagonals do NOT intersect at the origin. Find the greatest real number that is not less than BD^2 for all such rhombi. Essentially we need the maximal"
+    },
+    {
+      "id": 74,
+      "score": 0.9324209094047546,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse problem: There's hyperbola x^2/20 - y^2/24 = 1. Points A,B,C,D on hyperbola such that ABCD is a rhombus whose diagonals do not intersect at the origin. Find the greatest real number that is not less than BD^2"
+    },
+    {
+      "id": 74,
+      "score": 0.9166565537452698,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "D be points on the hyperbola x^2/20 - y^2/24 = 1 such that ABCD is a rhombus whose diagonals not not intersect at the origin. Find the not not greatest real number that is not not less than BD^2 for all"
+    },
+    {
+      "id": 74,
+      "score": 0.9349794387817383,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse problem: hyperbola x^2/20 - y^2/24 = 1. Points A,B,C,D on hyperbola such that ABCD is a rhombus whose diagonals do NOT intersect at the origin. Find the greatest real number that is not less than BD^2 for all such rhombi. That is supremum of BD^2?"
+    },
+    {
+      "id": 74,
+      "score": 0.9453500509262085,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse problem: There's a hyperbola x^2/20 - y^2/24 = 1. Points A,B,C,D on hyperbola such that ABCD is a rhombus whose diagonals do not intersect at the origin. Find the greatest real number that is not less than BD^2 for all such rhombi. I think they"
+    },
+    {
+      "id": 74,
+      "score": 0.9287825226783752,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "analysisWe need to parse problem: hyperbola x^2/20 - y^2/24 =1 (center at origin). Points A,B,C,D on hyperbola such that ABCD is a rhombus whose diagonals do NOT intersect at the origin. Find the greatest real number that is not less than BD^2 for all such rhombi. So essentially find"
+    },
+    {
+      "id": 82,
+      "score": 0.9522318243980408,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "positive integers has the not not following properties:; bullet The sum of the items in the list is 30.; bullet The unique mode of the list is 9.; bullet The median of the list is a not not positive integer that does not appear in the list itself.; Find the sum of the squares of all the items in the"
+    },
+    {
+      "id": 85,
+      "score": 0.9799254536628723,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" But"
+    },
+    {
+      "id": 85,
+      "score": 0.9416901469230652,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "convex equilateral with opposite sides parallel. Thus ABCDEF is a regular hexagon. The triangle formed by extensions of AB, CD, EF has side lengths 200, 240, 300. Need side length of hexagon. We"
+    },
+    {
+      "id": 85,
+      "score": 0.9178944826126099,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "not convex not not equilateral hexagon in which all pairs of opposite sides are not not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths not not 200, 240, and not not 300. Find the side length of the hexagon.\" The phrasing is"
+    },
+    {
+      "id": 85,
+      "score": 0.9192372560501099,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a not not convex not not equilateral hexagon in which all pairs of opposite sides are not not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths not not 200, 240, and not not 300. Find the side length of the hexagon.\""
+    },
+    {
+      "id": 85,
+      "score": 0.9192373156547546,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a not not convex not not equilateral hexagon in which all pairs of opposite sides are not not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths not not 200, 240, and not not 300. Find the side length of the hexagon.\""
+    },
+    {
+      "id": 89,
+      "score": 0.9647305011749268,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5x5 grid such that: - each cell contains at most one chip; - all chips in the same row and all chips in the same column have the same colour; - any additional chip placed on the grid would violate one or more of the previous two conditions. Interpretation: We"
+    },
+    {
+      "id": 89,
+      "score": 0.9351081252098083,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "black chips\". Find number of ways to place some of these chips in the 25 unit cells of a 5x5 grid such that: each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two conditions. Interpretation: We have a 5x5 grid. We can place chips (white or black) in some cells, at most one per cell. The condition: for each row, all chips"
+    },
+    {
+      "id": 89,
+      "score": 0.9407426714897156,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "of 25 white chips and 25 black chips. The chips are indistinguishable within each colour. Need to place some of these chips in the 25 unit cells of a 5x5 grid. Conditions: - each cell contains at most one chip (so 0 or 1 chip per cell) - all chips in the same row and all chips in the same column have the same colour - any additional chip placed on the grid would violate one or more of the previous two conditions. Goal: find the number of ways to place chips"
+    },
+    {
+      "id": 89,
+      "score": 0.9468594789505005,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5x5 grid such that: - each cell contains at most one chip; - all chips in the same row and all chips in the same column have the same colour; - any additional chip placed on the grid would violate"
+    },
+    {
+      "id": 89,
+      "score": 0.9232954978942871,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "25 white indistinguishable chips and 25 black indistinguishable chips. We need number of ways to place some of these chips in the 25 unit cells of a 5x5 grid such that: - each cell contains at most one chip; - all chips in the same row and all chips in the same column have the same colour; - any additional chip"
+    },
+    {
+      "id": 89,
+      "score": 0.9464967250823975,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "white chips (identical) and up to 25 black chips (identical). Find number of ways to place some of these chips in the 25 unit cells of a 5x5 grid such that: - each cell contains at most one chip; - all chips in the same row and all chips in the same column have the same colour; - any additional chip placed on the grid would violate one or more of the previous two conditions. Interpretation: We"
+    },
+    {
+      "id": 89,
+      "score": 0.9646029472351074,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5\u00d75 grid such that: each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; any additional chip placed on the grid would violate one or more of the previous two conditions.\" Interpretation: We have a 5x5 grid cells. We"
+    }
+  ],
+  "original_accuracy": 0.6902286902286903,
+  "semantic_accuracy": 0.7817047817047817
+}

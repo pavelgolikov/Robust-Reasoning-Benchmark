@@ -1,0 +1,22 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/rail_fence/results/openai_gpt-oss-120b/HuggingFaceH4_aime_2024/openai_gpt-oss-120b_HuggingFaceH4_aime_2024_rail_fence_s42_20260303_145000.json",
+  "total_samples": 481,
+  "original_correct": 1,
+  "semantic_correct": 3,
+  "recovered_cases": [
+    {
+      "id": 72,
+      "score": 0.9156633019447327,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "\"Find the largest possible real part of f(z) = (75+117i)z + frac{96+144i}{z} where |z| ="
+    },
+    {
+      "id": 72,
+      "score": 0.9312312006950378,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "the full problem likely: \"Find the largest possible real part of [(75+117i)z+frac{96}{144}z] where z is a complex number"
+    }
+  ],
+  "original_accuracy": 0.002079002079002079,
+  "semantic_accuracy": 0.006237006237006237
+}

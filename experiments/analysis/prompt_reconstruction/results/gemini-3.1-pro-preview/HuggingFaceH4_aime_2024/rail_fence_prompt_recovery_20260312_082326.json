@@ -1,0 +1,70 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/rail_fence/results/gemini-3.1-pro-preview/HuggingFaceH4_aime_2024/gemini-3.1-pro-preview_HuggingFaceH4_aime_2024_rail_fence_20260306_142122.json",
+  "total_samples": 121,
+  "original_correct": 83,
+  "semantic_correct": 93,
+  "recovered_cases": [
+    {
+      "id": 62,
+      "score": 0.9391753077507019,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "regular octagon is independently colored either red or blue with equal probability. The probability that the colored octagon can be rotated to a coloring that matches a coloring of the same octagon where all the red vertices were replaced by blue vertices and vice versa can be written as frac{m}{n}, where m and n are relatively prime positive integers. What is m+n?\"** ### Step-by-Step Solution: Let the"
+    },
+    {
+      "id": 65,
+      "score": 0.9230294227600098,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "Let's just trust the reconstructed words. \"Let ABCD be a tetrahedron such that AB=CD=sqrt{41}, AC=BD=sqrt{80}, and BC=AD=sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to the faces of the tetrahedron are all equal. This distance can be written in the form frac{msqrt{q}}{n}, where m, n, and q are positive integers, m and n are relatively prime, and q is not divisible by the square of any prime. Find m+n+q.\" Wait,"
+    },
+    {
+      "id": 69,
+      "score": 0.9119112491607666,
+      "target": "Jen enters a lottery by picking 4 distinct numbers from S={1,2,3,cdots,9,10}. 4 numbers are randomly chosen from S. She wins a prize if at least two of her numbers were 2 of the randomly chosen numbers, and wins the grand prize if all four of her numbers were the randomly chosen numbers. The probability of her winning the grand prize given that she won a prize is tfrac{m}{n} where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "randomly chosen from S. She wins a prize if at least two of her numbers were among the randomly chosen numbers, and wins the grand prize if all four of her numbers were the randomly chosen numbers. The probability she wins the grand prize given that she wins a prize is frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\"*"
+    },
+    {
+      "id": 74,
+      "score": 0.9874870777130127,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "B, C, and D be points on the hyperbola frac{x^2}{20} - frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.\" **Mathematical Solution:** Let the hyperbola be given by the"
+    },
+    {
+      "id": 75,
+      "score": 0.9787031412124634,
+      "target": "Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.",
+      "best_window": "900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a big candy heart, and 74 residents own exactly two of these things, and 234 residents own exactly three of these things. Find the number of"
+    },
+    {
+      "id": 75,
+      "score": 0.9830367565155029,
+      "target": "Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.",
+      "best_window": "residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 73 residents who own exactly three of these things, and 24 residents who own exactly two of these things, and 32 residents who own exactly one of these things, find the number of residents of Aimeville"
+    },
+    {
+      "id": 82,
+      "score": 0.9678577780723572,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "EXACTLY: \"A list of positive integers has the following properties: bullet The sum of the items in the list is 300. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list. Find the sum of the squares of all the items in the list.\""
+    },
+    {
+      "id": 84,
+      "score": 0.9181430339813232,
+      "target": "Let x,y and z be positive real numbers that satisfy the following system of equations: [log_2left({x over yz}right) = {1 over 2}][log_2left({y over xz}right) = {1 over 3}][log_2left({z over xy}right) = {1 over 4}] Then the value of left|log_2(x^4y^3z^2)right| is tfrac{m}{n} where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "log_2 left( {y over xz} right) = {1 over 3} ] [ log_2 left( {z over xy} right) = {1 over 4} ] The value of left| log_2 (x^4 y^2 z^3) right| is frac{m}{n}, where m and n are relatively prime positive integers. Find m+n. **Step-by-Step Solution:** First, let's use the properties of logarithms to rewrite the given system of equations. Let"
+    },
+    {
+      "id": 87,
+      "score": 0.9392783045768738,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder respectively when N is divided by 100. Find Q+R.\" **Mathematical Solution:** Let our"
+    },
+    {
+      "id": 89,
+      "score": 0.9718754291534424,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5 times 5 grid such that: ; each cell contains at most one chip; all chips in the same row and all chips in the same column have the same colour; and any additional chip placed on the grid would violate one or more of the previous two conditions.\""
+    }
+  ],
+  "original_accuracy": 0.6859504132231405,
+  "semantic_accuracy": 0.768595041322314
+}

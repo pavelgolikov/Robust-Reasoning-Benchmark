@@ -1,0 +1,112 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/baseline/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_baseline_s42_20260309_145810.json",
+  "total_samples": 481,
+  "original_correct": 400,
+  "semantic_correct": 417,
+  "recovered_cases": [
+    {
+      "id": 61,
+      "score": 0.931866466999054,
+      "target": "Let ABC be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.",
+      "best_window": "problem statement: Let triangle ABC inscribed in circle \u03c9. Tangents at B and C intersect at D, and AD intersect \u03c9 at P. If AB=5, BC=9, AC=10, AP can be written as form m/n where m,n relatively prime integers. Find m+n. So they"
+    },
+    {
+      "id": 63,
+      "score": 0.9164736270904541,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "check original: \"Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]\" Thus original definitions: f(x) = ||x| - 1/2|. g(x)"
+    },
+    {
+      "id": 66,
+      "score": 0.9504542946815491,
+      "target": "Let mathcal{B} be the set of rectangular boxes with surface area 54 and volume 23. Let r be the radius of the smallest sphere that can contain each of the rectangular boxes that are elements of mathcal{B}. The value of r^2 can be written as frac{p}{q}, where p and q are relatively prime positive integers. Find p+q.",
+      "best_window": "the set of rectangular boxes with surface area 54 and volume 23. Let r be the radius of the smallest sphere that can contain each of the rectangular boxes that are elements of mathcal{B}. The value of r^2 can be written as frac{p}{q}, where p"
+    },
+    {
+      "id": 73,
+      "score": 0.9549996256828308,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "\"Eight circles of radius 34 are sequentially tangent inside triangle ABC. Two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" Thus arrangement: circles are sequentially tangent (i.e., each tangent"
+    },
+    {
+      "id": 73,
+      "score": 0.9712381958961487,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\" Thus there are 8 circles of radius 34 that are sequentially tangent. Two of the circles are tangent"
+    },
+    {
+      "id": 73,
+      "score": 0.9770548343658447,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "again: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find"
+    },
+    {
+      "id": 73,
+      "score": 0.9642888903617859,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\" It says eight circles of radius 34"
+    },
+    {
+      "id": 73,
+      "score": 0.9671326875686646,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n. Find m+n."
+    },
+    {
+      "id": 73,
+      "score": 0.9853767156600952,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\" Thus"
+    },
+    {
+      "id": 73,
+      "score": 0.905866801738739,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n.\" Usually such problems: There is a triangle with two sides AB and BC;"
+    },
+    {
+      "id": 73,
+      "score": 0.982990026473999,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "\"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.9794746041297913,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "\"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\""
+    },
+    {
+      "id": 81,
+      "score": 0.9145689606666565,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "diagonal. Then they filldraw a quadrilateral: dir(210)--dir(240)--dir(30)--dir(60)--cycle. That's a rectangle as said. Then they draw a small line segment: draw((0,0.366)--(0.366,0), linewidth(1.5)); This is a line from near origin up to right. Possibly indicating rectangle formed by the diagonal and two sides adjacent to vertices at 120\u00b0 and 330\u00b0? Not exactly. But the problem statement: \"Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where"
+    },
+    {
+      "id": 81,
+      "score": 0.9062597155570984,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "interpret the problem correctly: \"Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon.\" The diagram shows three rectangles: one likely axis-aligned with horizontal side maybe? Let's analyze the diagram: The Asymptote code: unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5));"
+    },
+    {
+      "id": 81,
+      "score": 0.9087880849838257,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles. [asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "also uses diagonals interior. Let's examine Asy code: It draws a rectangle filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle...). That's indeed rectangle with vertices at four vertices of polygon. Then it draws a small line (draw((0,0.366)--(0.366,0), linewidth(1.5));). This line seems to illustrate a side of rectangle intersecting something? Not sure. Anyway, the problem: \"Find the number of rectangles that can be formed inside a fixed regular dodecagon (12-gon) where each side of the rectangle lies on"
+    },
+    {
+      "id": 85,
+      "score": 0.9604577422142029,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "<think> We need to parse the problem: \"Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" We"
+    },
+    {
+      "id": 89,
+      "score": 0.9100402593612671,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "problem statement: \"There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5x5 grid such that ... any additional chip placed on the grid would violate one or more of the previous two conditions.\" It does not say we"
+    }
+  ],
+  "original_accuracy": 0.8316008316008316,
+  "semantic_accuracy": 0.8669438669438669
+}

@@ -1,0 +1,22 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/baseline/results/Qwen_Qwen3-30B-A3B-Thinking-2507/HuggingFaceH4_aime_2024/Qwen_Qwen3-30B-A3B-Thinking-2507_HuggingFaceH4_aime_2024_baseline_s42_20260309_144556.json",
+  "total_samples": 481,
+  "original_correct": 428,
+  "semantic_correct": 430,
+  "recovered_cases": [
+    {
+      "id": 63,
+      "score": 0.9338417649269104,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "- tfrac{1}{2}|, quad g(x) = ||x| - tfrac{1}{4}| and asked to find the number of intersections between the graphs of: y = 4g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y))) --- ###"
+    },
+    {
+      "id": 63,
+      "score": 0.939937949180603,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "= ||x| - tfrac{1}{2}|, quad g(x) = ||x| - tfrac{1}{4}| and asked to find the number of **intersections** between the graphs of: y = 4g(f(sin(2pi x))) quad text{and} quad x = 4g(f(cos(3pi y)))"
+    }
+  ],
+  "original_accuracy": 0.8898128898128899,
+  "semantic_accuracy": 0.893970893970894
+}

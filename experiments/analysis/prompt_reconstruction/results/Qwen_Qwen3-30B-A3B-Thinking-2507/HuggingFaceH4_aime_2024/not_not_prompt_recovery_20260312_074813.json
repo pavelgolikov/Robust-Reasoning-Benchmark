@@ -1,0 +1,166 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/not_not/results/Qwen_Qwen3-30B-A3B-Thinking-2507/HuggingFaceH4_aime_2024/Qwen_Qwen3-30B-A3B-Thinking-2507_HuggingFaceH4_aime_2024_not_not_s42_20260311_190344.json",
+  "total_samples": 481,
+  "original_correct": 395,
+  "semantic_correct": 421,
+  "recovered_cases": [
+    {
+      "id": 62,
+      "score": 0.936602771282196,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n, find m+n.\" Wait, but"
+    },
+    {
+      "id": 62,
+      "score": 0.9178216457366943,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n, reduced fraction, find m+n. Wait, but hold on, is it a regular octagon? The problem"
+    },
+    {
+      "id": 62,
+      "score": 0.9286510348320007,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n, gcd(m,n)=1, find m+n.\""
+    },
+    {
+      "id": 62,
+      "score": 0.9324812889099121,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n, reduced, find m+n. Wait, hold on: \"all of the blue vertices end"
+    },
+    {
+      "id": 62,
+      "score": 0.913328230381012,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n, m and n coprime. Find m + n.\" Okay,"
+    },
+    {
+      "id": 62,
+      "score": 0.9603034853935242,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n, m and n coprime positive integers. Find m + n. Okay, that makes sense now."
+    },
+    {
+      "id": 62,
+      "score": 0.9307500123977661,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "we're solving the right thing: \"Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is m/n, m and n coprime positive integers. Find m + n.\" Okay, that sounds like a standard combinatorics problem"
+    },
+    {
+      "id": 63,
+      "score": 0.9292551279067993,
+      "target": "Define f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of [y=4 g(f(sin (2 pi x))) quadtext{ and }quad x=4 g(f(cos (3 pi y))).]",
+      "best_window": "the problem statement again: \"f(x)=|| x|-tfrac{1}{2}| and g(x)=|| x|-tfrac{1}{4}|. Find the number of intersections of the graphs of y=4 g(f(sin (2 pi x))) and x=4 g(f(cos (3 pi"
+    },
+    {
+      "id": 64,
+      "score": 0.9541172981262207,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "p be the **least prime number** for which there exists a positive integer n such that n^4 + 1 is **divisible by p^2 **. Find the **least positive integer m ** such that m^4 + 1 is divisible by p^2 . ---"
+    },
+    {
+      "id": 64,
+      "score": 0.9487227201461792,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "p be the **least prime number** for which there exists a positive integer n such that n^4 + 1 is **divisible by p^2 **. Find the **least positive integer m ** such that m^4 +"
+    },
+    {
+      "id": 64,
+      "score": 0.910247266292572,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "there **does exist** a positive integer n such that n^4 + 1 is **not divisible by p^2 ** \u2014 i.e., p^2 nmid n^4 + 1 for some n . --- ### Step 2: Find the Least Positive Integer m Such That m^4"
+    },
+    {
+      "id": 73,
+      "score": 0.9638679623603821,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, find m+n."
+    },
+    {
+      "id": 73,
+      "score": 0.9621679186820984,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n... Find m+n. Wait,"
+    },
+    {
+      "id": 73,
+      "score": 0.9117138981819153,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "double negative): Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, find m+n. Wait, let's confirm: \"sequentially not not tangent\""
+    },
+    {
+      "id": 73,
+      "score": 0.9016485214233398,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "see if it's meaningful: \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, find m+n.\" Okay, that seems plausible. Let's"
+    },
+    {
+      "id": 73,
+      "score": 0.9012834429740906,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "\"tangent\", so the problem is: Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. Find the inradius. The standard problem for this is that the number of circles n is proportional to the inradius divided by the radius, but with the"
+    },
+    {
+      "id": 73,
+      "score": 0.9376879334449768,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "So let's rewrite the problem correctly (removing double negatives): \"Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as m/n, find m+n.\""
+    },
+    {
+      "id": 73,
+      "score": 0.950722873210907,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "Let's read it again carefully. \"Eight circles of radius 34 are sequentially not not tangent, and two of the circles are not not tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the not not same manner. The inradius of triangle ABC can be expressed as m/n, where m and n are relatively prime positive integers. Find m+n.\""
+    },
+    {
+      "id": 74,
+      "score": 0.9373922348022461,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "we are given a hyperbola: frac{x^2}{20} - frac{y^2}{24} = 1 and four points A, B, C, D on this hyperbola forming a **rhombus** whose diagonals **do not intersect at the origin**. We are to find the **greatest real number that is less than or equal to BD^2 for all"
+    },
+    {
+      "id": 75,
+      "score": 0.9642622470855713,
+      "target": "Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.",
+      "best_window": "there are 195 who own a diamond ring (let's call this set D), 367 who own a set of golf clubs (set G), and 562 who own a garden spade (set S). In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things (D, G, S), and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who"
+    },
+    {
+      "id": 85,
+      "score": 0.920965313911438,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "but \"convex equilateral hexagon with opposite sides not parallel\" \u2013 but in a regular hexagon, opposite sides are parallel, so this is a non-regular equilateral hexagon, convex, opposite sides not parallel, and the triangle formed by extending AB, CD, EF has sides 200,240,300. Find the side length of the hexagon."
+    },
+    {
+      "id": 85,
+      "score": 0.959834098815918,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a convex equilateral hexagon in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" Okay,"
+    },
+    {
+      "id": 85,
+      "score": 0.91057950258255,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "is saying: \"Let ABCDEF be a non-convex, non-equilateral hexagon in which all pairs of opposite sides are non-parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of"
+    },
+    {
+      "id": 85,
+      "score": 0.943261444568634,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "be a non-convex non-equilateral hexagon in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.\" But"
+    },
+    {
+      "id": 85,
+      "score": 0.9771842360496521,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "problem consistency): Let ABCDEF be a convex equilateral hexagon (all sides equal in length) in which all pairs of opposite sides are not parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon."
+    },
+    {
+      "id": 89,
+      "score": 0.962974488735199,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5\u00d75 grid such that: - Each cell contains at most one chip; - All chips in the same row have the same color, and all chips in the same column have the same color; - Any additional chip placed on the grid would violate one or more of the previous two conditions."
+    }
+  ],
+  "original_accuracy": 0.8212058212058212,
+  "semantic_accuracy": 0.8752598752598753
+}
