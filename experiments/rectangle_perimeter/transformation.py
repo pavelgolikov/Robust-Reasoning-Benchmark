@@ -36,8 +36,8 @@ def apply_rectangle_perimeter(text):
     # Pad text with spaces if shorter than perimeter
     padded = text.ljust(perimeter)
 
-    # Build a 2D grid filled with spaces
-    grid = [[' ' for _ in range(W)] for _ in range(H)]
+    # Build a 2D grid filled with dots
+    grid = [['.' for _ in range(W)] for _ in range(H)]
 
     # Walk the perimeter clockwise and place characters
     idx = 0
@@ -72,23 +72,14 @@ def reverse_rectangle_perimeter(text):
     Reads text from the rectangle grid by traversing the perimeter clockwise
     from the top-left corner, recovering the original message.
     """
-    if not text:
-        return ""
-
-    lines = text.strip().split('\n')
-    # Filter out start/end tags
-    grid_rows = [
-        line for line in lines
-        if line.strip() not in ("GRID START", "GRID END", "")
-    ]
-
-    if not grid_rows:
-        return ""
+    lines = text.split('\n')
+    grid_rows = lines[1:-1]
 
     H = len(grid_rows)
-    W = max(len(row) for row in grid_rows)
+    # Calculate W from the grid rows. 
+    W = max(len(row) for row in grid_rows) if grid_rows else 0
 
-    # Pad rows to uniform width (in case of trailing space stripping)
+    # Pad rows to uniform width
     grid_rows = [row.ljust(W) for row in grid_rows]
 
     result = []

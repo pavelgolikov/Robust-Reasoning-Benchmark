@@ -14,6 +14,7 @@ from sentence_reversal.transformation import apply_sentence_reversal
 from split_reversal.transformation import apply_split_reversal
 from rail_fence.transformation import apply_rail_fence
 from rectangle_perimeter.transformation import apply_rectangle_perimeter
+from snake_vertical.transformation import apply_snake_vertical
 
 import multiprocessing
 # Force 'spawn' to avoid CUDA re-initialization errors
@@ -77,7 +78,8 @@ TECHNIQUE_DESCRIPTIONS = {
     'opposites': "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
     'wrappers':  "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
     'rail_fence': "The user query is encoded using the Rail Fence Cipher. The input is provided as a visual grid where the symbols (including spaces) of the encoded message string (message string does NOT contain any newline characters) are placed in a zigzag pattern across multiple rails (rows), and empty spaces are filled with dots (.). To decode, read the characters in zigzag order: Down-and-Right diagonally until you hit bottom rail, then Up-and-Right diagonally until you hit top rail, then Down-and-Right again etc... Rows are given on separate lines and all have equal lengths.",
-    'rectangle_perimeter': "The user query is mapped onto the perimeter of a rectangle. The message is written as a single continuous string following the edges of the shape in a clockwise manner, beginning at the top-left. The TRANSFORMED INPUT is provided as a visual text block representing this rectangle.",
+    'rectangle_perimeter': "The user query is mapped onto the perimeter of a rectangle. The message is written as a single continuous string following the edges of the shape in a clockwise manner, beginning at the top-left. The TRANSFORMED INPUT is provided as a visual text block representing this rectangle with GRID START and GRID END markers. The center of the shape is filled with dots.",
+    'snake_vertical': "The user query is written into a grid using a vertical 'snake' (zigzag) pattern. Starting from the top-left, the text is written down the first column, then up the second column, then down the third, and so on. The TRANSFORMED INPUT is provided as a visual grid with GRID START and GRID END markers. Empty positions at the end of the grid are filled with equal signs (=).",
 }
 
 def remove_latex_comments(text):
@@ -183,6 +185,8 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         user_prompt_content = apply_rail_fence(problem, num_rails=rails)
     elif name == 'rectangle_perimeter':
         user_prompt_content = apply_rectangle_perimeter(problem)
+    elif name == 'snake_vertical':
+        user_prompt_content = apply_snake_vertical(problem)
     else:
         return 'Not Implemented', ''
 

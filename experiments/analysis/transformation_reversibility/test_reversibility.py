@@ -182,7 +182,7 @@ def main():
                      transformed = apply_func(original_raw, k=1, seed=args.seed)
                 elif exp_name == 'rail_fence':
                      transformed = apply_func(original_raw, kwargs['num_rails'])
-                elif exp_name == 'rectangle_perimeter':
+                elif exp_name in ['rectangle_perimeter', 'snake_vertical']:
                      transformed = apply_func(original_raw)
                 else:
                     transformed = apply_func(original_raw, seed=args.seed)
