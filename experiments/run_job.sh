@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=5:00:00
+#SBATCH --time=3:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
@@ -22,49 +22,17 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # export NCCL_DEBUG=INFO
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
-# python evaluate.py --names sentence_reversal --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names sentence_reversal --model openai/gpt-oss-120b --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names sentence_reversal --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names sentence_reversal --model GAIR/LIMO-v2 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names sentence_reversal --model tiiuae/Falcon-H1R-7B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names rectangle_perimeter,snake_horizontal,snake_vertical --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names rectangle_perimeter,snake_horizontal,snake_vertical --model openai/gpt-oss-120b --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names rectangle_perimeter,snake_horizontal,snake_vertical --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names snake_vertical --model GAIR/LIMO-v2 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names snake_horizontal,snake_vertical --model tiiuae/Falcon-H1R-7B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
 
-python analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all
+# python analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all
 
 # python evaluate_context.py \
 #   --model tiiuae/Falcon-H1R-7B \
 #   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_tiiuae_Falcon-H1R-7B.json \
-#   --context_type math \
-#   --max_model_len 128000 \
-#   --context_size 98304 \
-#   --max_tokens 32000 \
-#   --n_samples 8 \
-#   --num_gpus 4 &> eval_out.out
-
-
-# python evaluate_context.py \
-#   --model GAIR/LIMO-v2 \
-#   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_24K_GAIR_LIMO-v2.json \
-#   --context_type math \
-#   --max_model_len 32000 \
-#   --context_size 24000 \
-#   --max_tokens 8192 \
-#   --n_samples 8 \
-#   --num_gpus 4 &> eval_out.out
-
-# python evaluate_context.py \
-#   --model Qwen/Qwen3-30B-A3B-Thinking-2507 \
-#   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_192K_Qwen_Qwen3-30B-A3B-Thinking-2507.json \
-#   --context_type math \
-#   --max_model_len 256000 \
-#   --context_size 192000 \
-#   --max_tokens 32000 \
-#   --n_samples 8 \
-#   --num_gpus 4 &> eval_out.out
-
-
-# python evaluate_context.py \
-#   --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B \
-#   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_deepseek-ai_DeepSeek-R1-Distill-Llama-70B.json \
 #   --context_type math \
 #   --max_model_len 128000 \
 #   --context_size 98304 \
