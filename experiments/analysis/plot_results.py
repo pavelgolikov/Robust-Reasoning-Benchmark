@@ -59,10 +59,10 @@ TECHNIQUE_ORDER = [
 
 # Shorten model names for x-axis
 MODEL_SHORT_NAMES = {
-    "GAIR_LIMO-v2":                                     "LIMO-v2\n(32B)",
-    "tiiuae_Falcon-H1R-7B":                             "Falcon-H1R\n(7B)",
-    "openai_gpt-oss-120b":                              "GPT-OSS\n(120B)",
-    "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama\n(70B)",
+    "GAIR_LIMO-v2":                                     "LIMO-v2-32B",
+    "tiiuae_Falcon-H1R-7B":                             "Falcon-H1R-7B",
+    "openai_gpt-oss-120b":                              "GPT-OSS-120B",
+    "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama-70B",
     "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B-A3B",
     "gemini-3.1-pro-preview":                           "Gemini 3.1\nPro",
     "claude-opus-4-6":                                  "Claude Opus\n4-6",
