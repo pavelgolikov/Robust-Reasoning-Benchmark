@@ -18,7 +18,7 @@ def apply_snake_vertical(text, height=5):
     W = math.ceil(n / H)
     
     # Initialize grid with None or a placeholder
-    grid = [[None for _ in range(W)] for _ in range(H)]
+    grid = [['' for _ in range(W)] for _ in range(H)]
     
     idx = 0
     for c in range(W):
@@ -32,8 +32,8 @@ def apply_snake_vertical(text, height=5):
             if idx < n:
                 grid[r][c] = text[idx]
                 idx += 1
-            else:
-                grid[r][c] = '='
+            # else:
+            #     grid[r][c] = '='
     
     # Render grid
     rendered_rows = ["".join(row) for row in grid]
@@ -84,4 +84,4 @@ def reverse_snake_vertical(text):
             result.append(grid_rows[r][c])
             
     # Combine and strip trailing equal signs
-    return "".join(result).rstrip('=')
+    return "".join(result)

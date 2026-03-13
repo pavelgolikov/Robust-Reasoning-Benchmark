@@ -11,6 +11,7 @@ def apply_snake_horizontal(text, height=5):
     
     Empty positions at the end are filled with equal signs ('=').
     """
+    # text = 'Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.'
     if not text:
         return ""
 
@@ -19,7 +20,7 @@ def apply_snake_horizontal(text, height=5):
     W = math.ceil(n / H)
     
     # Initialize grid with None
-    grid = [[None for _ in range(W)] for _ in range(H)]
+    grid = [['' for _ in range(W)] for _ in range(H)]
     
     idx = 0
     for r in range(H):
@@ -33,11 +34,13 @@ def apply_snake_horizontal(text, height=5):
             if idx < n:
                 grid[r][c] = text[idx]
                 idx += 1
-            else:
-                grid[r][c] = '='
+            # else:
+                # grid[r][c] = '='
     
     # Render grid
     rendered_rows = ["".join(row) for row in grid]
+    # print(rendered_rows)
+    # exit()
     return "GRID START\n" + "\n".join(rendered_rows) + "\nGRID END"
 
 def reverse_snake_horizontal(text):
@@ -48,6 +51,8 @@ def reverse_snake_horizontal(text):
         return ""
 
     lines = text.split('\n')
+    # print(lines)
+    # exit()
     
     # Identify grid lines between markers
     start_idx = -1
@@ -86,4 +91,6 @@ def reverse_snake_horizontal(text):
             result.append(grid_rows[r][c])
             
     # Combine and strip trailing '=' padding
-    return "".join(result).rstrip('=')
+    # print(result)
+    # exit()
+    return "".join(result)
