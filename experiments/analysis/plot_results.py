@@ -595,6 +595,93 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
             print(f"  Saved PDF: {pdf_path}")
 
 
+def plot_single_metric(dataset_name, technique_data, outdir):
+    """
+    Plot the average accuracy drop compared to baseline for each model.
+    X-axis: models, Y-axis: average delta (baseline - transform).
+    Lower is better.
+    """
+    all_models = set()
+    for td in technique_data.values():
+        all_models.update(td.keys())
+    
+    if not all_models:
+        print(f"  No models found for dataset {dataset_name}, skipping single-metric plot.")
+        return
+
+    # Sort models by average accuracy across transforms (consistent with other plots)
+    def _avg_accuracy_global(model):
+        accs = [technique_data[t][model]['accuracy']
+                for t in technique_data if model in technique_data[t]]
+        return sum(accs) / len(accs) if accs else 0
+    all_models = sorted(all_models, key=_avg_accuracy_global, reverse=True)
+
+    model_deltas = {}
+    for model in all_models:
+        baseline_acc = technique_data.get('baseline', {}).get(model, {}).get('accuracy')
+        if baseline_acc is None:
+            print(f"  Warning: No baseline for model {model} in dataset {dataset_name}")
+            continue
+        
+        deltas = []
+        for tech in technique_data:
+            if tech == 'baseline':
+                continue
+            if model in technique_data[tech]:
+                acc = technique_data[tech][model]['accuracy']
+                deltas.append(baseline_acc - acc)
+        
+        if deltas:
+            model_deltas[model] = sum(deltas) / len(deltas)
+
+    if not model_deltas:
+        print(f"  No deltas to plot for {dataset_name}")
+        return
+
+    # Filter to models we have deltas for, preserving global order
+    plot_models = [m for m in all_models if m in model_deltas]
+    values = [model_deltas[m] for m in plot_models]
+    
+    # Assign consistent colors
+    model_colors = {}
+    for i, model in enumerate(all_models):
+        model_colors[model] = PALETTE[i % len(PALETTE)]
+    colors = [model_colors[m] for m in plot_models]
+
+    fig, ax = plt.subplots(figsize=(12, 7))
+    x = np.arange(len(plot_models))
+    bar_width = 0.65
+    
+    bars = ax.bar(x, values, bar_width, color=colors, edgecolor='black', linewidth=0.5)
+    
+    # Annotate
+    for bar, val in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5),
+                f"{val:.1f}%", ha='center', va='bottom' if val >= 0 else 'top', 
+                fontsize=10, fontweight='bold')
+
+    dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
+    ax.set_title(f"Average Accuracy Drop (Relative to Baseline) — {dataset_label}", fontsize=18, fontweight='bold', pad=20)
+    ax.set_xticks(x)
+    ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models], 
+                       fontsize=9, rotation=45, ha='right')
+    ax.set_ylabel("Average Accuracy Drop (%)", fontsize=12)
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    
+    # Optional: add a "Lower is better" legend or text
+    ax.text(1, 1.02, "Lower is better", transform=ax.transAxes, ha='right', va='bottom', 
+            fontsize=10, fontstyle='italic', color='grey')
+
+    plt.tight_layout()
+    os.makedirs(outdir, exist_ok=True)
+    out_path = os.path.join(outdir, f"average_accuracy_drop_{dataset_name}.pdf")
+    fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
+    plt.close(fig)
+    print(f"  Saved single metric plot: {out_path}")
+
+
 def scan_recovery_results(base_dir: str, techniques: List[str], safe_dataset: str):
     """
     Scan prompt_recovery JSON reports that were previously generated.
@@ -824,6 +911,8 @@ def main():
                         help="Plot failure rates (refusals/parsing errors) as an overlay on accuracy bars")
     parser.add_argument("--accuracy_overlay", action="store_true",
                         help="Plot accuracy as a mesh overlay on recovery plots (requires --recovery)")
+    parser.add_argument("--single_metric", action="store_true",
+                        help="Plot average accuracy drop relative to baseline per model")
     parser.add_argument("--output_length_force_scan", action="store_true",
                         help="Force a full scan of raw results, bypassing mirrored cache")
     args = parser.parse_args()
@@ -882,6 +971,9 @@ def main():
                               accuracy_overlay=getattr(args, 'accuracy_overlay', False))
             else:
                 print(f"  No recovery data found for {dataset_name}")
+        
+        if getattr(args, 'single_metric', False):
+            plot_single_metric(dataset_name, data[dataset_name], outdir)
         elif args.by_model:
             plot_by_model(dataset_name, data[dataset_name], outdir,
                           aggregate=args.aggregate, per_model_pdfs=args.per_model_pdfs, 
