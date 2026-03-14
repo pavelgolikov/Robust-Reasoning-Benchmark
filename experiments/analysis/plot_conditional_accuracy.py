@@ -131,7 +131,8 @@ def scan_conditional_accuracy(experiments_dir, safe_dataset):
                 data[model_name][matched_technique] = {
                     'conditional_accuracy': cond_acc,
                     'n_recovered': sem_correct,
-                    'n_total': report.get('total_samples', 0)
+                    'n_total': report.get('total_samples', 0),
+                    'n_solved': orig_correct
                 }
             except Exception as e:
                 print(f"  Warning: could not read {fpath}: {e}")
@@ -198,12 +199,21 @@ def plot_conditional_accuracy_per_model(dataset_name, model_data, outdir, experi
 
         for bar, val, tech in zip(bars, accs, plot_techs):
             n = m_techs[tech]['n_recovered']
+            n_solved = m_techs[tech].get('n_solved', 0)
+            n_total = m_techs[tech].get('n_total', 0)
+            solve_pct = 100.0 * n_solved / n_total if n_total > 0 else 0.0
+            
+            # Label: Cond% (Solve%)\n(n=...)
+            label_text = f"{val:.0f}%\n{solve_pct:.2f}%"
+            
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                    f"{val:.0f}%\n(n={int(n)})", ha='center', va='bottom', fontsize=8, fontweight='bold')
+                    label_text, ha='center', va='bottom', fontsize=7, fontweight='bold')
 
         title = shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' ')
         ax.set_title(title, fontsize=16, fontweight='bold', pad=15)
         ax.set_xticks(x)
+        
+        # Simple x-tick labels: Just the technique name
         ax.set_xticklabels([shorten(t, TECHNIQUE_LABELS) for t in plot_techs], 
                            fontsize=9, rotation=45, ha='right')
         ax.set_ylabel("Cond. Accuracy (%)", fontsize=11)
