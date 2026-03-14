@@ -27,6 +27,8 @@ TECHNIQUE_LABELS = {
     "interleaved_context_symbol":   "Interleave (Symbol)",
     "context_saturation":           "Context Saturation",
     "rectangle_perimeter":          "Rectangle Perimeter",
+    "snake_vertical":               "Snake (Vertical)",
+    "snake_horizontal":             "Snake (Horizontal)",
 }
 
 MODEL_SHORT_NAMES = {
@@ -70,6 +72,7 @@ TECHNIQUES_LIST = [
     "context_saturation",
     "sentence_reversal", "word_reversal", "split_reversal",
     "rail_fence",
+    "rectangle_perimeter", "snake_vertical", "snake_horizontal",
 ]
 
 
@@ -478,10 +481,6 @@ def main():
         techniques = TECHNIQUES_LIST
     else:
         techniques = [n.strip() for n in args.names.split(',') if n.strip()]
-
-        outdir = os.path.join(base_dir, "analysis", "plots")
-        plot_recovery(recovery_data, safe_dataset, outdir, per_model_pdfs=args.per_model_pdfs)
-        return
 
     # ── Determine models ──
     if args.model == 'all':

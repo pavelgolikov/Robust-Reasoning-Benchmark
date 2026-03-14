@@ -45,6 +45,9 @@ TECHNIQUE_LABELS = {
     "interleaved_context_word":     "Interleave (Word)",
     "interleaved_context_symbol":   "Interleave (Symbol)",
     "context_saturation":           "Context Saturation",
+    "rectangle_perimeter":          "Rectangle Perimeter",
+    "snake_vertical":               "Snake (Vertical)",
+    "snake_horizontal":             "Snake (Horizontal)",
 }
 
 # Canonical ordering of techniques for by-model plots
@@ -55,6 +58,7 @@ TECHNIQUE_ORDER = [
     "context_saturation",
     "sentence_reversal", "word_reversal", "split_reversal",
     "rail_fence",
+    "rectangle_perimeter", "snake_vertical", "snake_horizontal",
 ]
 
 # Shorten model names for x-axis

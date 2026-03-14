@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """
 Plot Conditional Accuracy: Accuracy Given Successful Recovery.
-Defined as: (Original Correct / Semantically Recovered) * 100.
-
-Usage:
-    python analysis/plot_conditional_accuracy.py --dataset HuggingFaceH4_aime_2024
+Refactored: One subplot per model, transformations on the X-axis.
 """
 
 import argparse
@@ -37,6 +34,9 @@ TECHNIQUE_LABELS = {
     "interleaved_context_word":     "Interleave (Word)",
     "interleaved_context_symbol":   "Interleave (Symbol)",
     "context_saturation":           "Context Saturation",
+    "rectangle_perimeter":          "Rectangle Perimeter",
+    "snake_vertical":               "Snake (Vertical)",
+    "snake_horizontal":             "Snake (Horizontal)",
 }
 
 TECHNIQUE_ORDER = [
@@ -46,6 +46,7 @@ TECHNIQUE_ORDER = [
     "context_saturation",
     "sentence_reversal", "word_reversal", "split_reversal",
     "rail_fence",
+    "rectangle_perimeter", "snake_vertical", "snake_horizontal",
 ]
 
 MODEL_SHORT_NAMES = {
@@ -54,8 +55,8 @@ MODEL_SHORT_NAMES = {
     "openai_gpt-oss-120b":                              "GPT-OSS-120B",
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama-70B",
     "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B-A3B",
-    "gemini-3.1-pro-preview":                           "Gemini 3.1\nPro",
-    "claude-opus-4-6":                                  "Claude Opus\n4-6",
+    "gemini-3.1-pro-preview":                           "Gemini 3.1 Pro",
+    "claude-opus-4-6":                                  "Claude Opus 4-6",
 }
 
 DATASET_SHORT_NAMES = {
@@ -66,8 +67,19 @@ DATASET_SHORT_NAMES = {
 }
 
 PALETTE = [
-    "#4C72B0", "#DD8452", "#55A868", "#C44E52", "#8172B3",
-    "#937860", "#DA8BC3", "#64B5CD", "#CCB974", "#636363"
+    "#4C72B0",  # Steel blue
+    "#DD8452",  # Sandy brown
+    "#55A868",  # Muted green
+    "#C44E52",  # Brick red
+    "#8172B3",  # Soft purple
+    "#937860",  # Dusty brown
+    "#DA8BC3",  # Soft pink
+    "#64B5CD",  # Teal
+    "#CCB974",  # Gold
+    "#636363",  # Grey
+    "#764978",  # Deep violet
+    "#006400",  # Dark green
+    "#8B0000",  # Dark red
 ]
 
 def shorten(name, mapping):
@@ -76,11 +88,8 @@ def shorten(name, mapping):
 # ── Data Scanning ───────────────────────────────────────────────────
 
 def scan_conditional_accuracy(experiments_dir, safe_dataset):
-    """
-    Scan prompt_reconstruction results and calculate Original Correct / Semantic Correct.
-    """
     report_base = os.path.join(experiments_dir, "analysis", "prompt_reconstruction", "results")
-    data = defaultdict(dict)
+    data = defaultdict(lambda: defaultdict(dict))
 
     if not os.path.isdir(report_base):
         print(f"Error: Prompt reconstruction results not found at {report_base}")
@@ -97,7 +106,7 @@ def scan_conditional_accuracy(experiments_dir, safe_dataset):
                 continue
 
             matched_technique = None
-            for t in TECHNIQUE_ORDER + list(TECHNIQUE_LABELS.keys()):
+            for t in TECHNIQUE_ORDER:
                 if fname.startswith(t + "_prompt_recovery"):
                     matched_technique = t
                     break
@@ -113,17 +122,13 @@ def scan_conditional_accuracy(experiments_dir, safe_dataset):
                 orig_correct = report.get('original_correct', 0)
                 sem_correct = report.get('semantic_correct', 0)
                 
-                # Accuracy Given Recovery = (Correct & Recovered) / Recovered
-                # Since analyze_prompt_recovery.py counts all originally correct samples as recovered,
-                # Accuracy Given Recovery = original_correct / semantic_correct
-                
                 if sem_correct > 0:
                     cond_acc = 100.0 * orig_correct / sem_correct
                 else:
                     cond_acc = 0.0
 
-                # Keep latest report per technique/model
-                data[matched_technique][model_name] = {
+                # model -> technique -> data
+                data[model_name][matched_technique] = {
                     'conditional_accuracy': cond_acc,
                     'n_recovered': sem_correct,
                     'n_total': report.get('total_samples', 0)
@@ -131,95 +136,90 @@ def scan_conditional_accuracy(experiments_dir, safe_dataset):
             except Exception as e:
                 print(f"  Warning: could not read {fpath}: {e}")
 
-    # Add baseline (it's 100% since recovered=total and accuracy=accuracy)
-    # But wait, baseline accuracy is not in the recovery report. 
-    # We should probably fetch it to be thorough, but the user mostly cares about transforms.
-    # For now, if someone needs baseline, we'd need to fetch actual accuracy.
-    # Actually, for baseline, conditional accuracy is exactly the baseline accuracy.
-    
     return data
 
 # ── Plotting ─────────────────────────────────────────────────────────
 
-def plot_conditional_accuracy(dataset_name, technique_data, outdir):
-    all_models = set()
-    for td in technique_data.values():
-        all_models.update(td.keys())
-    
+def plot_conditional_accuracy_per_model(dataset_name, model_data, outdir, experiments_dir):
+    all_models = list(model_data.keys())
     if not all_models:
         print(f"No data for {dataset_name}")
         return
 
-    # Order models by average conditional accuracy
-    def _avg_cond_acc(model):
-        vals = [technique_data[t][model]['conditional_accuracy'] 
-                for t in technique_data if model in technique_data[t]]
-        return sum(vals) / len(vals) if vals else 0
-    all_models = sorted(all_models, key=_avg_cond_acc, reverse=True)
+    # Sort models by global average accuracy to match other plots
+    try:
+        sys.path.append(os.path.join(experiments_dir, "analysis"))
+        from plot_results import scan_results
+        accuracy_data_all = scan_results(experiments_dir, aggregate=False)
+        accuracy_data = accuracy_data_all.get(dataset_name, {})
 
-    ordered_techniques = [t for t in TECHNIQUE_ORDER if t in technique_data]
-    for t in sorted(technique_data.keys()):
-        if t not in ordered_techniques:
-            ordered_techniques.append(t)
+        def _avg_accuracy(model):
+            accs = [accuracy_data[t][model]['accuracy']
+                    for t in accuracy_data if model in accuracy_data[t]]
+            return sum(accs) / len(accs) if accs else 0
 
-    n_techniques = len(ordered_techniques)
-    ncols = min(4, n_techniques)
-    nrows = (n_techniques + ncols - 1) // ncols
+        all_models = sorted(all_models, key=_avg_accuracy, reverse=True)
+    except Exception as e:
+        print(f"Warning: sorting by accuracy failed: {e}. Falling back to alphabetical.")
+        all_models = sorted(all_models)
+
+    n_models = len(all_models)
+    ncols = min(4, n_models)
+    nrows = (n_models + ncols - 1) // ncols
 
     fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5.5 * nrows))
-    if n_techniques == 1: axes = np.array([axes])
+    if n_models == 1: axes = np.array([axes])
     axes = np.atleast_2d(axes)
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    fig.suptitle(f"Accuracy Given Successful Recovery — {dataset_label}\n(Subset where Semantic Similarity > 90%)", 
-                 fontsize=20, fontweight='bold', y=0.98)
+    fig.suptitle(f"Accuracy Given Successful Recovery (per Model) — {dataset_label}\n(Subset where Semantic Similarity > 90%)", 
+                 fontsize=22, fontweight='bold', y=0.98)
 
-    model_colors = {model: PALETTE[i % len(PALETTE)] for i, model in enumerate(all_models)}
+    # Consistent colors per technique (anchored to TECHNIQUE_ORDER)
+    tech_colors = {}
+    for i, t in enumerate(TECHNIQUE_ORDER):
+        tech_colors[t] = PALETTE[i % len(PALETTE)]
 
-    for idx, technique in enumerate(ordered_techniques):
+    for idx, model_name in enumerate(all_models):
         row, col = divmod(idx, ncols)
         ax = axes[row, col]
-        td = technique_data[technique]
         
-        subplot_models = [m for m in all_models if m in td]
-        if not subplot_models:
-            ax.text(0.5, 0.5, "No data", ha='center', va='center')
-            continue
-
-        x = np.arange(len(subplot_models))
-        accs = [td[m]['conditional_accuracy'] for m in subplot_models]
-        colors = [model_colors[m] for m in subplot_models]
+        m_techs = model_data[model_name]
         
-        bars = ax.bar(x, accs, 0.65, color=colors, edgecolor='black', linewidth=0.5)
+        # Keep consistent technique order
+        plot_techs = [t for t in TECHNIQUE_ORDER if t in m_techs]
+        
+        x = np.arange(len(plot_techs))
+        bar_width = 0.65
+        accs = [m_techs[t]['conditional_accuracy'] for t in plot_techs]
+        colors = [tech_colors[t] for t in plot_techs]
+        
+        bars = ax.bar(x, accs, bar_width, color=colors, edgecolor='black', linewidth=0.5)
 
-        for bar, val in zip(bars, accs):
+        for bar, val, tech in zip(bars, accs, plot_techs):
+            n = m_techs[tech]['n_recovered']
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                    f"{val:.0f}%", ha='center', va='bottom', fontsize=10, fontweight='bold')
+                    f"{val:.0f}%\n(n={int(n)})", ha='center', va='bottom', fontsize=8, fontweight='bold')
 
-        ax.set_title(TECHNIQUE_LABELS.get(technique, technique), fontsize=14, fontweight='bold', pad=10)
+        title = shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' ')
+        ax.set_title(title, fontsize=16, fontweight='bold', pad=15)
         ax.set_xticks(x)
-        
-        tick_labels = []
-        for m in subplot_models:
-            short = shorten(m, MODEL_SHORT_NAMES)
-            n = td[m]['n_recovered']
-            tick_labels.append(f"{short}\n(n={int(n)})")
-        
-        ax.set_xticklabels(tick_labels, fontsize=8, rotation=45, ha='right')
+        ax.set_xticklabels([shorten(t, TECHNIQUE_LABELS) for t in plot_techs], 
+                           fontsize=9, rotation=45, ha='right')
         ax.set_ylabel("Cond. Accuracy (%)", fontsize=11)
-        ax.set_ylim(0, 115)
+        ax.set_ylim(0, 125)
         ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
-    for idx in range(n_techniques, nrows * ncols):
+    for idx in range(n_models, nrows * ncols):
         row, col = divmod(idx, ncols)
         axes[row, col].set_visible(False)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.92])
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"conditional_accuracy_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, f"conditional_accuracy_by_model_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -240,7 +240,7 @@ def main():
         print("No data found.")
         return
 
-    plot_conditional_accuracy(safe_dataset, data, outdir)
+    plot_conditional_accuracy_per_model(safe_dataset, data, outdir, experiments_dir)
 
 if __name__ == "__main__":
     main()
