@@ -26,7 +26,9 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # python evaluate.py --names rectangle_perimeter,snake_horizontal,snake_vertical --model openai/gpt-oss-120b --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names rectangle_perimeter,snake_horizontal,snake_vertical --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names snake_vertical --model GAIR/LIMO-v2 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --names snake_horizontal,snake_vertical --model tiiuae/Falcon-H1R-7B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names snake_horizontal,snake_vertical --model tiiuae/Falcon-H1R-7B --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
+
+python3 analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all --dataset HuggingFaceH4/aime_2024 --names rectangle_perimeter,snake_vertical,snake_horizontal --skip_existing
 
 # python analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all
 

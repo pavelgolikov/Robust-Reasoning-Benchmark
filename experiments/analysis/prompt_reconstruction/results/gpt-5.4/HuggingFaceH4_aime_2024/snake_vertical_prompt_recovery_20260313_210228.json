@@ -1,0 +1,88 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/snake_vertical/results/gpt-5.4/HuggingFaceH4_aime_2024/gpt-5.4_HuggingFaceH4_aime_2024_snake_vertical_20260313_112348.json",
+  "total_samples": 241,
+  "original_correct": 208,
+  "semantic_correct": 221,
+  "recovered_cases": [
+    {
+      "id": 60,
+      "score": 0.9522004127502441,
+      "target": "Every morning Aya goes for a 9-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of s kilometers per hour, the walk takes her 4 hours, including t minutes spent in the coffee shop. When she walks s+2 kilometers per hour, the walk takes her 2 hours and 24 minutes, including t minutes spent in the coffee shop. Suppose Aya walks at s+frac{1}{2} kilometers per hour. Find the number of minutes the walk takes her, including the t minutes spent in the coffee shop.",
+      "best_window": "walk and stops at a coffee shop afterwards. When she walks at a constant speed of (s) kilometers per hour, the walk takes her (4) hours, including (t) minutes spent in the coffee shop. When she walks at (s+a) kilometers per hour, the walk takes her (2) hours and (24) minutes, including (t) minutes spent in the coffee shop. Suppose Aya walks at (s+frac a2) kilometers per hour. Find the number of"
+    },
+    {
+      "id": 61,
+      "score": 0.9226927161216736,
+      "target": "Let ABC be a triangle inscribed in circle omega. Let the tangents to omega at B and C intersect at point D, and let overline{AD} intersect omega at P. If AB=5, BC=9, and AC=10, AP can be written as the form frac{m}{n}, where m and n are relatively prime integers. Find m + n.",
+      "best_window": "Reconstructing the problem: > Let (ABC) be a triangle inscribed in circle (omega). Let the tangents to (omega) at (B) and (C) intersect at point (D), and let (overline{AD}) intersect (omega) again at (P). If (AB=5), (BC=9), and (AC=10), (AP) can be written in the form (frac{m}{n}), where (m) and (n) are relatively prime integers. Find (m+n). Now solve it. Since (D) is the"
+    },
+    {
+      "id": 62,
+      "score": 0.9546877145767212,
+      "target": "Each vertex of a regular octagon is independently colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is tfrac{m}{n}, where m and n are relatively prime positive integers. What is m+n?",
+      "best_window": "colored either red or blue with equal probability. The probability that the octagon can then be rotated so that all of the blue vertices end up at positions where there were originally red vertices is (tfrac{m}{n}), where (m) and (n) are relatively prime positive integers. What is (m+n)?\u201d Let (B) be the set of blue vertices."
+    },
+    {
+      "id": 65,
+      "score": 0.9378824234008789,
+      "target": "Let ABCD be a tetrahedron such that AB=CD= sqrt{41}, AC=BD= sqrt{80}, and BC=AD= sqrt{89}. There exists a point I inside the tetrahedron such that the distances from I to each of the faces of the tetrahedron are all equal. This distance can be written in the form frac{m sqrt n}{p}, where m, n, and p are positive integers, m and p are relatively prime, and n is not divisible by the square of any prime. Find m+n+p.",
+      "best_window": "(AB=CD=sqrt{41}), (AC=BD=sqrt{80}), and (BC=AD=sqrt{89}). There exists a point (I) inside the tetrahedron such that the distances from (I) to each of the faces of the tetrahedron are all equal. This distance can be written in the form (frac{msqrt n}{p}), where (m,n,p) are positive integers, (m) and (p) are relatively prime, and (n) is squarefree. Find (m+n). Now solve it. Since opposite"
+    },
+    {
+      "id": 70,
+      "score": 0.977605402469635,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "> **Rectangles (ABCD) and (EFGH) are drawn such that (D,E,C,F) are collinear. Also, (A,D,H,G) all lie on a circle. If (BC=16), (AB=107), (FG=17), and (EF=184), what is the length of (CE)?** Now solve"
+    },
+    {
+      "id": 73,
+      "score": 0.9047523736953735,
+      "target": "Eight circles of radius 34 are sequentially tangent, and two of the circles are tangent to AB and BC of triangle ABC, respectively. 2024 circles of radius 1 can be arranged in the same manner. The inradius of triangle ABC can be expressed as frac{m}{n}, where m and n are relatively prime positive integers. Find m+n.",
+      "best_window": "Reconstructing the problem gives: \u201cEight circles of radius (34) are sequentially tangent, and two of their circles are tangent to (AB) and (BC) of triangle (ABC), respectively. (2024) circles of radius (1) can be arranged in the same manner. The inradius of triangle (ABC) can be expressed as (frac{m}{n}), where (m) and (n) are relatively prime"
+    },
+    {
+      "id": 79,
+      "score": 0.9243588447570801,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "omeganeq 1 text{ be a 13th root of unity. Find the remainder when } prod_{k=0}^{12}(2-omega^k+omega^{2k}) text{ is divided by }1000. ]"
+    },
+    {
+      "id": 79,
+      "score": 0.9096463918685913,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "root of unity. Find the remainder when** [ prod_{k=0}^{12} (2-omega^k+omega^{2k}) ] **is divided by (1000).** Now solve it."
+    },
+    {
+      "id": 87,
+      "score": 0.9135129451751709,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "Let (N) be the greatest four-digit positive integer with the property that whenever one of its digits is changed to (1), the resulting number is divisible by (7). Let (Q) and (R) be the quotient and remainder, respectively, when (N) is divided by (100). Find (Q+R)."
+    },
+    {
+      "id": 87,
+      "score": 0.9235330820083618,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "the greatest four-digit positive integer with the property that whenever one of its digits is changed to (1), the resulting number is divisible by (7). Let (Q) and (R) be the quotient and remainder, respectively, when (N) is divided by (100). Find (Q+R). Now solve it."
+    },
+    {
+      "id": 87,
+      "score": 0.9237285852432251,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "the greatest four-digit positive integer with the property that whenever one of its digits is changed to (1), the resulting number is divisible by (7). Let (Q) and (R) be the quotient and remainder, respectively, when (N) is divided by (100). Find (Q+R).\u201d Now solve it."
+    },
+    {
+      "id": 87,
+      "score": 0.9135129451751709,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "Let (N) be the greatest four-digit positive integer with the property that whenever one of its digits is changed to (1), the resulting number is divisible by (7). Let (Q) and (R) be the quotient and remainder, respectively, when (N) is divided by (100). Find (Q+R)."
+    },
+    {
+      "id": 89,
+      "score": 0.9456795454025269,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "distinguishable white chips and (25) indistinguishable black chips. Find the number of ways to place some of these chips in the (25) unit (5times5) grid such that > 1. each cell contains at most one chip; > 2. all chips in the same row and all chips in the same column have the same colour; > 3. any additional chip placed"
+    }
+  ],
+  "original_accuracy": 0.8630705394190872,
+  "semantic_accuracy": 0.91701244813278
+}

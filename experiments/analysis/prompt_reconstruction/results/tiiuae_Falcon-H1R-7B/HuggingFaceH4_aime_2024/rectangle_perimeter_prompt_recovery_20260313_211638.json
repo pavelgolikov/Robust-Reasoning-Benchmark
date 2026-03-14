@@ -1,0 +1,346 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/rectangle_perimeter/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_rectangle_perimeter_s42_20260313_130003.json",
+  "total_samples": 481,
+  "original_correct": 8,
+  "semantic_correct": 64,
+  "recovered_cases": [
+    {
+      "id": 64,
+      "score": 0.9610143899917603,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "is: \"Let p be the least prime number for which there exists a positive integer n such that n^4+1 is divisible by p^2. Find the least positive integer m such that m^4+1 is divisible by"
+    },
+    {
+      "id": 64,
+      "score": 0.9187960624694824,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "\"Let p be the least prime number for which there exists a positive integer n such that ...? Possibly something with divisibility. The bottom reversed gave \"divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^2\"?"
+    },
+    {
+      "id": 64,
+      "score": 0.9797347187995911,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "the least prime number for which there exists a positive integer n such.that.n^{4}+1. is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisibleisible"
+    },
+    {
+      "id": 64,
+      "score": 0.9104965329170227,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "by p^{2} Find the least positive integer m such that m^{4}+1 is\". Actually we saw \"divisible by p^{2} Find the least positive integer m such that m^{4}+1 is\"."
+    },
+    {
+      "id": 64,
+      "score": 0.9510449171066284,
+      "target": "Let p be the least prime number for which there exists a positive integer n such that n^{4}+1 is divisible by p^{2}. Find the least positive integer m such that m^{4}+1 is divisible by p^{2}.",
+      "best_window": "for which there exists a positive integer n such that n^4+1 is divisible by p^2. Find the least positive integer m such that m^4+1 is divisible by p^2.\""
+    },
+    {
+      "id": 67,
+      "score": 0.9618409276008606,
+      "target": "There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.",
+      "best_window": "There exist real numbers x and y, both greater than1, such that log_xleft(y^xright)=log_yleft(x^{4yright)=10 Find xy} But"
+    },
+    {
+      "id": 67,
+      "score": 0.9787331223487854,
+      "target": "There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.",
+      "best_window": "\"There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright) = log_yleft(x^{4y}right) = 10. Find"
+    },
+    {
+      "id": 67,
+      "score": 0.9443923234939575,
+      "target": "There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.",
+      "best_window": "numbers x and y, both greater than1,.such tha log_xleft(y^xright)=log_yleft(x^{4y}right)=10 Find xy\" But"
+    },
+    {
+      "id": 67,
+      "score": 0.9063432216644287,
+      "target": "There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.",
+      "best_window": "x and y, both greater than 1, such that log_x(y^x) = log_y(x^4) = 10. Find xy."
+    },
+    {
+      "id": 67,
+      "score": 0.9740960597991943,
+      "target": "There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.",
+      "best_window": "answer: \"There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.\" Thus answer"
+    },
+    {
+      "id": 67,
+      "score": 0.9038112163543701,
+      "target": "There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.",
+      "best_window": "There exist real numbers x and y, both greater than 1, such tha log_x left(y^xri ght)=log_y left(x^{4y}ri ght)=10.Find xy."
+    },
+    {
+      "id": 68,
+      "score": 0.9516883492469788,
+      "target": "Alice and Bob play the following game. A stack of n tokens lies before them. The players take turns with Alice going first. On each turn, the player removes either 1 token or 4 tokens from the stack. Whoever removes the last token wins. Find the number of positive integers n less than or equal to 2024 for which there exists a strategy for Bob that guarantees that Bob will win the game regardless of Alice's play.",
+      "best_window": "\"Alice and Bob play the following game. A stack of n tokens lies before them. The players take turns with Alice going first. On each turn, the player removes either 1 to k tokens. The player who removes the last token wins. Find the number of positive integers n less than or equal to 2024 for which there exists a strategy"
+    },
+    {
+      "id": 68,
+      "score": 0.9043172001838684,
+      "target": "Alice and Bob play the following game. A stack of n tokens lies before them. The players take turns with Alice going first. On each turn, the player removes either 1 token or 4 tokens from the stack. Whoever removes the last token wins. Find the number of positive integers n less than or equal to 2024 for which there exists a strategy for Bob that guarantees that Bob will win the game regardless of Alice's play.",
+      "best_window": "following game. A stack of n tokens lies before them. The players take turns with Alice going first. On each turn, the player removes either 1 to 4 tokens. The player who removes the last token wins. Find the number of positive integers less than or equal to 4202 for which Alice will win.\" Thus to solve the math problem: Determine for which n (1 \u2264 n \u2264 4202) Alice (first player) has a winning strategy in"
+    },
+    {
+      "id": 70,
+      "score": 0.9581092596054077,
+      "target": "Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. Also, A,D,H,G all lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the length of CE?",
+      "best_window": "\"Rectangles ABCD and EFGH are drawn such that D,E,C,F are collinear. \" + \"Also,A,D,H,G\" + \"ll lie on a circle. If BC=16,AB=107,FG=17, and EF=184, what is the\" + \"length of CE? \" We"
+    },
+    {
+      "id": 71,
+      "score": 0.9335317015647888,
+      "target": "Consider the paths of length 16 that follow the lines from the lower left corner to the upper right corner on an 8times 8 grid. Find the number of such paths that change direction exactly four times, as in the examples shown below.",
+      "best_window": "length 16 that follow the lines from the lower left corner to the upper right corner on a grid. Times 8. Find number of paths that change directed exactly four times, as in the"
+    },
+    {
+      "id": 71,
+      "score": 0.9068524241447449,
+      "target": "Consider the paths of length 16 that follow the lines from the lower left corner to the upper right corner on an 8times 8 grid. Find the number of such paths that change direction exactly four times, as in the examples shown below.",
+      "best_window": "paths of length 16 that follow the lines from the lower left corner to the upper right corner on a 8ti 8 grid. Find the number of such past that change directoin exactly four"
+    },
+    {
+      "id": 71,
+      "score": 0.9787769317626953,
+      "target": "Consider the paths of length 16 that follow the lines from the lower left corner to the upper right corner on an 8times 8 grid. Find the number of such paths that change direction exactly four times, as in the examples shown below.",
+      "best_window": "is: \"Consider the paths of length 16 that follow the lines from the lower left corner to the upper right corner on an 8times8 grid. Find the number of such paths that change direction exactly four times, as in the example shown below.\""
+    },
+    {
+      "id": 72,
+      "score": 0.9356275796890259,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "the largest possible real part of [(75+117i)z+frac{96+144i}{z}] where z is a complex number with ...\"?"
+    },
+    {
+      "id": 72,
+      "score": 0.9061392545700073,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "largest possible real part of [(75+11)7i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.\" But we"
+    },
+    {
+      "id": 72,
+      "score": 0.9623875617980957,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "largest possible real part of [(75+117i)z+{9+144i}{z}] where z is a complex number with |z|=4. But we need to"
+    },
+    {
+      "id": 72,
+      "score": 0.9039115905761719,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "\"Find the largest possible real part of [(75+11 7i)z+frac{96+144i}{z}] where z is a complex number with |z|=4.\" Actually"
+    },
+    {
+      "id": 72,
+      "score": 0.9222316741943359,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "Find the largest possible real part of [ (75+11)7i)z+frac{96+144i}{z} ] where z is a complex number with |z|=4."
+    },
+    {
+      "id": 72,
+      "score": 0.9760247468948364,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "\"Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}] where z is a complex number with |z|=4.\" But we"
+    },
+    {
+      "id": 72,
+      "score": 0.9066120982170105,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "wit\" + \"h z|=4\". Thus: Find the largest possible real part of [(75+117i)z+rach{96+144i}{z}]wheer z is a complex number"
+    },
+    {
+      "id": 72,
+      "score": 0.9828130006790161,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "Find the largest possible real part of [(75+117i)z+frac{9+144i}{z}] where z is a complex number with |z|=4. But we"
+    },
+    {
+      "id": 74,
+      "score": 0.9284867644309998,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "points on the hyperbola frac{x^2}{20} - frac{y^2}{24} = 1 such that ABCD is a rhombus. For all such rhombi, find the greatest real number that is less than BD^2.\" But we need"
+    },
+    {
+      "id": 74,
+      "score": 0.9805837273597717,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "\"Let A, B, C, and D be points on the hyperbola frac{x^2}{20} - frac{y^2}{24} = 1 such that ABCD is a rhombus for all such rhombi whose diagonals intersect at the origin. Find the greatest real number that is less than"
+    },
+    {
+      "id": 74,
+      "score": 0.972366213798523,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.\" But we need to check if there is"
+    },
+    {
+      "id": 74,
+      "score": 0.9491482973098755,
+      "target": "Let A, B, C, and D be point on the hyperbola frac{x^2}{20}- frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number that is less than BD^2 for all such rhombi.",
+      "best_window": "points on the hyperbola frac{x^2}{20} - frac{y^2}{24} = 1 such that ABCD is a rhombus whose diagonals intersect at the origin. Find the greatest real number such that the area of the rhombus is less than BD^2 for all such rhombi.\""
+    },
+    {
+      "id": 75,
+      "score": 0.9033859372138977,
+      "target": "Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.",
+      "best_window": "the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of ...\" So after that, perhaps the question: \"Find the number of residents of Aimeville who own at least one of the items.\" Something like that. Our bottom edge phrase"
+    },
+    {
+      "id": 75,
+      "score": 0.9074919819831848,
+      "target": "Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.",
+      "best_window": "900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of\" I need to verify this exactly. Let's copy from the block: \"Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set"
+    },
+    {
+      "id": 75,
+      "score": 0.931756317615509,
+      "target": "Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.",
+      "best_window": "the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns at most one of these items. How many residents own none of these items?\" Or something. But the text given: \"Among the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf"
+    },
+    {
+      "id": 76,
+      "score": 0.9393805861473083,
+      "target": "Let triangle ABC have circumcenter O and incenter I with overline{IA}perpoverline{OI}, circumradius 13, and inradius 6. Find ABcdot AC.",
+      "best_window": "\"Let triangle ABC have circumcenter O and incenter I withoverline{IA}}prepoverlineOI, circumradius 13, and inradius . Find ABcdot AC\" But"
+    },
+    {
+      "id": 76,
+      "score": 0.919887900352478,
+      "target": "Let triangle ABC have circumcenter O and incenter I with overline{IA}perpoverline{OI}, circumradius 13, and inradius 6. Find ABcdot AC.",
+      "best_window": "problem: \"Let triangle ABC have circumcenter O and incenter I with overline{IA}, perpoverline{OI}, circumradius 13, and inradius 6. Find"
+    },
+    {
+      "id": 77,
+      "score": 0.9295504093170166,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "the number of triples of nonnegative integers (a,b,c) satisfying a + b + c = 300 and .0000006 = ... ; and begin{equation} ... ; and"
+    },
+    {
+      "id": 77,
+      "score": 0.9141137599945068,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "problem: Find number of triples (a,b,c) of nonnegative integers satisfying a+b+c=300 and b2^c + a2^c + ... = something? Not recall. Better approach: Reconstruct the original"
+    },
+    {
+      "id": 77,
+      "score": 0.9736545085906982,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "the number of triples of nonnegative integers (a,b,c) satisfying a+b+c 300)and ;begin{equation*}};a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000.\" But there"
+    },
+    {
+      "id": 79,
+      "score": 0.9188578128814697,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "\"Let \u03c9 \u2260 1 be a 13th root of unity. Find the remainder when [ prod_{k=0}^{1} (2-2omega^k + omega^{2}k) ] is"
+    },
+    {
+      "id": 79,
+      "score": 0.9329891800880432,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "\"Let \u03c9 \u2260 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] ;\" But maybe"
+    },
+    {
+      "id": 82,
+      "score": 0.9463244676589966,
+      "target": "A list of positive integers has the following properties: bullet The sum of the items in the list is 30. bullet The unique mode of the list is 9. bullet The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items in the list.",
+      "best_window": "problem statement may be: \"A list of positive integers has the following properties:; \u2022 The sum of the items in the list is 30.; \u2022 The unique mode of the list is 9.; The median of the list is a positive integer that does not appear in the list itself. Find the sum of the squares of all the items"
+    },
+    {
+      "id": 83,
+      "score": 0.9090993404388428,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "\"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of ...\". Actually the problem statement seems partially visible at the top: \"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to"
+    },
+    {
+      "id": 83,
+      "score": 0.9114053845405579,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "\"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of ...\" Actually reading the top border: \"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the"
+    },
+    {
+      "id": 83,
+      "score": 0.9033762812614441,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "Let's examine the original problem maybe known: Could be from AoPS or similar: \"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the two numbers formed by reading right to left is 99.\""
+    },
+    {
+      "id": 83,
+      "score": 0.9186654686927795,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "\"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the two numbers formed by reading left to right is 999.\" Something like that. But we need to get the exact problem statement from"
+    },
+    {
+      "id": 83,
+      "score": 0.9332565665245056,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of 99 = 18 + 9 + 9 and 999 = 199 + 8. ...\"? But not sure. Nevertheless, maybe we only need to solve the problem:"
+    },
+    {
+      "id": 83,
+      "score": 0.9176473021507263,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 999.\" Something like that. This is a combinatorial problem: we have a 2x3 grid, each cell gets a digit (0-9?). We form two numbers by reading left to right (maybe reading rows?). Actually"
+    },
+    {
+      "id": 83,
+      "score": 0.9109916090965271,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "The problem: \"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of ...\". The second condition likely involves sum of numbers formed by reading top to bottom (i.e., columns). In a 2x3 grid, reading top to bottom yields three numbers (each column forms a two-digit number). The sum of those"
+    },
+    {
+      "id": 83,
+      "score": 0.9049109816551208,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of the three numbers formed by reading top to bottom is 99. The grid below is an example of such an arrangement because 8+991=999 and 9+9+81=99. [begin{array}{|c|c|c|} hline 0 & 0 & 8 hline 9 & 9 & 1 hline end{array}]",
+      "best_window": "a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is 999, and the sum of...\" Wait, we see \"Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left"
+    },
+    {
+      "id": 85,
+      "score": 0.936673641204834,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle.woshe.side sides are ecxtensios of segmnts AB, CD, and EF has isde lenths 200, 240, and 300. Find the side length of the hexagon. \" But we need"
+    },
+    {
+      "id": 85,
+      "score": 0.9883458614349365,
+      "target": "Let ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon.",
+      "best_window": "problem: Let ABCDEF be a convex equilateral hexagon with all pairs of opposite sides parallel. The extensions of sides AB, CD, and EF form a triangle. The triangle has side lengths 200, 240, and 300. Find the side length of the hexagon."
+    },
+    {
+      "id": 86,
+      "score": 0.9498145580291748,
+      "target": "Alice chooses a set A of positive integers. Then Bob lists all finite nonempty sets B of positive integers with the property that the maximum element of B belongs to A. Bob's list has 2024 sets. Find the sum of the elements of A.",
+      "best_window": "be: \"Alice chooses a set A of positive integers. Then Bob lists all finite nonempty sets B of positive integers with the property that the maximum element of B belongs to A. Bob's list has 2024 sets. Find the sum.\" But we need to"
+    },
+    {
+      "id": 86,
+      "score": 0.9766308665275574,
+      "target": "Alice chooses a set A of positive integers. Then Bob lists all finite nonempty sets B of positive integers with the property that the maximum element of B belongs to A. Bob's list has 2024 sets. Find the sum of the elements of A.",
+      "best_window": "\"Alice chooses a set A of positive integers. Then Bob lists all finite nonempty sets B of positive integers with the elements of A. The maximum element of B belongs to A. Bob's list has 2024 sets. Find the sum.\" But we need to"
+    },
+    {
+      "id": 86,
+      "score": 0.9344924092292786,
+      "target": "Alice chooses a set A of positive integers. Then Bob lists all finite nonempty sets B of positive integers with the property that the maximum element of B belongs to A. Bob's list has 2024 sets. Find the sum of the elements of A.",
+      "best_window": "integers. Then Bob lists all finite nonempty sets B of positive integers with the property that the maximum element of B belongs to A. List has 2024 sets. Find the sum.\" But we need to"
+    },
+    {
+      "id": 86,
+      "score": 0.9704834222793579,
+      "target": "Alice chooses a set A of positive integers. Then Bob lists all finite nonempty sets B of positive integers with the property that the maximum element of B belongs to A. Bob's list has 2024 sets. Find the sum of the elements of A.",
+      "best_window": "might be: \"Alice chooses a set A of positive integers. Then Bob lists all finite nonempty sets B of positive integers with the property that the maximum element of B belongs to A. Bob's list has 2024 sets. Find the sum of the elements"
+    },
+    {
+      "id": 87,
+      "score": 0.9145393371582031,
+      "target": "Let N be the greatest four-digit positive integer with the property that whenever one of its digits is changed to 1, the resulting number is divisible by 7. Let Q and R be the quotient and remainder, respectively, when N is divided by 1000. Find Q+R.",
+      "best_window": "greatest four-digit positive integer with the property that whenever one of its digits is changed, the result is divisible by 7. Let Q and R be the quotient and remainder when N is divided by something?\""
+    },
+    {
+      "id": 89,
+      "score": 0.9078665375709534,
+      "target": "There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5times5 grid such that: each cell contains at most one chip all chips in the same row and all chips in the same column have the same colour any additional chip placed on the grid would violate one or more of the previous two conditions.",
+      "best_window": "of a 5 times 5 grid such that: ; ; e\"? Not sure. But maybe the original problem is something like: \"There is a collection of 25 indistinguishable white chips and 25 indistinguishable black chips. Find the number of ways to place some of these chips in the 25 unit cells of a 5x5 board such that... ???\" The right side"
+    }
+  ],
+  "original_accuracy": 0.016632016632016633,
+  "semantic_accuracy": 0.13305613305613306
+}

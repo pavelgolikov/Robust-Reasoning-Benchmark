@@ -1,0 +1,28 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/snake_vertical/results/Qwen_Qwen3-30B-A3B-Thinking-2507/HuggingFaceH4_aime_2024/Qwen_Qwen3-30B-A3B-Thinking-2507_HuggingFaceH4_aime_2024_snake_vertical_s42_20260313_032315.json",
+  "total_samples": 481,
+  "original_correct": 4,
+  "semantic_correct": 7,
+  "recovered_cases": [
+    {
+      "id": 67,
+      "score": 0.9197211861610413,
+      "target": "There exist real numbers x and y, both greater than 1, such that log_xleft(y^xright)=log_yleft(x^{4y}right)=10. Find xy.",
+      "best_window": "real number x and y such that log(x) = y^x and log_y(x^{4y}) = 10. Find xy."
+    },
+    {
+      "id": 79,
+      "score": 0.9644770622253418,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "Let omega be a primitive 13th root of unity. Find the remainder when prod_{k=0}^{12} (2 - 2omega^k) is divided by 1000."
+    },
+    {
+      "id": 79,
+      "score": 0.9438596963882446,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "be a primitive 13th root of unity. Find the remainder when prod_{k=0}^{12} (-2omega^k + omega^{2k}) is divided by 1000.** --- ###"
+    }
+  ],
+  "original_accuracy": 0.008316008316008316,
+  "semantic_accuracy": 0.014553014553014554
+}

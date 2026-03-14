@@ -1,0 +1,94 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/rectangle_perimeter/results/claude-opus-4-6/HuggingFaceH4_aime_2024/claude-opus-4-6_HuggingFaceH4_aime_2024_rectangle_perimeter_20260313_112241.json",
+  "total_samples": 241,
+  "original_correct": 18,
+  "semantic_correct": 32,
+  "recovered_cases": [
+    {
+      "id": 72,
+      "score": 0.9477401375770569,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "largest possible real part of [(75+117i)z+frac{69+144i}{z}] where z is a complex number with |z|=4 h` Wait, let me"
+    },
+    {
+      "id": 72,
+      "score": 0.9761359095573425,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "`Find the largest possible real part of [(75+117i)z+frac{69+144i}{z}] where z is a complex number with |z|=4` Now I"
+    },
+    {
+      "id": 72,
+      "score": 0.972961962223053,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "the largest possible real part of [(75+117i)z+frac{69+144i}{z}] where z is a complex number with |z|=4.` Now let me"
+    },
+    {
+      "id": 72,
+      "score": 0.9302207827568054,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "`h |z|=4` Full problem: `Find the largest possible real part of [(75+117i)z+frac{69+144i}{z}] where z is a complex number"
+    },
+    {
+      "id": 72,
+      "score": 0.9071761965751648,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "Now combining everything clockwise: `Find the largest possible real part of [(75+117i)z+frac{69+144i}{z}] where z is a complex number"
+    },
+    {
+      "id": 72,
+      "score": 0.9679843187332153,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "|z|=4 ` Full problem: `Find the largest possible real part of [(75+117i)z+frac{69+144i}{z}] where z is a complex number"
+    },
+    {
+      "id": 72,
+      "score": 0.9761359095573425,
+      "target": "Find the largest possible real part of [(75+117i)z+frac{96+144i}{z}]where z is a complex number with |z|=4.",
+      "best_window": "`Find the largest possible real part of [(75+117i)z+frac{69+144i}{z}] where z is a complex number with |z|=4` Now I"
+    },
+    {
+      "id": 77,
+      "score": 0.9186342358589172,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "` Putting it together, the problem is: Find the number of triples of nonnegative integers (a,b,c) satisfying a + b + c = 300 and a"
+    },
+    {
+      "id": 77,
+      "score": 0.9755922555923462,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "reconstruct the full problem: **The problem:** Find the number of triples of nonnegative integers (a,b,c) satisfying a + b + c = 300 and a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6{,}000{,}000. Now solving:"
+    },
+    {
+      "id": 77,
+      "score": 0.977817714214325,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and (a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6{,}000{,}000).** Now solving: Note that a^2b + a^2c + b^2a +"
+    },
+    {
+      "id": 77,
+      "score": 0.9763224124908447,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and (a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000).** Now solving: We"
+    },
+    {
+      "id": 77,
+      "score": 0.9153602123260498,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "`` \u2192 `end{equation*}` So the full problem is: **Find the number of triples of nonnegative integers (a,b,c) satisfying a + b + c = 300 and"
+    },
+    {
+      "id": 77,
+      "score": 0.9627877473831177,
+      "target": "Find the number of triples of nonnegative integers ((a,b,c)) satisfying (a + b + c = 300) and begin{equation*} a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6,000,000. end{equation*}",
+      "best_window": "The key content is: **Find the number of triples of nonnegative integers (a,b,c) satisfying a + b + c = 300 and a^2b + a^2c + b^2a + b^2c + c^2a + c^2b = 6{,}000{,}000.** Now solving: Note that"
+    },
+    {
+      "id": 79,
+      "score": 0.9849236011505127,
+      "target": "Let omeganeq 1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000.",
+      "best_window": "1 be a 13th root of unity. Find the remainder when [prod_{k=0}^{12}(2-2omega^k+omega^{2k})] is divided by 1000` So the"
+    }
+  ],
+  "original_accuracy": 0.07468879668049792,
+  "semantic_accuracy": 0.13278008298755187
+}
