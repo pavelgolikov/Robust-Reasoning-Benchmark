@@ -29,10 +29,10 @@ from plot_results import scan_results, MODEL_SHORT_NAMES, DATASET_SHORT_NAMES, P
 # ── Configuration ────────────────────────────────────────────────────
 
 CATEGORIES = {
-    "Syntactic Distortions": ["split_reversal", "word_reversal", "sentence_reversal"],
-    "Semantic Substitutions": ["not_not", "opposites", "wrappers"],
-    "Visual Encoding": ["rail_fence"],
-    "Contextual Overload": ["interleaved_context_line", "interleaved_context_symbol", "interleaved_context_word", "context_saturation"],
+    "Syntactic\nDistortions": ["split_reversal", "word_reversal", "sentence_reversal"],
+    "Semantic\nSubstitutions": ["not_not", "opposites", "wrappers"],
+    "Visual\nEncoding": ["rail_fence"],
+    "Contextual\nOverload": ["interleaved_context_line", "interleaved_context_symbol", "interleaved_context_word", "context_saturation"],
 }
 
 CATEGORY_NAMES = list(CATEGORIES.keys())
