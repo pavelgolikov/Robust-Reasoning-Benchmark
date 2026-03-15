@@ -1,10 +1,9 @@
 #!/bin/bash
-# accuracy plots
-python plot_results.py --aggregate --by_model --failures_on_top
-python plot_results.py --aggregate --accuracy_overlay --recovery
-python plot_results.py --aggregate --by_model --length
-python plot_results.py --aggregate --single_metric
-python plot_radar_categories.py
-python plot_conditional_accuracy.py
-python plot_global_conditional_accuracy.py
-# python plot_over_under_thinking.py
+# Consolidated and Optimized Plotting script
+python3 visualize.py --plot_type accuracy
+python3 visualize.py --plot_type prompt_recovery
+python3 visualize.py --plot_type output_length
+python3 visualize.py --plot_type average_accuracy_drop
+python3 visualize.py --plot_type radar_categories
+python3 visualize.py --plot_type conditional_accuracy
+python3 visualize.py --plot_type global_conditional_accuracy
