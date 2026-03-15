@@ -296,161 +296,161 @@ def analyze_single_file(result_file: str, model, args) -> Dict[str, Any]:
     return data
 
 
-def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False):
-    """
-    Produce a bar-chart grid of prompt recovery rates by model.
-    technique_data: dict[technique] -> dict[model] -> {recovery_rate, n_samples}
-    """
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import matplotlib.ticker as mticker
-    import numpy as np
+# def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False):
+#     """
+#     Produce a bar-chart grid of prompt recovery rates by model.
+#     technique_data: dict[technique] -> dict[model] -> {recovery_rate, n_samples}
+#     """
+#     import matplotlib
+#     matplotlib.use("Agg")
+#     import matplotlib.pyplot as plt
+#     import matplotlib.ticker as mticker
+#     import numpy as np
 
-    all_models = set()
-    for td in technique_data.values():
-        all_models.update(td.keys())
+#     all_models = set()
+#     for td in technique_data.values():
+#         all_models.update(td.keys())
 
-    if not all_models:
-        print("  No recovery data found. Run analysis first.")
-        return
+#     if not all_models:
+#         print("  No recovery data found. Run analysis first.")
+#         return
     
 
-    # Sort models by average accuracy from plot_results to match the other plots' order
-    try:
-        import sys
-        analysis_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        if analysis_dir not in sys.path:
-            sys.path.append(analysis_dir)
-        from plot_results import scan_results
+#     # Sort models by average accuracy from plot_results to match the other plots' order
+#     try:
+#         import sys
+#         analysis_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#         if analysis_dir not in sys.path:
+#             sys.path.append(analysis_dir)
+#         from plot_results import scan_results
 
-        experiments_dir = os.path.dirname(analysis_dir)
-        # Suppress prints from scan_results to keep output clean
-        import io
-        from contextlib import redirect_stdout
-        with redirect_stdout(io.StringIO()):
-            accuracy_data_all = scan_results(experiments_dir, aggregate=False)
+#         experiments_dir = os.path.dirname(analysis_dir)
+#         # Suppress prints from scan_results to keep output clean
+#         import io
+#         from contextlib import redirect_stdout
+#         with redirect_stdout(io.StringIO()):
+#             accuracy_data_all = scan_results(experiments_dir, aggregate=False)
         
-        accuracy_data = accuracy_data_all.get(dataset_name, {})
+#         accuracy_data = accuracy_data_all.get(dataset_name, {})
 
-        def _avg_accuracy(model):
-            accs = [accuracy_data[t][model]['accuracy']
-                    for t in accuracy_data if model in accuracy_data[t]]
-            return sum(accs) / len(accs) if accs else 0
+#         def _avg_accuracy(model):
+#             accs = [accuracy_data[t][model]['accuracy']
+#                     for t in accuracy_data if model in accuracy_data[t]]
+#             return sum(accs) / len(accs) if accs else 0
 
-        all_models = sorted(all_models, key=_avg_accuracy, reverse=True)
-    except Exception as e:
-        print(f"  Warning: Could not fetch accuracy data for sorting models ({e}). Falling back to alphabetical.")
-        all_models = sorted(all_models)
+#         all_models = sorted(all_models, key=_avg_accuracy, reverse=True)
+#     except Exception as e:
+#         print(f"  Warning: Could not fetch accuracy data for sorting models ({e}). Falling back to alphabetical.")
+#         all_models = sorted(all_models)
 
-    # Force display of all canonical techniques, even if they have zero data
-    ordered_techniques = TECHNIQUES_LIST.copy()
-    available_techniques = set(technique_data.keys())
+#     # Force display of all canonical techniques, even if they have zero data
+#     ordered_techniques = TECHNIQUES_LIST.copy()
+#     available_techniques = set(technique_data.keys())
     
-    for t in sorted(available_techniques):
-        if t not in ordered_techniques:
-            ordered_techniques.append(t)
+#     for t in sorted(available_techniques):
+#         if t not in ordered_techniques:
+#             ordered_techniques.append(t)
     
-    if not ordered_techniques:
-        print("  No techniques with recovery data found.")
-        return
+#     if not ordered_techniques:
+#         print("  No techniques with recovery data found.")
+#         return
 
-    n_techniques = len(ordered_techniques)
-    technique_labels = [TECHNIQUE_LABELS.get(t, t) for t in ordered_techniques]
+#     n_techniques = len(ordered_techniques)
+#     technique_labels = [TECHNIQUE_LABELS.get(t, t) for t in ordered_techniques]
 
-    # Assign consistent colors per technique (anchored to TECHNIQUES_LIST to prevent shifting)
-    technique_colors = {}
-    for t in ordered_techniques:
-        if t in TECHNIQUES_LIST:
-            idx = TECHNIQUES_LIST.index(t)
-        else:
-            idx = len(TECHNIQUES_LIST) + ordered_techniques.index(t)  # fallback
-        technique_colors[t] = PALETTE[idx % len(PALETTE)]
+#     # Assign consistent colors per technique (anchored to TECHNIQUES_LIST to prevent shifting)
+#     technique_colors = {}
+#     for t in ordered_techniques:
+#         if t in TECHNIQUES_LIST:
+#             idx = TECHNIQUES_LIST.index(t)
+#         else:
+#             idx = len(TECHNIQUES_LIST) + ordered_techniques.index(t)  # fallback
+#         technique_colors[t] = PALETTE[idx % len(PALETTE)]
 
-    dataset_label = DATASET_SHORT_NAMES.get(dataset_name, dataset_name)
+#     dataset_label = DATASET_SHORT_NAMES.get(dataset_name, dataset_name)
     
-    n_models = len(all_models)
-    ncols = min(4, n_models)
-    nrows = (n_models + ncols - 1) // ncols
+#     n_models = len(all_models)
+#     ncols = min(4, n_models)
+#     nrows = (n_models + ncols - 1) // ncols
 
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5.5 * nrows))
-    if n_models == 1:
-        axes = np.array([axes])
-    axes = np.atleast_2d(axes)
+#     fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5.5 * nrows))
+#     if n_models == 1:
+#         axes = np.array([axes])
+#     axes = np.atleast_2d(axes)
 
-    fig.suptitle(f"Prompt Recovery Rate by Model — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
+#     fig.suptitle(f"Prompt Recovery Rate by Model — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
 
-    def _plot_model_on_ax(ax, model_name):
-        rates = []
-        bar_colors = []
-        is_missing = []
-        for t in ordered_techniques:
-            td = technique_data.get(t, {})
-            if model_name in td:
-                rates.append(td[model_name]['recovery_rate'])
-                is_missing.append(False)
-            elif t in ["baseline", "context_saturation"]:
-                rates.append(100)
-                is_missing.append(False)
-            else:
-                rates.append(0)
-                is_missing.append(True)
-                print(f"  Warning: Missing recovery data for model '{model_name}', transform '{t}'")
-            bar_colors.append(technique_colors[t])
+#     def _plot_model_on_ax(ax, model_name):
+#         rates = []
+#         bar_colors = []
+#         is_missing = []
+#         for t in ordered_techniques:
+#             td = technique_data.get(t, {})
+#             if model_name in td:
+#                 rates.append(td[model_name]['recovery_rate'])
+#                 is_missing.append(False)
+#             elif t in ["baseline", "context_saturation"]:
+#                 rates.append(100)
+#                 is_missing.append(False)
+#             else:
+#                 rates.append(0)
+#                 is_missing.append(True)
+#                 print(f"  Warning: Missing recovery data for model '{model_name}', transform '{t}'")
+#             bar_colors.append(technique_colors[t])
 
-        x = np.arange(n_techniques)
-        bar_width = 0.65
-        bars = ax.bar(x, rates, bar_width, color=bar_colors, edgecolor='white', linewidth=0.5)
+#         x = np.arange(n_techniques)
+#         bar_width = 0.65
+#         bars = ax.bar(x, rates, bar_width, color=bar_colors, edgecolor='white', linewidth=0.5)
 
-        for bar, rate, missing in zip(bars, rates, is_missing):
-            text = "N/A" if missing else f"{rate:.0f}%"
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                    text, ha='center', va='bottom', fontsize=9, fontweight='bold')
+#         for bar, rate, missing in zip(bars, rates, is_missing):
+#             text = "N/A" if missing else f"{rate:.0f}%"
+#             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
+#                     text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
-        model_label = MODEL_SHORT_NAMES.get(model_name, model_name).replace('\n', ' ')
-        ax.set_title(model_label, fontsize=13, fontweight='bold', pad=10)
-        ax.set_xticks(x)
-        ax.set_xticklabels(technique_labels, fontsize=8, rotation=45, ha='right')
-        ax.set_ylabel("Recovery Rate (%)", fontsize=10)
-        ax.set_ylim(0, 115)
-        ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
-        ax.grid(axis='y', alpha=0.3, linestyle='--')
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
+#         model_label = MODEL_SHORT_NAMES.get(model_name, model_name).replace('\n', ' ')
+#         ax.set_title(model_label, fontsize=13, fontweight='bold', pad=10)
+#         ax.set_xticks(x)
+#         ax.set_xticklabels(technique_labels, fontsize=8, rotation=45, ha='right')
+#         ax.set_ylabel("Recovery Rate (%)", fontsize=10)
+#         ax.set_ylim(0, 115)
+#         ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
+#         ax.grid(axis='y', alpha=0.3, linestyle='--')
+#         ax.spines['top'].set_visible(False)
+#         ax.spines['right'].set_visible(False)
 
-    for idx, model_name in enumerate(all_models):
-        row, col = divmod(idx, ncols)
-        _plot_model_on_ax(axes[row, col], model_name)
+#     for idx, model_name in enumerate(all_models):
+#         row, col = divmod(idx, ncols)
+#         _plot_model_on_ax(axes[row, col], model_name)
 
-    for idx in range(n_models, nrows * ncols):
-        row, col = divmod(idx, ncols)
-        axes[row, col].set_visible(False)
+#     for idx in range(n_models, nrows * ncols):
+#         row, col = divmod(idx, ncols)
+#         axes[row, col].set_visible(False)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.94])
+#     plt.tight_layout(rect=[0, 0, 1, 0.94])
 
-    os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"prompt_recovery_by_model_{dataset_name}.pdf")
-    fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
-    plt.close(fig)
-    print(f"  Saved plot: {out_path}")
+#     os.makedirs(outdir, exist_ok=True)
+#     out_path = os.path.join(outdir, f"prompt_recovery_by_model_{dataset_name}.pdf")
+#     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
+#     plt.close(fig)
+#     print(f"  Saved plot: {out_path}")
     
-    # ── Per-model PDFs ──
-    if per_model_pdfs:
-        pdf_dir = os.path.join(outdir, "per_model")
-        os.makedirs(pdf_dir, exist_ok=True)
-        for model_name in all_models:
-            fig_m, ax_m = plt.subplots(figsize=(max(8, n_techniques * 0.8), 5.5))
-            _plot_model_on_ax(ax_m, model_name)
-            model_label = MODEL_SHORT_NAMES.get(model_name, model_name).replace('\n', ' ')
-            fig_m.suptitle(f"Prompt Recovery — {model_label} — {dataset_label}", fontsize=16, fontweight='bold')
-            plt.tight_layout(rect=[0, 0, 1, 0.93])
-            safe_model = model_name.replace('/', '_').replace(' ', '_')
-            pdf_path = os.path.join(pdf_dir, f"{safe_model}_recovery_{dataset_name}.pdf")
-            fig_m.savefig(pdf_path, bbox_inches='tight', facecolor='white')
-            plt.close(fig_m)
-            print(f"  Saved PDF: {pdf_path}")
+#     # ── Per-model PDFs ──
+#     if per_model_pdfs:
+#         pdf_dir = os.path.join(outdir, "per_model")
+#         os.makedirs(pdf_dir, exist_ok=True)
+#         for model_name in all_models:
+#             fig_m, ax_m = plt.subplots(figsize=(max(8, n_techniques * 0.8), 5.5))
+#             _plot_model_on_ax(ax_m, model_name)
+#             model_label = MODEL_SHORT_NAMES.get(model_name, model_name).replace('\n', ' ')
+#             fig_m.suptitle(f"Prompt Recovery — {model_label} — {dataset_label}", fontsize=16, fontweight='bold')
+#             plt.tight_layout(rect=[0, 0, 1, 0.93])
+#             safe_model = model_name.replace('/', '_').replace(' ', '_')
+#             pdf_path = os.path.join(pdf_dir, f"{safe_model}_recovery_{dataset_name}.pdf")
+#             fig_m.savefig(pdf_path, bbox_inches='tight', facecolor='white')
+#             plt.close(fig_m)
+#             print(f"  Saved PDF: {pdf_path}")
 
-    return out_path
+#     return out_path
 
 
 # ── Main ─────────────────────────────────────────────────────────────

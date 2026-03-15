@@ -186,6 +186,20 @@ def plot_conditional_accuracy_per_model(dataset_name, model_data, outdir, experi
         ax = axes[row, col]
         
         m_techs = model_data[model_name]
+
+        # Inject baseline and context_saturation from main results if missing
+        # Their conditional accuracy = actual accuracy since they see decoded prompt
+        for t in ["baseline", "context_saturation"]:
+            if t in accuracy_data and model_name in accuracy_data[t]:
+                acc = accuracy_data[t][model_name]['accuracy']
+                n_samples = accuracy_data[t][model_name]['n_samples']
+                # Always overwrite or fill for these two
+                m_techs[t] = {
+                    'conditional_accuracy': acc,
+                    'n_recovered': n_samples,
+                    'n_total': n_samples,
+                    'n_solved_pct': acc  # Store the exact percentage to avoid rounding drift
+                }
         
         # Keep consistent technique order
         plot_techs = [t for t in TECHNIQUE_ORDER if t in m_techs]
@@ -199,12 +213,17 @@ def plot_conditional_accuracy_per_model(dataset_name, model_data, outdir, experi
 
         for bar, val, tech in zip(bars, accs, plot_techs):
             n = m_techs[tech]['n_recovered']
-            n_solved = m_techs[tech].get('n_solved', 0)
-            n_total = m_techs[tech].get('n_total', 0)
-            solve_pct = 100.0 * n_solved / n_total if n_total > 0 else 0.0
             
-            # Label: Cond% (Solve%)\n(n=...)
-            label_text = f"{val:.0f}%\n{solve_pct:.2f}%"
+            if 'n_solved_pct' in m_techs[tech]:
+                solve_pct = m_techs[tech]['n_solved_pct']
+            else:
+                n_solved = m_techs[tech].get('n_solved', 0)
+                n_total = m_techs[tech].get('n_total', 0)
+                solve_pct = 100.0 * n_solved / n_total if n_total > 0 else 0.0
+            
+            # Label: Cond% \n (Solve%)
+            # Using .1f for both ensures they look identical for baseline/saturation
+            label_text = f"{val:.1f}%\n({solve_pct:.1f}%)"
             
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
                     label_text, ha='center', va='bottom', fontsize=7, fontweight='bold')

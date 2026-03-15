@@ -642,8 +642,8 @@ def plot_single_metric(dataset_name, technique_data, outdir):
         print(f"  No deltas to plot for {dataset_name}")
         return
 
-    # Filter to models we have deltas for, preserving global order
-    plot_models = [m for m in all_models if m in model_deltas]
+    # Sort models by average accuracy drop (lowest drop first - "Best" on left)
+    plot_models = sorted(model_deltas.keys(), key=lambda m: model_deltas[m])
     values = [model_deltas[m] for m in plot_models]
     
     # Assign consistent colors
