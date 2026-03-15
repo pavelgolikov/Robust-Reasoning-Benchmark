@@ -37,17 +37,17 @@ TECHNIQUE_LABELS = {
     "opposites":                    "Opposites",
     "not_not":                      "Not-Not",
     "wrappers":                     "Wrappers",
-    "split_reversal":               "Split Reversal",
-    "word_reversal":                "Word Reversal",
-    "sentence_reversal":            "Sentence Reversal",
+    "split_reversal":               "Split-Rev",
+    "word_reversal":                "Word-Rev",
+    "sentence_reversal":            "Sentence-Rev",
     "rail_fence":                   "Rail Fence",
-    "interleaved_context_line":     "Interleave (Line)",
-    "interleaved_context_word":     "Interleave (Word)",
-    "interleaved_context_symbol":   "Interleave (Symbol)",
-    "context_saturation":           "Context Saturation",
-    "rectangle_perimeter":          "Rectangle Perimeter",
-    "snake_vertical":               "Snake (Vertical)",
-    "snake_horizontal":             "Snake (Horizontal)",
+    "interleaved_context_line":     "Interleave-L",
+    "interleaved_context_word":     "Interleave-W",
+    "interleaved_context_symbol":   "Interleave-S",
+    "context_saturation":           "Context",
+    "rectangle_perimeter":          "Rectangle",
+    "snake_vertical":               "Snake-V",
+    "snake_horizontal":             "Snake-H",
 }
 
 # Canonical ordering of techniques for by-model plots
@@ -345,11 +345,11 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='
     for i, model in enumerate(all_models_global):
         model_colors[model] = PALETTE[i % len(PALETTE)]
 
-    # Layout: aim for roughly 3-4 columns
-    ncols = min(4, n_techniques)
+    # Layout: 2 columns
+    ncols = 2
     nrows = (n_techniques + ncols - 1) // ncols
 
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5.5 * nrows))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 4.0 * nrows))
 
     # Handle single-row/col case
     if n_techniques == 1:
@@ -358,7 +358,7 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
     title_prefix = 'Model Output Length' if metric == 'length' else 'Model Accuracy'
-    fig.suptitle(f"{title_prefix} — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
+    fig.suptitle(f"{title_prefix} — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
 
     for idx, technique in enumerate(techniques_with_data):
         row, col = divmod(idx, ncols)
@@ -409,20 +409,20 @@ def plot_dataset(dataset_name, technique_data, outdir, aggregate=False, metric='
                 # Accuracy in the middle
                 acc_val = td[m]['accuracy']
                 ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() / 2,
-                        f"{acc_val:.0f}%", ha='center', va='center', fontsize=9, color='white', fontweight='bold',
+                        f"{acc_val:.0f}", ha='center', va='center', fontsize=9, color='white', fontweight='bold',
                         path_effects=[patheffects.withStroke(linewidth=2, foreground='black')])
             else:
                 text_str = f"{val:.0f}%"
 
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                    text_str, ha='center', va='bottom', fontsize=10, fontweight='bold')
+                    text_str, ha='center', va='bottom', fontsize=12, fontweight='bold')
 
         title = TECHNIQUE_LABELS.get(technique, technique)
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=10)
+        ax.set_title(title, fontsize=16, fontweight='bold', pad=10)
         ax.set_xticks(x)
-        ax.set_xticklabels(labels, fontsize=8, rotation=45, ha='right')
+        ax.set_xticklabels(labels, fontsize=10, rotation=45, ha='right')
         y_label = "Output Length (tokens)" if metric == 'length' else "Accuracy (%)"
-        ax.set_ylabel(y_label, fontsize=11)
+        ax.set_ylabel(y_label, fontsize=13)
         if metric != 'length':
             ax.set_ylim(0, 115)
             ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
@@ -534,17 +534,17 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
                         f"{acc_val:.0f}", ha='center', va='center', fontsize=10, color='white', fontweight='bold',
                         path_effects=[patheffects.withStroke(linewidth=2, foreground='black')])
             else:
-                text = f"{acc:.0f}%"
+                text = f"{acc:.0f}"
 
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                    text, ha='center', va='bottom', fontsize=9, fontweight='bold')
+                    text, ha='center', va='bottom', fontsize=11, fontweight='bold')
 
         model_label = shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' ')
-        ax.set_title(model_label, fontsize=13, fontweight='bold', pad=10)
+        ax.set_title(model_label, fontsize=15, fontweight='bold', pad=10)
         ax.set_xticks(x)
-        ax.set_xticklabels(technique_labels, fontsize=8, rotation=45, ha='right')
+        ax.set_xticklabels(technique_labels, fontsize=12, rotation=45, ha='right')
         y_label = "Output Length (tokens)" if metric == 'length' else "Accuracy (%)"
-        ax.set_ylabel(y_label, fontsize=10)
+        ax.set_ylabel(y_label, fontsize=12)
         if metric != 'length':
             ax.set_ylim(0, 115)
             ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
@@ -554,16 +554,16 @@ def plot_by_model(dataset_name, technique_data, outdir, aggregate=False, per_mod
 
     # ── Combined summary figure ──
     n_models = len(all_models)
-    ncols = min(4, n_models)
+    ncols = 2
     nrows = (n_models + ncols - 1) // ncols
 
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5.5 * nrows))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 3.5 * nrows))
     if n_models == 1:
         axes = np.array([axes])
     axes = np.atleast_2d(axes)
 
     title_prefix = 'Output Length' if metric == 'length' else 'Accuracy'
-    fig.suptitle(f"{title_prefix} by Transform — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
+    fig.suptitle(f"{title_prefix} by Transform — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
 
     for idx, model_name in enumerate(all_models):
         row, col = divmod(idx, ncols)
@@ -662,14 +662,14 @@ def plot_single_metric(dataset_name, technique_data, outdir):
     for bar, val in zip(bars, values):
         ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5),
                 f"{val:.1f}%", ha='center', va='bottom' if val >= 0 else 'top', 
-                fontsize=10, fontweight='bold')
+                fontsize=11, fontweight='bold')
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    ax.set_title(f"Average Accuracy Drop (Relative to Baseline) — {dataset_label}", fontsize=18, fontweight='bold', pad=20)
+    ax.set_title(f"Average Accuracy Drop (Relative to Baseline) — {dataset_label}", fontsize=20, fontweight='bold', pad=20)
     ax.set_xticks(x)
     ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models], 
-                       fontsize=9, rotation=45, ha='right')
-    ax.set_ylabel("Average Accuracy Drop (%)", fontsize=12)
+                       fontsize=10, rotation=45, ha='right')
+    ax.set_ylabel("Average Accuracy Drop (%)", fontsize=13)
     ax.grid(axis='y', alpha=0.3, linestyle='--')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -799,7 +799,7 @@ def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False, ac
     dataset_label = DATASET_SHORT_NAMES.get(dataset_name, dataset_name)
     
     n_models = len(all_models)
-    ncols = min(4, n_models)
+    ncols = 2
     nrows = (n_models + ncols - 1) // ncols
 
     fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 5.5 * nrows))
@@ -807,7 +807,7 @@ def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False, ac
         axes = np.array([axes])
     axes = np.atleast_2d(axes)
 
-    fig.suptitle(f"Prompt Recovery Rate by Model — {dataset_label}", fontsize=20, fontweight='bold', y=0.98)
+    fig.suptitle(f"Prompt Recovery Rate by Model — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
 
     def _plot_model_on_ax(ax, model_name):
         rates = []
@@ -845,13 +845,13 @@ def plot_recovery(technique_data, dataset_name, outdir, per_model_pdfs=False, ac
         for bar, rate, missing in zip(bars, rates, is_missing):
             text = "N/A" if missing else f"{rate:.0f}%"
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0,
-                    text, ha='center', va='bottom', fontsize=9, fontweight='bold')
+                    text, ha='center', va='bottom', fontsize=11, fontweight='bold')
 
         model_label = MODEL_SHORT_NAMES.get(model_name, model_name).replace('\n', ' ')
-        ax.set_title(model_label, fontsize=13, fontweight='bold', pad=10)
+        ax.set_title(model_label, fontsize=15, fontweight='bold', pad=10)
         ax.set_xticks(x)
-        ax.set_xticklabels(technique_labels, fontsize=8, rotation=45, ha='right')
-        ax.set_ylabel("Recovery Rate (%)", fontsize=10)
+        ax.set_xticklabels(technique_labels, fontsize=10, rotation=45, ha='right')
+        ax.set_ylabel("Recovery Rate (%)", fontsize=12)
         ax.set_ylim(0, 115)
         ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')

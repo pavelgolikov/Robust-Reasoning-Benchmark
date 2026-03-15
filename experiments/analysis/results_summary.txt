@@ -1,0 +1,405 @@
+================================================================================
+RESULTS SUMMARY: HuggingFaceH4_aime_2024
+================================================================================
+
+--- PART 1: ACCURACY & OUTPUT LENGTH ---
+
+[Technique: Baseline] (baseline)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 62.37      | 0.00       | 15075.8    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 88.98      | 0.00       | 15062.8    | 16.033333333333335
+claude-opus-4-6                          | 98.34      | 0.00       | 1058.7     | 8.033333333333333
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 66.32      | 0.00       | 9973.5     | 16.033333333333335
+gemini-3.1-pro-preview                   | 97.11      | 1.65       | 943.2      | 8.066666666666666
+gpt-5.4                                  | 95.45      | 2.48       | 594.3      | 8.066666666666666
+openai_gpt-oss-120b                      | 77.55      | 0.00       | 4828.6     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 83.16      | 0.00       | 13269.3    | 16.033333333333335
+
+[Technique: Not-Not] (not_not)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 55.30      | 0.00       | 14808.5    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 82.12      | 0.00       | 14139.3    | 16.033333333333335
+claude-opus-4-6                          | 96.27      | 0.00       | 1079.8     | 8.033333333333333
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 56.76      | 0.00       | 22112.5    | 16.033333333333335
+gemini-3.1-pro-preview                   | 97.93      | 0.83       | 922.5      | 8.033333333333333
+gpt-5.4                                  | 94.19      | 2.49       | 587.2      | 8.033333333333333
+openai_gpt-oss-120b                      | 69.02      | 0.00       | 4732.2     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 78.79      | 0.00       | 12812.4    | 16.033333333333335
+
+[Technique: Opposites] (opposites)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 59.67      | 0.00       | 13501.3    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 77.55      | 0.00       | 9647.2     | 16.033333333333335
+claude-opus-4-6                          | 92.15      | 1.65       | 1064.4     | 8.066666666666666
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 53.22      | 0.00       | 7219.9     | 16.033333333333335
+gemini-3.1-pro-preview                   | 95.87      | 2.48       | 1033.7     | 8.066666666666666
+gpt-5.4                                  | 91.32      | 0.83       | 611.2      | 8.066666666666666
+openai_gpt-oss-120b                      | 68.81      | 0.00       | 4370.4     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 69.02      | 0.00       | 12329.6    | 16.033333333333335
+
+[Technique: Wrappers] (wrappers)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 56.13      | 0.00       | 14196.6    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 67.57      | 0.00       | 11091.8    | 16.033333333333335
+claude-opus-4-6                          | 96.69      | 0.00       | 1046.0     | 8.066666666666666
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 43.87      | 0.00       | 7981.8     | 16.033333333333335
+gemini-3.1-pro-preview                   | 96.28      | 1.65       | 1039.1     | 8.066666666666666
+gpt-5.4                                  | 93.39      | 2.07       | 599.1      | 8.066666666666666
+openai_gpt-oss-120b                      | 62.58      | 0.00       | 5251.0     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 58.42      | 0.21       | 14127.2    | 16.033333333333335
+
+[Technique: Interleave (Line)] (interleaved_context_line)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 58.84      | 0.00       | 14053.2    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 76.51      | 0.00       | 10061.3    | 16.033333333333335
+claude-opus-4-6                          | 97.11      | 0.00       | 1153.9     | 8.066666666666666
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 54.05      | 0.00       | 7531.4     | 16.033333333333335
+gemini-3.1-pro-preview                   | 96.69      | 1.24       | 1013.2     | 8.066666666666666
+gpt-5.4                                  | 93.80      | 1.65       | 620.7      | 8.066666666666666
+openai_gpt-oss-120b                      | 69.65      | 0.00       | 4789.7     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 69.02      | 0.00       | 13187.6    | 16.033333333333335
+
+[Technique: Interleave (Word)] (interleaved_context_word)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 18.30      | 0.00       | 17145.3    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 24.53      | 0.00       | 11729.8    | 16.033333333333335
+claude-opus-4-6                          | 88.43      | 0.00       | 1114.1     | 8.066666666666666
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 14.14      | 0.00       | 9166.1     | 16.033333333333335
+gemini-3.1-pro-preview                   | 95.45      | 1.24       | 1000.5     | 8.066666666666666
+gpt-5.4                                  | 90.91      | 2.07       | 596.8      | 8.066666666666666
+openai_gpt-oss-120b                      | 39.09      | 0.00       | 4875.4     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 14.35      | 0.00       | 23120.7    | 16.033333333333335
+
+[Technique: Interleave (Symbol)] (interleaved_context_symbol)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 0.00       | 0.83       | 23025.0    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 0.00       | 0.00       | 12768.9    | 16.033333333333335
+claude-opus-4-6                          | 31.40      | 46.28      | 644.9      | 8.066666666666666
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 0.00       | 0.42       | 13040.1    | 16.033333333333335
+gemini-3.1-pro-preview                   | 62.81      | 9.92       | 970.2      | 8.066666666666666
+gpt-5.4                                  | 68.18      | 2.89       | 582.5      | 8.066666666666666
+openai_gpt-oss-120b                      | 1.25       | 0.00       | 8647.0     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 0.00       | 0.00       | 23277.2    | 16.033333333333335
+
+[Technique: Context Saturation] (context_saturation)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 45.42      | 0.00       | 6192.1     | 8.0
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 74.17      | 0.00       | 7667.0     | 8.0
+claude-opus-4-6                          | 95.88      | 0.00       | 993.4      | 8.1
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 0.00       | 8.33       | 2480.6     | 8.0
+gemini-3.1-pro-preview                   | 95.83      | 0.00       | 968.4      | 8.0
+gpt-5.4                                  | 84.77      | 1.65       | 774.5      | 8.1
+openai_gpt-oss-120b                      | 78.33      | 0.00       | 7257.9     | 8.0
+tiiuae_Falcon-H1R-7B                     | 61.67      | 6.25       | 8292.6     | 8.0
+
+[Technique: Sentence Reversal] (sentence_reversal)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 60.91      | 0.00       | 13676.0    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 79.42      | 0.00       | 10318.3    | 16.033333333333335
+claude-opus-4-6                          | 95.44      | 0.00       | 1051.5     | 8.033333333333333
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 48.23      | 0.00       | 14619.8    | 16.033333333333335
+gemini-3.1-pro-preview                   | 97.51      | 0.00       | 1032.5     | 8.033333333333333
+gpt-5.4                                  | 95.85      | 2.49       | 612.3      | 8.033333333333333
+openai_gpt-oss-120b                      | 74.01      | 0.00       | 4434.4     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 81.50      | 0.00       | 11835.9    | 16.033333333333335
+
+[Technique: Word Reversal] (word_reversal)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 45.11      | 0.00       | 15305.3    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 47.40      | 0.00       | 9177.9     | 16.033333333333335
+claude-opus-4-6                          | 51.65      | 41.74      | 621.6      | 8.066666666666666
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 22.04      | 0.00       | 5429.0     | 16.033333333333335
+gemini-3.1-pro-preview                   | 97.11      | 1.65       | 999.2      | 8.066666666666666
+gpt-5.4                                  | 93.80      | 1.24       | 603.6      | 8.066666666666666
+openai_gpt-oss-120b                      | 53.22      | 0.00       | 4845.2     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 45.95      | 0.00       | 17790.1    | 16.033333333333335
+
+[Technique: Split Reversal] (split_reversal)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 12.47      | 0.00       | 17419.5    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 34.51      | 0.00       | 11920.0    | 16.033333333333335
+claude-opus-4-6                          | 3.31       | 95.87      | 30.4       | 8.066666666666666
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 4.99       | 0.00       | 6168.3     | 16.033333333333335
+gemini-3.1-pro-preview                   | 95.87      | 2.48       | 883.9      | 8.066666666666666
+gpt-5.4                                  | 93.39      | 2.07       | 598.8      | 8.066666666666666
+openai_gpt-oss-120b                      | 49.48      | 0.00       | 6174.2     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 16.84      | 0.00       | 24482.6    | 16.033333333333335
+
+[Technique: Rail Fence] (rail_fence)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 0.21       | 0.42       | 24531.4    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 0.00       | 0.00       | 14990.0    | 16.033333333333335
+claude-opus-4-6                          | 2.07       | 59.50      | 431.8      | 8.066666666666666
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 0.42       | 0.00       | 12082.7    | 16.033333333333335
+gemini-3.1-pro-preview                   | 65.29      | 11.16      | 964.0      | 8.066666666666666
+gpt-5.4                                  | 75.21      | 12.40      | 541.7      | 8.066666666666666
+openai_gpt-oss-120b                      | 0.21       | 0.00       | 7960.2     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 0.00       | 0.21       | 25123.7    | 16.033333333333335
+
+[Technique: Rectangle Perimeter] (rectangle_perimeter)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 1.04       | 1.04       | 22170.4    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 4.16       | 0.00       | 14473.8    | 16.033333333333335
+claude-opus-4-6                          | 7.47       | 86.31      | 159.0      | 8.033333333333333
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 0.21       | 0.00       | 14916.5    | 16.033333333333335
+gemini-3.1-pro-preview                   | 96.68      | 0.00       | 1114.7     | 8.033333333333333
+gpt-5.4                                  | 94.61      | 2.07       | 588.3      | 8.033333333333333
+openai_gpt-oss-120b                      | 26.20      | 0.00       | 7470.5     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 1.66       | 0.00       | 26286.2    | 16.033333333333335
+
+[Technique: Snake (Vertical)] (snake_vertical)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 0.00       | 0.21       | 18409.1    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 0.83       | 0.00       | 13005.4    | 16.033333333333335
+claude-opus-4-6                          | 2.90       | 66.80      | 357.9      | 8.033333333333333
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 0.00       | 0.00       | 21602.7    | 16.033333333333335
+gemini-3.1-pro-preview                   | 64.73      | 3.32       | 995.9      | 8.033333333333333
+gpt-5.4                                  | 86.31      | 2.49       | 587.4      | 8.033333333333333
+openai_gpt-oss-120b                      | 10.60      | 0.00       | 9783.4     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 0.21       | 0.00       | 25624.0    | 16.033333333333335
+
+[Technique: Snake (Horizontal)] (snake_horizontal)
+Model                                    | Acc (%)    | Fail (%)   | Length     | Samples
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | 5.82       | 0.21       | 21568.4    | 16.033333333333335
+Qwen_Qwen3-30B-A3B-Thinking-2507         | 16.01      | 0.00       | 15575.3    | 16.033333333333335
+claude-opus-4-6                          | 32.37      | 65.15      | 375.5      | 8.033333333333333
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | 0.83       | 0.00       | 21314.9    | 16.033333333333335
+gemini-3.1-pro-preview                   | 98.34      | 0.00       | 1132.3     | 8.033333333333333
+gpt-5.4                                  | 93.78      | 2.90       | 611.5      | 8.033333333333333
+openai_gpt-oss-120b                      | 39.92      | 0.00       | 7688.3     | 16.033333333333335
+tiiuae_Falcon-H1R-7B                     | 8.94       | 0.00       | 25300.4    | 16.033333333333335
+
+================================================================================
+
+--- PART 2: PROMPT RECOVERY RATES ---
+Model                                    | Technique                      | Recovery Rate (%)
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | not_not                        | 76.92     
+GAIR_LIMO-v2                             | opposites                      | 91.68     
+GAIR_LIMO-v2                             | wrappers                       | 88.15     
+GAIR_LIMO-v2                             | interleaved_context_line       | 97.30     
+GAIR_LIMO-v2                             | interleaved_context_word       | 44.70     
+GAIR_LIMO-v2                             | interleaved_context_symbol     | 0.00      
+GAIR_LIMO-v2                             | sentence_reversal              | 96.47     
+GAIR_LIMO-v2                             | word_reversal                  | 93.76     
+GAIR_LIMO-v2                             | split_reversal                 | 39.71     
+GAIR_LIMO-v2                             | rail_fence                     | 0.21      
+GAIR_LIMO-v2                             | rectangle_perimeter            | 16.01     
+GAIR_LIMO-v2                             | snake_vertical                 | 0.00      
+GAIR_LIMO-v2                             | snake_horizontal               | 56.76     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | not_not                        | 87.53     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | opposites                      | 93.76     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | wrappers                       | 83.99     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | interleaved_context_line       | 97.51     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | interleaved_context_word       | 52.39     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | interleaved_context_symbol     | 0.00      
+Qwen_Qwen3-30B-A3B-Thinking-2507         | sentence_reversal              | 99.17     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | word_reversal                  | 89.19     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | split_reversal                 | 69.02     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | rail_fence                     | 0.00      
+Qwen_Qwen3-30B-A3B-Thinking-2507         | rectangle_perimeter            | 36.59     
+Qwen_Qwen3-30B-A3B-Thinking-2507         | snake_vertical                 | 1.46      
+Qwen_Qwen3-30B-A3B-Thinking-2507         | snake_horizontal               | 69.65     
+claude-opus-4-6                          | not_not                        | 96.27     
+claude-opus-4-6                          | opposites                      | 95.87     
+claude-opus-4-6                          | wrappers                       | 98.35     
+claude-opus-4-6                          | interleaved_context_line       | 99.17     
+claude-opus-4-6                          | interleaved_context_word       | 99.17     
+claude-opus-4-6                          | interleaved_context_symbol     | 36.36     
+claude-opus-4-6                          | sentence_reversal              | 99.59     
+claude-opus-4-6                          | word_reversal                  | 57.02     
+claude-opus-4-6                          | split_reversal                 | 3.31      
+claude-opus-4-6                          | rail_fence                     | 2.48      
+claude-opus-4-6                          | rectangle_perimeter            | 13.28     
+claude-opus-4-6                          | snake_vertical                 | 3.32      
+claude-opus-4-6                          | snake_horizontal               | 34.02     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | not_not                        | 56.76     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | opposites                      | 77.13     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | wrappers                       | 70.89     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | interleaved_context_line       | 77.13     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | interleaved_context_word       | 40.54     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | interleaved_context_symbol     | 0.00      
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | sentence_reversal              | 48.23     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | word_reversal                  | 77.75     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | split_reversal                 | 25.99     
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | rail_fence                     | 0.42      
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | rectangle_perimeter            | 0.21      
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | snake_vertical                 | 0.00      
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | snake_horizontal               | 0.83      
+gemini-3.1-pro-preview                   | not_not                        | 97.93     
+gemini-3.1-pro-preview                   | opposites                      | 96.69     
+gemini-3.1-pro-preview                   | wrappers                       | 98.35     
+gemini-3.1-pro-preview                   | interleaved_context_line       | 98.35     
+gemini-3.1-pro-preview                   | interleaved_context_word       | 95.87     
+gemini-3.1-pro-preview                   | interleaved_context_symbol     | 76.86     
+gemini-3.1-pro-preview                   | sentence_reversal              | 98.76     
+gemini-3.1-pro-preview                   | word_reversal                  | 97.52     
+gemini-3.1-pro-preview                   | split_reversal                 | 95.04     
+gemini-3.1-pro-preview                   | rail_fence                     | 76.86     
+gemini-3.1-pro-preview                   | rectangle_perimeter            | 96.68     
+gemini-3.1-pro-preview                   | snake_vertical                 | 75.93     
+gemini-3.1-pro-preview                   | snake_horizontal               | 98.76     
+gpt-5.4                                  | not_not                        | 94.19     
+gpt-5.4                                  | opposites                      | 95.87     
+gpt-5.4                                  | wrappers                       | 95.87     
+gpt-5.4                                  | interleaved_context_line       | 95.04     
+gpt-5.4                                  | interleaved_context_word       | 92.56     
+gpt-5.4                                  | interleaved_context_symbol     | 76.86     
+gpt-5.4                                  | sentence_reversal              | 96.68     
+gpt-5.4                                  | word_reversal                  | 95.87     
+gpt-5.4                                  | split_reversal                 | 95.04     
+gpt-5.4                                  | rail_fence                     | 83.47     
+gpt-5.4                                  | rectangle_perimeter            | 95.44     
+gpt-5.4                                  | snake_vertical                 | 91.70     
+gpt-5.4                                  | snake_horizontal               | 95.44     
+openai_gpt-oss-120b                      | not_not                        | 78.17     
+openai_gpt-oss-120b                      | opposites                      | 88.57     
+openai_gpt-oss-120b                      | wrappers                       | 79.42     
+openai_gpt-oss-120b                      | interleaved_context_line       | 95.01     
+openai_gpt-oss-120b                      | interleaved_context_word       | 66.94     
+openai_gpt-oss-120b                      | interleaved_context_symbol     | 1.87      
+openai_gpt-oss-120b                      | sentence_reversal              | 96.47     
+openai_gpt-oss-120b                      | word_reversal                  | 87.32     
+openai_gpt-oss-120b                      | split_reversal                 | 82.33     
+openai_gpt-oss-120b                      | rail_fence                     | 0.62      
+openai_gpt-oss-120b                      | rectangle_perimeter            | 56.34     
+openai_gpt-oss-120b                      | snake_vertical                 | 20.58     
+openai_gpt-oss-120b                      | snake_horizontal               | 77.75     
+tiiuae_Falcon-H1R-7B                     | not_not                        | 90.44     
+tiiuae_Falcon-H1R-7B                     | opposites                      | 90.44     
+tiiuae_Falcon-H1R-7B                     | wrappers                       | 78.59     
+tiiuae_Falcon-H1R-7B                     | interleaved_context_line       | 92.52     
+tiiuae_Falcon-H1R-7B                     | interleaved_context_word       | 42.20     
+tiiuae_Falcon-H1R-7B                     | interleaved_context_symbol     | 0.00      
+tiiuae_Falcon-H1R-7B                     | sentence_reversal              | 99.17     
+tiiuae_Falcon-H1R-7B                     | word_reversal                  | 91.48     
+tiiuae_Falcon-H1R-7B                     | split_reversal                 | 46.78     
+tiiuae_Falcon-H1R-7B                     | rail_fence                     | 0.00      
+tiiuae_Falcon-H1R-7B                     | rectangle_perimeter            | 13.31     
+tiiuae_Falcon-H1R-7B                     | snake_vertical                 | 0.21      
+tiiuae_Falcon-H1R-7B                     | snake_horizontal               | 50.52     
+
+================================================================================
+
+--- PART 3: CONDITIONAL ACCURACY (ACCURACY GIVEN RECOVERY) ---
+Model                                    | Technique                      | Cond. Acc (%) | Recovered
+-------------------------------------------------------------------------------------
+GAIR_LIMO-v2                             | not_not                        | 71.89      | 370
+GAIR_LIMO-v2                             | opposites                      | 65.08      | 441
+GAIR_LIMO-v2                             | wrappers                       | 63.68      | 424
+GAIR_LIMO-v2                             | interleaved_context_line       | 60.47      | 468
+GAIR_LIMO-v2                             | interleaved_context_word       | 40.93      | 215
+GAIR_LIMO-v2                             | interleaved_context_symbol     | 0.00       | 0
+GAIR_LIMO-v2                             | sentence_reversal              | 63.15      | 464
+GAIR_LIMO-v2                             | word_reversal                  | 48.12      | 451
+GAIR_LIMO-v2                             | split_reversal                 | 31.41      | 191
+GAIR_LIMO-v2                             | rail_fence                     | 100.00     | 1
+GAIR_LIMO-v2                             | rectangle_perimeter            | 6.49       | 77
+GAIR_LIMO-v2                             | snake_vertical                 | 0.00       | 0
+GAIR_LIMO-v2                             | snake_horizontal               | 10.26      | 273
+Qwen_Qwen3-30B-A3B-Thinking-2507         | not_not                        | 93.82      | 421
+Qwen_Qwen3-30B-A3B-Thinking-2507         | opposites                      | 82.71      | 451
+Qwen_Qwen3-30B-A3B-Thinking-2507         | wrappers                       | 80.45      | 404
+Qwen_Qwen3-30B-A3B-Thinking-2507         | interleaved_context_line       | 78.46      | 469
+Qwen_Qwen3-30B-A3B-Thinking-2507         | interleaved_context_word       | 46.83      | 252
+Qwen_Qwen3-30B-A3B-Thinking-2507         | interleaved_context_symbol     | 0.00       | 0
+Qwen_Qwen3-30B-A3B-Thinking-2507         | sentence_reversal              | 80.08      | 477
+Qwen_Qwen3-30B-A3B-Thinking-2507         | word_reversal                  | 53.15      | 429
+Qwen_Qwen3-30B-A3B-Thinking-2507         | split_reversal                 | 50.00      | 332
+Qwen_Qwen3-30B-A3B-Thinking-2507         | rail_fence                     | 0.00       | 0
+Qwen_Qwen3-30B-A3B-Thinking-2507         | rectangle_perimeter            | 11.36      | 176
+Qwen_Qwen3-30B-A3B-Thinking-2507         | snake_vertical                 | 57.14      | 7
+Qwen_Qwen3-30B-A3B-Thinking-2507         | snake_horizontal               | 22.99      | 335
+claude-opus-4-6                          | not_not                        | 100.00     | 232
+claude-opus-4-6                          | opposites                      | 94.83      | 116
+claude-opus-4-6                          | wrappers                       | 97.48      | 119
+claude-opus-4-6                          | interleaved_context_line       | 97.50      | 120
+claude-opus-4-6                          | interleaved_context_word       | 88.33      | 120
+claude-opus-4-6                          | interleaved_context_symbol     | 88.64      | 44
+claude-opus-4-6                          | sentence_reversal              | 95.83      | 240
+claude-opus-4-6                          | word_reversal                  | 92.75      | 69
+claude-opus-4-6                          | split_reversal                 | 100.00     | 4
+claude-opus-4-6                          | rail_fence                     | 100.00     | 3
+claude-opus-4-6                          | rectangle_perimeter            | 56.25      | 32
+claude-opus-4-6                          | snake_vertical                 | 87.50      | 8
+claude-opus-4-6                          | snake_horizontal               | 95.12      | 82
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | not_not                        | 100.00     | 273
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | opposites                      | 69.00      | 371
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | wrappers                       | 61.88      | 341
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | interleaved_context_line       | 70.08      | 371
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | interleaved_context_word       | 34.87      | 195
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | interleaved_context_symbol     | 0.00       | 0
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | sentence_reversal              | 100.00     | 232
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | word_reversal                  | 28.34      | 374
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | split_reversal                 | 19.20      | 125
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | rail_fence                     | 100.00     | 2
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | rectangle_perimeter            | 100.00     | 1
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | snake_vertical                 | 0.00       | 0
+deepseek-ai_DeepSeek-R1-Distill-Llama-70B | snake_horizontal               | 100.00     | 4
+gemini-3.1-pro-preview                   | not_not                        | 100.00     | 236
+gemini-3.1-pro-preview                   | opposites                      | 100.00     | 117
+gemini-3.1-pro-preview                   | wrappers                       | 98.32      | 119
+gemini-3.1-pro-preview                   | interleaved_context_line       | 99.16      | 119
+gemini-3.1-pro-preview                   | interleaved_context_word       | 100.00     | 116
+gemini-3.1-pro-preview                   | interleaved_context_symbol     | 83.87      | 93
+gemini-3.1-pro-preview                   | sentence_reversal              | 98.74      | 238
+gemini-3.1-pro-preview                   | word_reversal                  | 100.00     | 118
+gemini-3.1-pro-preview                   | split_reversal                 | 99.13      | 115
+gemini-3.1-pro-preview                   | rail_fence                     | 89.25      | 93
+gemini-3.1-pro-preview                   | rectangle_perimeter            | 100.00     | 233
+gemini-3.1-pro-preview                   | snake_vertical                 | 85.25      | 183
+gemini-3.1-pro-preview                   | snake_horizontal               | 99.58      | 238
+gpt-5.4                                  | not_not                        | 100.00     | 227
+gpt-5.4                                  | opposites                      | 94.83      | 116
+gpt-5.4                                  | wrappers                       | 99.14      | 116
+gpt-5.4                                  | interleaved_context_line       | 98.26      | 115
+gpt-5.4                                  | interleaved_context_word       | 97.32      | 112
+gpt-5.4                                  | interleaved_context_symbol     | 87.10      | 93
+gpt-5.4                                  | sentence_reversal              | 99.14      | 233
+gpt-5.4                                  | word_reversal                  | 97.41      | 116
+gpt-5.4                                  | split_reversal                 | 98.26      | 115
+gpt-5.4                                  | rail_fence                     | 94.06      | 101
+gpt-5.4                                  | rectangle_perimeter            | 99.13      | 230
+gpt-5.4                                  | snake_vertical                 | 94.12      | 221
+gpt-5.4                                  | snake_horizontal               | 98.26      | 230
+openai_gpt-oss-120b                      | not_not                        | 88.30      | 376
+openai_gpt-oss-120b                      | opposites                      | 77.70      | 426
+openai_gpt-oss-120b                      | wrappers                       | 78.80      | 382
+openai_gpt-oss-120b                      | interleaved_context_line       | 73.30      | 457
+openai_gpt-oss-120b                      | interleaved_context_word       | 58.39      | 322
+openai_gpt-oss-120b                      | interleaved_context_symbol     | 66.67      | 9
+openai_gpt-oss-120b                      | sentence_reversal              | 76.72      | 464
+openai_gpt-oss-120b                      | word_reversal                  | 60.95      | 420
+openai_gpt-oss-120b                      | split_reversal                 | 60.10      | 396
+openai_gpt-oss-120b                      | rail_fence                     | 33.33      | 3
+openai_gpt-oss-120b                      | rectangle_perimeter            | 46.49      | 271
+openai_gpt-oss-120b                      | snake_vertical                 | 51.52      | 99
+openai_gpt-oss-120b                      | snake_horizontal               | 51.34      | 374
+tiiuae_Falcon-H1R-7B                     | not_not                        | 87.13      | 435
+tiiuae_Falcon-H1R-7B                     | opposites                      | 76.32      | 435
+tiiuae_Falcon-H1R-7B                     | wrappers                       | 74.34      | 378
+tiiuae_Falcon-H1R-7B                     | interleaved_context_line       | 74.61      | 445
+tiiuae_Falcon-H1R-7B                     | interleaved_context_word       | 33.99      | 203
+tiiuae_Falcon-H1R-7B                     | interleaved_context_symbol     | 0.00       | 0
+tiiuae_Falcon-H1R-7B                     | sentence_reversal              | 82.18      | 477
+tiiuae_Falcon-H1R-7B                     | word_reversal                  | 50.23      | 440
+tiiuae_Falcon-H1R-7B                     | split_reversal                 | 36.00      | 225
+tiiuae_Falcon-H1R-7B                     | rail_fence                     | 0.00       | 0
+tiiuae_Falcon-H1R-7B                     | rectangle_perimeter            | 12.50      | 64
+tiiuae_Falcon-H1R-7B                     | snake_vertical                 | 100.00     | 1
+tiiuae_Falcon-H1R-7B                     | snake_horizontal               | 17.70      | 243
