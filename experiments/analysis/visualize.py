@@ -68,10 +68,10 @@ DATASET_SHORT_NAMES = {
 }
 
 CATEGORIES = {
-    "Syntactic\nDistortions": ["split_reversal", "word_reversal", "sentence_reversal"],
-    "Semantic\nSubstitutions": ["not_not", "opposites", "wrappers"],
-    "Visual\nEncoding": ["rail_fence"],
-    "Contextual\nOverload": ["interleaved_context_line", "interleaved_context_symbol", "interleaved_context_word", "context_saturation"],
+    "Syntactic": ["split_reversal", "word_reversal", "sentence_reversal"],
+    "Semantic": ["not_not", "opposites", "wrappers"],
+    "Visual": ["rail_fence"],
+    "Contextual": ["interleaved_context_line", "interleaved_context_symbol", "interleaved_context_word", "context_saturation"],
 }
 
 CATEGORY_NAMES = list(CATEGORIES.keys())
@@ -88,7 +88,7 @@ def shorten(name, mapping):
     return mapping.get(name, name)
 
 def format_length_label(value):
-    return f"{value/1000:.1f}K"
+    return f"{value/1000:.1f}"
 
 # ── Fast Data Loading ───────────────────────────────────────────────
 
@@ -227,7 +227,7 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
             else: text = f"{acc:.0f}"
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0, text, ha='center', va='bottom', fontsize=11, fontweight='bold')
 
-        # ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=10)
+        ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=10)
         ax.set_xticks(x); ax.set_xticklabels(technique_labels, fontsize=12, rotation=45, ha='right')
         ax.set_ylabel("Length (tokens)" if metric == 'length' else "Accuracy (%)", fontsize=12)
         if metric != 'length':
@@ -249,7 +249,7 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"{metric}_by_model.pdf")
+    out_path = os.path.join(outdir, f"{metric}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -312,7 +312,7 @@ def plot_recovery(rec_data, dataset_name, outdir, accuracy_data=None, accuracy_o
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, "prompt_recovery_by_model.pdf")
+    out_path = os.path.join(outdir, "prompt_recovery.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -338,16 +338,18 @@ def plot_single_metric(dataset_name, technique_data, outdir):
     values = [model_deltas[m] for m in plot_models]
     colors = [PALETTE[all_models.index(m) % len(PALETTE)] for m in plot_models]
 
-    fig, ax = plt.subplots(figsize=(12, 5))
+    fig, ax = plt.subplots(figsize=(10, 6))
     bars = ax.bar(np.arange(len(plot_models)), values, 0.65, color=colors, edgecolor='black', linewidth=0.5)
     for bar, val in zip(bars, values):
-        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5), f"{val:.1f}", \
-            ha='center', va='bottom' if val >= 0 else 'top', fontsize=14, fontweight='bold')
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5), f"{val:.0f}", \
+            ha='center', va='bottom' if val >= 0 else 'top', fontsize=18, fontweight='bold')
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
     # ax.set_title(f"Average Accuracy Drop — {dataset_label}", fontsize=22, fontweight='bold', pad=20)
     ax.set_xticks(np.arange(len(plot_models)))
-    ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models], fontsize=14, rotation=45, ha='right')
+    ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models], fontsize=18, rotation=45, ha='right')
+    ax.set_ylabel("Avg Accuracy Drop (%)", fontsize=20)
+    ax.set_ylim(min(values + [0]) * 1.1, max(values + [0]) * 1.1)
     ax.grid(axis='y', alpha=0.3)
     plt.tight_layout()
     out_path = os.path.join(outdir, "average_accuracy_drop.pdf")
@@ -370,9 +372,9 @@ def plot_radar_charts(dataset_name, technique_data, outdir):
         return sum(accs) / len(accs) if accs else 0
     models_to_plot = sorted(list(all_models), key=_avg_acc, reverse=True)
 
-    ncols, n_models = 2, len(models_to_plot)
+    ncols, n_models = 4, len(models_to_plot)
     nrows = (n_models + ncols - 1) // ncols
-    fig = plt.figure(figsize=(5.5 * ncols, 4.0 * nrows))
+    fig = plt.figure(figsize=(5.0 * ncols, 4.5 * nrows))
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
     # fig.suptitle(f"Performance by Category — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
 
@@ -387,8 +389,29 @@ def plot_radar_charts(dataset_name, technique_data, outdir):
         ax.plot(angles, values, color=color, linewidth=2); ax.fill(angles, values, color=color, alpha=0.25)
         ax.set_theta_offset(np.pi / 2); ax.set_theta_direction(-1)
         ax.set_ylim(0, 100); ax.set_rlabel_position(0)
-        plt.xticks(angles[:-1], CATEGORY_NAMES, color='black', size=10, fontweight='bold')
-        # ax.set_title(shorten(model, MODEL_SHORT_NAMES).replace('\n', ' '), size=15, fontweight='bold', pad=20)
+        ax.set_rgrids([20, 40, 60, 80], labels=["20", "40", "60", "80"], fontsize=8, color='gray')
+        
+        # Manually place category labels inside the circles
+        for angle, label in zip(angles[:-1], CATEGORY_NAMES):
+            ha, va = 'center', 'center'
+            r_label = 95 # Inside the 100 limit
+            
+            if label == "Syntactic": 
+                va = 'top' # Shift slightly below center of the angle
+            elif label == "Visual": 
+                va = 'bottom' # Shift slightly above center
+            elif label == "Semantic": 
+                ha, va = 'right', 'bottom' # Inside and slightly up
+                angle -= 0.10
+            elif label == "Contextual": 
+                ha, va = 'left', 'top' # Inside and shifted down towards bottom
+                angle -= 0.10 # Shift counter-clockwise (towards bottom)
+            
+            ax.text(angle, r_label, label, ha=ha, va=va, fontsize=16, fontweight='bold', 
+                    bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
+        
+        ax.set_title(shorten(model, MODEL_SHORT_NAMES).replace('\n', ' '), size=15, fontweight='bold', pad=20)
+        ax.set_xticklabels([]) # Hide default xticks
         ax.grid(True, alpha=0.3)
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
@@ -434,7 +457,7 @@ def plot_conditional_accuracy(dataset_name, cond_data, technique_data, outdir):
         row, col = divmod(idx, ncols); axes[row, col].set_visible(False)
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
-    out_path = os.path.join(outdir, "conditional_accuracy_by_model.pdf")
+    out_path = os.path.join(outdir, "conditional_accuracy.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -451,17 +474,17 @@ def plot_global_conditional_accuracy(dataset_name, cond_data, technique_data, ou
     plot_data = sorted(plot_data, key=lambda x: x['g_cond'], reverse=True)
     models = [d['model'] for d in plot_data]
     x = np.arange(len(models)); width = 0.35
-    fig, ax = plt.subplots(figsize=(12, 5))
+    fig, ax = plt.subplots(figsize=(10, 6))
     r1 = ax.bar(x - width/2, [d['base'] for d in plot_data], width, label='Baseline', color='#4C72B0', edgecolor='black', linewidth=0.5)
     r2 = ax.bar(x + width/2, [d['g_cond'] for d in plot_data], width, label='Global Cond.', color='#DD8452', edgecolor='black', linewidth=0.5)
     
     # ax.set_title(f"Global Reasoning Stability — {shorten(dataset_name, DATASET_SHORT_NAMES)}", fontsize=22, fontweight='bold', pad=20)
-    ax.set_ylabel('Accuracy (%)', fontsize=14, fontweight='bold')
-    ax.set_xticks(x); ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in models], rotation=25, ha='right', fontsize=12, fontweight='bold')
-    ax.legend(fontsize=12, loc='upper right', framealpha=0.8); ax.set_ylim(0, 112); ax.grid(axis='y', alpha=0.3)
+    ax.set_ylabel('Accuracy (%)', fontsize=20)
+    ax.set_xticks(x); ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in models], rotation=45, ha='right', fontsize=20)
+    ax.legend(fontsize=16, loc='upper right', framealpha=0.8); ax.set_ylim(0, 112); ax.grid(axis='y', alpha=0.3)
     
     for r in list(r1) + list(r2):
-        ax.annotate(f'{r.get_height():.1f}', xy=(r.get_x() + r.get_width() / 2, r.get_height()), xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=12, fontweight='bold')
+        ax.annotate(f'{r.get_height():.0f}', xy=(r.get_x() + r.get_width() / 2, r.get_height()), xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=16, fontweight='bold')
 
     # Highlight Open Source Models
     os_keywords = ["LIMO", "Falcon", "DeepSeek", "Qwen", "gpt-oss"]
@@ -478,12 +501,12 @@ def plot_global_conditional_accuracy(dataset_name, cond_data, technique_data, ou
         
         # Draw red bounding box around the tops of the bars
         box_y_min = 50
-        box_y_max = y_max + 10
+        box_y_max = y_max + 11
         rect = patches.Rectangle((x_start, box_y_min), x_end - x_start, box_y_max - box_y_min, 
                                  linewidth=4, edgecolor='red', facecolor='none', linestyle='-', zorder=5)
         ax.add_patch(rect)
-        ax.text((x_start + x_end)/2, box_y_max + 2, "Open Weights Gap", color='red', 
-                ha='center', va='bottom', fontsize=12, fontweight='bold')
+        ax.text((x_start + x_end)/2 - 1.3, box_y_max + 1, "Open Weights Gap", color='red', 
+                ha='center', va='bottom', fontsize=20, fontweight='bold')
 
     plt.tight_layout()
     out_path = os.path.join(outdir, "global_conditional_accuracy.pdf")
