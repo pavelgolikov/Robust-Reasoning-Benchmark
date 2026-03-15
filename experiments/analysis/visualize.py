@@ -18,6 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import matplotlib.patheffects as patheffects
+import matplotlib.patches as patches
 
 # ── Configuration ────────────────────────────────────────────────────
 
@@ -226,7 +227,7 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
             else: text = f"{acc:.0f}"
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0, text, ha='center', va='bottom', fontsize=11, fontweight='bold')
 
-        ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=10)
+        # ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=10)
         ax.set_xticks(x); ax.set_xticklabels(technique_labels, fontsize=12, rotation=45, ha='right')
         ax.set_ylabel("Length (tokens)" if metric == 'length' else "Accuracy (%)", fontsize=12)
         if metric != 'length':
@@ -239,7 +240,7 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
     fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 3.5 * nrows))
     axes = np.atleast_2d(axes)
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    fig.suptitle(f"{('Length' if metric=='length' else 'Accuracy')} by Transform — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
+    # fig.suptitle(f"{('Length' if metric=='length' else 'Accuracy')} by Transform — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
 
     for idx, model_name in enumerate(all_models):
         row, col = divmod(idx, ncols); _plot_model_on_ax(axes[row, col], model_name)
@@ -248,7 +249,7 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"{metric}_by_model_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, f"{metric}_by_model.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -302,7 +303,7 @@ def plot_recovery(rec_data, dataset_name, outdir, accuracy_data=None, accuracy_o
     fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 3.5 * nrows))
     axes = np.atleast_2d(axes)
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    fig.suptitle(f"Prompt Recovery Rate by Model — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
+    # fig.suptitle(f"Prompt Recovery Rate by Model — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
 
     for idx, model_name in enumerate(all_models):
         row, col = divmod(idx, ncols); _plot_model_on_ax(axes[row, col], model_name)
@@ -311,7 +312,7 @@ def plot_recovery(rec_data, dataset_name, outdir, accuracy_data=None, accuracy_o
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"prompt_recovery_by_model_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, "prompt_recovery_by_model.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -337,19 +338,19 @@ def plot_single_metric(dataset_name, technique_data, outdir):
     values = [model_deltas[m] for m in plot_models]
     colors = [PALETTE[all_models.index(m) % len(PALETTE)] for m in plot_models]
 
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(12, 5))
     bars = ax.bar(np.arange(len(plot_models)), values, 0.65, color=colors, edgecolor='black', linewidth=0.5)
     for bar, val in zip(bars, values):
-        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5), f"{val:.1f}", ha='center', va='bottom' if val >= 0 else 'top', fontsize=11, fontweight='bold')
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5), f"{val:.1f}", \
+            ha='center', va='bottom' if val >= 0 else 'top', fontsize=14, fontweight='bold')
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    ax.set_title(f"Average Accuracy Drop — {dataset_label}", fontsize=20, fontweight='bold', pad=20)
+    # ax.set_title(f"Average Accuracy Drop — {dataset_label}", fontsize=22, fontweight='bold', pad=20)
     ax.set_xticks(np.arange(len(plot_models)))
-    ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models], fontsize=10, rotation=45, ha='right')
-    ax.set_ylabel("Average Accuracy Drop (%)", fontsize=13)
+    ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models], fontsize=14, rotation=45, ha='right')
     ax.grid(axis='y', alpha=0.3)
     plt.tight_layout()
-    out_path = os.path.join(outdir, f"average_accuracy_drop_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, "average_accuracy_drop.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -373,7 +374,7 @@ def plot_radar_charts(dataset_name, technique_data, outdir):
     nrows = (n_models + ncols - 1) // ncols
     fig = plt.figure(figsize=(5.5 * ncols, 4.0 * nrows))
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    fig.suptitle(f"Performance by Category — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
+    # fig.suptitle(f"Performance by Category — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
 
     angles = np.linspace(0, 2 * np.pi, len(CATEGORY_NAMES), endpoint=False).tolist()
     angles += angles[:1]
@@ -387,11 +388,11 @@ def plot_radar_charts(dataset_name, technique_data, outdir):
         ax.set_theta_offset(np.pi / 2); ax.set_theta_direction(-1)
         ax.set_ylim(0, 100); ax.set_rlabel_position(0)
         plt.xticks(angles[:-1], CATEGORY_NAMES, color='black', size=10, fontweight='bold')
-        ax.set_title(shorten(model, MODEL_SHORT_NAMES).replace('\n', ' '), size=15, fontweight='bold', pad=20)
+        # ax.set_title(shorten(model, MODEL_SHORT_NAMES).replace('\n', ' '), size=15, fontweight='bold', pad=20)
         ax.grid(True, alpha=0.3)
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
-    out_path = os.path.join(outdir, f"radar_categories_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, "radar_categories.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -403,7 +404,7 @@ def plot_conditional_accuracy(dataset_name, cond_data, technique_data, outdir):
     fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 3.5 * nrows))
     axes = np.atleast_2d(axes)
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
-    fig.suptitle(f"Accuracy Given Recovery — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
+    # fig.suptitle(f"Accuracy Given Recovery — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
 
     tech_colors = {t: PALETTE[i % len(PALETTE)] for i, t in enumerate(TECHNIQUE_ORDER)}
 
@@ -424,7 +425,7 @@ def plot_conditional_accuracy(dataset_name, cond_data, technique_data, outdir):
             pct = m_techs[tech].get('solve_pct', m_techs[tech].get('n_solved',0)*100/m_techs[tech].get('n_total',1))
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0, f"{val:.1f}\n({pct:.1f})", ha='center', va='bottom', fontsize=8, fontweight='bold')
 
-        ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=15)
+        # ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=15)
         ax.set_xticks(x); ax.set_xticklabels([shorten(t, TECHNIQUE_LABELS) for t in plot_techs], fontsize=10, rotation=45, ha='right')
         ax.set_ylabel("Cond. Acc (%)", fontsize=11); ax.set_ylim(0, 125)
         ax.grid(axis='y', alpha=0.3); ax.spines['top'].set_visible(False)
@@ -433,7 +434,7 @@ def plot_conditional_accuracy(dataset_name, cond_data, technique_data, outdir):
         row, col = divmod(idx, ncols); axes[row, col].set_visible(False)
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
-    out_path = os.path.join(outdir, f"conditional_accuracy_by_model_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, "conditional_accuracy_by_model.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -450,20 +451,42 @@ def plot_global_conditional_accuracy(dataset_name, cond_data, technique_data, ou
     plot_data = sorted(plot_data, key=lambda x: x['g_cond'], reverse=True)
     models = [d['model'] for d in plot_data]
     x = np.arange(len(models)); width = 0.35
-    fig, ax = plt.subplots(figsize=(12, 7))
-    r1 = ax.bar(x - width/2, [d['base'] for d in plot_data], width, label='Baseline', color='#4C72B0')
-    r2 = ax.bar(x + width/2, [d['g_cond'] for d in plot_data], width, label='Global Cond.', color='#DD8452')
+    fig, ax = plt.subplots(figsize=(12, 5))
+    r1 = ax.bar(x - width/2, [d['base'] for d in plot_data], width, label='Baseline', color='#4C72B0', edgecolor='black', linewidth=0.5)
+    r2 = ax.bar(x + width/2, [d['g_cond'] for d in plot_data], width, label='Global Cond.', color='#DD8452', edgecolor='black', linewidth=0.5)
     
-    ax.set_title(f"Global Reasoning Stability — {shorten(dataset_name, DATASET_SHORT_NAMES)}", fontsize=20, fontweight='bold', pad=20)
-    ax.set_ylabel('Accuracy (%)', fontsize=12, fontweight='bold')
-    ax.set_xticks(x); ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in models], rotation=25, ha='right', fontsize=11, fontweight='bold')
-    ax.legend(fontsize=11); ax.set_ylim(0, 115); ax.grid(axis='y', alpha=0.3)
+    # ax.set_title(f"Global Reasoning Stability — {shorten(dataset_name, DATASET_SHORT_NAMES)}", fontsize=22, fontweight='bold', pad=20)
+    ax.set_ylabel('Accuracy (%)', fontsize=14, fontweight='bold')
+    ax.set_xticks(x); ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in models], rotation=25, ha='right', fontsize=12, fontweight='bold')
+    ax.legend(fontsize=12, loc='upper right', framealpha=0.8); ax.set_ylim(0, 112); ax.grid(axis='y', alpha=0.3)
     
     for r in list(r1) + list(r2):
-        ax.annotate(f'{r.get_height():.1f}', xy=(r.get_x() + r.get_width() / 2, r.get_height()), xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=10, fontweight='bold')
+        ax.annotate(f'{r.get_height():.1f}', xy=(r.get_x() + r.get_width() / 2, r.get_height()), xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=12, fontweight='bold')
+
+    # Highlight Open Source Models
+    os_keywords = ["LIMO", "Falcon", "DeepSeek", "Qwen", "gpt-oss"]
+    os_indices = []
+    for i, model in enumerate(models):
+        if any(kw.lower() in model.lower() for kw in os_keywords):
+            os_indices.append(i)
+    
+    if os_indices:
+        x_start = min(os_indices) - 0.5
+        x_end = max(os_indices) + 0.5
+        y_max = max([d['base'] for i, d in enumerate(plot_data) if i in os_indices] + 
+                    [d['g_cond'] for i, d in enumerate(plot_data) if i in os_indices])
+        
+        # Draw red bounding box around the tops of the bars
+        box_y_min = 50
+        box_y_max = y_max + 10
+        rect = patches.Rectangle((x_start, box_y_min), x_end - x_start, box_y_max - box_y_min, 
+                                 linewidth=4, edgecolor='red', facecolor='none', linestyle='-', zorder=5)
+        ax.add_patch(rect)
+        ax.text((x_start + x_end)/2, box_y_max + 2, "Open Weights Gap", color='red', 
+                ha='center', va='bottom', fontsize=12, fontweight='bold')
 
     plt.tight_layout()
-    out_path = os.path.join(outdir, f"global_conditional_accuracy_{dataset_name}.pdf")
+    out_path = os.path.join(outdir, "global_conditional_accuracy.pdf")
     fig.savefig(out_path, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
