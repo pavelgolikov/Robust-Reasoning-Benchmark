@@ -32,6 +32,9 @@ def main():
             'interleaved_context_word',
             'interleaved_context_symbol',
             'rail_fence',
+            'snake_vertical',
+            'snake_horizontal',
+            'rectangule_perimeter',
         ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
