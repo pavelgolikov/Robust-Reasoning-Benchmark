@@ -73,7 +73,10 @@ def main():
                             'sentence_reversal',
                             'split_reversal',
                             'word_reversal',
-                            'wrappers' ]
+                            'wrappers',
+                            'snake_horizontal',
+                            'snake_vertical',
+                            'rectangle_perimeter' ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
     

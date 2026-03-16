@@ -45,7 +45,6 @@ Omni-Math
 Models:
 
 HF:
-Qwen/Qwen3-235B-A22B-Thinking-2507 - 235B
 openai/gpt-oss-120b - 120B
 deepseek-ai/DeepSeek-R1-Distill-Llama-70B
 GAIR/LIMO-v2 - 32B
