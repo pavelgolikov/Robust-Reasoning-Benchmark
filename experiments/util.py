@@ -355,7 +355,7 @@ def extract_and_grade(model_output, ground_truth):
         (extracted_answer_str, is_correct): Tuple of extracted answer string and correctness bool.
     """
     try:
-        gold = parse(ground_truth)
+        gold = parse(str(ground_truth))
     except Exception:
         return None, False
 
