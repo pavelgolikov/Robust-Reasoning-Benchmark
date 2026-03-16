@@ -89,6 +89,14 @@ def normalize_text(text: str) -> str:
 def make_windows(tokens: List[str], window_size: int, step_size: int = 10) -> List[str]:
     """Create sliding windows of text from tokens."""
     windows = []
+    # print(tokens)
+    # print("-----------------------------------")
+    # print(len(tokens))
+    # print("-----------------------------------")
+    # print(window_size)
+    # print("-----------------------------------")
+    # print(step_size)
+    # print("-----------------------------------")
     if not tokens:
         return []
     if len(tokens) <= window_size:
@@ -96,12 +104,14 @@ def make_windows(tokens: List[str], window_size: int, step_size: int = 10) -> Li
 
     for i in range(0, len(tokens) - window_size + 1, step_size):
         window = tokens[i : i + window_size]
+        # print(window)
         windows.append(" ".join(window))
 
     if len(tokens) > window_size:
         last_window = tokens[-window_size:]
         windows.append(" ".join(last_window))
 
+    # exit()
     return list(set(windows))
 
 
