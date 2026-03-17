@@ -476,7 +476,7 @@ def plot_global_conditional_accuracy(dataset_name, cond_data, technique_data, ou
     x = np.arange(len(models)); width = 0.35
     fig, ax = plt.subplots(figsize=(10, 6))
     r1 = ax.bar(x - width/2, [d['base'] for d in plot_data], width, label='Baseline', color='#4C72B0', edgecolor='black', linewidth=0.5)
-    r2 = ax.bar(x + width/2, [d['g_cond'] for d in plot_data], width, label='Global Cond.', color='#DD8452', edgecolor='black', linewidth=0.5)
+    r2 = ax.bar(x + width/2, [d['g_cond'] for d in plot_data], width, label='Accuracy on\nRecovered', color='#DD8452', edgecolor='black', linewidth=0.5)
     
     # ax.set_title(f"Global Reasoning Stability — {shorten(dataset_name, DATASET_SHORT_NAMES)}", fontsize=22, fontweight='bold', pad=20)
     ax.set_ylabel('Accuracy (%)', fontsize=20)
