@@ -23,13 +23,14 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
 
-# python evaluate.py --names interleaved_context_word,interleaved_context_symbol,rail_fence,snake_vertical,snake_horizontal,rectangule_perimeter --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names interleaved_context_word,interleaved_context_symbol,rail_fence,snake_vertical,snake_horizontal,rectangle_perimeter --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
 
-python evaluate.py --names all --model openai/gpt-oss-120b --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names all --model openai/gpt-oss-120b --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names all --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names all --model GAIR/LIMO-v2 --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names all --model tiiuae/Falcon-H1R-7B --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names all --model tiiuae/Falcon-H1R-7B --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
 
+for falcon: baseline,rectangle_perimeter
 
 # python evaluate.py --names rectangle_perimeter,snake_horizontal,snake_vertical --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names rectangle_perimeter,snake_horizontal,snake_vertical --model openai/gpt-oss-120b --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 4 &> eval_out.out
