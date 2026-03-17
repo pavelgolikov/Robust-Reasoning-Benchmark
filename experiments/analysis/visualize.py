@@ -57,7 +57,7 @@ MODEL_SHORT_NAMES = {
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama-70B",
     "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B-A3B",
     "gemini-3.1-pro-preview":                           "Gemini 3.1 Pro",
-    "claude-opus-4-6":                                  "Claude Opus 4-6",
+    "claude-opus-4-6":                                  "Claude Opus 4.6",
 }
 
 DATASET_SHORT_NAMES = {
@@ -88,7 +88,7 @@ def shorten(name, mapping):
     return mapping.get(name, name)
 
 def format_length_label(value):
-    return f"{value/1000:.1f}"
+    return f"{value/1000:.0f}"
 
 # ── Fast Data Loading ───────────────────────────────────────────────
 
@@ -389,7 +389,7 @@ def plot_radar_charts(dataset_name, technique_data, outdir):
         ax.plot(angles, values, color=color, linewidth=2); ax.fill(angles, values, color=color, alpha=0.25)
         ax.set_theta_offset(np.pi / 2); ax.set_theta_direction(-1)
         ax.set_ylim(0, 100); ax.set_rlabel_position(0)
-        ax.set_rgrids([20, 40, 60, 80], labels=["20", "40", "60", "80"], fontsize=8, color='gray')
+        ax.set_rgrids([20, 40, 60, 80], labels=["20", "40", "60", "80"], fontsize=14, color='gray')
         
         # Manually place category labels inside the circles
         for angle, label in zip(angles[:-1], CATEGORY_NAMES):
@@ -475,13 +475,13 @@ def plot_global_conditional_accuracy(dataset_name, cond_data, technique_data, ou
     models = [d['model'] for d in plot_data]
     x = np.arange(len(models)); width = 0.35
     fig, ax = plt.subplots(figsize=(10, 6))
-    r1 = ax.bar(x - width/2, [d['base'] for d in plot_data], width, label='Baseline', color='#4C72B0', edgecolor='black', linewidth=0.5)
+    r1 = ax.bar(x - width/2, [d['base'] for d in plot_data], width, label='Accuracy on\nOriginal', color='#4C72B0', edgecolor='black', linewidth=0.5)
     r2 = ax.bar(x + width/2, [d['g_cond'] for d in plot_data], width, label='Accuracy on\nRecovered', color='#DD8452', edgecolor='black', linewidth=0.5)
     
     # ax.set_title(f"Global Reasoning Stability — {shorten(dataset_name, DATASET_SHORT_NAMES)}", fontsize=22, fontweight='bold', pad=20)
     ax.set_ylabel('Accuracy (%)', fontsize=20)
     ax.set_xticks(x); ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in models], rotation=45, ha='right', fontsize=20)
-    ax.legend(fontsize=16, loc='upper right', framealpha=0.8); ax.set_ylim(0, 112); ax.grid(axis='y', alpha=0.3)
+    ax.legend(fontsize=16, loc='upper right', framealpha=0.8); ax.set_ylim(0, 115); ax.grid(axis='y', alpha=0.3)
     
     for r in list(r1) + list(r2):
         ax.annotate(f'{r.get_height():.0f}', xy=(r.get_x() + r.get_width() / 2, r.get_height()), xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=16, fontweight='bold')
