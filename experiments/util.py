@@ -243,6 +243,9 @@ TRANSFORMED INPUT:
     if name == 'baseline':
         return problem.strip(), BASELINE_SYSTEM_PROMPT
 
+    if name == 'compound':
+        return user_prompt_content.strip(), BASELINE_SYSTEM_PROMPT
+
     # Combine
     final_user_prompt = f"{prefix}\n\n{wrapped_prompt}"
     return final_user_prompt.strip(), BASELINE_SYSTEM_PROMPT
