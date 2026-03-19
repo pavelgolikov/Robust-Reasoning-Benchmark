@@ -225,14 +225,25 @@ def main():
             
         sampling_params = SamplingParams(temperature=0.0, max_tokens=10)
         
-        # Apply chat template
-        prompts = []
-        for req in llm_requests:
+        # Apply chat template and pre-tokenize using a fast ThreadPool to bypass the single-core bottleneck
+        print(f"\nPre-processing and tokenizing {len(llm_requests)} prompts globally (Multithreaded)...")
+        import concurrent.futures
+        
+        prompts_token_ids = [None] * len(llm_requests)
+        
+        def process_req(idx):
+            req = llm_requests[idx]
             prompt_str = tokenizer.apply_chat_template(req["messages"], tokenize=False, add_generation_prompt=True)
-            prompts.append(prompt_str)
+            return idx, tokenizer.encode(prompt_str)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
+            futures = [executor.submit(process_req, i) for i in range(len(llm_requests))]
+            for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Tokenizing Prompts"):
+                idx, token_ids = future.result()
+                prompts_token_ids[idx] = token_ids
             
-        print(f"Submitting {len(prompts)} prompts to vLLM...")
-        outputs = llm.generate(prompts, sampling_params)
+        print(f"Submitting {len(prompts_token_ids)} tasks to vLLM execution engine...")
+        outputs = llm.generate(prompt_token_ids=prompts_token_ids, sampling_params=sampling_params)
         
         # 3. Parse responses and populate summaries
         for idx, output in enumerate(outputs):
