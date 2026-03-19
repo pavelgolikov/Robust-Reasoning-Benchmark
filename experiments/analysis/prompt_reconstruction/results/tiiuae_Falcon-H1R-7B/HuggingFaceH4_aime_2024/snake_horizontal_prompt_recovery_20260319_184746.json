@@ -1,0 +1,28 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/snake_horizontal/results/tiiuae_Falcon-H1R-7B/HuggingFaceH4_aime_2024/tiiuae_Falcon-H1R-7B_HuggingFaceH4_aime_2024_snake_horizontal_s42_20260313_144849.json",
+  "total_samples": 481,
+  "original_correct": 43,
+  "semantic_correct": 46,
+  "recovered_cases": [
+    {
+      "id": 73,
+      "score": 1.0,
+      "target": "Eight circles of radius $34$ are sequentially tangent, and two of the circles are tangent to $AB$ and $BC$ of triangle $ABC$, respectively. $2024$ circles of radius $1$ can be arranged in the same manner. The inradius of triangle $ABC$ can be expressed as $\\frac{m}{n}$, where $m$ and $n$ are relatively prime positive integers. Find $m+n$.",
+      "best_window": "<THINK>\n</THINK>\nYES"
+    },
+    {
+      "id": 81,
+      "score": 1.0,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon ($12$-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles.\n[asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "<THINK>\n</THINK>\nYES"
+    },
+    {
+      "id": 83,
+      "score": 1.0,
+      "target": "Find the number of ways to place a digit in each cell of a 2x3 grid so that the sum of the two numbers formed by reading left to right is $999$, and the sum of the three numbers formed by reading top to bottom is $99$. The grid below is an example of such an arrangement because $8+991=999$ and $9+9+81=99$.\n\\[\\begin{array}{|c|c|c|} \\hline 0 & 0 & 8 \\\\ \\hline 9 & 9 & 1 \\\\ \\hline \\end{array}\\]",
+      "best_window": "<THINK>\nTHE MODEL MUST ANSWER YES OR NO BASED"
+    }
+  ],
+  "original_accuracy": 0.0893970893970894,
+  "semantic_accuracy": 0.09563409563409564
+}

@@ -1,0 +1,22 @@
+{
+  "source_file": "/project/6107991/golikovp/Linguistic_traps/experiments/snake_horizontal/results/Qwen_Qwen3-30B-A3B-Thinking-2507/HuggingFaceH4_aime_2024/Qwen_Qwen3-30B-A3B-Thinking-2507_HuggingFaceH4_aime_2024_snake_horizontal_s42_20260313_032315.json",
+  "total_samples": 481,
+  "original_correct": 77,
+  "semantic_correct": 79,
+  "recovered_cases": [
+    {
+      "id": 65,
+      "score": 1.0,
+      "target": "Let $ABCD$ be a tetrahedron such that $AB=CD= \\sqrt{41}$, $AC=BD= \\sqrt{80}$, and $BC=AD= \\sqrt{89}$. There exists a point $I$ inside the tetrahedron such that the distances from $I$ to each of the faces of the tetrahedron are all equal. This distance can be written in the form $\\frac{m \\sqrt n}{p}$, where $m$, $n$, and $p$ are positive integers, $m$ and $p$ are relatively prime, and $n$ is not divisible by the square of any prime. Find $m+n+p$.",
+      "best_window": "<THINK>\nTHE MODEL MUST ANSWER YES OR NO BASED"
+    },
+    {
+      "id": 81,
+      "score": 1.0,
+      "target": "Find the number of rectangles that can be formed inside a fixed regular dodecagon ($12$-gon) where each side of the rectangle lies on either a side or a diagonal of the dodecagon. The diagram below shows three of those rectangles.\n[asy] unitsize(0.6 inch); for(int i=0; i<360; i+=30) { dot(dir(i), 4+black); draw(dir(i)--dir(i+30)); } draw(dir(120)--dir(330)); filldraw(dir(210)--dir(240)--dir(30)--dir(60)--cycle, mediumgray, linewidth(1.5)); draw((0,0.366)--(0.366,0), linewidth(1.5)); [/asy]",
+      "best_window": "<THINK>\nTHE MODEL MUST ANSWER YES OR NO BASED"
+    }
+  ],
+  "original_accuracy": 0.1600831600831601,
+  "semantic_accuracy": 0.16424116424116425
+}
