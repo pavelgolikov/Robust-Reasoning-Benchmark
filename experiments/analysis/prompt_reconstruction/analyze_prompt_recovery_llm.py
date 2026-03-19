@@ -89,7 +89,7 @@ Answer EXACTLY "YES" or "NO" with no other text."""
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate Prompt Recovery using LLM-as-a-judge (vLLM)")
-    parser.add_argument("--judge_model", type=str, default="openai/gpt-oss-120b", help="Path/HuggingFace ID for the judge LLM")
+    parser.add_argument("--judge_model", type=str, default="tiiuae/Falcon-H1R-7B", help="Path/HuggingFace ID for the judge LLM")
     parser.add_argument("--names", type=str, default='all', help="Comma-separated technique names or 'all'")
     parser.add_argument("--model", type=str, required=True, help="Target model name to evaluate (e.g. GAIR/LIMO-v2) or 'all' to auto-discover")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024")
@@ -243,7 +243,9 @@ def main():
                 prompts_token_ids[idx] = token_ids
             
         print(f"Submitting {len(prompts_token_ids)} tasks to vLLM execution engine...")
-        outputs = llm.generate(prompt_token_ids=prompts_token_ids, sampling_params=sampling_params)
+        # vLLM 0.5.0+ consolidated inputs format
+        modern_prompts = [{"prompt_token_ids": t_ids} for t_ids in prompts_token_ids]
+        outputs = llm.generate(prompts=modern_prompts, sampling_params=sampling_params)
         
         # 3. Parse responses and populate summaries
         for idx, output in enumerate(outputs):
