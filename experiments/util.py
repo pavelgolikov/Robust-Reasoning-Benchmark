@@ -16,6 +16,7 @@ from rail_fence.transformation import apply_rail_fence
 from rectangle_perimeter.transformation import apply_rectangle_perimeter
 from snake_vertical.transformation import apply_snake_vertical
 from snake_horizontal.transformation import apply_snake_horizontal
+from compound.transformation import apply_compound
 
 import multiprocessing
 # Force 'spawn' to avoid CUDA re-initialization errors
@@ -82,6 +83,7 @@ TECHNIQUE_DESCRIPTIONS = {
     'rectangle_perimeter': "The user query is mapped onto the perimeter of a rectangle. The message is written as a single continuous string following the edges of the shape in a clockwise manner, beginning at the top-left. The TRANSFORMED INPUT is provided as a visual text block representing this rectangle with GRID START and GRID END markers. The center of the shape is filled with dots.",
     'snake_vertical': "The user query is written into a grid using a vertical 'snake' (zigzag) pattern. Starting from the top-left, the text is written down the first column, then up the second column, then down the third, and so on. The TRANSFORMED INPUT is provided as a visual grid with GRID START and GRID END markers.",
     'snake_horizontal': "The user query is written into a grid using a horizontal 'snake' (zigzag) pattern. Starting from the top-left, the text is written across the first row, then left across the second row, then right across the third, and so on. The TRANSFORMED INPUT is provided as a visual grid with GRID START and GRID END markers.",
+    'compound': "The user query contains multiple unrelated math problems. You must solve the last problem.",
 }
 
 def remove_latex_comments(text):
@@ -139,9 +141,12 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
     problem = flatten_text(problem)
 
     if extra_context:
-        extra_context = remove_latex_comments(extra_context)
-        extra_context = sanitize_inverted_escapes(extra_context)
-        extra_context = flatten_text(extra_context)
+        if isinstance(extra_context, list):
+            extra_context = [flatten_text(sanitize_inverted_escapes(remove_latex_comments(ec))) for ec in extra_context]
+        else:
+            extra_context = remove_latex_comments(extra_context)
+            extra_context = sanitize_inverted_escapes(extra_context)
+            extra_context = flatten_text(extra_context)
 
     # 1. Apply Transformation
     if name == 'baseline':
@@ -191,6 +196,13 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
         user_prompt_content = apply_snake_vertical(problem)
     elif name == 'snake_horizontal':
         user_prompt_content = apply_snake_horizontal(problem)
+    elif name == 'compound':
+        if not extra_context or not isinstance(extra_context, list):
+            user_prompt_content = "Error: Missing or invalid extra context for compound transformation"
+            print(user_prompt_content)
+            exit(1)
+        else:
+            user_prompt_content = apply_compound(problem, extra_context)
     else:
         return 'Not Implemented', ''
 

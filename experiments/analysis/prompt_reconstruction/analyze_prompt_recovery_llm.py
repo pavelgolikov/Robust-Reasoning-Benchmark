@@ -96,7 +96,7 @@ def main():
     parser.add_argument("--skip_existing", action="store_true", help="Skip model/technique combos that already have a recovery JSON")
     parser.add_argument("--dry", action="store_true", help="Dry run: just collect prompts but don't load vLLM")
     parser.add_argument("--num_gpus", type=int, default=1, help="Number of GPUs for the judge model")
-    parser.add_argument("--max_model_length", type=int, default=8192, help="Max context length for the judge")
+    parser.add_argument("--max_model_length", type=int, default=None, help="Max context length for the judge (if None, infers from model config)")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -182,7 +182,7 @@ def main():
                     continue
                 
                 target_text = entry.get('unmodified_original', '')
-                model_output = entry.get('output', '')
+                model_output = str(entry.get('output', ''))
                 
                 if not target_text or not model_output:
                     continue
@@ -208,13 +208,16 @@ def main():
         print(f"\nInitializing vLLM (model: {args.judge_model}, num_gpus: {args.num_gpus})")
         
         try:
-            llm = LLM(
-                model=args.judge_model,
-                tensor_parallel_size=args.num_gpus,
-                trust_remote_code=True,
-                max_model_len=args.max_model_length,
-                dtype="bfloat16"
-            )
+            llm_kwargs = {
+                "model": args.judge_model,
+                "tensor_parallel_size": args.num_gpus,
+                "trust_remote_code": True,
+                "dtype": "bfloat16"
+            }
+            if args.max_model_length is not None:
+                llm_kwargs["max_model_len"] = args.max_model_length
+                
+            llm = LLM(**llm_kwargs)
             tokenizer = llm.get_tokenizer()
         except Exception as e:
             print(f"Failed to load vLLM model: {e}")
