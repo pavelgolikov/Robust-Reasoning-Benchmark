@@ -327,6 +327,49 @@ def last_boxed_only_string(string):
         return None
     return string[idx:right_brace_idx + 1]
 
+def extract_all_boxed_strings(string):
+    """Extract all \boxed{...} or \fbox{...} from a string."""
+    results = []
+    idx = 0
+    while idx < len(string):
+        b_idx = string.find("\\boxed", idx)
+        f_idx = string.find("\\fbox", idx)
+        if b_idx == -1 and f_idx == -1:
+            break
+            
+        if b_idx != -1 and f_idx != -1:
+            start_idx = min(b_idx, f_idx)
+        elif b_idx != -1:
+            start_idx = b_idx
+        else:
+            start_idx = f_idx
+            
+        i = string.find("{", start_idx)
+        if i == -1:
+            idx = start_idx + 5
+            continue
+            
+        num_left_braces_open = 1
+        right_brace_idx = None
+        i += 1
+        while i < len(string):
+            if string[i] == "{":
+                num_left_braces_open += 1
+            elif string[i] == "}":
+                num_left_braces_open -= 1
+                if num_left_braces_open == 0:
+                    right_brace_idx = i
+                    break
+            i += 1
+            
+        if right_brace_idx is not None:
+            results.append(string[start_idx:right_brace_idx + 1])
+            idx = right_brace_idx + 1
+        else:
+            idx = start_idx + 5
+            
+    return results
+
 def remove_boxed(s):
     """Remove \\boxed{} wrapper to get inner content."""
     left = "\\boxed{"
@@ -351,7 +394,7 @@ def is_equiv(str1, str2, verbose=False):
     except:
         return str1 == str2
 
-def extract_and_grade(model_output, ground_truth):
+def extract_and_grade(model_output, ground_truth, exp_name=None):
     """Extract answer from model output and verify against ground truth using Math-Verify.
     
     Tries three extraction methods independently and returns correct if ANY matched:
@@ -378,12 +421,21 @@ def extract_and_grade(model_output, ground_truth):
 
     # --- Method 1: \\boxed{} ---
     try:
-        boxed_str = last_boxed_only_string(model_output)
-        boxed_val = remove_boxed(boxed_str) if boxed_str else None
-        if boxed_val is not None:
-            answer = parse(boxed_val)
-            correct = verify(gold, answer)
-            results.append((boxed_val, correct))
+        if exp_name == 'compound':
+            boxed_strs = extract_all_boxed_strings(model_output)
+            for boxed_str in boxed_strs:
+                boxed_val = remove_boxed(boxed_str) if boxed_str else None
+                if boxed_val is not None:
+                    answer = parse(boxed_val)
+                    correct = verify(gold, answer)
+                    results.append((boxed_val, correct))
+        else:
+            boxed_str = last_boxed_only_string(model_output)
+            boxed_val = remove_boxed(boxed_str) if boxed_str else None
+            if boxed_val is not None:
+                answer = parse(boxed_val)
+                correct = verify(gold, answer)
+                results.append((boxed_val, correct))
     except Exception:
         pass
 

@@ -196,7 +196,7 @@ def main():
         stats = {"correct": 0, "total": 0, "failures": 0}
         for entry in results:
             try:
-                extracted, is_correct = extract_and_grade(entry['output'], entry['ground_truth'])
+                extracted, is_correct = extract_and_grade(entry['output'], entry['ground_truth'], exp_name=exp_name)
             except Exception as e:
                 print(f"Error processing sample {entry['id']}: {e}")
                 extracted = f"ERROR: {str(e)}"
