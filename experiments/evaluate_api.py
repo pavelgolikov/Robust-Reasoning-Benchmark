@@ -221,7 +221,37 @@ def main():
         print(f"  Saved raw checkpoint: {raw_json_file}")
 
         # 4. Grade results
-        stats = {"correct": 0, "total": 0, "failures": 0}
+         # 4. Grade results
+        def get_exact_token_counter(model_name):
+            lower_model = model_name.lower()
+            if 'gpt' in lower_model or 'o1' in lower_model:
+                import tiktoken
+                try:
+                    enc = tiktoken.encoding_for_model(model_name)
+                except KeyError:
+                    enc = tiktoken.get_encoding("cl100k_base")
+                return lambda text: len(enc.encode(text))
+            elif 'claude' in lower_model:
+                import anthropic
+                client = anthropic.Anthropic()
+                return lambda text: client.beta.messages.count_tokens(
+                    betas=["token-counting-2024-11-01"],
+                    model=model_name,
+                    messages=[{"role": "user", "content": text}]
+                ).input_tokens
+            elif 'gemini' in lower_model:
+                from google import genai
+                client = genai.Client()
+                return lambda text: client.models.count_tokens(model=model_name, contents=text).total_tokens
+            else:
+                from transformers import AutoTokenizer
+                tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+                return lambda text: len(tokenizer.encode(text))
+
+        print(f"Loading exact tokenizer for model {args.model}...")
+        token_counter = get_exact_token_counter(args.model)
+
+        stats = {"correct": 0, "total": 0, "failures": 0, "max_token_cutoffs": 0}
         for entry in results:
             try:
                 extracted, is_correct = extract_and_grade(entry['output'], entry['ground_truth'], exp_name=exp_name)
@@ -238,11 +268,21 @@ def main():
                 stats["correct"] += 1
             if extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")):
                 stats["failures"] += 1
+            
+            # Calculate exact token count
+            try:
+                token_count = token_counter(entry.get('output', ''))
+            except Exception as e:
+                raise RuntimeError(f"Failed to precisely count tokens using {args.model} tokenizer: {e}")
+                
+            if token_count >= args.max_tokens * 0.95:
+                stats["max_token_cutoffs"] += 1
 
         # 5. Save final graded results
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
         print(f"\n  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
         print(f"  Failures: {stats['failures']}")
+        print(f"  Max Token Cutoffs: {stats['max_token_cutoffs']}")
         print(f"  Max Tokens: {args.max_tokens}, Temperature: {args.temperature}")
         
         results.append({
@@ -251,6 +291,7 @@ def main():
                 "correct": stats["correct"],
                 "total": stats["total"],
                 "failures": stats["failures"],
+                "max_token_cutoffs": stats["max_token_cutoffs"],
                 "max_tokens": args.max_tokens,
                 "temperature": args.temperature
             }

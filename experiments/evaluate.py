@@ -193,7 +193,7 @@ def main():
         print(f"  Saved raw checkpoint: {raw_json_file}")
 
         # 5. Grade results
-        stats = {"correct": 0, "total": 0, "failures": 0}
+        stats = {"correct": 0, "total": 0, "failures": 0, "max_token_cutoffs": 0}
         for entry in results:
             try:
                 extracted, is_correct = extract_and_grade(entry['output'], entry['ground_truth'], exp_name=exp_name)
@@ -210,11 +210,21 @@ def main():
                 stats["correct"] += 1
             if extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")):
                 stats["failures"] += 1
+            
+            # Calculate exact token count
+            try:
+                token_count = len(tokenizer.encode(entry.get('output', '')))
+            except Exception as e:
+                raise RuntimeError(f"Failed to encode output for tokenizer counting: {e}")
+                
+            if token_count >= args.max_model_length * 0.95:
+                stats["max_token_cutoffs"] += 1
 
         # 6. Save final graded results
         acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
         print(f"\n  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
         print(f"  Failures: {stats['failures']}")
+        print(f"  Max Token Cutoffs: {stats['max_token_cutoffs']}")
         
         results.append({
             "summary": {
@@ -222,6 +232,7 @@ def main():
                 "correct": stats["correct"],
                 "total": stats["total"],
                 "failures": stats["failures"],
+                "max_token_cutoffs": stats["max_token_cutoffs"],
                 "max_model_length": args.max_model_length,
                 "num_distractors": args.num_distractors,
                 "num_gpus": args.num_gpus,

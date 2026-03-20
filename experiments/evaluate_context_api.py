@@ -265,7 +265,7 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
 
     print(f"Generating answers for {len(jobs)} jobs...")
     results = []
-    stats = {"correct": 0, "total": 0, "failures": 0}
+    stats = {"correct": 0, "total": 0, "failures": 0, "max_token_cutoffs": 0}
 
     for i, job in enumerate(jobs):
         print(f"[{context_type}] Job {i+1}/{len(jobs)} (ID: {job['id']})...")
@@ -344,6 +344,14 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
             stats["correct"] += 1
         else:
             stats["failures"] += 1
+            
+        try:
+            token_count = len(tokenizer.encode(generated_text))
+        except Exception as e:
+            raise RuntimeError(f"Failed to precisely count tokens: {e}")
+            
+        if token_count >= args.max_tokens * 0.95:
+            stats["max_token_cutoffs"] += 1
 
         if args.sleep > 0 and i < len(jobs) - 1:
             print(f"  Pacing sequential request: Sleeping for {args.sleep}s to respect Cloud TPM limits...")
@@ -358,6 +366,8 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
     acc = stats["correct"] / stats["total"] if stats["total"] > 0 else 0
     print(f"\n--- {context_type.upper()} Results ---")
     print(f"Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
+    print(f"Failures: {stats['failures']}")
+    print(f"Max Token Cutoffs: {stats['max_token_cutoffs']}")
 
     # Save
     safe_model = args.model.replace('/', '_')
