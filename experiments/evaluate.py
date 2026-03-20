@@ -17,7 +17,7 @@ def main():
     parser.add_argument("--dry", action="store_true", help="Dry run - do not evaluate, only produce prompts")
     parser.add_argument("--num_distractors", type=int, default=32, help="Number of distractors for split_indices")
     parser.add_argument("--num_gpus", type=int, default=1, help="Num GPUs.")
-    parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
+    parser.add_argument("--max_model_length", type=int, default=32768, help="Max model length for vLLM")
     args = parser.parse_args()
     if args.names == 'all':
         experiment_names = [
@@ -106,7 +106,7 @@ def main():
                 next_idx = (i + 1) % len(dataset)
                 extra_context = remove_latex_comments(dataset[next_idx]['problem'])
             elif exp_name == 'compound':
-                pre_target_count = 2
+                pre_target_count = 1
                 indices = random.sample([idx for idx in range(len(dataset)) if idx != i], min(pre_target_count, max(1, len(dataset)-1)))
                 extra_context = [remove_latex_comments(dataset[idx]['problem']) for idx in indices]
             
