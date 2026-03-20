@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=golikovp_job2
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:h100:4
+#SBATCH --gres=gpu:l40s:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
 #SBATCH --time=3:00:00
@@ -20,15 +20,6 @@ mkdir -p $HF_HOME
 
 export NCCL_IGNORE_DISABLED_P2P=1
 
-# python evaluate.py --names baseline --dataset HuggingFaceH4/aime_2024 --n_samples 16 --num_gpus 2 &> eval_out2.out
+# python evaluate.py --names compound --num_distractors 2 --model mistralai/Ministral-3-14B-Reasoning-2512 --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out2.out
 
-# python evaluate_context.py \
-#   --model openai/gpt-oss-120b \
-#   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_openai_gpt-oss-120b.json \
-#   --context_type math \
-#   --max_model_len 128000 \
-#   --context_size 98304 \
-#   --max_tokens 32000 \
-#   --n_samples 8 \
-#   --num_gpus 4 &>> eval_out2.out
-
+python evaluate.py --names baseline --model mistralai/Ministral-3-14B-Reasoning-2512 --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out2.out

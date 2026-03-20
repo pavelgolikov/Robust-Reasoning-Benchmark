@@ -51,6 +51,12 @@ GAIR/LIMO-v2 - 32B
 Qwen/Qwen3-30B-A3B-Thinking-2507
 tiiuae/Falcon-H1R-7B
 
+All compound eval done at 0.6 temp and 0.95 top_p - will need to do 0.7 temp later
+New models for compound eval:
+nvidia/OpenReasoning-Nemotron-32B
+mistralai/Ministral-3-14B-Reasoning-2512
+
+
 NOTE:
 Next experiments:
 long context

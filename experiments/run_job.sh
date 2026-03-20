@@ -8,6 +8,7 @@
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
+#SBATCH --mail-user=paulgolikov@gmail.com
 
 # Run Evaluation
 echo "Starting Evaluation..."
@@ -24,6 +25,9 @@ export NCCL_IGNORE_DISABLED_P2P=1
 
 # output lengths by model:
 # Qwen/Qwen3-30B-A3B-Thinking-2507: 81920
+# mistralai/Ministral-3-14B-Reasoning-2512
+
+
 # openai/gpt-oss-120b: 131072
 # tiiuae/Falcon-H1R-7B: 65536
 # deepseek-ai/DeepSeek-R1-Distill-Llama-70B: 32768
@@ -32,13 +36,14 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # python evaluate.py --names interleaved_context_word,interleaved_context_symbol,rail_fence,snake_vertical,snake_horizontal,rectangle_perimeter --model Qwen/Qwen3-30B-A3B-Thinking-2507 --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
 
 
-python evaluate.py --names compound --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --names compound --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --names compound --model tiiuae/Falcon-H1R-7B                      --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --names compound --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 32768  --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --names compound --model GAIR/LIMO-v2                              --max_model_length 8192   --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names compound --num_distractors 2 --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names compound --num_distractors 2 --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names compound --num_distractors 1 --model tiiuae/Falcon-H1R-7B                      --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names compound --num_distractors 1 --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 32768  --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names compound --num_distractors 1 --model GAIR/LIMO-v2                              --max_model_length 8192   --n_samples 16 --num_gpus 4 &> eval_out.out
 
-
+python evaluate.py --names baseline --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names baseline --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
 
 # python evaluate.py --names all --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names all --model GAIR/LIMO-v2 --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out

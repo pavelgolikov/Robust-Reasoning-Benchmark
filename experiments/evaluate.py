@@ -72,7 +72,7 @@ def main():
             max_model_len=args.max_model_length,
             dtype="bfloat16"
         )
-        sampling_params = SamplingParams(temperature=0.7, max_tokens=args.max_model_length)
+        sampling_params = SamplingParams(temperature=0.6, top_p=0.95, max_tokens=args.max_model_length)
         tokenizer = llm.get_tokenizer()
 
     random.seed(args.seed)
@@ -238,6 +238,7 @@ def main():
                 "num_distractors": args.num_distractors,
                 "num_gpus": args.num_gpus,
                 "n_samples": args.n_samples,
+                "temperature": sampling_params.temperature if sampling_params else None
             }
         })
         
