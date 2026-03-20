@@ -1,14 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=golikovp_job
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:h100:4
+#SBATCH --gres=gpu:h100:2
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
 #SBATCH --time=3:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
-#SBATCH --mail-user=paulgolikov@gmail.com
 
 # Run Evaluation
 echo "Starting Evaluation..."
@@ -42,8 +41,13 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # python evaluate.py --names compound --num_distractors 1 --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 32768  --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names compound --num_distractors 1 --model GAIR/LIMO-v2                              --max_model_length 8192   --n_samples 16 --num_gpus 4 &> eval_out.out
 
-python evaluate.py --names baseline --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --names baseline --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names baseline --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names baseline --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
+
+# python evaluate.py --names baseline                     --model tiiuae/Falcon-H1R-7B                      --max_model_length 65536  --n_samples 16 --num_gpus 2 &> eval_out.out
+python evaluate.py --names compound --num_distractors 1 --model tiiuae/Falcon-H1R-7B                      --max_model_length 65536  --n_samples 16 --num_gpus 2 &> eval_out.out
+
+
 
 # python evaluate.py --names all --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names all --model GAIR/LIMO-v2 --dataset MathArena/aime_2025 --n_samples 16 --num_gpus 4 &> eval_out.out
@@ -62,14 +66,3 @@ python evaluate.py --names baseline --model Qwen/Qwen3-30B-A3B-Thinking-2507    
 # python3 analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all --dataset HuggingFaceH4/aime_2024 --names rectangle_perimeter,snake_vertical,snake_horizontal --skip_existing
 
 # python analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all
-
-# python evaluate_context.py \
-#   --model tiiuae/Falcon-H1R-7B \
-#   --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_tiiuae_Falcon-H1R-7B.json \
-#   --context_type math \
-#   --max_model_len 128000 \
-#   --context_size 98304 \
-#   --max_tokens 32000 \
-#   --n_samples 8 \
-#   --num_gpus 4 &> eval_out.out
-
