@@ -311,11 +311,17 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
                     generated_text = f"ERROR: {str(e)}"
                     break
 
+        try:
+            token_count = len(tokenizer.encode(generated_text))
+        except Exception as e:
+            raise RuntimeError(f"Failed to precisely count tokens: {e}")
+
         extracted, is_correct = extract_and_grade(generated_text, job['ground_truth'])
         result_dict = {
             "id": job['id'],
             "sample_idx": job.get('sample_idx', 0),
             "output": generated_text,
+            "output_tokens": token_count,
             "post_context_prompt": job['post_context_prompt'],
             "extracted": extracted,
             "ground_truth": job['ground_truth'],
@@ -345,12 +351,7 @@ def run_context_eval_sequential(context_type, dataset, args, base_dir, timestamp
         else:
             stats["failures"] += 1
             
-        try:
-            token_count = len(tokenizer.encode(generated_text))
-        except Exception as e:
-            raise RuntimeError(f"Failed to precisely count tokens: {e}")
-            
-        if token_count >= args.max_tokens * 0.95:
+        if token_count >= args.max_tokens * 0.98:
             stats["max_token_cutoffs"] += 1
 
         if args.sleep > 0 and i < len(jobs) - 1:

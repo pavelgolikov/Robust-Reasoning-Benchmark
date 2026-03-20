@@ -259,15 +259,8 @@ def main():
                 print(f"Error processing sample {entry['id']}: {e}")
                 extracted = f"ERROR: {str(e)}"
                 is_correct = False
-            
             entry['extracted'] = extracted
             entry['correct'] = is_correct
-            
-            stats["total"] += 1
-            if is_correct:
-                stats["correct"] += 1
-            if extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")):
-                stats["failures"] += 1
             
             # Calculate exact token count
             try:
@@ -275,7 +268,15 @@ def main():
             except Exception as e:
                 raise RuntimeError(f"Failed to precisely count tokens using {args.model} tokenizer: {e}")
                 
-            if token_count >= args.max_tokens * 0.95:
+            entry['output_tokens'] = token_count
+            
+            stats["total"] += 1
+            if is_correct:
+                stats["correct"] += 1
+            if extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")):
+                stats["failures"] += 1
+            
+            if token_count >= args.max_tokens * 0.98:
                 stats["max_token_cutoffs"] += 1
 
         # 5. Save final graded results

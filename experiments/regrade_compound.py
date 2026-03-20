@@ -130,8 +130,10 @@ def main():
             token_count = token_counter(output)
         except Exception as e:
             raise RuntimeError(f"Failed to precisely count tokens using {model_name} tokenizer: {e}")
+            
+        r['output_tokens'] = token_count
         
-        is_cutoff = token_count >= max_tokens * 0.95
+        is_cutoff = token_count >= max_tokens * 0.98
         if is_cutoff:
             max_token_cutoffs += 1
 
