@@ -106,7 +106,7 @@ def main():
                 next_idx = (i + 1) % len(dataset)
                 extra_context = remove_latex_comments(dataset[next_idx]['problem'])
             elif exp_name == 'compound':
-                pre_target_count = 3
+                pre_target_count = 2
                 indices = random.sample([idx for idx in range(len(dataset)) if idx != i], min(pre_target_count, max(1, len(dataset)-1)))
                 extra_context = [remove_latex_comments(dataset[idx]['problem']) for idx in indices]
             
