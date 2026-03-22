@@ -22,7 +22,7 @@ def is_proprietary(model_name):
     lower_name = model_name.lower()
     basename = lower_name.split('/')[-1]
     # Check for common proprietary API model prefixes
-    proprietary_prefixes = ['gpt-', 'claude-', 'gemini-', 'o1-', 'o3-']
+    proprietary_prefixes = ['gpt-5', 'claude-', 'gemini-', 'o1-', 'o3-']
     return any(p in lower_name for p in proprietary_prefixes) or any(basename.startswith(p) for p in proprietary_prefixes)
 
 def process_file(json_file, tokenizers_cache):
