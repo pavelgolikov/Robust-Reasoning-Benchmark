@@ -18,12 +18,23 @@ def get_model_name(filepath):
             pass
     return None
 
+def is_proprietary(model_name):
+    lower_name = model_name.lower()
+    basename = lower_name.split('/')[-1]
+    # Check for common proprietary API model prefixes
+    proprietary_prefixes = ['gpt-', 'claude-', 'gemini-', 'o1-', 'o3-']
+    return any(p in lower_name for p in proprietary_prefixes) or any(basename.startswith(p) for p in proprietary_prefixes)
+
 def process_file(json_file, tokenizers_cache):
     print(f"Processing {json_file}...")
     
     model_name = get_model_name(json_file)
     if not model_name:
         raise ValueError(f"Could not automatically determine model name from path {json_file}")
+        
+    if is_proprietary(model_name):
+        print(f"Skipping proprietary model: {model_name} (token limits usually handled by API or not locally enumerable).")
+        return
         
     if model_name not in tokenizers_cache:
         print(f"Loading exact tokenizer for model: {model_name}...")
