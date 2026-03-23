@@ -49,7 +49,7 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # python evaluate.py --names compound --num_distractors 1 --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
 
 # python evaluate.py --names baseline                     --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --names compound --num_distractors 1 --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names compound --num_distractors 1 --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
 
 python evaluate.py --names interleaved_context_line,interleaved_context_word,interleaved_context_symbol,rail_fence,snake_vertical,snake_horizontal,rectangle_perimeter --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-7B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
 
