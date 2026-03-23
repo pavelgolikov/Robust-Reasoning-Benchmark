@@ -10,15 +10,16 @@ from api_utils import generate_response, submit_batch
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate multiple experiments on AIME dataset (API Version)")
-    parser.add_argument("--model", type=str, default="gemini-1.5-flash", help="Name of the API model to evaluate")
+    parser.add_argument("--model", type=str, default="", help="Name of the API model to evaluate")
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4/aime_2024", help="HuggingFace dataset path")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None, help="Limit number of examples")
     parser.add_argument("--n_samples", type=int, default=1, help="Number of samples per problem")
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--provider", type=str, default=None, help="API Provider (google, openai, anthropic). Optional if model name implies it.")
-    parser.add_argument("--max_tokens", type=int, default=32768, help="Max output tokens (required to avoid accidental truncation).")
-    parser.add_argument("--temperature", type=float, default=0.7, help="Generation temperature.")
+    parser.add_argument("--max_tokens", type=int, default=128000, help="Max output tokens (required to avoid accidental truncation).")
+    parser.add_argument("--temperature", type=float, default=0.6, help="Generation temperature.")
+    parser.add_argument("--top_p", type=float, default=0.95, help="Generation top_p.")
     parser.add_argument("--batch", action="store_true", help="Submit as an async batch job instead of running sequentially")
     
     args = parser.parse_args()
@@ -146,9 +147,9 @@ def main():
                 print("Skipping batch submission.")
                 continue
                 
-            batch_info = submit_batch(jobs, args.model, provider=args.provider, max_tokens=args.max_tokens, temperature=args.temperature)
+            batch_info = submit_batch(jobs, args.model, provider=args.provider, max_tokens=args.max_tokens, temperature=args.temperature, top_p=args.top_p)
             print(f"Batch submitted successfully! Info: {batch_info}")
-            print(f"Max Tokens: {args.max_tokens}, Temperature: {args.temperature}")
+            print(f"Max Tokens: {args.max_tokens}, Temperature: {args.temperature}, Top P: {args.top_p}")
             
             experiment_dir = os.path.join(base_dir, exp_name)
             final_output_dir = os.path.join(experiment_dir, "results", safe_model_name, safe_dataset_name)
@@ -166,6 +167,7 @@ def main():
                 "timestamp": timestamp,
                 "max_tokens": args.max_tokens,
                 "temperature": args.temperature,
+                "top_p": args.top_p,
                 "jobs_file": jobs_file,
                 "status": batch_info.get("status", "SUBMITTED"),
                 "metadata": batch_info
@@ -191,6 +193,7 @@ def main():
                     args.model, 
                     provider=args.provider, 
                     temperature=args.temperature,
+                    top_p=args.top_p,
                     max_tokens=args.max_tokens
                 )
             except Exception as e:
@@ -284,7 +287,7 @@ def main():
         print(f"\n  Accuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
         print(f"  Failures: {stats['failures']}")
         print(f"  Max Token Cutoffs: {stats['max_token_cutoffs']}")
-        print(f"  Max Tokens: {args.max_tokens}, Temperature: {args.temperature}")
+        print(f"  Max Tokens: {args.max_tokens}, Temperature: {args.temperature}, Top P: {args.top_p}")
         
         results.append({
             "summary": {
@@ -294,7 +297,8 @@ def main():
                 "failures": stats["failures"],
                 "max_token_cutoffs": stats["max_token_cutoffs"],
                 "max_tokens": args.max_tokens,
-                "temperature": args.temperature
+                "temperature": args.temperature,
+                "top_p": args.top_p
             }
         })
         

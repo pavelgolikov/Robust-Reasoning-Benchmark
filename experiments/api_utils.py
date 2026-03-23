@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 class LLMProvider(ABC):
     @abstractmethod
-    def generate(self, messages, model_name, temperature=0.7, max_tokens=None):
+    def generate(self, messages, model_name, temperature=0.6, top_p=0.95, max_tokens=None):
         pass
 
 class GoogleProvider(LLMProvider):
@@ -34,7 +34,7 @@ class GoogleProvider(LLMProvider):
                 raise ValueError("Neither GOOGLE_PROJECT_ID nor GOOGLE_API_KEY environment variable set.")
             self.client = genai.Client(api_key=api_key)
 
-    def generate(self, messages, model_name, temperature=0.7, max_tokens=None, cached_content=None):
+    def generate(self, messages, model_name, temperature=0.6, top_p=0.95, max_tokens=None, cached_content=None):
         if max_tokens is None:
             raise ValueError("max_tokens must be explicitly provided.")
 
@@ -52,6 +52,7 @@ class GoogleProvider(LLMProvider):
         from google.genai import types
         config_kwargs = dict(
             temperature=temperature,
+            top_p=top_p,
             max_output_tokens=max_tokens,
         )
         # Vertex AI forbids system_instruction alongside cached_content; the
@@ -82,7 +83,7 @@ class OpenAIProvider(LLMProvider):
         # OpenAI client automatically reads OPENAI_API_KEY and OPENAI_BASE_URL
         self.client = OpenAI()
 
-    def generate(self, messages, model_name, temperature=0.7, max_tokens=None, context_cache=None):
+    def generate(self, messages, model_name, temperature=0.6, top_p=0.95, max_tokens=None, context_cache=None):
         final_messages = []
         if context_cache and context_cache.get('type') == 'openai':
             final_messages.extend(context_cache['ref'])
@@ -109,6 +110,7 @@ class OpenAIProvider(LLMProvider):
             if max_tokens:
                 kwargs["max_tokens"] = max_tokens
             kwargs["temperature"] = temperature
+            kwargs["top_p"] = top_p
         
         response = self.client.chat.completions.create(**kwargs)
         
@@ -141,7 +143,7 @@ class AnthropicProvider(LLMProvider):
         # Added Beta header to authorize the unlocked 1M Context Window tier for Opus 4.6
         self.client = Anthropic(default_headers={"anthropic-beta": "context-1m-2025-08-07"})
 
-    def generate(self, messages, model_name, temperature=0.7, max_tokens=None, cached_context_messages=None):
+    def generate(self, messages, model_name, temperature=0.6, top_p=0.95, max_tokens=None, cached_context_messages=None):
         system_prompt = ""
         anthro_messages = []
         
@@ -191,7 +193,7 @@ def infer_provider(model_name):
         print(f"Could not infer provider from model name '{model_name}'. Please specify --provider.")
         return None
 
-def generate_response(messages, model_name, provider=None, temperature=0.7, max_tokens=None, context_cache=None):
+def generate_response(messages, model_name, provider=None, temperature=0.6, top_p=0.95, max_tokens=None, context_cache=None):
     """
     Generates a response from the specified model using the appropriate provider.
     context_cache: optional dict with keys 'type' ('google'|'anthropic') and 'ref' (cache name or messages list).
@@ -249,7 +251,7 @@ def generate_response(messages, model_name, provider=None, temperature=0.7, max_
                     extra_kwargs['cached_content'] = context_cache['ref']
                 elif context_cache['type'] == 'anthropic' and provider == 'anthropic':
                     extra_kwargs['cached_context_messages'] = context_cache['ref']
-            return llm_provider.generate(messages, model_name, temperature, max_tokens, **extra_kwargs)
+            return llm_provider.generate(messages, model_name, temperature, top_p, max_tokens, **extra_kwargs)
         except Exception as e:
             if _is_safety_error(e):
                 # Safety filter — don't retry, let caller handle
@@ -504,7 +506,7 @@ import tempfile
 
 class BatchProvider(ABC):
     @abstractmethod
-    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7):
+    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.6, top_p=0.95):
         """
         Takes a list of job dicts `[{id, messages}, ...]`,
         formats them for the specific provider, uploads, creates batch,
@@ -517,7 +519,7 @@ class OpenAIBatchProvider(BatchProvider):
         from openai import OpenAI
         self.client = OpenAI()
 
-    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7, context_cache=None):
+    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.6, top_p=0.95, context_cache=None):
         # 1. Create JSONL
         is_o1 = "o1" in model_name.lower() or "gpt-5" in model_name.lower()
         jsonl_lines = []
@@ -540,6 +542,7 @@ class OpenAIBatchProvider(BatchProvider):
             else:
                 if max_tokens: body["max_tokens"] = max_tokens
                 body["temperature"] = temperature
+                body["top_p"] = top_p
                 
             req = {
                 "custom_id": str(job['id']) + "_" + str(job.get('sample_idx', 0)),
@@ -575,7 +578,7 @@ class AnthropicBatchProvider(BatchProvider):
         # Added Beta header to authorize the unlocked 1M Context Window tier for Opus 4.6
         self.client = Anthropic(default_headers={"anthropic-beta": "context-1m-2025-08-07"})
 
-    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7, context_cache=None):
+    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.6, top_p=0.95, context_cache=None):
         requests_list = []
         for job in jobs:
             system_prompt = ""
@@ -635,7 +638,7 @@ class GoogleBatchProvider(BatchProvider):
             self.is_vertex = False
             print("Initialized GoogleBatchProvider in AI Studio mode")
 
-    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7):
+    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.6, top_p=0.95):
         if self.client is None:
             self._init_client(model_name)
             
@@ -773,7 +776,7 @@ class GoogleAIStudioBatchProvider(BatchProvider):
             raise ValueError("GOOGLE_API_KEY must be set to use Google AI Studio batch (context caching path).")
         self.client = genai.Client(api_key=self.api_key)
 
-    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.7, context_cache=None):
+    def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.6, top_p=0.95, context_cache=None):
         if max_tokens is None:
             raise ValueError("max_tokens must be explicitly provided.")
 
@@ -843,7 +846,7 @@ class GoogleAIStudioBatchProvider(BatchProvider):
 CACHED_BATCH_PROVIDER_REGISTRY["google"] = GoogleAIStudioBatchProvider
 
 
-def submit_batch(jobs, model_name, provider=None, temperature=0.7, max_tokens=None, context_cache=None):
+def submit_batch(jobs, model_name, provider=None, temperature=0.6, top_p=0.95, max_tokens=None, context_cache=None):
     if max_tokens is None:
         raise ValueError("max_tokens must be explicitly provided.")
         
@@ -867,6 +870,6 @@ def submit_batch(jobs, model_name, provider=None, temperature=0.7, max_tokens=No
         
     batch_provider = registry[provider]()
     if context_cache is not None and registry is CACHED_BATCH_PROVIDER_REGISTRY:
-        return batch_provider.create_batch(jobs, model_name, max_tokens, temperature, context_cache=context_cache)
+        return batch_provider.create_batch(jobs, model_name, max_tokens, temperature, top_p, context_cache=context_cache)
     else:
-        return batch_provider.create_batch(jobs, model_name, max_tokens, temperature)
+        return batch_provider.create_batch(jobs, model_name, max_tokens, temperature, top_p)
