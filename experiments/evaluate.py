@@ -17,7 +17,9 @@ def main():
     parser.add_argument("--dry", action="store_true", help="Dry run - do not evaluate, only produce prompts")
     parser.add_argument("--num_distractors", type=int, default=1, help="Number of distractors for compound")
     parser.add_argument("--num_gpus", type=int, default=1, help="Num GPUs.")
-    parser.add_argument("--max_model_length", type=int, default=32768, help="Max model length for vLLM")
+    parser.add_argument("--max_model_length", type=int, default=32000, help="Max model length for vLLM")
+    parser.add_argument("--temperature", type=float, default=0.6, help="Sampling temperature for generation")
+    parser.add_argument("--top_p", type=float, default=0.95, help="Top-p sampling parameter for generation")
     args = parser.parse_args()
     if args.names == 'all':
         experiment_names = [
@@ -72,7 +74,7 @@ def main():
             max_model_len=args.max_model_length,
             dtype="bfloat16"
         )
-        sampling_params = SamplingParams(temperature=0.6, top_p=0.95, max_tokens=args.max_model_length)
+        sampling_params = SamplingParams(temperature=args.temperature, top_p=args.top_p, max_tokens=args.max_model_length)
         tokenizer = llm.get_tokenizer()
 
     random.seed(args.seed)

@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:l40s:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=5:00:00
+#SBATCH --time=9:00:00
 #SBATCH --output=eval_out2.out
 #SBATCH --error=eval_out2.out
 #SBATCH --account=aip-gpekhime
@@ -24,5 +24,8 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # python evaluate.py --names compound --num_distractors 1 --model mistralai/Ministral-3-14B-Reasoning-2512 --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out2.out
 # python evaluate.py --names baseline                     --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 32768  --n_samples 16 --num_gpus 4 &> eval_out2.out
 
-python evaluate.py --names baseline                     --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out2.out
-python evaluate.py --names baseline --num_distractors 2 --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out2.out
+# python evaluate.py --names baseline                     --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out2.out
+# python evaluate.py --names compound --num_distractors 2 --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out2.out
+
+python evaluate.py --names all --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-7B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out2.out
+python evaluate.py --names all --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out2.out
