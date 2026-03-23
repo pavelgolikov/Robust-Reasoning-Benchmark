@@ -127,3 +127,7 @@ uoY .em evlos esaelP .m
 
 
 Think about a single metric that would capture the essence of the experiment and rank models against each other.
+
+
+
+Need to expand functionality of visualize.py. We will add another plot type. It will plot models on the x-axis and accuracy on the y-axis. For each model, we plot several bars, depending on how many compound experiments were performed. Models were tested with 1, 2, or 3 distractor questions. The bars we want for each model: baseline + bar for each distractor number run. Place bars in the order of 

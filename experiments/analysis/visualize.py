@@ -51,11 +51,11 @@ TECHNIQUE_ORDER = [
 ]
 
 MODEL_SHORT_NAMES = {
-    "GAIR_LIMO-v2":                                     "LIMO-v2-32B",
-    "tiiuae_Falcon-H1R-7B":                             "Falcon-H1R-7B",
+    "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B-A3B",
+    "nvidia_OpenReasoning-Nemotron-7B":                 "Nemotron-7B",
+    "nvidia_OpenReasoning-Nemotron-32B":                "Nemotron-32B",
     "openai_gpt-oss-120b":                              "GPT-OSS-120B",
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama-70B",
-    "Qwen_Qwen3-30B-A3B-Thinking-2507":                 "Qwen3-30B-A3B",
     "gemini-3.1-pro-preview":                           "Gemini 3.1 Pro",
     "claude-opus-4-6":                                  "Claude Opus 4.6",
 }
@@ -115,7 +115,6 @@ def load_accuracy_and_length(experiments_dir, safe_dataset):
                         summary = json.load(j)
                     
                     canonical_model = model_name
-                    if model_name == "HAIR_LIMO-v2": canonical_model = "GAIR_LIMO-v2"
                     
                     data[technique][canonical_model] = {
                         'accuracy': summary.get('accuracy', 0),
@@ -487,7 +486,7 @@ def plot_global_conditional_accuracy(dataset_name, cond_data, technique_data, ou
         ax.annotate(f'{r.get_height():.0f}', xy=(r.get_x() + r.get_width() / 2, r.get_height()), xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=16, fontweight='bold')
 
     # Highlight Open Source Models
-    os_keywords = ["LIMO", "Falcon", "DeepSeek", "Qwen", "gpt-oss"]
+    os_keywords = ["Nemotron", "DeepSeek", "Qwen", "gpt-oss"]
     os_indices = []
     for i, model in enumerate(models):
         if any(kw.lower() in model.lower() for kw in os_keywords):
