@@ -143,3 +143,7 @@ Y-Axis: "Target Problem Accuracy (%)"
 The Data: One distinct line (with dots/markers at each data point) for each model.
 NO fallbacks - if something doesn't go as planned (file missing etc..) - throw errors.
 Do you have any questions?
+
+Two more changes:
+1. Swap Claude and GPT-5.4 (only for this compound plot though).
+2. Near the last marker for every model, place a number in red color of how much the total accuracy drop is 

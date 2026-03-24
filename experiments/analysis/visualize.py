@@ -575,7 +575,16 @@ def plot_compound(dataset_name, outdir, experiments_dir):
                 first_item = c_data
                 
             summary = last_item.get("summary", {})
-            c_acc = summary.get("accuracy", 0.0)
+            
+            correct = summary.get("correct", 0)
+            total = summary.get("total", 0)
+            cutoffs = summary.get("max_token_cutoffs", 0)
+            
+            if total > 0:
+                c_acc = (correct + cutoffs) / float(total)
+            else:
+                c_acc = summary.get("accuracy", 0.0)
+                
             if isinstance(c_acc, float) and c_acc <= 1.0 and c_acc > 0:
                 c_acc *= 100.0
                 
@@ -590,17 +599,13 @@ def plot_compound(dataset_name, outdir, experiments_dir):
                 raise RuntimeError(f"Failed to determine valid distractor count in {cpf}")
                 
             position = distractors + 1
-            if position > 4:
-                print(f"Skipping anomalous {distractors} distractor run in {model}")
-                continue
-                
             if position in model_data[model]:
                 raise RuntimeError(f"Duplicate position {position} found for {model}. Files conflict.")
                 
             model_data[model][position] = float(c_acc)
 
     # Plotting
-    fig, ax = plt.subplots(figsize=(15, 6))
+    fig, ax = plt.subplots(figsize=(14, 8))
     
     target_models = [
         "gemini-3.1-pro-preview",
@@ -616,6 +621,14 @@ def plot_compound(dataset_name, outdir, experiments_dir):
     # Sort models by baseline accuracy
     models_to_plot = sorted(models_to_plot, key=lambda m: model_data[m].get(1, 0), reverse=True)
     
+    # Swap claude-opus-4-6 and gpt-5.4
+    try:
+        idx_claude = models_to_plot.index("claude-opus-4-6")
+        idx_gpt = models_to_plot.index("gpt-5.4")
+        models_to_plot[idx_claude], models_to_plot[idx_gpt] = models_to_plot[idx_gpt], models_to_plot[idx_claude]
+    except ValueError:
+        pass
+    
     x_ticks = []
     x_tick_labels = []
     model_centers = []
@@ -627,9 +640,10 @@ def plot_compound(dataset_name, outdir, experiments_dir):
         positions = sorted(model_data[model].keys())
         accuracies = [model_data[model][p] for p in positions]
         
+        current_x_base = current_x
         x_vals = []
         for p in positions:
-            x_val = current_x + p
+            x_val = current_x_base + p
             x_vals.append(x_val)
             x_ticks.append(x_val)
             x_tick_labels.append(str(p))
@@ -637,33 +651,46 @@ def plot_compound(dataset_name, outdir, experiments_dir):
         color = PALETTE[idx % len(PALETTE)]
         label_name = shorten(model, MODEL_SHORT_NAMES).replace('\n', ' ')
         
-        ax.plot(x_vals, accuracies, marker='s', markersize=8, linewidth=2, 
+        ax.plot(x_vals, accuracies, marker='s', markersize=12, linewidth=4, 
                 color=color, label=label_name)
                 
         if x_vals:
             model_centers.append(sum(x_vals) / len(x_vals))
             model_labels.append(label_name)
+                
+        if len(accuracies) > 0:
+            drop = accuracies[-1] - accuracies[0]
+            ax.text(x_vals[-1] - 1.5, accuracies[-1] - 3.5, f"{drop:+.1f}%", 
+                    color='red', fontsize=22, fontweight='bold', ha='left', va='center')
             
-        current_x += 5  # Leave horizontal gap for the next model's segment
+        # Ensure a uniform gap of 2 units between segments
+        current_x = x_vals[-1] + 1  
                 
     ax.set_xticks(x_ticks)
-    ax.set_xticklabels(x_tick_labels, fontsize=10)
+    ax.set_xticklabels(x_tick_labels, fontsize=16)
+    ax.tick_params(axis='y', labelsize=16)
     
     # Place model labels explicitly underneath the sub-ticks
     for center, label in zip(model_centers, model_labels):
         ax.text(center, -0.12, label, transform=ax.get_xaxis_transform(), 
-                ha='center', va='top', fontsize=11, fontweight='bold', rotation=25)
+                ha='center', va='top', fontsize=22, rotation=45)
                 
-    ax.set_ylabel("Target Problem Accuracy (%)", fontsize=14)
+    ax.set_ylabel("Accuracy on Last Problem (%)", fontsize=22)
+    # ax.set_xlabel("Number of problems asked per model", fontsize=18)
     
     ax.set_ylim(50, 105)
     ax.grid(True, linestyle='--', alpha=0.7)
     
-    # ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title="Model", fontsize=12, framealpha=0.9)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(True)
+    ax.spines['right'].set_visible(True)
     
-    fig.subplots_adjust(bottom=0.25) # Give the angled model titles some margin
+    # Adjust margins to prevent text overflow (DSR1 percent on right, Y-label on top)
+    fig.subplots_adjust(bottom=0.35, right=0.95, top=0.92)
+    
+    # Ensure the rightmost text (delta percentage) has enough space
+    xmax = x_ticks[-1] + 1
+    ax.set_xlim(left=0, right=xmax)
+    
     os.makedirs(outdir, exist_ok=True)
     out_path = os.path.join(outdir, "compound.pdf")
     fig.savefig(out_path, bbox_inches='tight', facecolor='white', dpi=150)
