@@ -11,6 +11,7 @@ import json
 import os
 import glob
 import sys
+import re
 from collections import defaultdict
 import numpy as np
 import matplotlib
@@ -513,6 +514,162 @@ def plot_global_conditional_accuracy(dataset_name, cond_data, technique_data, ou
     plt.close(fig)
     print(f"Saved: {out_path}")
 
+def plot_compound(dataset_name, outdir, experiments_dir):
+    compound_dir = os.path.join(experiments_dir, "compound", "results")
+    baseline_dir = os.path.join(experiments_dir, "baseline", "results")
+    
+    if not os.path.isdir(compound_dir):
+        raise RuntimeError(f"Compound directory not found: {compound_dir}")
+        
+    models_found = [d for d in os.listdir(compound_dir) if os.path.isdir(os.path.join(compound_dir, d))]
+    
+    if not models_found:
+        raise RuntimeError(f"No models found in {compound_dir}")
+        
+    model_data = defaultdict(dict) # model -> {position: accuracy}
+    
+    for model in models_found:
+        # Load baseline
+        bl_model_dataset_dir = os.path.join(baseline_dir, model, dataset_name, "compound")
+        if not os.path.isdir(bl_model_dataset_dir):
+            raise RuntimeError(f"Baseline compound directory missing for {model}: {bl_model_dataset_dir}")
+            
+        bl_files = glob.glob(os.path.join(bl_model_dataset_dir, "*.json"))
+        if not bl_files:
+            raise RuntimeError(f"No baseline JSON found for {model} in {bl_model_dataset_dir}")
+        if len(bl_files) > 1:
+            raise RuntimeError(f"Multiple baseline JSONs found for {model} in {bl_model_dataset_dir}. Unsure which to use.")
+            
+        with open(bl_files[0]) as f:
+            b_data = json.load(f)
+            if isinstance(b_data, list):
+                if len(b_data) > 0 and isinstance(b_data[-1], dict):
+                    b_acc = b_data[-1].get("summary", {}).get("accuracy", 0.0)
+                else:
+                    b_acc = 0.0
+            else:
+                b_acc = b_data.get("summary", {}).get("accuracy", 0.0)
+                
+            if isinstance(b_acc, float) and b_acc <= 1.0 and b_acc > 0:
+                b_acc *= 100.0
+            model_data[model][1] = float(b_acc)
+            
+        # Load compound runs
+        cp_model_dataset_dir = os.path.join(compound_dir, model, dataset_name)
+        if not os.path.isdir(cp_model_dataset_dir):
+            raise RuntimeError(f"Compound runs directory missing for {model}: {cp_model_dataset_dir}")
+            
+        cp_files = glob.glob(os.path.join(cp_model_dataset_dir, "*.json"))
+        if not cp_files:
+            raise RuntimeError(f"No compound JSONs found for {model} in {cp_model_dataset_dir}")
+            
+        for cpf in cp_files:
+            with open(cpf) as f:
+                c_data = json.load(f)
+                
+            if isinstance(c_data, list) and len(c_data) > 0:
+                last_item = c_data[-1]
+                first_item = c_data[0] if len(c_data) > 1 else c_data[0]
+            else:
+                last_item = c_data
+                first_item = c_data
+                
+            summary = last_item.get("summary", {})
+            c_acc = summary.get("accuracy", 0.0)
+            if isinstance(c_acc, float) and c_acc <= 1.0 and c_acc > 0:
+                c_acc *= 100.0
+                
+            orig = first_item.get("original", "")
+            distractors = max(0, len(re.findall(r'Problem \d+:', orig)) - 1)
+            if distractors == 0:
+                prop_models = ["claude-opus-4-6", "gpt-5.4", "gemini-3.1-pro-preview"]
+                if model in prop_models:
+                    distractors = 3
+            
+            if distractors is None or distractors < 1:
+                raise RuntimeError(f"Failed to determine valid distractor count in {cpf}")
+                
+            position = distractors + 1
+            if position > 4:
+                print(f"Skipping anomalous {distractors} distractor run in {model}")
+                continue
+                
+            if position in model_data[model]:
+                raise RuntimeError(f"Duplicate position {position} found for {model}. Files conflict.")
+                
+            model_data[model][position] = float(c_acc)
+
+    # Plotting
+    fig, ax = plt.subplots(figsize=(15, 6))
+    
+    target_models = [
+        "gemini-3.1-pro-preview",
+        "claude-opus-4-6",
+        "gpt-5.4",
+        "openai_gpt-oss-120b",
+        "Qwen_Qwen3-30B-A3B-Thinking-2507",
+        "nvidia_OpenReasoning-Nemotron-32B",
+        "nvidia_OpenReasoning-Nemotron-7B",
+        "deepseek-ai_DeepSeek-R1-Distill-Llama-70B"
+    ]
+    models_to_plot = [m for m in models_found if m in target_models]
+    # Sort models by baseline accuracy
+    models_to_plot = sorted(models_to_plot, key=lambda m: model_data[m].get(1, 0), reverse=True)
+    
+    x_ticks = []
+    x_tick_labels = []
+    model_centers = []
+    model_labels = []
+    
+    current_x = 0
+    
+    for idx, model in enumerate(models_to_plot):
+        positions = sorted(model_data[model].keys())
+        accuracies = [model_data[model][p] for p in positions]
+        
+        x_vals = []
+        for p in positions:
+            x_val = current_x + p
+            x_vals.append(x_val)
+            x_ticks.append(x_val)
+            x_tick_labels.append(str(p))
+            
+        color = PALETTE[idx % len(PALETTE)]
+        label_name = shorten(model, MODEL_SHORT_NAMES).replace('\n', ' ')
+        
+        ax.plot(x_vals, accuracies, marker='s', markersize=8, linewidth=2, 
+                color=color, label=label_name)
+                
+        if x_vals:
+            model_centers.append(sum(x_vals) / len(x_vals))
+            model_labels.append(label_name)
+            
+        current_x += 5  # Leave horizontal gap for the next model's segment
+                
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels(x_tick_labels, fontsize=10)
+    
+    # Place model labels explicitly underneath the sub-ticks
+    for center, label in zip(model_centers, model_labels):
+        ax.text(center, -0.12, label, transform=ax.get_xaxis_transform(), 
+                ha='center', va='top', fontsize=11, fontweight='bold', rotation=25)
+                
+    ax.set_ylabel("Target Problem Accuracy (%)", fontsize=14)
+    
+    ax.set_ylim(50, 105)
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    # ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title="Model", fontsize=12, framealpha=0.9)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    
+    fig.subplots_adjust(bottom=0.25) # Give the angled model titles some margin
+    os.makedirs(outdir, exist_ok=True)
+    out_path = os.path.join(outdir, "compound.pdf")
+    fig.savefig(out_path, bbox_inches='tight', facecolor='white', dpi=150)
+    plt.close(fig)
+    print(f"Saved: {out_path}")
+
 # ── Main ─────────────────────────────────────────────────────────────
 
 def main():
@@ -522,7 +679,8 @@ def main():
     parser.add_argument("--outdir", type=str, default=None)
     parser.add_argument("--plot_type", type=str, required=True, 
                         choices=['accuracy', 'global_conditional_accuracy', 'average_accuracy_drop', 
-                                 'output_length', 'prompt_recovery', 'radar_categories', 'conditional_accuracy'])
+                                 'output_length', 'prompt_recovery', 'radar_categories', 'conditional_accuracy',
+                                 'compound'])
     args = parser.parse_args()
 
     if not args.experiments_dir:
@@ -533,6 +691,11 @@ def main():
 
     outdir = args.outdir if args.outdir else os.path.join(experiments_dir, "analysis", "plots")
     safe_dataset = args.dataset.replace('/', '_')
+
+    if args.plot_type == 'compound':
+        print(f"Generating compound plot for {args.dataset}...")
+        plot_compound(safe_dataset, outdir, experiments_dir)
+        return
 
     print(f"Loading data for {args.dataset}...")
     acc_len_data = load_accuracy_and_length(experiments_dir, safe_dataset)

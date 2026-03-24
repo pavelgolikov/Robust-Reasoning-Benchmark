@@ -130,7 +130,16 @@ Think about a single metric that would capture the essence of the experiment and
 
 
 
-Need to expand functionality of visualize.py. We will add another plot type. It will plot models on the x-axis and
-accuracy on the y-axis. For each model, we plot several bars, depending on how many compound experiments were performed.
-Models were tested with 1, 2, or 3 distractor questions. The bars we want for each model: baseline + bar for each
-distractor number run. Place bars in the order of increasing distractor number.
+Need to expand functionality of visualize.py. We will add another plot type. This one is specifically for "compound"
+experiment and we will call the plot type 'compound' as well. It will plot models on the x-axis and accuracy on the y-axis.
+For each model, we plot several points, depending on how many compound experiment results are in the results directory.
+Experiments differ by the number of distractor questions that were asked before the target question.
+Models were tested with 1, 2, or 3 distractor questions. Some models were tested with only 1 or 2, not necessarily 3
+distractors. For the baseline, please take the values from baseline directory, but "compound" subdirectory in results,
+not "perturb".
+here is the description of the plot - it will be a line chart with markers - one marker for each experiment.
+X-Axis: "Target Problem Position in Context" (1st [Baseline], 2nd [1 Distractor], 3rd [2 Distractors], etc.)
+Y-Axis: "Target Problem Accuracy (%)"
+The Data: One distinct line (with dots/markers at each data point) for each model.
+NO fallbacks - if something doesn't go as planned (file missing etc..) - throw errors.
+Do you have any questions?
