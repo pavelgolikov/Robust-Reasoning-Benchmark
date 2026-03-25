@@ -51,9 +51,9 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # python evaluate.py --names baseline                     --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
 # python evaluate.py --names compound --num_distractors 1 --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
 
-# python evaluate.py --names interleaved_context_line,interleaved_context_word,interleaved_context_symbol,rail_fence,snake_vertical,snake_horizontal,rectangle_perimeter --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-7B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate.py --names all --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-7B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
 
-python evaluate.py --names snake_vertical,snake_horizontal,rectangle_perimeter,interleaved_context_symbol --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --names interleaved_context_symbol,rail_fence,rectangle_perimeter,snake_horizontal --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
 
 # LIMO-v2 on baseline (0.6 temp) and 1 or 2 distractors
 
