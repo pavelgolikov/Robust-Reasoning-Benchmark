@@ -32,4 +32,4 @@ export NCCL_IGNORE_DISABLED_P2P=1
 
 # python evaluate.py --names rectangle_perimeter,snake_horizontal --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out2.out
 
-python evaluate_context.py --model nvidia/OpenReasoning-Nemotron-7B --context_size 98304 --context_type math --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_Nemotron-7B.json --max_model_len 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate_context.py --model nvidia/OpenReasoning-Nemotron-7B --context_size 98304 --context_type math --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_Nemotron-7B.json --n_samples 16 --num_gpus 4 &> eval_out2.out
