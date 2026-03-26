@@ -175,13 +175,9 @@ def main():
     parser.add_argument("--max_tokens", type=int, default=32000,
                         help="Max output tokens for generation.")
     parser.add_argument("--num_gpus", type=int, default=1)
-    parser.add_argument("--max_model_len", type=int, default=None, help="Max model context length for vLLM. "
-                             "Defaults to context_size + max_tokens + 512.")
+    parser.add_argument("--max_model_len", type=int, default=65536, help="Max model context length for vLLM.")
     parser.add_argument("--dry", action="store_true", help="Dry run (skip model loading and generation)")
     args = parser.parse_args()
-
-    if args.max_model_len is None:
-        args.max_model_len = args.context_size + args.max_tokens + 512
 
     random.seed(args.seed)
     timestamp = time.strftime("%Y%m%d_%H%M%S")
