@@ -155,7 +155,7 @@ def load_metrics_data(experiments_dir, safe_dataset):
                     if isinstance(acc, float) and acc <= 1.0 and acc > 0:
                         acc *= 100.0
                         
-                    n_failures = summary.get("failures", 0)
+                    n_failures = summary.get("refusals", 0) + summary.get("failures", 0)
                     total = summary.get("total", 0)
                     fail_rate = (n_failures / total * 100.0) if total > 0 else 0.0
                 else:
