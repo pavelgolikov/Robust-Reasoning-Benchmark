@@ -101,8 +101,8 @@ def get_latest_json(target_dir):
         return None
     return max(valid_files, key=os.path.getmtime)
 
-def load_accuracy_data(experiments_dir, safe_dataset):
-    """Load accuracy/failure data directly from transformation result JSONs."""
+def load_metrics_data(experiments_dir, safe_dataset):
+    """Load accuracy, failure, and length data directly from transformation result JSONs."""
     data = defaultdict(lambda: defaultdict(dict))
     
     for technique in TECHNIQUE_ORDER:
@@ -134,6 +134,7 @@ def load_accuracy_data(experiments_dir, safe_dataset):
                     
                 acc = 0.0
                 fail_rate = 0.0
+                avg_length = 0.0
                 
                 # Support dictionary wrapping or list structure
                 if isinstance(content, list) and len(content) > 0:
@@ -143,6 +144,11 @@ def load_accuracy_data(experiments_dir, safe_dataset):
                 else:
                     summary = {}
                     
+                if not summary or "avg_output_tokens" not in summary:
+                    raise ValueError(f"CRITICAL: Average token length ('avg_output_tokens') missing in summary of {latest_file}.")
+                    
+                avg_length = summary.get("avg_output_tokens", 0.0)
+                
                 if summary:
                     # Parse from summary block
                     acc = summary.get("accuracy", 0.0)
@@ -153,68 +159,46 @@ def load_accuracy_data(experiments_dir, safe_dataset):
                     total = summary.get("total", 0)
                     fail_rate = (n_failures / total * 100.0) if total > 0 else 0.0
                 else:
-                    # Dynamically compute from raw results array if summary misses fields
-                    results = content if isinstance(content, list) else content.get("results", [])
-                    total = 0
+                    pass
+                    
+                # Validate output_tokens in each prompt result
+                results = content if isinstance(content, list) else content.get("results", [])
+                for r in results:
+                    if isinstance(r, dict) and r.get("id") is not None:
+                        if "output_tokens" not in r:
+                            raise ValueError(f"CRITICAL: 'output_tokens' field missing for a prompt in {latest_file}.")
+                            
+                # Dynamically compute from raw results array if summary misses fields
+                if not summary.get("accuracy"):
+                    total_computed = 0
                     correct = 0
-                    n_failures = 0
+                    n_failures_computed = 0
                     for r in results:
                         if isinstance(r, dict) and r.get("id") is not None:
-                            total += 1
+                            total_computed += 1
                             if r.get("correct", False):
                                 correct += 1
                             if r.get("refusal") is True or (not r.get("correct") and r.get("extracted") is None):
-                                n_failures += 1
+                                n_failures_computed += 1
                                 
-                    acc = (correct / total * 100.0) if total > 0 else 0.0
-                    fail_rate = (n_failures / total * 100.0) if total > 0 else 0.0
+                    acc = (correct / total_computed * 100.0) if total_computed > 0 else 0.0
+                    fail_rate = (n_failures_computed / total_computed * 100.0) if total_computed > 0 else 0.0
                     
                 data[technique][model] = {
                     'accuracy': acc,
-                    'failure_rate': fail_rate
+                    'failure_rate': fail_rate,
+                    'length': avg_length
                 }
+            except ValueError as ve:
+                print(ve)
+                import sys
+                sys.exit(1)
             except Exception:
                 continue
                 
     return data
 
 
-def load_accuracy_and_length(experiments_dir, safe_dataset):
-    """Load data from analysis/output_length/results/ summaries."""
-    summary_base = os.path.join(experiments_dir, "analysis", "output_length", "results")
-    data = defaultdict(lambda: defaultdict(dict))
-    
-    if not os.path.isdir(summary_base):
-        print(f"Error: Summary directory not found at {summary_base}")
-        return data
-
-    for model_name in os.listdir(summary_base):
-        if model_name not in MODEL_SHORT_NAMES:
-            continue
-            
-        model_dataset_dir = os.path.join(summary_base, model_name, safe_dataset)
-        if not os.path.isdir(model_dataset_dir):
-            continue
-        
-        for f in os.listdir(model_dataset_dir):
-            if f.endswith(".json") and "_summary_" in f:
-                technique = f.split("_summary_")[0]
-                fpath = os.path.join(model_dataset_dir, f)
-                try:
-                    with open(fpath) as j:
-                        summary = json.load(j)
-                    
-                    canonical_model = model_name
-                    
-                    data[technique][canonical_model] = {
-                        'accuracy': summary.get('accuracy', 0),
-                        'failure_rate': summary.get('failure_rate', 0),
-                        'n_samples': summary.get('n_samples', 0),
-                        'length': summary.get('length', 0)
-                    }
-                except Exception:
-                    continue
-    return data
 
 def load_recovery_and_conditional(experiments_dir, safe_dataset):
     """Load data from analysis/prompt_reconstruction/results/ reports."""
@@ -817,18 +801,17 @@ def main():
         return
 
     print(f"Loading data for {args.dataset}...")
-    acc_len_data = load_accuracy_and_length(experiments_dir, safe_dataset)
-    acc_data = load_accuracy_data(experiments_dir, safe_dataset)
+    metrics_data = load_metrics_data(experiments_dir, safe_dataset)
     rec_data, cond_data = load_recovery_and_conditional(experiments_dir, safe_dataset)
 
     if args.plot_type == 'accuracy':
-        plot_by_model(safe_dataset, acc_data, outdir, metric='accuracy', failures_on_top=True)
+        plot_by_model(safe_dataset, metrics_data, outdir, metric='accuracy', failures_on_top=True)
     elif args.plot_type == 'output_length':
-        plot_by_model(safe_dataset, acc_len_data, outdir, metric='length')
+        plot_by_model(safe_dataset, metrics_data, outdir, metric='length')
     elif args.plot_type == 'average_accuracy_drop':
-        plot_single_metric(safe_dataset, acc_data, outdir)
+        plot_single_metric(safe_dataset, metrics_data, outdir)
     elif args.plot_type == 'radar_categories':
-        plot_radar_charts(safe_dataset, acc_data, outdir)
+        plot_radar_charts(safe_dataset, metrics_data, outdir)
 
 if __name__ == "__main__":
     main()

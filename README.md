@@ -150,8 +150,8 @@ Two more changes:
 
 Let's modify how visualize works for output_length parameter. Let's dispose with separate summaries and instead pull
 output token lengths directly from result JSON files. Similar to the way other parameters work. The script should expect
-average output token length be present in the summary of every JSON file. If such average token count field is not
-present, throw an error.
+average output token length be present in the summary of every JSON file as well as "output_tokens" field for each
+prompt. If such average token count field is not present, throw an error.
 
 Please write a script that will loop over all JSON result files everywhere and for every one, calculate the output token
 length of every model output, as well as the average across the file.
