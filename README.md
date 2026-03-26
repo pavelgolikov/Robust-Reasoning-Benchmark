@@ -147,3 +147,16 @@ Do you have any questions?
 Two more changes:
 1. Swap Claude and GPT-5.4 (only for this compound plot though).
 2. Near the last marker for every model, place a number in red color of how much the total accuracy drop is 
+
+Let's modify how visualize works for output_length parameter. Let's dispose with separate summaries and instead pull
+output token lengths directly from result JSON files. Similar to the way other parameters work. The script should expect
+average output token length be present in the summary of every JSON file. If such average token count field is not
+present, throw an error.
+
+Please write a script that will loop over all JSON result files everywhere and for every one, calculate the output token
+length of every model output, as well as the average across the file.
+The script should loop over our transformation directories and append to JSON result files (if needed - some have the
+required info already). 
+The output lengths should be appended to each result field in the file and average should be appended to summary block.
+The tokenizer used for this should vary by model. 
+Please make sure you use the exact correct tokenier. If we can't find the exact one, throw an error.
