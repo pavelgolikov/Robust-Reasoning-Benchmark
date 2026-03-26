@@ -56,6 +56,7 @@ MODEL_SHORT_NAMES = {
     "nvidia_OpenReasoning-Nemotron-7B":                 "Nemotron-7B",
     "nvidia_OpenReasoning-Nemotron-32B":                "Nemotron-32B",
     "openai_gpt-oss-120b":                              "GPT-OSS-120B",
+    "gpt-5.4":                                          "GPT-5.4",
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama-70B",
     "gemini-3.1-pro-preview":                           "Gemini 3.1 Pro",
     "claude-opus-4-6":                                  "Claude Opus 4.6",
@@ -93,6 +94,91 @@ def format_length_label(value):
 
 # ── Fast Data Loading ───────────────────────────────────────────────
 
+def get_latest_json(target_dir):
+    json_files = glob.glob(os.path.join(target_dir, "*.json"))
+    valid_files = [f for f in json_files if not f.endswith("_raw.json") and "_summary_" not in f and "prompt_recovery" not in f]
+    if not valid_files:
+        return None
+    return max(valid_files, key=os.path.getmtime)
+
+def load_accuracy_data(experiments_dir, safe_dataset):
+    """Load accuracy/failure data directly from transformation result JSONs."""
+    data = defaultdict(lambda: defaultdict(dict))
+    
+    for technique in TECHNIQUE_ORDER:
+        tech_dir = os.path.join(experiments_dir, technique, "results")
+        if not os.path.isdir(tech_dir):
+            continue
+            
+        for model in os.listdir(tech_dir):
+            if model not in MODEL_SHORT_NAMES:
+                continue
+                
+            model_dataset_dir = os.path.join(tech_dir, model, safe_dataset)
+            if not os.path.isdir(model_dataset_dir):
+                continue
+                
+            perturb_dir = os.path.join(model_dataset_dir, "perturb")
+            if os.path.isdir(perturb_dir):
+                target_dir = perturb_dir
+            else:
+                target_dir = model_dataset_dir
+                
+            latest_file = get_latest_json(target_dir)
+            if not latest_file:
+                continue
+                
+            try:
+                with open(latest_file, 'r') as f:
+                    content = json.load(f)
+                    
+                acc = 0.0
+                fail_rate = 0.0
+                
+                # Support dictionary wrapping or list structure
+                if isinstance(content, list) and len(content) > 0:
+                    summary = content[-1].get("summary", {}) if isinstance(content[-1], dict) else {}
+                elif isinstance(content, dict):
+                    summary = content.get("summary", {})
+                else:
+                    summary = {}
+                    
+                if summary:
+                    # Parse from summary block
+                    acc = summary.get("accuracy", 0.0)
+                    if isinstance(acc, float) and acc <= 1.0 and acc > 0:
+                        acc *= 100.0
+                        
+                    n_failures = summary.get("failures", 0)
+                    total = summary.get("total", 0)
+                    fail_rate = (n_failures / total * 100.0) if total > 0 else 0.0
+                else:
+                    # Dynamically compute from raw results array if summary misses fields
+                    results = content if isinstance(content, list) else content.get("results", [])
+                    total = 0
+                    correct = 0
+                    n_failures = 0
+                    for r in results:
+                        if isinstance(r, dict) and r.get("id") is not None:
+                            total += 1
+                            if r.get("correct", False):
+                                correct += 1
+                            if r.get("refusal") is True or (not r.get("correct") and r.get("extracted") is None):
+                                n_failures += 1
+                                
+                    acc = (correct / total * 100.0) if total > 0 else 0.0
+                    fail_rate = (n_failures / total * 100.0) if total > 0 else 0.0
+                    
+                data[technique][model] = {
+                    'accuracy': acc,
+                    'failure_rate': fail_rate
+                }
+            except Exception:
+                continue
+                
+    return data
+
+
 def load_accuracy_and_length(experiments_dir, safe_dataset):
     """Load data from analysis/output_length/results/ summaries."""
     summary_base = os.path.join(experiments_dir, "analysis", "output_length", "results")
@@ -103,6 +189,9 @@ def load_accuracy_and_length(experiments_dir, safe_dataset):
         return data
 
     for model_name in os.listdir(summary_base):
+        if model_name not in MODEL_SHORT_NAMES:
+            continue
+            
         model_dataset_dir = os.path.join(summary_base, model_name, safe_dataset)
         if not os.path.isdir(model_dataset_dir):
             continue
@@ -137,6 +226,9 @@ def load_recovery_and_conditional(experiments_dir, safe_dataset):
         return rec_data, cond_data
 
     for model_name in os.listdir(report_base):
+        if model_name not in MODEL_SHORT_NAMES:
+            continue
+            
         model_dataset_dir = os.path.join(report_base, model_name, safe_dataset)
         if not os.path.isdir(model_dataset_dir):
             continue
@@ -726,22 +818,23 @@ def main():
 
     print(f"Loading data for {args.dataset}...")
     acc_len_data = load_accuracy_and_length(experiments_dir, safe_dataset)
+    acc_data = load_accuracy_data(experiments_dir, safe_dataset)
     rec_data, cond_data = load_recovery_and_conditional(experiments_dir, safe_dataset)
 
     if args.plot_type == 'accuracy':
-        plot_by_model(safe_dataset, acc_len_data, outdir, metric='accuracy', failures_on_top=True)
+        plot_by_model(safe_dataset, acc_data, outdir, metric='accuracy', failures_on_top=True)
     elif args.plot_type == 'output_length':
         plot_by_model(safe_dataset, acc_len_data, outdir, metric='length')
     elif args.plot_type == 'average_accuracy_drop':
-        plot_single_metric(safe_dataset, acc_len_data, outdir)
+        plot_single_metric(safe_dataset, acc_data, outdir)
     elif args.plot_type == 'radar_categories':
-        plot_radar_charts(safe_dataset, acc_len_data, outdir)
+        plot_radar_charts(safe_dataset, acc_data, outdir)
     elif args.plot_type == 'prompt_recovery':
-        plot_recovery(rec_data, safe_dataset, outdir, accuracy_data=acc_len_data, accuracy_overlay=True)
+        plot_recovery(rec_data, safe_dataset, outdir, accuracy_data=acc_data, accuracy_overlay=True)
     elif args.plot_type == 'conditional_accuracy':
-        plot_conditional_accuracy(safe_dataset, cond_data, acc_len_data, outdir)
+        plot_conditional_accuracy(safe_dataset, cond_data, acc_data, outdir)
     elif args.plot_type == 'global_conditional_accuracy':
-        plot_global_conditional_accuracy(safe_dataset, cond_data, acc_len_data, outdir)
+        plot_global_conditional_accuracy(safe_dataset, cond_data, acc_data, outdir)
 
 if __name__ == "__main__":
     main()
