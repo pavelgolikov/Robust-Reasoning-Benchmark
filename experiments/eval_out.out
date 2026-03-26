@@ -1,8 +1,150 @@
-usage: evaluate_context.py [-h] [--model MODEL] [--dataset DATASET]
-                           [--seed SEED] [--limit LIMIT]
-                           [--n_samples N_SAMPLES] --context_file CONTEXT_FILE
-                           --context_type CONTEXT_TYPE --context_size
-                           CONTEXT_SIZE [--max_tokens MAX_TOKENS]
-                           [--num_gpus NUM_GPUS]
-                           [--max_model_len MAX_MODEL_LEN] [--dry]
-evaluate_context.py: error: unrecognized arguments: --max_model_length 32000
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading tokenizer for model: nvidia/OpenReasoning-Nemotron-7B...
+Tokenizer loaded. Vocab size: 151643
+
+============================================================
+  LOADING CONTEXT (MATH)
+============================================================
+  Loaded context: 57 messages from /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_Nemotron-7B.json
+  Context token count (native): 98,303 (target: 98,304)
+
+Loading dataset: HuggingFaceH4/aime_2024...
+Dataset: 30 examples. Samples per problem: 16
+
+Preparing inputs...
+
+--- Example Prompt (problem 0) ---
+  Context messages: 57
+  User question: Solve the following problem using regular mathematics.
+Every morning Aya goes for a $9$-kilometer-long walk and stops at...
+  Total input tokens: 98453
+  Ground truth: 204
+---
+
+Prepared 480 total prompts.
+
+Initializing vLLM: model=nvidia/OpenReasoning-Nemotron-7B, gpus=4, max_model_len=32000
+INFO 03-26 10:58:10 [utils.py:223] non-default args: {'trust_remote_code': True, 'dtype': 'bfloat16', 'max_model_len': 32000, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'model': 'nvidia/OpenReasoning-Nemotron-7B'}
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 03-26 10:58:10 [model.py:529] Resolved architecture: Qwen2ForCausalLM
+INFO 03-26 10:58:10 [model.py:1549] Using max model len 32000
+INFO 03-26 10:58:11 [scheduler.py:224] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 03-26 10:58:11 [vllm.py:689] Asynchronous scheduling is enabled.
+(EngineCore_DP0 pid=2866442) INFO 03-26 10:58:25 [core.py:97] Initializing a V1 LLM engine (v0.16.0) with config: model='nvidia/OpenReasoning-Nemotron-7B', speculative_config=None, tokenizer='nvidia/OpenReasoning-Nemotron-7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32000, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=nvidia/OpenReasoning-Nemotron-7B, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::unified_kv_cache_update'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_split_points': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+(EngineCore_DP0 pid=2866442) WARNING 03-26 10:58:25 [multiproc_executor.py:921] Reducing Torch parallelism from 64 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+INFO 03-26 10:58:40 [parallel_state.py:1234] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:56517 backend=nccl
+INFO 03-26 10:58:40 [parallel_state.py:1234] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:56517 backend=nccl
+INFO 03-26 10:58:40 [parallel_state.py:1234] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:56517 backend=nccl
+INFO 03-26 10:58:40 [parallel_state.py:1234] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:56517 backend=nccl
+INFO 03-26 10:58:41 [pynccl.py:111] vLLM is using nccl==2.27.7
+WARNING 03-26 10:58:41 [symm_mem.py:67] SymmMemCommunicator: Device capability 8.9 not supported, communicator is not available.
+WARNING 03-26 10:58:41 [symm_mem.py:67] SymmMemCommunicator: Device capability 8.9 not supported, communicator is not available.
+WARNING 03-26 10:58:41 [symm_mem.py:67] SymmMemCommunicator: Device capability 8.9 not supported, communicator is not available.
+WARNING 03-26 10:58:41 [symm_mem.py:67] SymmMemCommunicator: Device capability 8.9 not supported, communicator is not available.
+WARNING 03-26 10:58:41 [custom_all_reduce.py:154] Custom allreduce is disabled because it's not supported on more than two PCIe-only GPUs. To silence this warning, specify disable_custom_all_reduce=True explicitly.
+WARNING 03-26 10:58:41 [custom_all_reduce.py:154] Custom allreduce is disabled because it's not supported on more than two PCIe-only GPUs. To silence this warning, specify disable_custom_all_reduce=True explicitly.
+WARNING 03-26 10:58:41 [custom_all_reduce.py:154] Custom allreduce is disabled because it's not supported on more than two PCIe-only GPUs. To silence this warning, specify disable_custom_all_reduce=True explicitly.
+WARNING 03-26 10:58:41 [custom_all_reduce.py:154] Custom allreduce is disabled because it's not supported on more than two PCIe-only GPUs. To silence this warning, specify disable_custom_all_reduce=True explicitly.
+INFO 03-26 10:58:41 [parallel_state.py:1445] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A
+INFO 03-26 10:58:41 [parallel_state.py:1445] rank 1 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 1, EP rank N/A
+INFO 03-26 10:58:41 [parallel_state.py:1445] rank 3 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 3, EP rank N/A
+INFO 03-26 10:58:41 [parallel_state.py:1445] rank 2 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 2, EP rank N/A
+(Worker_TP0 pid=2866469) INFO 03-26 10:58:43 [gpu_model_runner.py:4124] Starting to load model nvidia/OpenReasoning-Nemotron-7B...
+(Worker_TP0 pid=2866469) INFO 03-26 10:58:45 [cuda.py:367] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP1 pid=2866470) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker_TP2 pid=2866471) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker_TP0 pid=2866469) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker_TP3 pid=2866472) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker_TP3 pid=2866472) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker_TP2 pid=2866471) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker_TP1 pid=2866470) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker_TP0 pid=2866469) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker_TP0 pid=2866469) Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+(Worker_TP0 pid=2866469) [2026-03-26 10:58:46] WARNING _http.py:857: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+(Worker_TP0 pid=2866469) Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+(Worker_TP0 pid=2866469) Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:20<00:20, 20.32s/it]
+(Worker_TP0 pid=2866469) Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:30<00:00, 14.58s/it]
+(Worker_TP0 pid=2866469) Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:30<00:00, 15.44s/it]
+(Worker_TP0 pid=2866469) 
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:17 [default_loader.py:293] Loading weights took 30.93 seconds
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:18 [gpu_model_runner.py:4221] Model loading took 3.58 GiB memory and 34.010529 seconds
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:30 [backends.py:916] Using cache directory: /project/aip-gpekhime/golikovp/cache/vllm/torch_compile_cache/414a24f80c/rank_0_0/backbone for vLLM's torch.compile
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:30 [backends.py:976] Dynamo bytecode transform time: 11.87 s
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:38 [backends.py:267] Directly load the compiled graph(s) for compile range (1, 8192) from the cache, took 3.682 s
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:38 [monitor.py:34] torch.compile takes 15.56 s in total
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:40 [gpu_worker.py:373] Available KV cache memory: 34.89 GiB
+(EngineCore_DP0 pid=2866442) INFO 03-26 10:59:40 [kv_cache_utils.py:1307] GPU KV cache size: 2,613,360 tokens
+(EngineCore_DP0 pid=2866442) INFO 03-26 10:59:40 [kv_cache_utils.py:1312] Maximum concurrency for 32,000 tokens per request: 81.67x
+(Worker_TP0 pid=2866469) Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   2%|▏         | 1/51 [00:00<00:05,  9.55it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   4%|▍         | 2/51 [00:00<00:05,  8.38it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   8%|▊         | 4/51 [00:00<00:04, 10.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 6/51 [00:00<00:04,  9.90it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  16%|█▌        | 8/51 [00:00<00:04, 10.72it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|█▉        | 10/51 [00:00<00:03, 10.70it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▎       | 12/51 [00:01<00:03, 10.66it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  27%|██▋       | 14/51 [00:01<00:03, 10.37it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 16/51 [00:01<00:03, 10.56it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  35%|███▌      | 18/51 [00:01<00:03, 10.92it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  39%|███▉      | 20/51 [00:01<00:02, 11.39it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 22/51 [00:02<00:02, 11.11it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  47%|████▋     | 24/51 [00:02<00:02, 10.70it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████     | 26/51 [00:02<00:02, 10.23it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  55%|█████▍    | 28/51 [00:02<00:02, 10.16it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  59%|█████▉    | 30/51 [00:02<00:02, 10.39it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 32/51 [00:03<00:01, 10.13it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  67%|██████▋   | 34/51 [00:03<00:01,  9.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  71%|███████   | 36/51 [00:03<00:01,  9.29it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  75%|███████▍  | 38/51 [00:03<00:01, 10.03it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  78%|███████▊  | 40/51 [00:03<00:01,  9.84it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  82%|████████▏ | 42/51 [00:04<00:00,  9.61it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  84%|████████▍ | 43/51 [00:04<00:00,  9.36it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  88%|████████▊ | 45/51 [00:04<00:00,  9.90it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  90%|█████████ | 46/51 [00:04<00:00,  9.63it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 48/51 [00:04<00:00, 10.21it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  98%|█████████▊| 50/51 [00:04<00:00,  9.88it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:05<00:00,  9.59it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:05<00:00, 10.12it/s]
+(Worker_TP0 pid=2866469) Capturing CUDA graphs (decode, FULL):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   3%|▎         | 1/35 [00:00<00:05,  6.50it/s]Capturing CUDA graphs (decode, FULL):   9%|▊         | 3/35 [00:00<00:03,  9.99it/s]Capturing CUDA graphs (decode, FULL):  11%|█▏        | 4/35 [00:00<00:03,  9.75it/s]Capturing CUDA graphs (decode, FULL):  17%|█▋        | 6/35 [00:00<00:02, 10.80it/s]Capturing CUDA graphs (decode, FULL):  23%|██▎       | 8/35 [00:00<00:02, 10.41it/s]Capturing CUDA graphs (decode, FULL):  29%|██▊       | 10/35 [00:00<00:02, 10.92it/s]Capturing CUDA graphs (decode, FULL):  34%|███▍      | 12/35 [00:01<00:02, 10.83it/s]Capturing CUDA graphs (decode, FULL):  40%|████      | 14/35 [00:01<00:01, 11.18it/s]Capturing CUDA graphs (decode, FULL):  46%|████▌     | 16/35 [00:01<00:01, 11.05it/s]Capturing CUDA graphs (decode, FULL):  51%|█████▏    | 18/35 [00:01<00:01, 10.89it/s]Capturing CUDA graphs (decode, FULL):  57%|█████▋    | 20/35 [00:01<00:01, 11.18it/s]Capturing CUDA graphs (decode, FULL):  63%|██████▎   | 22/35 [00:02<00:01, 10.91it/s]Capturing CUDA graphs (decode, FULL):  69%|██████▊   | 24/35 [00:02<00:01, 10.78it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▍  | 26/35 [00:02<00:00, 10.67it/s]Capturing CUDA graphs (decode, FULL):  80%|████████  | 28/35 [00:02<00:00, 10.58it/s]Capturing CUDA graphs (decode, FULL):  86%|████████▌ | 30/35 [00:02<00:00, 10.70it/s]Capturing CUDA graphs (decode, FULL):  91%|█████████▏| 32/35 [00:02<00:00, 10.79it/s]Capturing CUDA graphs (decode, FULL):  97%|█████████▋| 34/35 [00:03<00:00, 11.10it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:03<00:00, 10.74it/s]
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:49 [gpu_model_runner.py:5246] Graph capturing finished in 10 secs, took 1.09 GiB
+(EngineCore_DP0 pid=2866442) INFO 03-26 10:59:49 [core.py:278] init engine (profile, create kv cache, warmup model) took 31.56 seconds
+(EngineCore_DP0 pid=2866442) Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+(EngineCore_DP0 pid=2866442) [2026-03-26 10:59:49] WARNING _http.py:857: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+(EngineCore_DP0 pid=2866442) INFO 03-26 10:59:56 [vllm.py:689] Asynchronous scheduling is enabled.
+INFO 03-26 10:59:56 [llm.py:355] Supported tasks: ['generate']
+
+============================================================
+  RUNNING EVALUATION: MATH
+============================================================
+Generating answers for 480 prompts...
+Traceback (most recent call last):
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/evaluate_context.py", line 265, in <module>
+    main()
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/evaluate_context.py", line 248, in main
+    results, stats = run_evaluation(
+                     ^^^^^^^^^^^^^^^
+  File "/project/6107991/golikovp/Linguistic_traps/experiments/evaluate_context.py", line 75, in run_evaluation
+    outputs = llm.generate(all_prompts, sampling_params=sampling_params)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 449, in generate
+    outputs = self._run_completion(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 1744, in _run_completion
+    engine_prompts = self._preprocess_completion(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 827, in _preprocess_completion
+    return renderer.render_cmpl(parsed_prompts, tok_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/renderers/protocol.py", line 311, in render_cmpl
+    tok_prompts = self.tokenize_prompts(dict_prompts, tok_params)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/renderers/protocol.py", line 230, in tokenize_prompts
+    return [self.tokenize_prompt(prompt, params) for prompt in prompts]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/renderers/protocol.py", line 230, in <listcomp>
+    return [self.tokenize_prompt(prompt, params) for prompt in prompts]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/renderers/protocol.py", line 223, in tokenize_prompt
+    return params.apply_post_tokenization(self.tokenizer, prompt)  # type: ignore[arg-type]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/renderers/params.py", line 373, in apply_post_tokenization
+    prompt["prompt_token_ids"] = self._validate_tokens(  # type: ignore[typeddict-unknown-key]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/renderers/params.py", line 357, in _validate_tokens
+    tokens = validator(tokenizer, tokens)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/golikovp/.local/lib/python3.11/site-packages/vllm/renderers/params.py", line 337, in _token_len_check
+    raise VLLMValidationError(
+vllm.exceptions.VLLMValidationError: You passed 32001 input tokens and requested 0 output tokens. However, the model's context length is only 32000 tokens, resulting in a maximum input length of 32000 tokens. Please reduce the length of the input prompt. (parameter=input_tokens, value=32001)
+(Worker_TP1 pid=2866470) INFO 03-26 10:59:56 [multiproc_executor.py:732] Parent process exited, terminating worker
+(Worker_TP2 pid=2866471) INFO 03-26 10:59:56 [multiproc_executor.py:732] Parent process exited, terminating worker
+(Worker_TP1 pid=2866470) INFO 03-26 10:59:56 [multiproc_executor.py:785] WorkerProc shutting down.
+(Worker_TP2 pid=2866471) INFO 03-26 10:59:56 [multiproc_executor.py:785] WorkerProc shutting down.
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:56 [multiproc_executor.py:732] Parent process exited, terminating worker
+(Worker_TP3 pid=2866472) INFO 03-26 10:59:56 [multiproc_executor.py:732] Parent process exited, terminating worker
+(Worker_TP0 pid=2866469) INFO 03-26 10:59:56 [multiproc_executor.py:785] WorkerProc shutting down.
+(Worker_TP3 pid=2866472) INFO 03-26 10:59:56 [multiproc_executor.py:785] WorkerProc shutting down.
+[W326 10:59:57.534662836 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=66, addr=[localhost]:52384, remote=[localhost]:56517): Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+Exception raised from recvBytes at /tmp/build_wheels_tmp.5905/python-3.11/torch/torch/csrc/distributed/c10d/Utils.hpp:682 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x97 (0x1554e2787f07 in /home/golikovp/.local/lib/python3.11/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6725f9d (0x1554c8a94f9d in /home/golikovp/.local/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x1eb (0x1554c8a90deb in /home/golikovp/.local/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x3d6 (0x15548a93e716 in /home/golikovp/.local/lib/python3.11/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xe07f0 (0x155551ee07f0 in /cvmfs/soft.computecanada.ca/gentoo/2023/x86-64-v3/usr/lib/gcc/x86_64-pc-linux-gnu/14/libstdc++.so.6)
+frame #5: <unknown function> + 0x84a9d (0x155554cafa9d in /cvmfs/soft.computecanada.ca/gentoo/2023/x86-64-v3/usr/lib64/libc.so.6)
+frame #6: <unknown function> + 0x10509c (0x155554d3009c in /cvmfs/soft.computecanada.ca/gentoo/2023/x86-64-v3/usr/lib64/libc.so.6)
+
+[W326 10:59:57.544595057 ProcessGroupNCCL.cpp:1802] [PG ID 0 PG GUID 0 Rank 1] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+ERROR 03-26 11:00:00 [core_client.py:616] Engine core proc EngineCore_DP0 died unexpectedly, shutting down client.
