@@ -25,8 +25,9 @@ confuse language models. Analysis is a utility folder. Tell me when you have tak
 proceed. The main 3 scripts are evaluate.py, which tests model's ability to undo the transformations themselves;
 evaluate_api.py, which is used to evaluate closed-source models through api calls, and evaluate_context_api.py, which
 tests context pollution of closed-source models by supplying several math-based distractor questions and after the
-distractors, the real non-transformed question is asked. Please familiarize yourself with the repo. Ask any questions
-you may have.
+distractors, the real non-transformed question is asked. IMPORTANT NOTE: When you work on this repo, do NOT implement
+fallbacks, if something doens't work - throw an error. Please familiarize yourself with the repo. Ask any questions
+you have.
 
 Evaluation:
 Datasets:
@@ -125,38 +126,13 @@ c                     l
                       e
 uoY .em evlos esaelP .m
 
-
-Think about a single metric that would capture the essence of the experiment and rank models against each other.
-
-
-
-Need to expand functionality of visualize.py. We will add another plot type. This one is specifically for "compound"
-experiment and we will call the plot type 'compound' as well. It will plot models on the x-axis and accuracy on the y-axis.
-For each model, we plot several points, depending on how many compound experiment results are in the results directory.
-Experiments differ by the number of distractor questions that were asked before the target question.
-Models were tested with 1, 2, or 3 distractor questions. Some models were tested with only 1 or 2, not necessarily 3
-distractors. For the baseline, please take the values from baseline directory, but "compound" subdirectory in results,
-not "perturb".
-here is the description of the plot - it will be a line chart with markers - one marker for each experiment.
-X-Axis: "Target Problem Position in Context" (1st [Baseline], 2nd [1 Distractor], 3rd [2 Distractors], etc.)
-Y-Axis: "Target Problem Accuracy (%)"
-The Data: One distinct line (with dots/markers at each data point) for each model.
-NO fallbacks - if something doesn't go as planned (file missing etc..) - throw errors.
-Do you have any questions?
-
-Two more changes:
-1. Swap Claude and GPT-5.4 (only for this compound plot though).
-2. Near the last marker for every model, place a number in red color of how much the total accuracy drop is 
-
-Let's modify how visualize works for output_length parameter. Let's dispose with separate summaries and instead pull
-output token lengths directly from result JSON files. Similar to the way other parameters work. The script should expect
-average output token length be present in the summary of every JSON file as well as "output_tokens" field for each
-prompt. If such average token count field is not present, throw an error.
-
-Please write a script that will loop over all JSON result files everywhere and for every one, calculate the output token
-length of every model output, as well as the average across the file.
-The script should loop over our transformation directories and append to JSON result files (if needed - some have the
-required info already). 
-The output lengths should be appended to each result field in the file and average should be appended to summary block.
-The tokenizer used for this should vary by model. 
-Please make sure you use the exact correct tokenier. If we can't find the exact one, throw an error.
+Let's write a script inside analysis directory
+(/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/analysis). We will call it
+analyze_compound_attention.py. In compound experiment, we feed the model several math questions and record accuracy on
+the last one. I want to detect how many output tokens the model spent on the last question. So our script will have to
+parse JSON outputs from the models. I think the model designates in its outputs which question it is currently solving.
+So first let's try and write a simple parser script that will try and detect "Problem 1", "Problem 2", etc.., depending
+on how many distractors there were. The script should parse through all result json files ONLY in compound directory.
+For now let's just parse and see if we can detect the pattern using this simple string search. Please display results as
+follows: For each model, show how many "Problem X" strings it found in the output and compare vs how many distractors
+there were. Let's see if we can even detect where solutions are.
