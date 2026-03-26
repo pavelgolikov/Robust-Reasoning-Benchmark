@@ -122,6 +122,8 @@ def append_to_file(filepath):
     total_tokens = 0
     calculated_count = 0
     already_counted = 0
+    correct_count = 0
+    record_count = 0
     
     for r in results:
         # Ignore summary dictionaries inside arrays
@@ -134,6 +136,10 @@ def append_to_file(filepath):
         text = r.get("output", "")
         if text is None:
             text = ""
+
+        record_count += 1
+        if r.get("correct"):
+            correct_count += 1
 
         if "output_tokens" in r:
             # Check length is valid
@@ -152,8 +158,9 @@ def append_to_file(filepath):
         modified = True
 
     valid_count = calculated_count + already_counted
+    accuracy = correct_count / record_count if record_count > 0 else 0.0
     
-    # Phase 2: Update Average in Summary 
+    # Phase 2: Update Average and Accuracy in Summary 
     if valid_count > 0:
         avg_tokens = total_tokens / valid_count
         
@@ -165,6 +172,11 @@ def append_to_file(filepath):
             if current_avg != avg_tokens:
                 data["summary"]["avg_output_tokens"] = avg_tokens
                 modified = True
+            if "accuracy" not in data["summary"]:
+                data["summary"]["accuracy"] = accuracy
+                data["summary"]["correct"] = correct_count
+                data["summary"]["total"] = record_count
+                modified = True
         else:
             summary_found = False
             if len(results) > 0 and isinstance(results[-1], dict) and "summary" in results[-1]:
@@ -173,10 +185,20 @@ def append_to_file(filepath):
                 if current_avg != avg_tokens:
                     summary_block["avg_output_tokens"] = avg_tokens
                     modified = True
+                if "accuracy" not in summary_block:
+                    summary_block["accuracy"] = accuracy
+                    summary_block["correct"] = correct_count
+                    summary_block["total"] = record_count
+                    modified = True
                 summary_found = True
                 
             if not summary_found:
-                new_summary = {"avg_output_tokens": avg_tokens}
+                new_summary = {
+                    "avg_output_tokens": avg_tokens,
+                    "accuracy": accuracy,
+                    "correct": correct_count,
+                    "total": record_count,
+                }
                 results.append({"summary": new_summary})
                 modified = True
 
