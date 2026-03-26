@@ -829,12 +829,6 @@ def main():
         plot_single_metric(safe_dataset, acc_data, outdir)
     elif args.plot_type == 'radar_categories':
         plot_radar_charts(safe_dataset, acc_data, outdir)
-    elif args.plot_type == 'prompt_recovery':
-        plot_recovery(rec_data, safe_dataset, outdir, accuracy_data=acc_data, accuracy_overlay=True)
-    elif args.plot_type == 'conditional_accuracy':
-        plot_conditional_accuracy(safe_dataset, cond_data, acc_data, outdir)
-    elif args.plot_type == 'global_conditional_accuracy':
-        plot_global_conditional_accuracy(safe_dataset, cond_data, acc_data, outdir)
 
 if __name__ == "__main__":
     main()
