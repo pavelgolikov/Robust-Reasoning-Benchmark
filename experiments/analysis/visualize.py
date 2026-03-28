@@ -773,6 +773,223 @@ def plot_compound(dataset_name, outdir, experiments_dir):
     plt.close(fig)
     print(f"Saved: {out_path}")
 
+def _segment_output_by_problems(output):
+    """Split output into sections by first occurrence of each 'Problem X' marker."""
+    pattern = re.compile(r"Problem\s*(\d+)")
+    seen = {}
+    for m in pattern.finditer(output):
+        p = int(m.group(1))
+        if p not in seen:
+            seen[p] = m.start()
+    if not seen:
+        return {}
+    sorted_markers = sorted(seen.items(), key=lambda x: x[1])
+    sections = {}
+    for i, (p, start) in enumerate(sorted_markers):
+        end = sorted_markers[i + 1][1] if i + 1 < len(sorted_markers) else len(output)
+        sections[p] = len(output[start:end])
+    return sections
+
+
+def plot_attention_effort(dataset_name, outdir, experiments_dir):
+    """Stacked bar chart showing per-problem token effort ratios for compound experiments."""
+    compound_dir = os.path.join(experiments_dir, "compound", "results")
+
+    if not os.path.isdir(compound_dir):
+        raise RuntimeError(f"Compound directory not found: {compound_dir}")
+
+    ignore_models = ["ministral", "limo", "falcon", "gpt-5.4", "gemini", "claude", "deepseek"]
+
+    models_found = [
+        d for d in os.listdir(compound_dir)
+        if os.path.isdir(os.path.join(compound_dir, d))
+        and not any(m in d.lower() for m in ignore_models)
+    ]
+
+    if not models_found:
+        raise RuntimeError(f"No eligible models found in {compound_dir}")
+
+    # model -> {position: {problem_num: avg_ratio}}
+    model_data = defaultdict(dict)
+
+    for model in models_found:
+        cp_model_dataset_dir = os.path.join(compound_dir, model, dataset_name)
+        if not os.path.isdir(cp_model_dataset_dir):
+            continue
+
+        cp_files = [
+            f for f in glob.glob(os.path.join(cp_model_dataset_dir, "*.json"))
+            if "/not_paper/" not in f and "_raw.json" not in f
+        ]
+
+        for cpf in cp_files:
+            with open(cpf) as f:
+                c_data = json.load(f)
+
+            if not isinstance(c_data, list) or len(c_data) == 0:
+                continue
+
+            # Determine num_distractors
+            summary = c_data[-1].get("summary", {}) if isinstance(c_data[-1], dict) else {}
+            num_distractors = summary.get("num_distractors", None)
+
+            entries = [r for r in c_data if isinstance(r, dict) and r.get("id") is not None]
+            if not entries:
+                continue
+
+            if num_distractors is None:
+                prompt_problems = re.findall(r"Problem \d+:", entries[0].get("original", ""))
+                num_distractors = max(0, len(prompt_problems) - 1)
+
+            total_problems = num_distractors + 1
+            position = total_problems
+
+            # Compute per-problem ratios across all samples
+            ratio_sums = defaultdict(float)
+            ratio_counts = defaultdict(int)
+
+            for entry in entries:
+                output = entry.get("output", "")
+                if not output:
+                    continue
+                total_len = len(output)
+                if total_len == 0:
+                    continue
+
+                sections = _segment_output_by_problems(output)
+                for p, section_len in sections.items():
+                    if p < 1 or p > total_problems:
+                        continue
+                    ratio_sums[p] += section_len / total_len
+                    ratio_counts[p] += 1
+
+            avg_ratios = {}
+            for p in range(1, total_problems + 1):
+                if ratio_counts.get(p, 0) > 0:
+                    avg_ratios[p] = ratio_sums[p] / ratio_counts[p]
+                else:
+                    avg_ratios[p] = 0.0
+
+            # Normalize so they sum to 1.0
+            total_ratio = sum(avg_ratios.values())
+            if total_ratio > 0:
+                avg_ratios = {p: v / total_ratio for p, v in avg_ratios.items()}
+
+            if position in model_data[model]:
+                raise RuntimeError(f"Duplicate position {position} for {model}")
+            model_data[model][position] = avg_ratios
+
+    # Add baseline position (position=1, single problem at 100%)
+    for model in list(model_data.keys()):
+        if 1 not in model_data[model]:
+            model_data[model][1] = {1: 1.0}
+
+    # Sort models by name for consistency
+    target_order = [
+        "openai_gpt-oss-120b",
+        "Qwen_Qwen3-30B-A3B-Thinking-2507",
+        "nvidia_OpenReasoning-Nemotron-32B",
+        "nvidia_OpenReasoning-Nemotron-7B",
+    ]
+    models_to_plot = [m for m in target_order if m in model_data]
+    # Add any remaining models not in target_order
+    for m in sorted(model_data.keys()):
+        if m not in models_to_plot:
+            models_to_plot.append(m)
+
+    if not models_to_plot:
+        raise RuntimeError("No models with data to plot")
+
+    # Plotting
+    fig, ax = plt.subplots(figsize=(14, 8))
+
+    DISTRACTOR_COLOR = '#C0C0C0'  # light grey
+    TARGET_COLOR = '#4CAF50'      # green
+    BAR_WIDTH = 0.7
+
+    x_ticks = []
+    x_tick_labels = []
+    model_centers = []
+    model_labels = []
+    current_x = 0
+
+    for idx, model in enumerate(models_to_plot):
+        positions = sorted(model_data[model].keys())
+        label_name = shorten(model, MODEL_SHORT_NAMES).replace('\n', ' ')
+
+        current_x_base = current_x
+        x_vals = []
+
+        for pos in positions:
+            x_val = current_x_base + pos
+            x_vals.append(x_val)
+            x_ticks.append(x_val)
+            x_tick_labels.append(str(pos))
+
+            ratios = model_data[model][pos]
+            total_problems = pos
+
+            bottom = 0.0
+            for p in range(1, total_problems + 1):
+                ratio = ratios.get(p, 0.0)
+                pct = ratio * 100.0
+                is_target = (p == total_problems)
+                color = TARGET_COLOR if is_target else DISTRACTOR_COLOR
+
+                bar = ax.bar(x_val, pct, BAR_WIDTH, bottom=bottom, color=color,
+                             edgecolor='black', linewidth=0.5)
+
+                # Annotate if there's enough space (> 4%)
+                if pct > 4:
+                    ax.text(x_val, bottom + pct / 2, f"{pct:.0f}%",
+                            ha='center', va='center', fontsize=9, fontweight='bold',
+                            color='black')
+
+                bottom += pct
+
+        if x_vals:
+            model_centers.append(sum(x_vals) / len(x_vals))
+            model_labels.append(label_name)
+
+        # Gap between model groups
+        current_x = x_vals[-1] + 1
+
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels(x_tick_labels, fontsize=16)
+    ax.tick_params(axis='y', labelsize=16)
+
+    # Place model labels underneath
+    for center, label in zip(model_centers, model_labels):
+        ax.text(center, -0.10, label, transform=ax.get_xaxis_transform(),
+                ha='center', va='top', fontsize=20, rotation=45)
+
+    ax.set_ylabel("Token Effort (%)", fontsize=22)
+    ax.set_ylim(0, 115)
+    ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
+    ax.grid(axis='y', linestyle='--', alpha=0.5)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    # Legend
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor=DISTRACTOR_COLOR, edgecolor='black', label='Distractor problems'),
+        Patch(facecolor=TARGET_COLOR, edgecolor='black', label='Target problem'),
+    ]
+    ax.legend(handles=legend_elements, ncol=2, fontsize=16, loc='upper right', framealpha=0.8)
+
+    xmax = x_ticks[-1] + 1
+    ax.set_xlim(left=0, right=xmax)
+
+    fig.subplots_adjust(bottom=0.35, right=0.95, top=0.95)
+
+    os.makedirs(outdir, exist_ok=True)
+    out_path = os.path.join(outdir, "attention_effort_ratios.pdf")
+    fig.savefig(out_path, bbox_inches='tight', facecolor='white', dpi=150)
+    plt.close(fig)
+    print(f"Saved: {out_path}")
+
 # ── Main ─────────────────────────────────────────────────────────────
 
 def main():
@@ -783,7 +1000,7 @@ def main():
     parser.add_argument("--plot_type", type=str, required=True, 
                         choices=['accuracy', 'global_conditional_accuracy', 'average_accuracy_drop', 
                                  'output_length', 'prompt_recovery', 'radar_categories', 'conditional_accuracy',
-                                 'compound'])
+                                 'compound', 'attention_effort_ratios'])
     args = parser.parse_args()
 
     if not args.experiments_dir:
@@ -798,6 +1015,11 @@ def main():
     if args.plot_type == 'compound':
         print(f"Generating compound plot for {args.dataset}...")
         plot_compound(safe_dataset, outdir, experiments_dir)
+        return
+
+    if args.plot_type == 'attention_effort_ratios':
+        print(f"Generating attention effort ratios plot for {args.dataset}...")
+        plot_attention_effort(safe_dataset, outdir, experiments_dir)
         return
 
     print(f"Loading data for {args.dataset}...")
@@ -815,3 +1037,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
