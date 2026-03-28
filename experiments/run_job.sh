@@ -22,38 +22,29 @@ export NCCL_IGNORE_DISABLED_P2P=1
 # export NCCL_DEBUG=INFO
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
-# python analysis/prompt_reconstruction/analyze_prompt_recovery_llm.py --names all --model all --num_gpus 4 &> eval_out.out
-# python3 analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all --dataset HuggingFaceH4/aime_2024 --names rectangle_perimeter,snake_vertical,snake_horizontal --skip_existing
-# python analysis/prompt_reconstruction/analyze_prompt_recovery.py --model all
+
+# compound eval
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
+
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
+
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
+
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 32768  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
+
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
 
 
-# python evaluate.py --names baseline --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names baseline --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
-
-# python evaluate.py --names baseline                     --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names compound --num_distractors 1 --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
-
-# python evaluate.py --names baseline                     --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names compound --num_distractors 1 --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
-
-# python evaluate.py --names baseline                     --model tiiuae/Falcon-H1R-7B                      --max_model_length 65536  --n_samples 16 --num_gpus 2 &> eval_out.out
-# python evaluate.py --names compound --num_distractors 1 --model tiiuae/Falcon-H1R-7B                      --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
-
-# python evaluate.py --names baseline                     --model GAIR/LIMO-v2                              --max_model_length 8192   --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names compound --num_distractors 1 --model GAIR/LIMO-v2                              --max_model_length 8192   --n_samples 16 --num_gpus 4 &> eval_out.out
-
-# python evaluate.py --names baseline                     --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names compound --num_distractors 1 --model nvidia/OpenReasoning-Nemotron-32B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
-
-# python evaluate.py --names baseline                     --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 32768  --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names compound --num_distractors 1 --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
-
-# python evaluate.py --names baseline                     --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate.py --names compound --num_distractors 1 --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
-
+# perturb eval
 # python evaluate.py --names all --temperature 0.7 --top_p 1.0 --model nvidia/OpenReasoning-Nemotron-7B --max_model_length 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
-# python evaluate_context.py --model nvidia/OpenReasoning-Nemotron-7B --context_size 98304 --context_type math --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_Nemotron-7B.json --max_model_len 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate_context.py --model nvidia/OpenReasoning-Nemotron-32B --context_size 98304 --context_type math --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_Nemotron-32B.json --n_samples 16 --num_gpus 4 &> eval_out.out
 
-# LIMO-v2 on baseline (0.6 temp) and 1 or 2 distractors
+
+# context eval
+# python evaluate_context.py --model nvidia/OpenReasoning-Nemotron-7B --context_size 98304 --context_type math --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_Nemotron-7B.json --max_model_len 32000  --n_samples 16 --num_gpus 4 &> eval_out.out
+# python evaluate_context.py --model nvidia/OpenReasoning-Nemotron-32B --context_size 98304 --context_type math --context_file /home/golikovp/projects/aip-gpekhime/golikovp/Linguistic_traps/experiments/context_saturation/contexts/context_math_98304_Nemotron-32B.json --n_samples 16 --num_gpus 4 &> eval_out.out
 
