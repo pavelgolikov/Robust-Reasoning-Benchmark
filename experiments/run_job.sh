@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=5:00:00
+#SBATCH --time=7:00:00
 #SBATCH --output=eval_out.out
 #SBATCH --error=eval_out.out
 #SBATCH --account=aip-gpekhime
@@ -24,17 +24,17 @@ export NCCL_IGNORE_DISABLED_P2P=1
 
 
 # compound eval
-python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 131072  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 131072  --n_samples 16 --num_gpus 4 &> eval_out.out
 
-python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 65536  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 131072  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 131072  --n_samples 16 --num_gpus 4 &> eval_out.out
 
-python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 131072  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 131072  --n_samples 16 --num_gpus 4 &> eval_out.out
 
-python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
-python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 81920  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 131072  --n_samples 16 --num_gpus 4 &> eval_out.out
+python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model deepseek-ai/DeepSeek-R1-Distill-Llama-70B --max_model_length 131072  --n_samples 16 --num_gpus 4 &> eval_out.out
 
 python evaluate.py --dataset MathArena/aime_2025 --names baseline                     --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
 python evaluate.py --dataset MathArena/aime_2025 --names compound --num_distractors 1 --model openai/gpt-oss-120b                       --max_model_length 131072 --n_samples 16 --num_gpus 4 &> eval_out.out
