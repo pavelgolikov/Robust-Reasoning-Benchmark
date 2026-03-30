@@ -9,9 +9,17 @@ import os
 import re
 import json
 import glob
+import argparse
 
 
-def find_result_files(compound_dir):
+DATASET_FILTERS = {
+    "aime_2024": "HuggingFaceH4_aime_2024",
+    "aime_2025": "MathArena_aime_2025",
+    "all": None,
+}
+
+
+def find_result_files(compound_dir, dataset="all"):
     """Return all non-raw result JSON files under compound/results/."""
     results_dir = os.path.join(compound_dir, "results")
     pattern = os.path.join(results_dir, "**", "*.json")
@@ -30,6 +38,10 @@ def find_result_files(compound_dir):
         f for f in files
         if not any(m in f.lower() for m in ignore_models)
     ]
+    # Filter by dataset
+    dataset_dir = DATASET_FILTERS.get(dataset)
+    if dataset_dir is not None:
+        files = [f for f in files if f"/{dataset_dir}/" in f]
     return sorted(files)
 
 
@@ -140,14 +152,20 @@ def analyze_file(filepath):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Analyze compound experiment token effort per problem.")
+    parser.add_argument("--dataset", type=str, default="all",
+                        choices=list(DATASET_FILTERS.keys()),
+                        help="Dataset to analyze: aime_2024, aime_2025, or all (default: all)")
+    args = parser.parse_args()
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
     compound_dir = os.path.join(base_dir, "..", "compound")
 
-    files = find_result_files(compound_dir)
+    files = find_result_files(compound_dir, dataset=args.dataset)
     if not files:
-        raise FileNotFoundError(f"No result JSON files found under {compound_dir}/results/")
+        raise FileNotFoundError(f"No result JSON files found under {compound_dir}/results/ for dataset={args.dataset}")
 
-    print(f"Found {len(files)} result file(s) in compound/results/\n")
+    print(f"Found {len(files)} result file(s) in compound/results/ (dataset={args.dataset})\n")
 
     for filepath in files:
         info = analyze_file(filepath)

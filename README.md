@@ -16,7 +16,6 @@ In the end, we would like to take a reasoning model and a math reasoning dataset
 We evaluate the model on a test subset (official one if exists) and compare to the same model on the same test subset,
 but annotated with distraction techniques. We want to do this for multiple models and datasets.
 
-
 # Repo description for agent.
 This repo contains a machine learning project. The point of the project is to try and confuse LLMs or agents with
 linguistic tricks to reduce their performance on math reasoning tasks. Tricks that would have no effect on human (or
@@ -29,110 +28,9 @@ distractors, the real non-transformed question is asked. IMPORTANT NOTE: When yo
 fallbacks, if something doens't work - throw an error. Please familiarize yourself with the repo. Ask any questions
 you have.
 
-Evaluation:
-Datasets:
-HuggingFaceH4/aime_2024 - 30/30
-MathArena/aime_2025 - 30/30
-MATH 500 - 500/500 - LLM verification for some
-MathArena/hmmt_feb_2025 - 30/30 - LLM verification for some
-<!-- meituan-longcat/AMO-Bench - 37/50 - we take 37 problems with 'number' and 'set' answer types to be able to verify answers more robustly. - LLM verification for some -->
-For now total across 4 datasets is 500+30+30+30=590 problems.
-GSM-Symbolic? We could generate 100 questions using their code
-
-Olympiad Bench
-College Bench
-Omni-Math
-
-Models:
-
-HF:
-openai/gpt-oss-120b - 120B
-deepseek-ai/DeepSeek-R1-Distill-Llama-70B
-GAIR/LIMO-v2 - 32B
-Qwen/Qwen3-30B-A3B-Thinking-2507
-tiiuae/Falcon-H1R-7B
-
-All compound eval done at 0.6 temp and 0.95 top_p - will need to do 0.7 temp later
-New models for compound eval:
-nvidia/OpenReasoning-Nemotron-32B
-mistralai/Ministral-3-14B-Reasoning-2512
-
-
-NOTE:
-Next experiments:
-long context
-
-Closed:
-GPT-5.1
-Gemini 3 Pro
-Need to send requests to them to run the evaluation on their models.
-
-Observations:
-1. Temperature and max response length both need to be adjustable for each individual task the model performs.
-2. Since we want the model to perform complex tasks, we need to teach the model to adjust these parameters based on the task at hand.
-Otherwise:
-If temp too high, model starts exploring during mechanical tasks - instead of writing Python, it decides to solve manually AGAINST explicit instructions.
-If temp is set too low, then model might be too conservative and not explore enough to find the solution.
-
-Model length needs to be kept shorter for the agent compared to the model itself because the reasoning chain itself is
-done in steps.
-
-Idea:
-Confuse the model by introducing multiple block boundaries in the text? Like multiple defyn blocks scattered across the text?
-
-
-x, n, m, k - 4 lower_variables
-A, B, C, D - 4 upper_variables
-Alice, Bob, Carol, David - 4 names
-
-
-nohup python experiments/evaluate_context_api.py \
-   --model gemini-3.1-pro-preview \
-   --context_size 750000 \
-   --n_samples 4 \
-   --max_tokens 32000 \
-   --context_file experiments/context_saturation/contexts/context_math_750K_google.json \
-   --sleep 60 \
-   --cache_ttl 36000 \
-   --context_type math \
-   --no_preview &> eval_api_gemini31.out &
-   
-   
-python experiments/evaluate_context_api.py \
-   --model claude-opus-4-6 \
-   --context_size 750000 \
-   --n_samples 4 \
-   --max_tokens 32000 \
-   --context_file experiments/context_saturation/contexts/context_math_750K_anthropic.json \
-   --context_type math \
-   --batch
-
-
-python experiments/evaluate_context_api.py \
-   --model gpt-5-4 \
-   --context_size 750000 \
-   --n_samples 4 \
-   --max_tokens 32000 \
-   --context_file experiments/context_saturation/contexts/context_math_750K_openai.json \
-   --context_type math \
-   --batch \
-
-
-Hello World I am math p
-.                     r
-n                     o
-a                     b
-c                     l
-                      e
-uoY .em evlos esaelP .m
-
-Let's write a script inside analysis directory
-(/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/analysis). We will call it
-analyze_compound_attention.py. In compound experiment, we feed the model several math questions and record accuracy on
-the last one. I want to detect how many output tokens the model spent on the last question. So our script will have to
-parse JSON outputs from the models. I think the model designates in its outputs which question it is currently solving.
-So first let's try and write a simple parser script that will try and detect "Problem 1", "Problem 2", etc.., depending
-on how many distractors there were. The script should parse through all result json files ONLY in compound directory.
-For now let's just parse and see if we can detect the pattern using this simple string search. Please display results as
-follows: For each model, show how many "Problem X" strings it found in the output and compare vs how many distractors
-there were. Let's see if we can even detect where solutions are.
+TODO:
+- Evaluate compound and perturb on AIME 2025 - Currently running compound baseline and 1 distractor
+- Try to ask the model itself to annotate the substeps in the reasoning chain and redo some eval with a system prompt
+  like that to try separate the subtasks.
+  
+  dataset names: HuggingFaceH4_aime_2024, MathArena_aime_2025, MATH_500, MathArena_hmmt_feb_2025

@@ -998,9 +998,8 @@ def main():
     parser.add_argument("--dataset", type=str, default="HuggingFaceH4_aime_2024")
     parser.add_argument("--outdir", type=str, default=None)
     parser.add_argument("--plot_type", type=str, required=True, 
-                        choices=['accuracy', 'global_conditional_accuracy', 'average_accuracy_drop', 
-                                 'output_length', 'prompt_recovery', 'radar_categories', 'conditional_accuracy',
-                                 'compound', 'attention_effort_ratios'])
+                    choices=['accuracy', 'average_accuracy_drop', 
+                                 'output_length', 'radar_categories', 'compound', 'attention_effort_ratios'])
     args = parser.parse_args()
 
     if not args.experiments_dir:
