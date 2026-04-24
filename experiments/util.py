@@ -83,7 +83,7 @@ TECHNIQUE_DESCRIPTIONS = {
     'rectangle_perimeter': "The user query is mapped onto the perimeter of a rectangle. The message is written as a single continuous string following the edges of the shape in a clockwise manner, beginning at the top-left. The TRANSFORMED INPUT is provided as a visual text block representing this rectangle with GRID START and GRID END markers. The center of the shape is filled with dots.",
     'snake_vertical': "The user query is written into a grid using a vertical 'snake' (zigzag) pattern. Starting from the top-left, the text is written down the first column, then up the second column, then down the third, and so on. The TRANSFORMED INPUT is provided as a visual grid with GRID START and GRID END markers.",
     'snake_horizontal': "The user query is written into a grid using a horizontal 'snake' (zigzag) pattern. Starting from the top-left, the text is written across the first row, then left across the second row, then right across the third, and so on. The TRANSFORMED INPUT is provided as a visual grid with GRID START and GRID END markers.",
-    'compound': "The user query contains multiple unrelated math problems. You must solve the last problem.",
+    'compound': "The user query contains multiple unrelated math problems.",
 }
 
 def remove_latex_comments(text):
