@@ -36,14 +36,14 @@ class TargetDetectorProcessor(LogitsProcessor):
 # ==========================================
 # 3. INITIALIZATION
 # ==========================================
-model_id = "Qwen/Qwen3-30B-A3B-Thinking-2507"
+model_id = "nvidia/OpenReasoning-Nemotron-7B"
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 
 model = AutoModelForCausalLM.from_pretrained(
     model_id,
     device_map="auto",
     torch_dtype=torch.bfloat16,
-    attn_implementation="eager" # CRITICAL
+    attn_implementation="eager" # Flash attention does not compute attention scores directly, so we use eager mode
 )
 
 # ==========================================
@@ -69,6 +69,7 @@ def oom_safe_attention_hook(self, hidden_states, attention_mask=None, position_i
     attn_weights = outputs[1] # Shape: (batch, heads, q_len, total_seq_len)
     
     q_len = attn_weights.shape[2]
+    print(f"Attention weights with shape: {attn_weights.shape}")
     
     # Only capture during decoding (q_len == 1) AND when we are in the target phase
     if q_len == 1 and state.in_target_phase:
@@ -81,6 +82,7 @@ def oom_safe_attention_hook(self, hidden_states, attention_mask=None, position_i
         # 2. .cpu() moves it from VRAM to standard RAM
         # 3. .to(torch.float16) compresses it to save space
         vector_to_save = vector_to_save.detach().cpu().to(torch.float16)
+        print(f"vector_to_save shape: {vector_to_save.shape}, dtype: {vector_to_save.dtype}")
         
         state.attention_vectors[self.layer_idx].append(vector_to_save)
     
@@ -96,30 +98,47 @@ AttentionClass.forward = oom_safe_attention_hook
 # ==========================================
 # 5. EXECUTION & SAVING
 # ==========================================
-prompt = """You are a helpful math assistant.
-Solve these completely unrelated math problems. For each problem put your final answer within \boxed{}.
-Before you begin solving Problem 3, you MUST output the exact phrase: "solving_target".
+messages =[
+    {"role": "system", "content": "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}."},
+    {"role": "user", "content": """Solve these completely unrelated math problems. For each problem put your final answer within \\boxed{}. \n\nProblem 1: What is 1 + 1?\n\nProblem 2: What is 2 + 2?\n\nProblem 3: What is 3 + 3?\n\nProblem 4: What is 4 + 4?"""}
+]
 
-Problem 1: Find the number of ways to place...[Distractor Problem 1 CoT here]
+# {"role": "user", "content": """Solve these completely unrelated math problems. For each problem put your final answer within \\boxed{}. Before you begin solving last problem, you MUST output the exact phrase: solving_target.\n\nProblem 1:\nAlice and Bob play the following game. A stack of $n$ tokens lies before them. The players take turns with Alice going first. On each turn, the player removes either $1$ token or $4$ tokens from the stack. Whoever removes the last token wins. Find the number of positive integers $n$ less than or equal to $2024$ for which there exists a strategy for Bob that guarantees that Bob will win the game regardless of Alice's play.\n\nProblem 2:\nLet ABCDEF be a convex equilateral hexagon in which all pairs of opposite sides are parallel. The triangle whose sides are extensions of segments AB, CD, and EF has side lengths 200, 240, and 300. Find the side length of the hexagon."""}
 
-Problem 2: Let ABC be a triangle inscribed...[Distractor Problem 2 CoT here]
+# 1. Get the raw formatted string using the model's chat template
+prompt_text = tokenizer.apply_chat_template(
+    messages,
+    tokenize=False, # Don't turn it into tensors yet
+    add_generation_prompt=True
+)
 
-Problem 3: Let p be the least prime number for...
-"""
-
-input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
+# 2. Tokenize the string properly, which gives us a dict with input_ids and attention_mask
+inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
 
 logits_processor = LogitsProcessorList([
     TargetDetectorProcessor(tokenizer, state)
 ])
 
 print("Starting generation...")
+
+# 3. Use **inputs to unpack the dictionary correctly!
 output_ids = model.generate(
-    input_ids,
-    max_new_tokens=131000,
+    **inputs, 
+    max_new_tokens=10000,
     logits_processor=logits_processor,
-    do_sample=False
+    # eos_token_id=tokenizer.eos_token_id,          # <-- THIS is the critical native fix
+    eos_token_id=[151643, 151645],
+    pad_token_id=tokenizer.eos_token_id,  # <-- Prevents Hugging Face warning logs
+    do_sample=True,
+    temperature=0.6,
+    top_k=0,
+    top_p=0.95
 )
+
+# print out the generated text to verify everything is working as expected
+generated_text = tokenizer.decode(output_ids[0], skip_special_tokens=False)
+print("\nGenerated Text:\n", generated_text)
+print("Token cound of generated text (including prompt):", len(output_ids[0]))
 
 print("\nGeneration complete. Saving full attention tensors to disk...")
 
