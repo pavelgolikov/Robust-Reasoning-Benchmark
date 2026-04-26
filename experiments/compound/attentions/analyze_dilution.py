@@ -5,6 +5,26 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from attention_interceptor import attach_dilution_interceptors, dilution_results
 
+def get_system_token_boundary(full_text: str, tokenizer) -> int:
+    """Finds the token boundary for the end of the system prompt (start of first 'Problem N')."""
+    pattern = re.compile(r"Problem\s*\d+", re.IGNORECASE)
+    match = pattern.search(full_text)
+    if not match:
+        return 0
+        
+    char_split_idx = match.start()
+    
+    # Tokenize with offset mapping
+    encoding = tokenizer(full_text, return_offsets_mapping=True, add_special_tokens=False)
+    offsets = encoding["offset_mapping"]
+    
+    # Map character index to token index
+    for token_idx, (start_char, end_char) in enumerate(offsets):
+        if end_char > char_split_idx:
+            return token_idx
+            
+    return len(offsets)
+
 def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer) -> int:
     """Finds the token boundary for the longest contiguous problem-solving block."""
     pattern = re.compile(r"Problem\s*\d+", re.IGNORECASE)
@@ -89,6 +109,9 @@ def main():
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     
+    print("Finding system prompt boundary...")
+    system_end_idx = get_system_token_boundary(full_text, tokenizer)
+    
     print(f"Finding boundary for 'Problem {target_problem_num}' using the longest contiguous block heuristic...")
     target_start_idx = get_target_token_boundary(full_text, target_problem_num, tokenizer)
     
@@ -96,9 +119,9 @@ def main():
     total_tokens = len(tokens)
     
     print(f"Total tokens: {total_tokens}")
-    print(f"Target start token index: {target_start_idx}")
-    print(f"Distractor tokens (I_D): {target_start_idx}")
-    print(f"Target tokens (I_T): {total_tokens - target_start_idx}")
+    print(f"System tokens: {system_end_idx}")
+    print(f"Distractor tokens: {target_start_idx - system_end_idx}")
+    print(f"Target tokens: {total_tokens - target_start_idx}")
     
     # Decode to show boundary for sanity check
     distractor_text = tokenizer.decode(tokens[:target_start_idx])
@@ -123,6 +146,7 @@ def main():
     print(f"Attaching dilution interceptors (chunk_size={args.chunk_size})...")
     attach_dilution_interceptors(
         model, 
+        system_end_idx=system_end_idx,
         target_start_idx=target_start_idx, 
         chunk_size=args.chunk_size,
         model_type=model_type
@@ -143,6 +167,7 @@ def main():
         "sample_index": args.index,
         "chunk_size": args.chunk_size,
         "target_problem_num": target_problem_num,
+        "system_end_idx": system_end_idx,
         "target_start_idx": target_start_idx,
         "total_tokens": total_tokens,
         "token_strings": [tokenizer.decode([t]) for t in tokens[target_start_idx:]] # String representation of target tokens
@@ -153,18 +178,17 @@ def main():
         "dilution_results": dict(dilution_results)
     }
     
-    print("\n=== DILUTION SUMMARY (Average % mass on distractor tokens) ===")
+    print("\n=== DILUTION SUMMARY (Average % mass) ===")
     for layer_idx in sorted(dilution_results.keys()):
         layer_scores = dilution_results[layer_idx]
+        sys_scores = layer_scores["system"]
+        dist_scores = layer_scores["distractor"]
         
-        # Average across the sequence dimension (dim=1) -> shape: (num_heads,)
-        avg_per_head = layer_scores.mean(dim=1) * 100.0
+        avg_sys_per_head = sys_scores.mean(dim=1) * 100.0
+        avg_dist_per_head = dist_scores.mean(dim=1) * 100.0
         
-        # Format head scores nicely
-        head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_per_head)]
-        
-        print(f"Layer {layer_idx:2d} (Avg: {avg_per_head.mean().item():.1f}%): " + ", ".join(head_strs))
-    print("==============================================================\n")
+        print(f"Layer {layer_idx:2d} (System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%)")
+    print("=========================================\n")
     
     torch.save(save_data, args.output_file)
     print(f"Successfully saved full raw dilution tracking tensors to {args.output_file}!")

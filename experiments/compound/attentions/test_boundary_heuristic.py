@@ -39,6 +39,8 @@ def main():
         if not matches:
             print("  No 'Problem N' markers found in text.")
         else:
+            first_match_start = matches[0].start()
+            
             groups = []
             current_group = None
             
@@ -77,6 +79,17 @@ def main():
                 
                 if longest_group["prob_num"] == target_problem_num:
                     correct_heuristic_count += 1
+                    
+                    system_len = first_match_start
+                    target_start_idx = longest_group['start_idx']
+                    distractor_len = target_start_idx - first_match_start
+                    target_len = len(full_text) - target_start_idx
+                    
+                    print(f"\n  [Regions]")
+                    print(f"  System Prompt: 0 to {first_match_start} (Length: {system_len})")
+                    print(f"  Distractor: {first_match_start} to {target_start_idx} (Length: {distractor_len})")
+                    print(f"  Target: {target_start_idx} to {len(full_text)} (Length: {target_len})")
+                    
                 else:
                     print(f"  *** MISMATCH! Heuristic chose {longest_group['marker']}, but Target is Problem {target_problem_num} ***")
                 

@@ -6,7 +6,7 @@ import math
 # Keys will be layer index (int), Values will be CPU tensors
 dilution_results = {}
 
-def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "llama"):
+def get_attention_interceptor(layer_idx: int, system_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "llama"):
     """
     Creates a custom forward function that replaces the native attention forward.
     This intercepts Q and K post-RoPE, computes the target attention blocks
@@ -103,8 +103,11 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
             Q_target = query_states[:, :, target_start_idx:, :]
             num_target_tokens = Q_target.shape[2]
             
-            # Pre-allocate CPU tensor to hold results (saves VRAM)
-            layer_scores = torch.zeros((bsz, num_heads, num_target_tokens), device='cpu')
+            # Pre-allocate CPU dictionary to hold results (saves VRAM)
+            layer_scores = {
+                "system": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu'),
+                "distractor": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu')
+            }
 
             # Process in chunks to prevent O(N^2) OOM crashes
             for chunk_start in range(0, num_target_tokens, chunk_size):
@@ -128,18 +131,20 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
                 # Apply Softmax to get exact probability distributions
                 attn_probs = F.softmax(attn_weights, dim=-1, dtype=torch.float32)
                 
-                # Aggregate: Sum probability mass looking specifically at Distractor Indices (0 to target_start_idx)
-                distractor_mass = attn_probs[:, :, :, :target_start_idx].sum(dim=-1)
+                # Aggregate: Sum probability mass looking specifically at System and Distractor Indices
+                system_mass = attn_probs[:, :, :, :system_end_idx].sum(dim=-1)
+                distractor_mass = attn_probs[:, :, :, system_end_idx:target_start_idx].sum(dim=-1)
                 
                 # Move directly to CPU
-                layer_scores[:, :, chunk_start:chunk_end] = distractor_mass.detach().cpu()
+                layer_scores["system"][:, :, chunk_start:chunk_end] = system_mass.detach().cpu()
+                layer_scores["distractor"][:, :, chunk_start:chunk_end] = distractor_mass.detach().cpu()
                 
                 # Immediately destroy massive intermediate tensors to keep VRAM flat
-                del attn_weights, causal_mask, attn_probs, distractor_mass
+                del attn_weights, causal_mask, attn_probs, system_mass, distractor_mass
                 torch.cuda.empty_cache()
 
             # Save the metric to the global dictionary (squeeze batch dim)
-            dilution_results[layer_idx] = layer_scores.squeeze(0)
+            dilution_results[layer_idx] = {k: v.squeeze(0) for k, v in layer_scores.items()}
 
         # 4. RESUME NATIVE FORWARD PASS
         # Hand computation back to highly-optimized PyTorch fused kernel for standard output
@@ -171,7 +176,7 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
 
     return custom_forward
 
-def attach_dilution_interceptors(model, target_start_idx: int, chunk_size: int = 500, model_type: str = "llama"):
+def attach_dilution_interceptors(model, system_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "llama"):
     """
     Applies the custom forward hook (interceptor) to every layer in the model.
     """
@@ -183,6 +188,7 @@ def attach_dilution_interceptors(model, target_start_idx: int, chunk_size: int =
         # Override the self_attn.forward method by binding the custom function to the object
         layer.self_attn.forward = get_attention_interceptor(
             layer_idx=i, 
+            system_end_idx=system_end_idx,
             target_start_idx=target_start_idx, 
             chunk_size=chunk_size,
             model_type=model_type
