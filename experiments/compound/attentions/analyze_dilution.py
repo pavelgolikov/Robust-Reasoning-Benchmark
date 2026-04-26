@@ -153,8 +153,21 @@ def main():
         "dilution_results": dict(dilution_results)
     }
     
+    print("\n=== DILUTION SUMMARY (Average % mass on distractor tokens) ===")
+    for layer_idx in sorted(dilution_results.keys()):
+        layer_scores = dilution_results[layer_idx]
+        
+        # Average across the sequence dimension (dim=1) -> shape: (num_heads,)
+        avg_per_head = layer_scores.mean(dim=1) * 100.0
+        
+        # Format head scores nicely
+        head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_per_head)]
+        
+        print(f"Layer {layer_idx:2d} (Avg: {avg_per_head.mean().item():.1f}%): " + ", ".join(head_strs))
+    print("==============================================================\n")
+    
     torch.save(save_data, args.output_file)
-    print(f"Successfully saved dilution tracking to {args.output_file}!")
+    print(f"Successfully saved full raw dilution tracking tensors to {args.output_file}!")
 
 if __name__ == "__main__":
     main()
