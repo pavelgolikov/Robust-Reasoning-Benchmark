@@ -64,15 +64,21 @@ def main():
             if current_group is not None:
                 groups.append(current_group)
                 
-            # Find longest group
-            longest_group = max(groups, key=lambda g: g["total_len"])
+            # Filter groups to ONLY the target problem
+            target_groups = [g for g in groups if g["prob_num"] == target_problem_num]
             
-            print(f"  -> Heuristic selects group starting with: {longest_group['marker']} (Total Length: {longest_group['total_len']}, Start: {longest_group['start_idx']})")
-            
-            if longest_group["prob_num"] == target_problem_num:
-                correct_heuristic_count += 1
+            if not target_groups:
+                print(f"  *** MISMATCH! No groups found for Target Problem {target_problem_num} ***")
             else:
-                print(f"  *** MISMATCH! Heuristic chose {longest_group['marker']}, but Target is Problem {target_problem_num} ***")
+                # Find longest group among the target problem groups
+                longest_group = max(target_groups, key=lambda g: g["total_len"])
+                
+                print(f"  -> Heuristic selects group starting with: {longest_group['marker']} (Total Length: {longest_group['total_len']}, Start: {longest_group['start_idx']})")
+                
+                if longest_group["prob_num"] == target_problem_num:
+                    correct_heuristic_count += 1
+                else:
+                    print(f"  *** MISMATCH! Heuristic chose {longest_group['marker']}, but Target is Problem {target_problem_num} ***")
                 
         print()
         

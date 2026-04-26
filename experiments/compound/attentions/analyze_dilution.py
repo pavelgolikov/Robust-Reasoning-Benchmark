@@ -5,7 +5,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from attention_interceptor import attach_dilution_interceptors, dilution_results
 
-def get_target_token_boundary(full_text: str, tokenizer) -> int:
+def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer) -> int:
     """Finds the token boundary for the longest contiguous problem-solving block."""
     pattern = re.compile(r"Problem\s*\d+", re.IGNORECASE)
     matches = list(pattern.finditer(full_text))
@@ -36,7 +36,11 @@ def get_target_token_boundary(full_text: str, tokenizer) -> int:
     if current_group is not None:
         groups.append(current_group)
         
-    longest_group = max(groups, key=lambda g: g["total_len"])
+    target_groups = [g for g in groups if g["prob_num"] == target_problem_num]
+    if not target_groups:
+        raise ValueError(f"No groups found for Target Problem {target_problem_num}")
+        
+    longest_group = max(target_groups, key=lambda g: g["total_len"])
     char_split_idx = longest_group["start_idx"]
     
     print(f"  -> Heuristic selected group starting with: {longest_group['marker']} (Total Length: {longest_group['total_len']})")
@@ -85,8 +89,8 @@ def main():
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     
-    print(f"Finding boundary using the longest contiguous problem-block heuristic...")
-    target_start_idx = get_target_token_boundary(full_text, tokenizer)
+    print(f"Finding boundary for 'Problem {target_problem_num}' using the longest contiguous block heuristic...")
+    target_start_idx = get_target_token_boundary(full_text, target_problem_num, tokenizer)
     
     tokens = tokenizer.encode(full_text, add_special_tokens=False)
     total_tokens = len(tokens)
