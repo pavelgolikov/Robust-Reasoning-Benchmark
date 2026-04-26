@@ -103,16 +103,11 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     
     # Reconstruct the exact prompt given to the model using the chat template
-    if system_prompt:
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": original}
-        ]
-    else:
-        messages = [
-            {"role": "user", "content": original}
-        ]
-        
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": original}
+    ]
+
     formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     full_text = formatted_prompt + output
     
@@ -159,16 +154,15 @@ def main():
         attn_implementation="sdpa" # Standard scaled dot product attention
     )
     
-    model_type = getattr(model.config, "model_type", "llama")
-    print(f"Detected model type: {model_type}")
+    # model_type = getattr(model.config, "model_type", "llama")
+    # print(f"Detected model type: {model_type}")
     
     print(f"Attaching dilution interceptors (chunk_size={args.chunk_size})...")
     attach_dilution_interceptors(
         model, 
         system_end_idx=system_end_idx,
         target_start_idx=target_start_idx, 
-        chunk_size=args.chunk_size,
-        model_type=model_type
+        chunk_size=args.chunk_size
     )
     
     input_ids = torch.tensor([tokens], device=model.device)
@@ -210,13 +204,13 @@ def main():
         
         print(f"\nLayer {layer_idx:2d} Averages - System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%, Target: {avg_tgt_per_head.mean().item():.1f}%")
         
-        sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys_per_head)]
-        dist_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dist_per_head)]
-        tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt_per_head)]
+        # sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys_per_head)]
+        # dist_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dist_per_head)]
+        # tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt_per_head)]
         
-        print(f"  System Heads     : " + ", ".join(sys_head_strs))
-        print(f"  Distractor Heads : " + ", ".join(dist_head_strs))
-        print(f"  Target Heads     : " + ", ".join(tgt_head_strs))
+        # print(f"  System Heads     : " + ", ".join(sys_head_strs))
+        # print(f"  Distractor Heads : " + ", ".join(dist_head_strs))
+        # print(f"  Target Heads     : " + ", ".join(tgt_head_strs))
     print("=========================================\n")
     
     torch.save(save_data, args.output_file)
