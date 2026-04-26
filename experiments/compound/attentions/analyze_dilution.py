@@ -5,18 +5,41 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from attention_interceptor import attach_dilution_interceptors, dilution_results
 
-def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer) -> int:
-    """Finds the token boundary for the last occurrence of the target problem marker."""
-    # Find all occurrences of the marker
-    pattern = re.compile(rf"Problem\s*{target_problem_num}")
+def get_target_token_boundary(full_text: str, tokenizer) -> int:
+    """Finds the token boundary for the longest contiguous problem-solving block."""
+    pattern = re.compile(r"Problem\s*\d+", re.IGNORECASE)
     matches = list(pattern.finditer(full_text))
     
     if not matches:
-        raise ValueError(f"Boundary marker 'Problem {target_problem_num}' not found in text.")
+        raise ValueError("No 'Problem N' markers found in text.")
         
-    # Get the last occurrence
-    last_match = matches[-1]
-    char_split_idx = last_match.start()
+    groups = []
+    current_group = None
+    
+    for j, match in enumerate(matches):
+        start = match.start()
+        end = matches[j+1].start() if j+1 < len(matches) else len(full_text)
+        length = end - start
+        
+        marker_str = match.group()
+        num_match = re.search(r"\d+", marker_str)
+        prob_num = int(num_match.group()) if num_match else -1
+        
+        if current_group is None:
+            current_group = {"prob_num": prob_num, "marker": marker_str, "total_len": length, "start_idx": start}
+        elif current_group["prob_num"] == prob_num:
+            current_group["total_len"] += length
+        else:
+            groups.append(current_group)
+            current_group = {"prob_num": prob_num, "marker": marker_str, "total_len": length, "start_idx": start}
+            
+    if current_group is not None:
+        groups.append(current_group)
+        
+    longest_group = max(groups, key=lambda g: g["total_len"])
+    char_split_idx = longest_group["start_idx"]
+    
+    print(f"  -> Heuristic selected group starting with: {longest_group['marker']} (Total Length: {longest_group['total_len']})")
     
     # Tokenize with offset mapping
     encoding = tokenizer(full_text, return_offsets_mapping=True, add_special_tokens=False)
@@ -31,8 +54,8 @@ def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer
 
 def main():
     parser = argparse.ArgumentParser(description="Memory-Efficient Attention Dilution Tracking")
-    parser.add_argument("--json_file", type=str, required=True, help="Path to compound JSON result file")
-    parser.add_argument("--model_id", type=str, required=True, help="HuggingFace model ID")
+    parser.add_argument("--json_file", type=str, default="/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound/results/Qwen_Qwen3-30B-A3B-Thinking-2507/MathArena_aime_2025/Qwen_Qwen3-30B-A3B-Thinking-2507_MathArena_aime_2025_compound_s42_20260330_155901.json", help="Path to compound JSON result file")
+    parser.add_argument("--model_id", type=str, default="Qwen/Qwen3-30B-A3B-Thinking-2507", help="HuggingFace model ID")
     parser.add_argument("--index", type=int, default=0, help="Index of the sample in the JSON file")
     parser.add_argument("--chunk_size", type=int, default=500, help="Chunk size for attention computation")
     parser.add_argument("--output_file", type=str, default="dilution_results.pt", help="Path to save output .pt file")
@@ -62,8 +85,8 @@ def main():
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     
-    print(f"Finding boundary for 'Problem {target_problem_num}' from the back of the output...")
-    target_start_idx = get_target_token_boundary(full_text, target_problem_num, tokenizer)
+    print(f"Finding boundary using the longest contiguous problem-block heuristic...")
+    target_start_idx = get_target_token_boundary(full_text, tokenizer)
     
     tokens = tokenizer.encode(full_text, add_special_tokens=False)
     total_tokens = len(tokens)

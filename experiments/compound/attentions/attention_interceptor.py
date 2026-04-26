@@ -12,10 +12,16 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
     This intercepts Q and K post-RoPE, computes the target attention blocks
     in VRAM-safe chunks, extracts the dilution scores to CPU, and resumes normally.
     """
-    if model_type == "qwen2":
-        from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb
-    else:
-        from transformers.models.llama.modeling_llama import apply_rotary_pos_emb
+    try:
+        import importlib
+        module_path = f"transformers.models.{model_type}.modeling_{model_type}"
+        model_module = importlib.import_module(module_path)
+        apply_rotary_pos_emb = model_module.apply_rotary_pos_emb
+    except (ImportError, AttributeError):
+        if "qwen" in model_type:
+            from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb
+        else:
+            from transformers.models.llama.modeling_llama import apply_rotary_pos_emb
     def custom_forward(
         self,
         hidden_states: torch.Tensor,
@@ -24,6 +30,7 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
         past_key_value=None,
         output_attentions=False,
         use_cache=False,
+        position_embeddings=None,
         **kwargs
     ):
         bsz, q_len, _ = hidden_states.size()
@@ -33,25 +40,60 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
         key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
 
-        query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-        key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
-        value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        # Safely fetch properties that might be stored on self or self.config
+        config = getattr(self, "config", getattr(self, "layer_config", None))
+        
+        num_heads = getattr(self, "num_heads", None)
+        if num_heads is None and config is not None:
+            num_heads = getattr(config, "num_attention_heads", None)
+            
+        num_key_value_heads = getattr(self, "num_key_value_heads", None)
+        if num_key_value_heads is None and config is not None:
+            num_key_value_heads = getattr(config, "num_key_value_heads", num_heads)
+            
+        hidden_size = getattr(self, "hidden_size", None)
+        if hidden_size is None and config is not None:
+            hidden_size = getattr(config, "hidden_size", None)
+            
+        head_dim = getattr(self, "head_dim", None)
+        if head_dim is None and hidden_size is not None and num_heads is not None:
+            head_dim = hidden_size // num_heads
+
+        query_states = query_states.view(bsz, q_len, num_heads, head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len, num_key_value_heads, head_dim).transpose(1, 2)
+        value_states = value_states.view(bsz, q_len, num_key_value_heads, head_dim).transpose(1, 2)
 
         # 2. Apply Rotary Position Embeddings (RoPE)
         kv_seq_len = key_states.shape[-2]
         
-        # Position IDs are strictly required for accurate RoPE. Fallback to basic arange if not passed.
-        if position_ids is None:
-            position_ids = torch.arange(kv_seq_len, dtype=torch.long, device=hidden_states.device)
-            position_ids = position_ids.unsqueeze(0).view(-1, kv_seq_len)
+        if position_embeddings is not None:
+            cos, sin = position_embeddings
+        else:
+            # Position IDs are strictly required for accurate RoPE. Fallback to basic arange if not passed.
+            if position_ids is None:
+                position_ids = torch.arange(kv_seq_len, dtype=torch.long, device=hidden_states.device)
+                position_ids = position_ids.unsqueeze(0).view(-1, kv_seq_len)
+                
+            rotary_emb_fn = getattr(self, "rotary_emb", getattr(self, "rotary_fn", None))
+            if rotary_emb_fn is None:
+                raise AttributeError(f"Could not find rotary embedding function on {type(self)}")
+                
+            try:
+                cos, sin = rotary_emb_fn(value_states, position_ids)
+            except TypeError:
+                # Older implementations might use seq_len instead of position_ids
+                cos, sin = rotary_emb_fn(value_states, seq_len=kv_seq_len)
             
-        cos, sin = self.rotary_emb(value_states, position_ids)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
 
         # Repeat K/V for Grouped Query Attention (GQA) if applicable
-        if hasattr(self, "num_key_value_groups") and self.num_key_value_groups > 1:
-            key_states = key_states.repeat_interleave(self.num_key_value_groups, dim=1)
-            value_states = value_states.repeat_interleave(self.num_key_value_groups, dim=1)
+        num_key_value_groups = getattr(self, "num_key_value_groups", None)
+        if num_key_value_groups is None and num_heads is not None and num_key_value_heads is not None:
+            num_key_value_groups = num_heads // num_key_value_heads
+            
+        if num_key_value_groups is not None and num_key_value_groups > 1:
+            key_states = key_states.repeat_interleave(num_key_value_groups, dim=1)
+            value_states = value_states.repeat_interleave(num_key_value_groups, dim=1)
 
         # 3. ON-THE-FLY DILUTION COMPUTATION (Memory Safe)
         # We only compute this if our forward pass includes the target indices
@@ -62,7 +104,7 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
             num_target_tokens = Q_target.shape[2]
             
             # Pre-allocate CPU tensor to hold results (saves VRAM)
-            layer_scores = torch.zeros((bsz, self.num_heads, num_target_tokens), device='cpu')
+            layer_scores = torch.zeros((bsz, num_heads, num_target_tokens), device='cpu')
 
             # Process in chunks to prevent O(N^2) OOM crashes
             for chunk_start in range(0, num_target_tokens, chunk_size):
@@ -70,7 +112,7 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
                 Q_chunk = Q_target[:, :, chunk_start:chunk_end, :]
                 
                 # Compute raw unnormalized attention scores (Q * K^T) for this chunk
-                attn_weights = torch.matmul(Q_chunk, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+                attn_weights = torch.matmul(Q_chunk, key_states.transpose(2, 3)) / math.sqrt(head_dim)
                 
                 # Create and apply Causal Mask mathematically
                 global_q_indices = torch.arange(
@@ -110,10 +152,22 @@ def get_attention_interceptor(layer_idx: int, target_start_idx: int, chunk_size:
             )
         
         attn_output = attn_output.transpose(1, 2).contiguous()
-        attn_output = attn_output.view(bsz, q_len, self.hidden_size)
+        attn_output = attn_output.view(bsz, q_len, num_heads * head_dim)
         attn_output = self.o_proj(attn_output)
 
-        return attn_output, None, past_key_value
+        outputs = (attn_output,)
+        if output_attentions:
+            outputs += (None,)
+        if use_cache:
+            outputs += (past_key_value,)
+            
+        # Fallback for strict older models that always expect exactly 3 elements
+        if len(outputs) == 1 and not ("qwen" in model_type or "llama" in model_type):
+            outputs = (attn_output, None, past_key_value)
+            
+        # Sometimes Qwen3 unpacking requires exact elements, but the dynamic tuple is standard
+        # However, if it's explicitly qwen3_moe, it definitely follows the dynamic tuple pattern.
+        return outputs
 
     return custom_forward
 
