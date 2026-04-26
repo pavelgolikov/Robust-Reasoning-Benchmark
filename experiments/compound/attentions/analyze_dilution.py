@@ -96,8 +96,25 @@ def main():
         
     entry = entries[args.index]
     original = entry.get("original", "")
+    system_prompt = entry.get("system_prompt", "")
     output = entry.get("output", "")
-    full_text = original + output
+    
+    print("Loading tokenizer...")
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
+    
+    # Reconstruct the exact prompt given to the model using the chat template
+    if system_prompt:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": original}
+        ]
+    else:
+        messages = [
+            {"role": "user", "content": original}
+        ]
+        
+    formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    full_text = formatted_prompt + output
     
     # Determine the target problem number from the original prompt
     prompt_problems = re.findall(r"Problem \d+:", original)
@@ -105,9 +122,6 @@ def main():
     target_problem_num = num_distractors + 1
     
     print(f"Detected {num_distractors} distractors. Target problem is Problem {target_problem_num}.")
-    
-    print("Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     
     print("Finding system prompt boundary...")
     system_end_idx = get_system_token_boundary(full_text, tokenizer)
@@ -122,6 +136,11 @@ def main():
     print(f"System tokens: {system_end_idx}")
     print(f"Distractor tokens: {target_start_idx - system_end_idx}")
     print(f"Target tokens: {total_tokens - target_start_idx}")
+    
+    system_text = tokenizer.decode(tokens[:system_end_idx])
+    print("\n--- SYSTEM REGION ---")
+    print(system_text)
+    print("---------------------\n")
     
     # Decode to show boundary for sanity check
     distractor_text = tokenizer.decode(tokens[:target_start_idx])
