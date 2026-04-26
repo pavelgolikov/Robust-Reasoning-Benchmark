@@ -106,7 +106,8 @@ def get_attention_interceptor(layer_idx: int, system_end_idx: int, target_start_
             # Pre-allocate CPU dictionary to hold results (saves VRAM)
             layer_scores = {
                 "system": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu'),
-                "distractor": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu')
+                "distractor": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu'),
+                "target": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu')
             }
 
             # Process in chunks to prevent O(N^2) OOM crashes
@@ -134,13 +135,15 @@ def get_attention_interceptor(layer_idx: int, system_end_idx: int, target_start_
                 # Aggregate: Sum probability mass looking specifically at System and Distractor Indices
                 system_mass = attn_probs[:, :, :, :system_end_idx].sum(dim=-1)
                 distractor_mass = attn_probs[:, :, :, system_end_idx:target_start_idx].sum(dim=-1)
+                target_mass = attn_probs[:, :, :, target_start_idx:].sum(dim=-1)
                 
                 # Move directly to CPU
                 layer_scores["system"][:, :, chunk_start:chunk_end] = system_mass.detach().cpu()
                 layer_scores["distractor"][:, :, chunk_start:chunk_end] = distractor_mass.detach().cpu()
+                layer_scores["target"][:, :, chunk_start:chunk_end] = target_mass.detach().cpu()
                 
                 # Immediately destroy massive intermediate tensors to keep VRAM flat
-                del attn_weights, causal_mask, attn_probs, system_mass, distractor_mass
+                del attn_weights, causal_mask, attn_probs, system_mass, distractor_mass, target_mass
                 torch.cuda.empty_cache()
 
             # Save the metric to the global dictionary (squeeze batch dim)

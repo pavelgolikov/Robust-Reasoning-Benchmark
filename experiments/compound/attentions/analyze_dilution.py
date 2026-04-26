@@ -183,11 +183,21 @@ def main():
         layer_scores = dilution_results[layer_idx]
         sys_scores = layer_scores["system"]
         dist_scores = layer_scores["distractor"]
+        target_scores = layer_scores["target"]
         
         avg_sys_per_head = sys_scores.mean(dim=1) * 100.0
         avg_dist_per_head = dist_scores.mean(dim=1) * 100.0
+        avg_tgt_per_head = target_scores.mean(dim=1) * 100.0
         
-        print(f"Layer {layer_idx:2d} (System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%)")
+        print(f"\nLayer {layer_idx:2d} Averages - System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%, Target: {avg_tgt_per_head.mean().item():.1f}%")
+        
+        sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys_per_head)]
+        dist_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dist_per_head)]
+        tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt_per_head)]
+        
+        print(f"  System Heads     : " + ", ".join(sys_head_strs))
+        print(f"  Distractor Heads : " + ", ".join(dist_head_strs))
+        print(f"  Target Heads     : " + ", ".join(tgt_head_strs))
     print("=========================================\n")
     
     torch.save(save_data, args.output_file)
