@@ -152,12 +152,29 @@ def main():
     print("----------------------\n")
     
     print("Loading model...")
+    
+    # Conditionally set attention implementation
+    model_kwargs = {
+        "device_map": "auto",
+        "torch_dtype": torch.bfloat16,
+    }
+    
+    # Force SDPA for Qwen/Llama, but let GPT-OSS use its default
+    if "gpt-oss" not in model_id.lower():
+        model_kwargs["attn_implementation"] = "sdpa"
+        
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
-        device_map="auto",
-        torch_dtype=torch.bfloat16,
-        attn_implementation="eager" # Use eager implementation for custom interceptors
+        **model_kwargs
     )
+
+    # print("Loading model...")
+    # model = AutoModelForCausalLM.from_pretrained(
+    #     model_id,
+    #     device_map="auto",
+    #     torch_dtype=torch.bfloat16,
+    #     attn_implementation="sdpa"
+    # )
     
     model_type = getattr(model.config, "model_type", "qwen3")
     print(f"Detected model type: {model_type}")
@@ -219,7 +236,7 @@ def main():
         # print(f"  Target Heads     : " + ", ".join(tgt_head_strs))
     print("=========================================\n")
     
-    torch.save(save_data, args.output_file)
+    # torch.save(save_data, args.output_file)
     print(f"Successfully saved full raw dilution tracking tensors to {args.output_file}!")
 
 if __name__ == "__main__":

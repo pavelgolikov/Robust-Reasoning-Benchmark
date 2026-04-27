@@ -121,33 +121,103 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
 
             dilution_results[self.layer_idx] = {k: v.squeeze(0) for k, v in layer_scores.items()}
 
-        # 4. RESUME NATIVE FORWARD PASS
-        attention_interface = ALL_ATTENTION_FUNCTIONS.get_interface(
-            self.config._attn_implementation, eager_attention_forward
-        )
+        # # 4. RESUME NATIVE FORWARD PASS
+        # attention_interface = ALL_ATTENTION_FUNCTIONS.get_interface(
+        #     self.config._attn_implementation, eager_attention_forward
+        # )
 
-        kwargs_interface = {
-            "dropout": 0.0 if not self.training else self.attention_dropout,
-            "scaling": self.scaling,
-            "sliding_window": getattr(self, "sliding_window", None),
-        }
+        # kwargs_interface = {
+        #     "dropout": 0.0 if not self.training else self.attention_dropout,
+        #     "scaling": self.scaling,
+        #     "sliding_window": getattr(self, "sliding_window", None),
+        # }
         
-        if is_gpt_oss:
-            kwargs_interface["s_aux"] = getattr(self, "sinks", None)
+        # if is_gpt_oss:
+        #     kwargs_interface["s_aux"] = getattr(self, "sinks", None)
             
-        kwargs_interface.update(kwargs)
+        # kwargs_interface.update(kwargs)
 
-        attn_output, attn_weights = attention_interface(
-            self,
-            query_states,
-            key_states,
-            value_states,
-            attention_mask,
-            **kwargs_interface,
-        )
+        # attn_output, attn_weights = attention_interface(
+        #     self,
+        #     query_states,
+        #     key_states,
+        #     value_states,
+        #     attention_mask,
+        #     **kwargs_interface,
+        # )
 
-        # CRITICAL FIX for the RuntimeError: 
-        # This properly reshapes (bsz, q_len, num_heads, head_dim) into (bsz, q_len, hidden_size)
+        # # CRITICAL FIX for the RuntimeError: 
+        # # This properly reshapes (bsz, q_len, num_heads, head_dim) into (bsz, q_len, hidden_size)
+        # attn_output = attn_output.reshape(*input_shape, -1).contiguous()
+        # attn_output = self.o_proj(attn_output)
+        # 4. RESUME NATIVE FORWARD PASS (MEMORY-SAFE CHUNKED)
+        if is_gpt_oss:
+            # Bypasses HF's router to prevent ValueError, and chunks Q to prevent OOM
+            attn_output = torch.zeros((bsz, num_heads, q_len, head_dim), device=query_states.device, dtype=query_states.dtype)
+            
+            # Expand values for GQA just like we did for keys
+            num_kv_groups = getattr(self, "num_key_value_groups", 1)
+            value_states_expanded = value_states.repeat_interleave(num_kv_groups, dim=1) if num_kv_groups > 1 else value_states
+            
+            # Compute the exact output block-by-block
+            for chunk_start in range(0, q_len, chunk_size):
+                chunk_end = min(chunk_start + chunk_size, q_len)
+                Q_chunk = query_states[:, :, chunk_start:chunk_end, :]
+                
+                # Q * K^T
+                attn_weights = torch.matmul(Q_chunk, key_states_expanded.transpose(2, 3)) * self.scaling
+                
+                # Causal Mask
+                global_q_indices = torch.arange(chunk_start, chunk_end, device=attn_weights.device).view(-1, 1)
+                global_k_indices = torch.arange(kv_seq_len, device=attn_weights.device).view(1, -1)
+                causal_mask = (global_k_indices > global_q_indices).unsqueeze(0).unsqueeze(0)
+                attn_weights.masked_fill_(causal_mask, float('-inf'))
+                
+                # Apply Softmax (with custom Sinks logic)
+                if getattr(self, "sinks", None) is not None:
+                    sinks = getattr(self, "sinks")
+                    sinks_expanded = sinks.reshape(1, -1, 1, 1).expand(bsz, -1, Q_chunk.shape[2], -1)
+                    combined_logits = torch.cat([attn_weights, sinks_expanded], dim=-1)
+                    combined_logits = combined_logits - combined_logits.max(dim=-1, keepdim=True).values
+                    probs = F.softmax(combined_logits, dim=-1, dtype=torch.float32)
+                    attn_probs = probs[..., :-1].to(value_states.dtype)
+                    del combined_logits, probs, sinks_expanded
+                else:
+                    attn_probs = F.softmax(attn_weights, dim=-1, dtype=torch.float32).to(value_states.dtype)
+                
+                # Probs * V
+                chunk_output = torch.matmul(attn_probs, value_states_expanded)
+                attn_output[:, :, chunk_start:chunk_end, :] = chunk_output
+                
+                # Free VRAM
+                del attn_weights, causal_mask, attn_probs, chunk_output
+                torch.cuda.empty_cache()
+                
+            attn_weights = None # We safely discard the full NxN matrix
+            
+        else:
+            # Standard HF routing for Qwen
+            attention_interface = ALL_ATTENTION_FUNCTIONS.get_interface(
+                self.config._attn_implementation, eager_attention_forward
+            )
+
+            kwargs_interface = {
+                "dropout": 0.0 if not self.training else self.attention_dropout,
+                "scaling": self.scaling,
+                "sliding_window": getattr(self, "sliding_window", None),
+            }
+            kwargs_interface.update(kwargs)
+
+            attn_output, attn_weights = attention_interface(
+                self,
+                query_states,
+                key_states,
+                value_states,
+                attention_mask,
+                **kwargs_interface,
+            )
+
+        # Reshape to hidden_size and project
         attn_output = attn_output.reshape(*input_shape, -1).contiguous()
         attn_output = self.o_proj(attn_output)
         
