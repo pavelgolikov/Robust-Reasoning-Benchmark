@@ -96,6 +96,12 @@ def main():
     with open(args.json_file, 'r') as f:
         data = json.load(f)
         
+    # Clear output file at start
+    with open(out_filepath, 'w') as f:
+        f.write(f"DILUTION ANALYSIS FOR: {args.json_file}\n")
+        f.write(f"MODEL ID: {model_id}\n")
+        f.write("="*80 + "\n")
+        
     # Find the target entries
     entries = [item for item in data if isinstance(item, dict) and "output" in item]
     num_samples = len(entries)
@@ -129,7 +135,6 @@ def main():
     
     accumulated_results = {}
     successful_samples = 0
-    individual_tables = []
     
     for idx, entry in enumerate(entries):
         print(f"\n[{idx+1}/{num_samples}] Processing sample...")
@@ -219,7 +224,12 @@ def main():
             sample_output_lines.extend([line1, line2, line3, line4])
             
         sample_output_lines.append("=========================================\n")
-        individual_tables.append("\n".join(sample_output_lines))
+        sample_text = "\n".join(sample_output_lines)
+        
+        # Write this sample immediately to the file
+        with open(out_filepath, 'a') as f:
+            f.write(sample_text + "\n")
+            
         successful_samples += 1
 
     # Generate final aggregated table
@@ -244,15 +254,12 @@ def main():
             
         final_lines.append("========================================================================\n")
         
-        # Append individual tables
-        final_lines.extend(individual_tables)
-        
         full_output = "\n".join(final_lines)
         # print(full_output)
         
-        with open(out_filepath, 'w') as f:
+        with open(out_filepath, 'a') as f:
             f.write(full_output)
-        print(f"Successfully saved aggregated and individual dilution results to {out_filepath}!")
+        print(f"Successfully saved aggregated dilution results to the end of {out_filepath}!")
     else:
         print("No successful samples processed. Output file not created.")
 
