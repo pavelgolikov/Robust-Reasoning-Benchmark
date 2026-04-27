@@ -80,80 +80,35 @@ def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer
 def main():
     parser = argparse.ArgumentParser(description="Memory-Efficient Attention Dilution Tracking")
     parser.add_argument("--json_file", type=str, default="/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound/results/Qwen_Qwen3-30B-A3B-Thinking-2507/MathArena_aime_2025/Qwen_Qwen3-30B-A3B-Thinking-2507_MathArena_aime_2025_compound_s42_20260330_155901.json", help="Path to compound JSON result file")
-    parser.add_argument("--index", type=int, default=0, help="Index of the sample in the JSON file")
     parser.add_argument("--chunk_size", type=int, default=500, help="Chunk size for attention computation")
-    parser.add_argument("--output_file", type=str, default="dilution_results.pt", help="Path to save output .pt file")
+    parser.add_argument("--output_file", type=str, default="dilution_summary.txt", help="Path to save output .txt file")
     args = parser.parse_args()
+    
+    # Ensure output is a text file
+    out_filepath = args.output_file if args.output_file.endswith(".txt") else args.output_file.replace(".pt", ".txt")
     
     # Extract model ID from JSON file path (e.g., .../results/Qwen_Qwen3-30B.../dataset/...)
     safe_model_name = os.path.normpath(args.json_file).split(os.sep)[-3]
     model_id = safe_model_name.replace("_", "/", 1)
     
-    print(f"Loading data from {args.json_file} (index {args.index})")
+    print(f"Loading data from {args.json_file}")
     print(f"Extracted model ID from path: {model_id}")
     with open(args.json_file, 'r') as f:
         data = json.load(f)
         
-    # Find the target entry
+    # Find the target entries
     entries = [item for item in data if isinstance(item, dict) and "output" in item]
-    if args.index >= len(entries):
-        raise IndexError(f"Index {args.index} out of bounds. Found {len(entries)} valid entries.")
-        
-    entry = entries[args.index]
-    original = entry.get("original", "")
-    system_prompt = entry.get("system_prompt", "")
-    output = entry.get("output", "")
+    num_samples = len(entries)
+    print(f"Found {num_samples} valid entries to process.")
     
+    if num_samples == 0:
+        print("No valid entries found. Exiting.")
+        return
+
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     
-    # Reconstruct the exact prompt given to the model using the chat template
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": original}
-    ]
-
-    formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-    full_text = formatted_prompt + output
-    
-    # Determine the target problem number from the original prompt
-    prompt_problems = re.findall(r"Problem \d+:", original)
-    num_distractors = max(0, len(prompt_problems) - 1)
-    target_problem_num = num_distractors + 1
-    
-    print(f"Detected {num_distractors} distractors. Target problem is Problem {target_problem_num}.")
-    
-    print("Finding system prompt boundary...")
-    system_end_idx, system_char_idx = get_system_token_boundary(full_text, tokenizer)
-    
-    print(f"Finding boundary for 'Problem {target_problem_num}' using the longest contiguous block heuristic...")
-    target_start_idx, target_char_idx = get_target_token_boundary(full_text, target_problem_num, tokenizer)
-    
-    tokens = tokenizer.encode(full_text, add_special_tokens=False)
-    total_tokens = len(tokens)
-    
-    print(f"Total tokens: {total_tokens}")
-    print(f"System tokens: {system_end_idx}")
-    print(f"Distractor tokens: {target_start_idx - system_end_idx}")
-    print(f"Target tokens: {total_tokens - target_start_idx}")
-    
-    # Safely slice the original full_text to bypass tokenizer decoder bugs
-    system_text = full_text[:system_char_idx]
-    print("\n--- SYSTEM REGION ---")
-    print(system_text)
-    print("---------------------\n")
-    
-    # Safely slice the original full_text to bypass tokenizer decoder bugs
-    distractor_text = full_text[:target_char_idx]
-    target_text = full_text[target_char_idx:]
-    
-    print("\n--- BOUNDARY CHECK ---")
-    print(f"Last 100 chars of distractor phase: {repr(distractor_text[-100:])}")
-    print(f"First 100 chars of target phase: {repr(target_text[:100])}")
-    print("----------------------\n")
-    
     print("Loading model...")
-    
     # Conditionally set attention implementation
     model_kwargs = {
         "device_map": "auto",
@@ -161,84 +116,145 @@ def main():
     }
     
     # Force SDPA for Qwen/Llama, but let GPT-OSS use its default
-    if "gpt-oss" not in model_id.lower():
+    if "gpt-oss" not in model_id.lower() and "gptoss" not in model_id.lower():
         model_kwargs["attn_implementation"] = "sdpa"
         
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         **model_kwargs
     )
-
-    # print("Loading model...")
-    # model = AutoModelForCausalLM.from_pretrained(
-    #     model_id,
-    #     device_map="auto",
-    #     torch_dtype=torch.bfloat16,
-    #     attn_implementation="sdpa"
-    # )
     
     model_type = getattr(model.config, "model_type", "qwen3")
     print(f"Detected model type: {model_type}")
     
-    print(f"Attaching dilution interceptors (chunk_size={args.chunk_size})...")
-    attach_dilution_interceptors(
-        model, 
-        system_end_idx=system_end_idx,
-        target_start_idx=target_start_idx, 
-        chunk_size=args.chunk_size,
-        model_type=model_type
-    )
+    accumulated_results = {}
+    successful_samples = 0
+    individual_tables = []
     
-    input_ids = torch.tensor([tokens], device=model.device)
-    
-    print("Executing forward pass (this may take a moment)...")
-    with torch.no_grad():
-        model(input_ids)
+    for idx, entry in enumerate(entries):
+        print(f"\n[{idx+1}/{num_samples}] Processing sample...")
         
-    print("Forward pass complete. Gathering results...")
-    
-    # Format metadata
-    metadata = {
-        "model_id": model_id,
-        "json_file": args.json_file,
-        "sample_index": args.index,
-        "chunk_size": args.chunk_size,
-        "target_problem_num": target_problem_num,
-        "system_end_idx": system_end_idx,
-        "target_start_idx": target_start_idx,
-        "total_tokens": total_tokens,
-        "token_strings": [tokenizer.decode([t], clean_up_tokenization_spaces=False) for t in tokens[target_start_idx:]] # String representation of target tokens
-    }
-    
-    save_data = {
-        "metadata": metadata,
-        "dilution_results": dict(dilution_results)
-    }
-    
-    print("\n=== DILUTION SUMMARY (Average % mass) ===")
-    for layer_idx in sorted(dilution_results.keys()):
-        layer_scores = dilution_results[layer_idx]
-        sys_scores = layer_scores["system"]
-        dist_scores = layer_scores["distractor"]
-        target_scores = layer_scores["target"]
+        original = entry.get("original", "")
+        system_prompt = entry.get("system_prompt", "")
+        output = entry.get("output", "")
         
-        avg_sys_per_head = sys_scores.mean(dim=1) * 100.0
-        avg_dist_per_head = dist_scores.mean(dim=1) * 100.0
-        avg_tgt_per_head = target_scores.mean(dim=1) * 100.0
+        # Reconstruct the exact prompt given to the model using the chat template
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": original}
+        ]
+
+        formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        full_text = formatted_prompt + output
         
-        print(f"\nLayer {layer_idx:2d} Averages - System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%, Target: {avg_tgt_per_head.mean().item():.1f}%")
+        # Determine the target problem number from the original prompt
+        prompt_problems = re.findall(r"Problem \d+:", original)
+        num_distractors = max(0, len(prompt_problems) - 1)
+        target_problem_num = num_distractors + 1
         
-        # sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys_per_head)]
-        # dist_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dist_per_head)]
-        # tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt_per_head)]
+        try:
+            system_end_idx, system_char_idx = get_system_token_boundary(full_text, tokenizer)
+            target_start_idx, target_char_idx = get_target_token_boundary(full_text, target_problem_num, tokenizer)
+        except ValueError as e:
+            print(f"Skipping sample {idx+1} due to boundary error: {e}")
+            continue
+            
+        tokens = tokenizer.encode(full_text, add_special_tokens=False)
+        total_tokens = len(tokens)
         
-        # print(f"  System Heads     : " + ", ".join(sys_head_strs))
-        # print(f"  Distractor Heads : " + ", ".join(dist_head_strs))
-        # print(f"  Target Heads     : " + ", ".join(tgt_head_strs))
-    print("=========================================\n")
-    
-    # torch.save(save_data, args.output_file)
-    # print(f"Successfully saved full raw dilution tracking tensors to {args.output_file}!")
+        attach_dilution_interceptors(
+            model, 
+            system_end_idx=system_end_idx,
+            target_start_idx=target_start_idx, 
+            chunk_size=args.chunk_size,
+            model_type=model_type
+        )
+        
+        input_ids = torch.tensor([tokens], device=model.device)
+        
+        try:
+            with torch.no_grad():
+                model(input_ids)
+        except RuntimeError as e:
+            print(f"Skipping sample {idx+1} due to execution error (OOM?): {e}")
+            continue
+            
+        # Extract results for this sample
+        sample_output_lines = [f"\n=== SAMPLE {idx+1} DILUTION SUMMARY (Average % mass) ==="]
+        
+        for layer_idx in sorted(dilution_results.keys()):
+            layer_scores = dilution_results[layer_idx]
+            sys_scores = layer_scores["system"]
+            dist_scores = layer_scores["distractor"]
+            target_scores = layer_scores["target"]
+            
+            avg_sys_per_head = sys_scores.mean(dim=1) * 100.0
+            avg_dist_per_head = dist_scores.mean(dim=1) * 100.0
+            avg_tgt_per_head = target_scores.mean(dim=1) * 100.0
+            
+            # Initialize accumulator for this layer if not exists
+            if layer_idx not in accumulated_results:
+                num_heads = sys_scores.shape[0]
+                accumulated_results[layer_idx] = {
+                    "system": torch.zeros(num_heads, device='cpu'),
+                    "distractor": torch.zeros(num_heads, device='cpu'),
+                    "target": torch.zeros(num_heads, device='cpu')
+                }
+                
+            # Accumulate
+            accumulated_results[layer_idx]["system"] += avg_sys_per_head.cpu()
+            accumulated_results[layer_idx]["distractor"] += avg_dist_per_head.cpu()
+            accumulated_results[layer_idx]["target"] += avg_tgt_per_head.cpu()
+            
+            # Format individual table
+            line1 = f"\nLayer {layer_idx:2d} Averages - System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%, Target: {avg_tgt_per_head.mean().item():.1f}%"
+            sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys_per_head)]
+            dist_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dist_per_head)]
+            tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt_per_head)]
+            
+            line2 = f"  System Heads     : " + ", ".join(sys_head_strs)
+            line3 = f"  Distractor Heads : " + ", ".join(dist_head_strs)
+            line4 = f"  Target Heads     : " + ", ".join(tgt_head_strs)
+            
+            sample_output_lines.extend([line1, line2, line3, line4])
+            
+        sample_output_lines.append("=========================================\n")
+        individual_tables.append("\n".join(sample_output_lines))
+        successful_samples += 1
+
+    # Generate final aggregated table
+    final_lines = []
+    if successful_samples > 0:
+        final_lines.append(f"\n=== AGGREGATED DILUTION SUMMARY (Averaged across {successful_samples} samples) ===")
+        for layer_idx in sorted(accumulated_results.keys()):
+            avg_sys_per_head = accumulated_results[layer_idx]["system"] / successful_samples
+            avg_dist_per_head = accumulated_results[layer_idx]["distractor"] / successful_samples
+            avg_tgt_per_head = accumulated_results[layer_idx]["target"] / successful_samples
+            
+            line1 = f"\nLayer {layer_idx:2d} Averages - System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%, Target: {avg_tgt_per_head.mean().item():.1f}%"
+            sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys_per_head)]
+            dist_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dist_per_head)]
+            tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt_per_head)]
+            
+            line2 = f"  System Heads     : " + ", ".join(sys_head_strs)
+            line3 = f"  Distractor Heads : " + ", ".join(dist_head_strs)
+            line4 = f"  Target Heads     : " + ", ".join(tgt_head_strs)
+            
+            final_lines.extend([line1, line2, line3, line4])
+            
+        final_lines.append("========================================================================\n")
+        
+        # Append individual tables
+        final_lines.extend(individual_tables)
+        
+        full_output = "\n".join(final_lines)
+        # print(full_output)
+        
+        with open(out_filepath, 'w') as f:
+            f.write(full_output)
+        print(f"Successfully saved aggregated and individual dilution results to {out_filepath}!")
+    else:
+        print("No successful samples processed. Output file not created.")
 
 if __name__ == "__main__":
     main()

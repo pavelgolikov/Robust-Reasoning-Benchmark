@@ -123,35 +123,6 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
 
             dilution_results[self.layer_idx] = {k: v.squeeze(0) for k, v in layer_scores.items()}
 
-        # # 4. RESUME NATIVE FORWARD PASS
-        # attention_interface = ALL_ATTENTION_FUNCTIONS.get_interface(
-        #     self.config._attn_implementation, eager_attention_forward
-        # )
-
-        # kwargs_interface = {
-        #     "dropout": 0.0 if not self.training else self.attention_dropout,
-        #     "scaling": self.scaling,
-        #     "sliding_window": getattr(self, "sliding_window", None),
-        # }
-        
-        # if is_gpt_oss:
-        #     kwargs_interface["s_aux"] = getattr(self, "sinks", None)
-            
-        # kwargs_interface.update(kwargs)
-
-        # attn_output, attn_weights = attention_interface(
-        #     self,
-        #     query_states,
-        #     key_states,
-        #     value_states,
-        #     attention_mask,
-        #     **kwargs_interface,
-        # )
-
-        # # CRITICAL FIX for the RuntimeError: 
-        # # This properly reshapes (bsz, q_len, num_heads, head_dim) into (bsz, q_len, hidden_size)
-        # attn_output = attn_output.reshape(*input_shape, -1).contiguous()
-        # attn_output = self.o_proj(attn_output)
         # 4. RESUME NATIVE FORWARD PASS (MEMORY-SAFE CHUNKED)
         if is_gpt_oss:
             # Bypasses HF's router to prevent ValueError, and chunks Q to prevent OOM
