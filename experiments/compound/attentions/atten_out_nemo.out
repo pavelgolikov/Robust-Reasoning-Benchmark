@@ -1,0 +1,95 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading data from /home/golikovp/projects/aip-gpekhime/golikovp/Robust-Reasoning-Benchmark/experiments/compound/results/nvidia_OpenReasoning-Nemotron-7B/MathArena_aime_2025/nvidia_OpenReasoning-Nemotron-7B_MathArena_aime_2025_compound_s42_20260405_054949.json (index 0)
+Extracted model ID from path: nvidia/OpenReasoning-Nemotron-7B
+Loading tokenizer...
+Detected 3 distractors. Target problem is Problem 4.
+Finding system prompt boundary...
+Finding boundary for 'Problem 4' using the longest contiguous block heuristic...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1534)
+Total tokens: 33507
+System tokens: 51
+Distractor tokens: 30902
+Target tokens: 2554
+
+--- SYSTEM REGION ---
+<|im_start|>system
+You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
+<|im_end|>
+<|im_start|>user
+Solve these completely unrelated math problems. For each problem put your final answer within \boxed{}.
+
+
+---------------------
+
+
+--- BOUNDARY CHECK ---
+Last 100 chars of distractor phase: ' area of DEGF to find q, and it worked, so should be correct.\n\nSo for Problem 3, area is 588.\n\nNow, '
+First 100 chars of target phase: 'Problem 4.\n\n**Problem 4:**\n\nFind the sum of all integer bases \\( b > 9 \\) for which \\( 17_b \\) is a '
+----------------------
+
+Loading model...
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:04<27:56,  4.96s/it]Loading weights:   1%|          | 2/339 [00:10<28:51,  5.14s/it]Loading weights:   1%|          | 4/339 [00:10<11:54,  2.13s/it]Loading weights:   1%|▏         | 5/339 [00:12<10:19,  1.85s/it]Loading weights:   3%|▎         | 10/339 [00:12<03:16,  1.68it/s]Loading weights:   4%|▎         | 12/339 [00:12<02:24,  2.26it/s]Loading weights:   5%|▍         | 16/339 [00:12<01:39,  3.25it/s]Loading weights:   5%|▌         | 18/339 [00:14<01:59,  2.68it/s]Loading weights:   7%|▋         | 23/339 [00:14<01:09,  4.52it/s]Loading weights:   8%|▊         | 27/339 [00:14<01:01,  5.08it/s]Loading weights:   9%|▊         | 29/339 [00:15<01:08,  4.54it/s]Loading weights:   9%|▉         | 30/339 [00:16<01:21,  3.81it/s]Loading weights:  10%|█         | 34/339 [00:16<00:51,  5.93it/s]Loading weights:  11%|█         | 36/339 [00:16<00:43,  6.97it/s]Loading weights:  12%|█▏        | 40/339 [00:17<01:01,  4.87it/s]Loading weights:  12%|█▏        | 42/339 [00:18<01:09,  4.27it/s]Loading weights:  14%|█▎        | 46/339 [00:18<00:47,  6.21it/s]Loading weights:  14%|█▍        | 48/339 [00:18<00:40,  7.14it/s]Loading weights:  15%|█▌        | 51/339 [00:19<01:04,  4.48it/s]Loading weights:  16%|█▌        | 54/339 [00:20<01:03,  4.47it/s]Loading weights:  17%|█▋        | 58/339 [00:20<00:42,  6.64it/s]Loading weights:  18%|█▊        | 60/339 [00:20<00:37,  7.51it/s]Loading weights:  19%|█▉        | 64/339 [00:21<00:38,  7.05it/s]Loading weights:  19%|█▉        | 66/339 [00:22<01:06,  4.10it/s]Loading weights:  21%|██        | 70/339 [00:22<00:46,  5.76it/s]Loading weights:  22%|██▏       | 76/339 [00:23<00:37,  6.96it/s]Loading weights:  23%|██▎       | 78/339 [00:24<00:58,  4.44it/s]Loading weights:  24%|██▍       | 82/339 [00:24<00:41,  6.23it/s]Loading weights:  25%|██▍       | 84/339 [00:24<00:35,  7.09it/s]Loading weights:  26%|██▌       | 88/339 [00:25<00:37,  6.73it/s]Loading weights:  27%|██▋       | 90/339 [00:26<01:03,  3.93it/s]Loading weights:  28%|██▊       | 94/339 [00:27<00:43,  5.68it/s]Loading weights:  28%|██▊       | 96/339 [00:27<00:37,  6.56it/s]Loading weights:  29%|██▉       | 100/339 [00:27<00:37,  6.30it/s]Loading weights:  30%|███       | 102/339 [00:29<00:59,  3.95it/s]Loading weights:  31%|███▏      | 106/339 [00:29<00:39,  5.93it/s]Loading weights:  32%|███▏      | 108/339 [00:29<00:33,  6.88it/s]Loading weights:  33%|███▎      | 112/339 [00:29<00:35,  6.45it/s]Loading weights:  34%|███▎      | 114/339 [00:31<00:57,  3.90it/s]Loading weights:  35%|███▍      | 118/339 [00:31<00:38,  5.77it/s]Loading weights:  35%|███▌      | 120/339 [00:31<00:33,  6.64it/s]Loading weights:  37%|███▋      | 124/339 [00:32<00:32,  6.53it/s]Loading weights:  37%|███▋      | 126/339 [00:33<00:52,  4.04it/s]Loading weights:  38%|███▊      | 130/339 [00:33<00:36,  5.68it/s]Loading weights:  40%|████      | 136/339 [00:34<00:39,  5.14it/s]Loading weights:  41%|████      | 138/339 [00:35<00:43,  4.66it/s]Loading weights:  42%|████▏     | 142/339 [00:35<00:32,  6.09it/s]Loading weights:  44%|████▎     | 148/339 [00:36<00:33,  5.76it/s]Loading weights:  44%|████▍     | 150/339 [00:37<00:36,  5.16it/s]Loading weights:  45%|████▌     | 154/339 [00:37<00:26,  6.92it/s]Loading weights:  46%|████▌     | 156/339 [00:37<00:24,  7.61it/s]Loading weights:  47%|████▋     | 160/339 [00:38<00:25,  6.91it/s]Loading weights:  48%|████▊     | 162/339 [00:39<00:45,  3.91it/s]Loading weights:  49%|████▉     | 166/339 [00:39<00:30,  5.70it/s]Loading weights:  50%|████▉     | 168/339 [00:40<00:26,  6.40it/s]Loading weights:  51%|█████     | 172/339 [00:40<00:26,  6.39it/s]Loading weights:  51%|█████▏    | 174/339 [00:42<00:42,  3.90it/s]Loading weights:  53%|█████▎    | 178/339 [00:42<00:27,  5.85it/s]Loading weights:  53%|█████▎    | 180/339 [00:42<00:23,  6.78it/s]Loading weights:  54%|█████▍    | 184/339 [00:42<00:23,  6.57it/s]Loading weights:  55%|█████▍    | 186/339 [00:44<00:40,  3.80it/s]Loading weights:  56%|█████▌    | 190/339 [00:44<00:26,  5.73it/s]Loading weights:  57%|█████▋    | 192/339 [00:44<00:21,  6.73it/s]Loading weights:  58%|█████▊    | 196/339 [00:45<00:22,  6.40it/s]Loading weights:  58%|█████▊    | 198/339 [00:46<00:35,  3.98it/s]Loading weights:  60%|█████▉    | 202/339 [00:46<00:23,  5.84it/s]Loading weights:  60%|██████    | 204/339 [00:46<00:19,  6.87it/s]Loading weights:  61%|██████▏   | 208/339 [00:47<00:19,  6.65it/s]Loading weights:  62%|██████▏   | 210/339 [00:48<00:33,  3.86it/s]Loading weights:  63%|██████▎   | 214/339 [00:48<00:21,  5.72it/s]Loading weights:  64%|██████▎   | 216/339 [00:48<00:18,  6.59it/s]Loading weights:  65%|██████▍   | 220/339 [00:49<00:18,  6.47it/s]Loading weights:  65%|██████▌   | 222/339 [00:50<00:30,  3.89it/s]Loading weights:  67%|██████▋   | 226/339 [00:50<00:19,  5.81it/s]Loading weights:  67%|██████▋   | 228/339 [00:51<00:16,  6.75it/s]Loading weights:  68%|██████▊   | 232/339 [00:51<00:16,  6.54it/s]Loading weights:  69%|██████▉   | 234/339 [00:52<00:26,  3.89it/s]Loading weights:  70%|███████   | 238/339 [00:53<00:17,  5.83it/s]Loading weights:  71%|███████   | 240/339 [00:53<00:14,  6.66it/s]Loading weights:  72%|███████▏  | 244/339 [00:53<00:14,  6.53it/s]Loading weights:  73%|███████▎  | 246/339 [00:55<00:23,  3.95it/s]Loading weights:  74%|███████▎  | 250/339 [00:55<00:15,  5.86it/s]Loading weights:  74%|███████▍  | 252/339 [00:55<00:12,  6.75it/s]Loading weights:  75%|███████▌  | 255/339 [00:56<00:19,  4.26it/s]Loading weights:  76%|███████▌  | 258/339 [00:57<00:18,  4.37it/s]Loading weights:  77%|███████▋  | 262/339 [00:57<00:12,  6.38it/s]Loading weights:  78%|███████▊  | 264/339 [00:57<00:10,  7.42it/s]Loading weights:  79%|███████▉  | 268/339 [00:58<00:10,  6.92it/s]Loading weights:  80%|███████▉  | 270/339 [00:59<00:17,  3.91it/s]Loading weights:  81%|████████  | 274/339 [00:59<00:11,  5.76it/s]Loading weights:  82%|████████▏ | 278/339 [00:59<00:07,  8.15it/s]Loading weights:  83%|████████▎ | 281/339 [01:01<00:11,  4.84it/s]Loading weights:  83%|████████▎ | 283/339 [01:01<00:12,  4.45it/s]Loading weights:  84%|████████▍ | 286/339 [01:01<00:08,  6.00it/s]Loading weights:  85%|████████▍ | 288/339 [01:01<00:07,  7.03it/s]Loading weights:  86%|████████▌ | 291/339 [01:03<00:10,  4.39it/s]Loading weights:  87%|████████▋ | 294/339 [01:03<00:09,  4.58it/s]Loading weights:  88%|████████▊ | 298/339 [01:03<00:06,  6.68it/s]Loading weights:  88%|████████▊ | 300/339 [01:03<00:05,  7.70it/s]Loading weights:  90%|████████▉ | 304/339 [01:04<00:04,  7.02it/s]Loading weights:  90%|█████████ | 306/339 [01:05<00:08,  4.09it/s]Loading weights:  91%|█████████ | 309/339 [01:05<00:05,  5.49it/s]Loading weights:  92%|█████████▏| 312/339 [01:06<00:03,  7.18it/s]Loading weights:  93%|█████████▎| 316/339 [01:06<00:03,  6.74it/s]Loading weights:  94%|█████████▍| 318/339 [01:08<00:05,  4.04it/s]Loading weights:  95%|█████████▍| 322/339 [01:08<00:02,  5.93it/s]Loading weights:  96%|█████████▌| 324/339 [01:08<00:02,  6.88it/s]Loading weights:  97%|█████████▋| 328/339 [01:08<00:01,  6.62it/s]Loading weights:  97%|█████████▋| 330/339 [01:10<00:02,  3.99it/s]Loading weights:  99%|█████████▊| 334/339 [01:10<00:00,  5.98it/s]Loading weights: 100%|█████████▉| 338/339 [01:10<00:00,  8.44it/s]Loading weights: 100%|██████████| 339/339 [01:10<00:00,  4.82it/s]
+Detected model type: qwen2
+Attaching dilution interceptors (chunk_size=500)...
+Executing forward pass (this may take a moment)...
+Forward pass complete. Gathering results...
+
+=== DILUTION SUMMARY (Average % mass) ===
+
+Layer  0 Averages - System: 0.0%, Distractor: 31.5%, Target: 68.5%
+
+Layer  1 Averages - System: 0.0%, Distractor: 26.3%, Target: 73.7%
+
+Layer  2 Averages - System: 0.1%, Distractor: 39.1%, Target: 60.8%
+
+Layer  3 Averages - System: 0.0%, Distractor: 27.6%, Target: 72.4%
+
+Layer  4 Averages - System: 58.3%, Distractor: 11.8%, Target: 29.9%
+
+Layer  5 Averages - System: 49.3%, Distractor: 18.9%, Target: 31.8%
+
+Layer  6 Averages - System: 43.3%, Distractor: 9.8%, Target: 46.9%
+
+Layer  7 Averages - System: 34.9%, Distractor: 15.8%, Target: 49.3%
+
+Layer  8 Averages - System: 37.8%, Distractor: 16.7%, Target: 45.5%
+
+Layer  9 Averages - System: 26.2%, Distractor: 21.3%, Target: 52.5%
+
+Layer 10 Averages - System: 40.0%, Distractor: 8.5%, Target: 51.5%
+
+Layer 11 Averages - System: 29.1%, Distractor: 15.6%, Target: 55.3%
+
+Layer 12 Averages - System: 18.0%, Distractor: 22.0%, Target: 60.1%
+
+Layer 13 Averages - System: 13.9%, Distractor: 21.3%, Target: 64.9%
+
+Layer 14 Averages - System: 17.2%, Distractor: 36.7%, Target: 46.1%
+
+Layer 15 Averages - System: 16.4%, Distractor: 20.9%, Target: 62.6%
+
+Layer 16 Averages - System: 11.9%, Distractor: 35.5%, Target: 52.5%
+
+Layer 17 Averages - System: 13.4%, Distractor: 27.6%, Target: 59.0%
+
+Layer 18 Averages - System: 13.2%, Distractor: 20.4%, Target: 66.4%
+
+Layer 19 Averages - System: 10.0%, Distractor: 31.9%, Target: 58.1%
+
+Layer 20 Averages - System: 13.8%, Distractor: 22.3%, Target: 63.9%
+
+Layer 21 Averages - System: 30.6%, Distractor: 18.8%, Target: 50.6%
+
+Layer 22 Averages - System: 30.3%, Distractor: 27.8%, Target: 41.9%
+
+Layer 23 Averages - System: 37.9%, Distractor: 19.1%, Target: 43.0%
+
+Layer 24 Averages - System: 37.3%, Distractor: 16.0%, Target: 46.6%
+
+Layer 25 Averages - System: 31.9%, Distractor: 18.7%, Target: 49.4%
+
+Layer 26 Averages - System: 35.4%, Distractor: 25.8%, Target: 38.8%
+
+Layer 27 Averages - System: 12.6%, Distractor: 32.9%, Target: 54.6%
+=========================================
+

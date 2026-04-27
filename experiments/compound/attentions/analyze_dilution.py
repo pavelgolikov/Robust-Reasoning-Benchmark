@@ -6,12 +6,12 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from attention_interceptor import attach_dilution_interceptors, dilution_results
 
-def get_system_token_boundary(full_text: str, tokenizer) -> int:
-    """Finds the token boundary for the end of the system prompt (start of first 'Problem N')."""
+def get_system_token_boundary(full_text: str, tokenizer) -> tuple[int, int]:
+    """Finds the token boundary for the end of the system prompt (start of first 'Problem N'). Returns (token_idx, char_idx)."""
     pattern = re.compile(r"Problem\s*\d+", re.IGNORECASE)
     match = pattern.search(full_text)
     if not match:
-        return 0
+        return 0, 0
         
     char_split_idx = match.start()
     
@@ -22,12 +22,12 @@ def get_system_token_boundary(full_text: str, tokenizer) -> int:
     # Map character index to token index
     for token_idx, (start_char, end_char) in enumerate(offsets):
         if end_char > char_split_idx:
-            return token_idx
+            return token_idx, char_split_idx
             
-    return len(offsets)
+    return len(offsets), char_split_idx
 
-def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer) -> int:
-    """Finds the token boundary for the longest contiguous problem-solving block."""
+def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer) -> tuple[int, int]:
+    """Finds the token boundary for the longest contiguous problem-solving block. Returns (token_idx, char_idx)."""
     pattern = re.compile(r"Problem\s*\d+", re.IGNORECASE)
     matches = list(pattern.finditer(full_text))
     
@@ -73,9 +73,9 @@ def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer
     # Map character index to token index
     for token_idx, (start_char, end_char) in enumerate(offsets):
         if end_char > char_split_idx:
-            return token_idx
+            return token_idx, char_split_idx
             
-    return len(offsets)
+    return len(offsets), char_split_idx
 
 def main():
     parser = argparse.ArgumentParser(description="Memory-Efficient Attention Dilution Tracking")
@@ -124,10 +124,10 @@ def main():
     print(f"Detected {num_distractors} distractors. Target problem is Problem {target_problem_num}.")
     
     print("Finding system prompt boundary...")
-    system_end_idx = get_system_token_boundary(full_text, tokenizer)
+    system_end_idx, system_char_idx = get_system_token_boundary(full_text, tokenizer)
     
     print(f"Finding boundary for 'Problem {target_problem_num}' using the longest contiguous block heuristic...")
-    target_start_idx = get_target_token_boundary(full_text, target_problem_num, tokenizer)
+    target_start_idx, target_char_idx = get_target_token_boundary(full_text, target_problem_num, tokenizer)
     
     tokens = tokenizer.encode(full_text, add_special_tokens=False)
     total_tokens = len(tokens)
@@ -137,14 +137,15 @@ def main():
     print(f"Distractor tokens: {target_start_idx - system_end_idx}")
     print(f"Target tokens: {total_tokens - target_start_idx}")
     
-    system_text = tokenizer.decode(tokens[:system_end_idx])
+    # Safely slice the original full_text to bypass tokenizer decoder bugs
+    system_text = full_text[:system_char_idx]
     print("\n--- SYSTEM REGION ---")
     print(system_text)
     print("---------------------\n")
     
-    # Decode to show boundary for sanity check
-    distractor_text = tokenizer.decode(tokens[:target_start_idx])
-    target_text = tokenizer.decode(tokens[target_start_idx:])
+    # Safely slice the original full_text to bypass tokenizer decoder bugs
+    distractor_text = full_text[:target_char_idx]
+    target_text = full_text[target_char_idx:]
     
     print("\n--- BOUNDARY CHECK ---")
     print(f"Last 100 chars of distractor phase: {repr(distractor_text[-100:])}")
@@ -206,7 +207,7 @@ def main():
         "system_end_idx": system_end_idx,
         "target_start_idx": target_start_idx,
         "total_tokens": total_tokens,
-        "token_strings": [tokenizer.decode([t]) for t in tokens[target_start_idx:]] # String representation of target tokens
+        "token_strings": [tokenizer.decode([t], clean_up_tokenization_spaces=False) for t in tokens[target_start_idx:]] # String representation of target tokens
     }
     
     save_data = {
@@ -237,7 +238,7 @@ def main():
     print("=========================================\n")
     
     # torch.save(save_data, args.output_file)
-    print(f"Successfully saved full raw dilution tracking tensors to {args.output_file}!")
+    # print(f"Successfully saved full raw dilution tracking tensors to {args.output_file}!")
 
 if __name__ == "__main__":
     main()

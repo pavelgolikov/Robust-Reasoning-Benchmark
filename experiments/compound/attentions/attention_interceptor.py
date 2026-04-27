@@ -9,12 +9,14 @@ dilution_results = {}
 def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "qwen3"):
     """
     Creates a custom forward function that replaces the native Attention.forward.
-    Handles Qwen3, Qwen2, and GPT-OSS architectures cleanly via model_type routing.
+    Handles Qwen3, Qwen2, GPT-OSS, and Llama architectures cleanly via model_type routing.
     """
     if "qwen2" in model_type.lower():
         from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb, eager_attention_forward
-    elif "gpt_oss" in model_type.lower() or "gptoss" in model_type.lower():
+    elif "gpt_oss" in model_type.lower() or "gptoss" in model_type.lower() or "gpt-oss" in model_type.lower():
         from transformers.models.gpt_oss.modeling_gpt_oss import apply_rotary_pos_emb, eager_attention_forward
+    elif "llama" in model_type.lower():
+        from transformers.models.llama.modeling_llama import apply_rotary_pos_emb, eager_attention_forward
     else:
         from transformers.models.qwen3.modeling_qwen3 import apply_rotary_pos_emb, eager_attention_forward
 
@@ -34,7 +36,7 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
         if "qwen3" in model_type.lower():
             query_states = self.q_norm(self.q_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
             key_states = self.k_norm(self.k_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
-        else: # qwen2 and gpt_oss
+        else: # qwen2, gpt_oss, and llama
             query_states = self.q_proj(hidden_states).view(hidden_shape).transpose(1, 2)
             key_states = self.k_proj(hidden_states).view(hidden_shape).transpose(1, 2)
             
@@ -64,7 +66,7 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
                 "target": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu')
             }
 
-            is_gpt_oss = "gpt_oss" in model_type.lower() or "gptoss" in model_type.lower()
+            is_gpt_oss = "gpt_oss" in model_type.lower() or "gptoss" in model_type.lower() or "gpt-oss" in model_type.lower()
 
             for chunk_start in range(0, num_target_tokens, chunk_size):
                 chunk_end = min(chunk_start + chunk_size, num_target_tokens)
