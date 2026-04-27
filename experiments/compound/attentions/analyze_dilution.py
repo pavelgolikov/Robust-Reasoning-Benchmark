@@ -1,6 +1,7 @@
 import argparse
 import json
 import re
+import os
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from attention_interceptor import attach_dilution_interceptors, dilution_results
@@ -79,13 +80,17 @@ def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer
 def main():
     parser = argparse.ArgumentParser(description="Memory-Efficient Attention Dilution Tracking")
     parser.add_argument("--json_file", type=str, default="/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound/results/Qwen_Qwen3-30B-A3B-Thinking-2507/MathArena_aime_2025/Qwen_Qwen3-30B-A3B-Thinking-2507_MathArena_aime_2025_compound_s42_20260330_155901.json", help="Path to compound JSON result file")
-    parser.add_argument("--model_id", type=str, default="Qwen/Qwen3-30B-A3B-Thinking-2507", help="HuggingFace model ID")
     parser.add_argument("--index", type=int, default=0, help="Index of the sample in the JSON file")
     parser.add_argument("--chunk_size", type=int, default=500, help="Chunk size for attention computation")
     parser.add_argument("--output_file", type=str, default="dilution_results.pt", help="Path to save output .pt file")
     args = parser.parse_args()
     
+    # Extract model ID from JSON file path (e.g., .../results/Qwen_Qwen3-30B.../dataset/...)
+    safe_model_name = os.path.normpath(args.json_file).split(os.sep)[-3]
+    model_id = safe_model_name.replace("_", "/", 1)
+    
     print(f"Loading data from {args.json_file} (index {args.index})")
+    print(f"Extracted model ID from path: {model_id}")
     with open(args.json_file, 'r') as f:
         data = json.load(f)
         
@@ -100,7 +105,7 @@ def main():
     output = entry.get("output", "")
     
     print("Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
     
     # Reconstruct the exact prompt given to the model using the chat template
     messages = [
@@ -148,21 +153,22 @@ def main():
     
     print("Loading model...")
     model = AutoModelForCausalLM.from_pretrained(
-        args.model_id,
+        model_id,
         device_map="auto",
         torch_dtype=torch.bfloat16,
         attn_implementation="sdpa" # Standard scaled dot product attention
     )
     
-    # model_type = getattr(model.config, "model_type", "llama")
-    # print(f"Detected model type: {model_type}")
+    model_type = getattr(model.config, "model_type", "qwen3")
+    print(f"Detected model type: {model_type}")
     
     print(f"Attaching dilution interceptors (chunk_size={args.chunk_size})...")
     attach_dilution_interceptors(
         model, 
         system_end_idx=system_end_idx,
         target_start_idx=target_start_idx, 
-        chunk_size=args.chunk_size
+        chunk_size=args.chunk_size,
+        model_type=model_type
     )
     
     input_ids = torch.tensor([tokens], device=model.device)
@@ -175,7 +181,7 @@ def main():
     
     # Format metadata
     metadata = {
-        "model_id": args.model_id,
+        "model_id": model_id,
         "json_file": args.json_file,
         "sample_index": args.index,
         "chunk_size": args.chunk_size,

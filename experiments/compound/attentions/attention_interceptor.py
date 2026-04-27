@@ -1,17 +1,21 @@
 import torch
 import torch.nn.functional as F
 from transformers.modeling_utils import ALL_ATTENTION_FUNCTIONS
-from transformers.models.qwen3.modeling_qwen3 import apply_rotary_pos_emb, eager_attention_forward
 
 # Global dictionary to store the extracted [Heads, Target_Tokens] dilution vectors
 # Keys will be layer index (int), Values will be CPU tensors
 dilution_results = {}
 
-def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_size: int = 500):
+def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "qwen3"):
     """
-    Creates a custom forward function that replaces the native Qwen3Attention.forward.
-    Strictly adheres to Qwen3 architecture (including QK RMSNorms and sliding windows).
+    Creates a custom forward function that replaces the native Attention.forward.
+    Handles both Qwen3 (Q/K RMSNorms) and Qwen2 architectures cleanly via model_type routing.
     """
+    if "qwen2" in model_type.lower():
+        from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb, eager_attention_forward
+    else:
+        from transformers.models.qwen3.modeling_qwen3 import apply_rotary_pos_emb, eager_attention_forward
+
     def custom_forward(
         self,
         hidden_states: torch.Tensor,
@@ -24,12 +28,17 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
         input_shape = hidden_states.shape[:-1]
         hidden_shape = (*input_shape, -1, self.head_dim)
 
-        # 1. Qwen3-specific Projections AND Normalizations (Crucial for non-flat Softmax)
-        query_states = self.q_norm(self.q_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
-        key_states = self.k_norm(self.k_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
+        # 1. Projections AND Normalizations (Conditional on architecture)
+        if "qwen3" in model_type.lower():
+            query_states = self.q_norm(self.q_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
+            key_states = self.k_norm(self.k_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
+        else:
+            query_states = self.q_proj(hidden_states).view(hidden_shape).transpose(1, 2)
+            key_states = self.k_proj(hidden_states).view(hidden_shape).transpose(1, 2)
+            
         value_states = self.v_proj(hidden_states).view(hidden_shape).transpose(1, 2)
 
-        # 2. Apply Qwen3 RoPE
+        # 2. Apply RoPE
         cos, sin = position_embeddings
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
 
@@ -57,7 +66,7 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
                 chunk_end = min(chunk_start + chunk_size, num_target_tokens)
                 Q_chunk = Q_target[:, :, chunk_start:chunk_end, :]
                 
-                # Compute raw unnormalized attention scores using exact Qwen3 scaling
+                # Compute raw unnormalized attention scores
                 attn_weights = torch.matmul(Q_chunk, key_states_expanded.transpose(2, 3)) * self.scaling
                 
                 # Create and apply Causal Mask
@@ -71,7 +80,7 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
                 causal_mask = (global_k_indices > global_q_indices).unsqueeze(0).unsqueeze(0)
                 attn_weights.masked_fill_(causal_mask, float('-inf'))
                 
-                # Qwen3 Layer-specific Sliding Window Masking
+                # Layer-specific Sliding Window Masking
                 if getattr(self, "sliding_window", None) is not None:
                     sliding_window_mask = (global_q_indices - global_k_indices > self.sliding_window).unsqueeze(0).unsqueeze(0)
                     attn_weights.masked_fill_(sliding_window_mask, float('-inf'))
@@ -96,7 +105,7 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
 
             dilution_results[self.layer_idx] = {k: v.squeeze(0) for k, v in layer_scores.items()}
 
-        # 4. RESUME NATIVE QWEN3 FORWARD PASS
+        # 4. RESUME NATIVE FORWARD PASS
         attention_interface = ALL_ATTENTION_FUNCTIONS.get_interface(
             self.config._attn_implementation, eager_attention_forward
         )
@@ -113,6 +122,8 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
             **kwargs,
         )
 
+        # CRITICAL FIX for the RuntimeError: 
+        # This properly reshapes (bsz, q_len, num_heads, head_dim) into (bsz, q_len, hidden_size)
         attn_output = attn_output.reshape(*input_shape, -1).contiguous()
         attn_output = self.o_proj(attn_output)
         
@@ -120,9 +131,9 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
 
     return custom_forward
 
-def attach_dilution_interceptors(model, system_end_idx: int, target_start_idx: int, chunk_size: int = 500):
+def attach_dilution_interceptors(model, system_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "qwen3"):
     """
-    Applies the exact Qwen3 forward hook interceptor to every layer in the model.
+    Applies the forward hook interceptor to every layer in the model.
     """
     global dilution_results
     dilution_results.clear()
@@ -131,5 +142,6 @@ def attach_dilution_interceptors(model, system_end_idx: int, target_start_idx: i
         layer.self_attn.forward = get_attention_interceptor(
             system_end_idx=system_end_idx,
             target_start_idx=target_start_idx, 
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            model_type=model_type
         ).__get__(layer.self_attn, type(layer.self_attn))
