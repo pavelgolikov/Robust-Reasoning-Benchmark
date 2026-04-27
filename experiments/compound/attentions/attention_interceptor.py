@@ -9,10 +9,12 @@ dilution_results = {}
 def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "qwen3"):
     """
     Creates a custom forward function that replaces the native Attention.forward.
-    Handles both Qwen3 (Q/K RMSNorms) and Qwen2 architectures cleanly via model_type routing.
+    Handles Qwen3, Qwen2, and GPT-OSS architectures cleanly via model_type routing.
     """
     if "qwen2" in model_type.lower():
         from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb, eager_attention_forward
+    elif "gpt_oss" in model_type.lower() or "gptoss" in model_type.lower():
+        from transformers.models.gpt_oss.modeling_gpt_oss import apply_rotary_pos_emb, eager_attention_forward
     else:
         from transformers.models.qwen3.modeling_qwen3 import apply_rotary_pos_emb, eager_attention_forward
 
@@ -32,7 +34,7 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
         if "qwen3" in model_type.lower():
             query_states = self.q_norm(self.q_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
             key_states = self.k_norm(self.k_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
-        else:
+        else: # qwen2 and gpt_oss
             query_states = self.q_proj(hidden_states).view(hidden_shape).transpose(1, 2)
             key_states = self.k_proj(hidden_states).view(hidden_shape).transpose(1, 2)
             
@@ -62,6 +64,8 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
                 "target": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu')
             }
 
+            is_gpt_oss = "gpt_oss" in model_type.lower() or "gptoss" in model_type.lower()
+
             for chunk_start in range(0, num_target_tokens, chunk_size):
                 chunk_end = min(chunk_start + chunk_size, num_target_tokens)
                 Q_chunk = Q_target[:, :, chunk_start:chunk_end, :]
@@ -85,8 +89,18 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
                     sliding_window_mask = (global_q_indices - global_k_indices > self.sliding_window).unsqueeze(0).unsqueeze(0)
                     attn_weights.masked_fill_(sliding_window_mask, float('-inf'))
 
-                # Apply Softmax
-                attn_probs = F.softmax(attn_weights, dim=-1, dtype=torch.float32)
+                # Apply Softmax (with special sink handling for GPT-OSS)
+                if is_gpt_oss and getattr(self, "sinks", None) is not None:
+                    sinks = getattr(self, "sinks")
+                    sinks_expanded = sinks.reshape(1, -1, 1, 1).expand(bsz, -1, Q_chunk.shape[2], -1)
+                    combined_logits = torch.cat([attn_weights, sinks_expanded], dim=-1)
+                    # Shift max for numerical stability as done in native implementation
+                    combined_logits = combined_logits - combined_logits.max(dim=-1, keepdim=True).values
+                    probs = F.softmax(combined_logits, dim=-1, dtype=torch.float32)
+                    attn_probs = probs[..., :-1] # drop sink mass
+                    del combined_logits, probs
+                else:
+                    attn_probs = F.softmax(attn_weights, dim=-1, dtype=torch.float32)
                 
                 # Aggregate probability mass
                 system_mass = attn_probs[:, :, :, :system_end_idx].sum(dim=-1)
@@ -101,6 +115,8 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
                 del attn_weights, causal_mask, attn_probs, system_mass, distractor_mass, target_mass
                 if getattr(self, "sliding_window", None) is not None:
                     del sliding_window_mask
+                if is_gpt_oss and getattr(self, "sinks", None) is not None:
+                    del sinks_expanded
                 torch.cuda.empty_cache()
 
             dilution_results[self.layer_idx] = {k: v.squeeze(0) for k, v in layer_scores.items()}
@@ -110,16 +126,24 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
             self.config._attn_implementation, eager_attention_forward
         )
 
+        kwargs_interface = {
+            "dropout": 0.0 if not self.training else self.attention_dropout,
+            "scaling": self.scaling,
+            "sliding_window": getattr(self, "sliding_window", None),
+        }
+        
+        if is_gpt_oss:
+            kwargs_interface["s_aux"] = getattr(self, "sinks", None)
+            
+        kwargs_interface.update(kwargs)
+
         attn_output, attn_weights = attention_interface(
             self,
             query_states,
             key_states,
             value_states,
             attention_mask,
-            dropout=0.0 if not self.training else self.attention_dropout,
-            scaling=self.scaling,
-            sliding_window=self.sliding_window,
-            **kwargs,
+            **kwargs_interface,
         )
 
         # CRITICAL FIX for the RuntimeError: 

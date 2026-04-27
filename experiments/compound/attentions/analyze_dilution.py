@@ -156,7 +156,7 @@ def main():
         model_id,
         device_map="auto",
         torch_dtype=torch.bfloat16,
-        attn_implementation="sdpa" # Standard scaled dot product attention
+        attn_implementation="eager" # Use eager implementation for custom interceptors
     )
     
     model_type = getattr(model.config, "model_type", "qwen3")
