@@ -21,9 +21,15 @@ def check_openai_batch(batch_id):
     from openai import OpenAI
     client = OpenAI()
     batch = client.batches.retrieve(batch_id)
-    # Return output_file_id if available, fallback to error_file_id if the batch failed structurally
+    # Return status, output_ref, and a progress string
     output_ref = getattr(batch, "output_file_id", None) or getattr(batch, "error_file_id", None)
-    return batch.status, output_ref
+    
+    counts = getattr(batch, "request_counts", None)
+    progress = ""
+    if counts:
+        progress = f"({counts.completed + counts.failed}/{counts.total})"
+    
+    return batch.status, output_ref, progress
 
 def download_openai_batch(file_id, out_path):
     from openai import OpenAI
@@ -37,7 +43,15 @@ def check_anthropic_batch(batch_id):
     from anthropic import Anthropic
     client = Anthropic()
     batch = client.messages.batches.retrieve(batch_id)
-    return batch.processing_status, getattr(batch, "results_url", None)
+    
+    counts = getattr(batch, "request_counts", None)
+    progress = ""
+    if counts:
+        done = counts.succeeded + counts.errored + counts.canceled + counts.expired
+        total = done + counts.processing
+        progress = f"({done}/{total})"
+        
+    return batch.processing_status, getattr(batch, "results_url", None), progress
 
 def download_anthropic_batch(batch_id, out_path):
     from anthropic import Anthropic
@@ -93,7 +107,7 @@ def check_google_batch(batch_id):
             elif hasattr(batch_job.dest, 'file_name') and batch_job.dest.file_name:
                 output_uri = f"https://generativelanguage.googleapis.com/v1beta/{batch_job.dest.file_name}"
 
-    return status, output_uri
+    return status, output_uri, ""
 
 def download_google_batch(batch_id, output_uri, out_path):
     client, mode = _get_google_client(batch_id)
@@ -216,10 +230,14 @@ def parse_anthropic_results(raw_path):
                 if stop_reason == "refusal":
                     refusals.add(custom_id)
                     outputs[custom_id] = "ERROR: Refused by model safety filter"
-                elif content and len(content) > 0 and "text" in content[0]:
-                    outputs[custom_id] = content[0]["text"]
+                elif content:
+                    text_block = next((c for c in content if c.get("type") == "text"), None)
+                    if text_block:
+                        outputs[custom_id] = text_block["text"]
+                    else:
+                        outputs[custom_id] = "ERROR: No text block found in Anthropic response"
                 else:
-                    outputs[custom_id] = "ERROR: Empty or malformed content block in Anthropic response"
+                    outputs[custom_id] = "ERROR: Empty content block in Anthropic response"
             else:
                 outputs[custom_id] = "ERROR: " + str(data.get("result", {}).get("error", "Unknown error"))
     return outputs, refusals
@@ -311,12 +329,15 @@ def main():
         output_ref = None
         
         try:
+            progress = ""
             if provider == "openai":
-                status, output_ref = check_openai_batch(batch_id)
+                status, output_ref, progress = check_openai_batch(batch_id)
             elif provider == "anthropic":
-                status, output_ref = check_anthropic_batch(batch_id)
+                status, output_ref, progress = check_anthropic_batch(batch_id)
             elif provider == "google":
-                status, output_ref = check_google_batch(batch_id)
+                status, output_ref, progress = check_google_batch(batch_id)
+                
+            display_status = f"{status} {progress}".strip()
                 
             # Update tracking file with current status
             data["status"] = status
@@ -331,7 +352,7 @@ def main():
         exp = data.get("experiment", "unknown")
         ds = data.get("dataset", "unknown").split('/')[-1]
         
-        print(f"[{idx}]   | {provider:<10} | {status:<15} | {exp:<20} | {ds}")
+        print(f"[{idx}]   | {provider:<10} | {display_status:<15} | {exp:<20} | {ds}")
         poll_results.append((tf, data, status, output_ref))
 
     # Identify downloadable ones
@@ -362,7 +383,8 @@ def main():
         print(f"\n=== Processing Batch [{idx}] ({provider} - {data['experiment']}) ===")
         
         out_dir = os.path.dirname(tf)
-        raw_output_path = os.path.join(out_dir, f"batch_output_raw_{batch_id.replace('/', '_')}.jsonl")
+        timestamp = data.get('timestamp', 'unknown')
+        raw_output_path = os.path.join(out_dir, f"batch_output_raw_{timestamp}_{batch_id.replace('/', '_')}.jsonl")
         
         print(f"1. Downloading raw output from {provider}...")
         try:

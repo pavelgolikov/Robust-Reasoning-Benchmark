@@ -54,6 +54,7 @@ class GoogleProvider(LLMProvider):
             temperature=temperature,
             top_p=top_p,
             max_output_tokens=max_tokens,
+            thinking_config=types.ThinkingConfig(thinking_level="HIGH")
         )
         # Vertex AI forbids system_instruction alongside cached_content; the
         # system prompt is baked into the cache at creation time instead.
@@ -139,9 +140,8 @@ class OpenAIProvider(LLMProvider):
 class AnthropicProvider(LLMProvider):
     def __init__(self):
         from anthropic import Anthropic
-        # Anthropic client automatically reads ANTHROPIC_API_KEY
-        # Added Beta header to authorize the unlocked 1M Context Window tier for Opus 4.6
-        self.client = Anthropic(default_headers={"anthropic-beta": "context-1m-2025-08-07"})
+        # Removed context-1m beta header. Adaptive thinking does not require a beta header.
+        self.client = Anthropic()
 
     def generate(self, messages, model_name, temperature=0.6, top_p=0.95, max_tokens=None, cached_context_messages=None):
         system_prompt = ""
@@ -160,11 +160,15 @@ class AnthropicProvider(LLMProvider):
         response = self.client.messages.create(
             model=model_name,
             max_tokens=max_tokens,
-            temperature=temperature,
+            # temperature=1,
             system=system_prompt,
-            messages=anthro_messages
+            messages=anthro_messages,
+            thinking={"type": "adaptive"},
+            output_config={"effort": "max"}
         )
-        return response.content[0].text
+        # Find the text block, skipping any thinking blocks
+        text_block = next((c for c in response.content if c.type == "text"), None)
+        return text_block.text if text_block else ""
 
 # Registry
 PROVIDER_REGISTRY = {
@@ -575,8 +579,8 @@ class OpenAIBatchProvider(BatchProvider):
 class AnthropicBatchProvider(BatchProvider):
     def __init__(self):
         from anthropic import Anthropic
-        # Added Beta header to authorize the unlocked 1M Context Window tier for Opus 4.6
-        self.client = Anthropic(default_headers={"anthropic-beta": "context-1m-2025-08-07"})
+        # Removed context-1m beta header.
+        self.client = Anthropic()
 
     def create_batch(self, jobs, model_name, max_tokens=None, temperature=0.6, top_p=0.95, context_cache=None):
         requests_list = []
@@ -598,9 +602,11 @@ class AnthropicBatchProvider(BatchProvider):
                 "params": {
                     "model": model_name,
                     "max_tokens": max_tokens,
-                    "temperature": temperature,
+                    "temperature": 1.0,  # Temperature must be 1.0 when thinking is enabled
                     "system": system_prompt,
-                    "messages": anthro_messages
+                    "messages": anthro_messages,
+                    "thinking": {"type": "adaptive"},
+                    "output_config": {"effort": "max"}
                 }
             }
             requests_list.append(req)
@@ -665,7 +671,9 @@ class GoogleBatchProvider(BatchProvider):
                 "contents": contents,
                 "generation_config": {
                     "temperature": temperature,
-                    "max_output_tokens": max_tokens
+                    "top_p": top_p,
+                    "max_output_tokens": max_tokens,
+                    "thinking_config": {"thinking_level": "HIGH"}
                 }
             }
             if system_instruction:

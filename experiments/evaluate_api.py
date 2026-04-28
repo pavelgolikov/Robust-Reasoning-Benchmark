@@ -18,15 +18,14 @@ def main():
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--provider", type=str, default=None, help="API Provider (google, openai, anthropic). Optional if model name implies it.")
     parser.add_argument("--max_tokens", type=int, default=128000, help="Max output tokens (required to avoid accidental truncation).")
-    parser.add_argument("--temperature", type=float, default=0.6, help="Generation temperature.")
-    parser.add_argument("--top_p", type=float, default=0.95, help="Generation top_p.")
+    parser.add_argument("--temperature", type=float, default=0.7, help="Generation temperature.")
+    parser.add_argument("--top_p", type=float, default=1.0, help="Generation top_p.")
     parser.add_argument("--batch", action="store_true", help="Submit as an async batch job instead of running sequentially")
     
     args = parser.parse_args()
     
     if args.names == 'all':
-        experiment_names = [ 'baseline',
-            'interleaved_context_line',
+        experiment_names = [ 'interleaved_context_line',
             'interleaved_context_word',
             'interleaved_context_symbol',
             'not_not',
@@ -36,9 +35,9 @@ def main():
             'wrappers',
             'split_reversal',
             'rail_fence',
-            'rectangle_perimeter'
+            'rectangle_perimeter',
             'snake_vertical',
-            'snake_horizontal'
+            'snake_horizontal',
             ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
@@ -301,7 +300,8 @@ def main():
                 "max_token_cutoffs": stats["max_token_cutoffs"],
                 "max_tokens": args.max_tokens,
                 "temperature": args.temperature,
-                "top_p": args.top_p
+                "top_p": args.top_p,
+                "reasoning_effort": "max"
             }
         })
         
