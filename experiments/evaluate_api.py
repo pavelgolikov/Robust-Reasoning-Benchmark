@@ -36,7 +36,10 @@ def main():
             'wrappers',
             'split_reversal',
             'rail_fence',
-            'compound' ]
+            'rectangle_perimeter'
+            'snake_vertical',
+            'snake_horizontal'
+            ]
     else:
         experiment_names = [n.strip() for n in args.names.split(',') if n.strip()]
 

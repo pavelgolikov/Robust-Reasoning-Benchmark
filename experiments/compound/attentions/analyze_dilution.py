@@ -81,11 +81,7 @@ def main():
     parser = argparse.ArgumentParser(description="Memory-Efficient Attention Dilution Tracking")
     parser.add_argument("--json_file", type=str, default="/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound/results/Qwen_Qwen3-30B-A3B-Thinking-2507/MathArena_aime_2025/Qwen_Qwen3-30B-A3B-Thinking-2507_MathArena_aime_2025_compound_s42_20260330_155901.json", help="Path to compound JSON result file")
     parser.add_argument("--chunk_size", type=int, default=500, help="Chunk size for attention computation")
-    parser.add_argument("--output_file", type=str, default="dilution_summary.txt", help="Path to save output .txt file")
     args = parser.parse_args()
-    
-    # Ensure output is a text file
-    out_filepath = args.output_file if args.output_file.endswith(".txt") else args.output_file.replace(".pt", ".txt")
     
     # Extract model ID from JSON file path (e.g., .../results/Qwen_Qwen3-30B.../dataset/...)
     safe_model_name = os.path.normpath(args.json_file).split(os.sep)[-3]
@@ -96,12 +92,6 @@ def main():
     with open(args.json_file, 'r') as f:
         data = json.load(f)
         
-    # Clear output file at start
-    with open(out_filepath, 'w') as f:
-        f.write(f"DILUTION ANALYSIS FOR: {args.json_file}\n")
-        f.write(f"MODEL ID: {model_id}\n")
-        f.write("="*80 + "\n")
-        
     # Find the target entries
     entries = [item for item in data if isinstance(item, dict) and "output" in item]
     num_samples = len(entries)
@@ -110,6 +100,25 @@ def main():
     if num_samples == 0:
         print("No valid entries found. Exiting.")
         return
+
+    # Extract number of distractors from the first sample
+    prompt_problems = re.findall(r"Problem \d+:", entries[0].get("original", ""))
+    num_distractors = max(0, len(prompt_problems) - 1)
+    
+    # Extract datetime from JSON filename
+    base_name = os.path.splitext(os.path.basename(args.json_file))[0]
+    match = re.search(r'_(\d{8}_\d{6})$', base_name)
+    datetime_str = match.group(1) if match else "unknown_time"
+    
+    out_filepath = f"dilution_{safe_model_name}_{num_distractors}distractors_{datetime_str}.txt"
+    print(f"Output will be saved to: {out_filepath}")
+    
+    # Clear output file at start
+    with open(out_filepath, 'w') as f:
+        f.write(f"DILUTION ANALYSIS FOR: {args.json_file}\n")
+        f.write(f"MODEL ID: {model_id}\n")
+        f.write(f"DISTRACTORS: {num_distractors}\n")
+        f.write("="*80 + "\n")
 
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id)
