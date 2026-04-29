@@ -77,6 +77,42 @@ def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer
             
     return len(offsets), char_split_idx
 
+def find_last_complete_sample(filepath):
+    """Parse a partial results file to find the last completed sample number.
+    Truncates any incomplete sample data at the end of the file.
+    Returns the 1-based number of the last complete sample, or 0 if none found."""
+    with open(filepath, 'r') as f:
+        content = f.read()
+
+    sample_headers = list(re.finditer(r'=== SAMPLE (\d+) DILUTION SUMMARY', content))
+
+    if not sample_headers:
+        return 0
+
+    last_header = sample_headers[-1]
+    sample_num = int(last_header.group(1))
+    remaining = content[last_header.start():]
+    separator = '========================================='
+
+    if separator in remaining:
+        # Last sample is complete - truncate anything after its separator
+        sep_pos = last_header.start() + remaining.index(separator) + len(separator)
+        # Include trailing newlines
+        while sep_pos < len(content) and content[sep_pos] == '\n':
+            sep_pos += 1
+        if sep_pos < len(content):
+            with open(filepath, 'w') as f:
+                f.write(content[:sep_pos])
+        return sample_num
+    else:
+        # Last sample is incomplete - truncate it entirely
+        with open(filepath, 'w') as f:
+            f.write(content[:last_header.start()])
+        if len(sample_headers) >= 2:
+            return int(sample_headers[-2].group(1))
+        return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Memory-Efficient Attention Dilution Tracking")
     parser.add_argument("--json_file", type=str, default="/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound/results/Qwen_Qwen3-30B-A3B-Thinking-2507/MathArena_aime_2025/Qwen_Qwen3-30B-A3B-Thinking-2507_MathArena_aime_2025_compound_s42_20260330_155901.json", help="Path to compound JSON result file")
@@ -113,12 +149,32 @@ def main():
     out_filepath = f"dilution_{safe_model_name}_{num_distractors}distractors_{datetime_str}.txt"
     print(f"Output will be saved to: {out_filepath}")
     
-    # Clear output file at start
-    with open(out_filepath, 'w') as f:
-        f.write(f"DILUTION ANALYSIS FOR: {args.json_file}\n")
-        f.write(f"MODEL ID: {model_id}\n")
-        f.write(f"DISTRACTORS: {num_distractors}\n")
-        f.write("="*80 + "\n")
+    # Check for existing partial results to enable resumption
+    resumed = False
+    start_idx = 0
+    if os.path.exists(out_filepath):
+        last_complete = find_last_complete_sample(out_filepath)
+        if last_complete > 0:
+            start_idx = last_complete
+            resumed = True
+            print(f"Found existing results file with {last_complete} completed sample(s).")
+            print(f"Resuming from sample {start_idx + 1}...")
+            if start_idx >= num_samples:
+                print("All samples already processed. Nothing to do.")
+                return
+        else:
+            print("Existing file has no complete samples. Starting fresh.")
+            with open(out_filepath, 'w') as f:
+                f.write(f"DILUTION ANALYSIS FOR: {args.json_file}\n")
+                f.write(f"MODEL ID: {model_id}\n")
+                f.write(f"DISTRACTORS: {num_distractors}\n")
+                f.write("="*80 + "\n")
+    else:
+        with open(out_filepath, 'w') as f:
+            f.write(f"DILUTION ANALYSIS FOR: {args.json_file}\n")
+            f.write(f"MODEL ID: {model_id}\n")
+            f.write(f"DISTRACTORS: {num_distractors}\n")
+            f.write("="*80 + "\n")
 
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -146,6 +202,8 @@ def main():
     successful_samples = 0
     
     for idx, entry in enumerate(entries):
+        if idx < start_idx:
+            continue
         print(f"\n[{idx+1}/{num_samples}] Processing sample...")
         
         original = entry.get("original", "")
@@ -243,7 +301,11 @@ def main():
 
     # Generate final aggregated table
     final_lines = []
-    if successful_samples > 0:
+    if resumed:
+        print(f"\nRun was resumed from sample {start_idx + 1}. Aggregation step skipped.")
+        with open(out_filepath, 'a') as f:
+            f.write(f"\n[Run resumed from sample {start_idx + 1}. Aggregation step skipped.]\n")
+    elif successful_samples > 0:
         final_lines.append(f"\n=== AGGREGATED DILUTION SUMMARY (Averaged across {successful_samples} samples) ===")
         for layer_idx in sorted(accumulated_results.keys()):
             avg_sys_per_head = accumulated_results[layer_idx]["system"] / successful_samples
