@@ -106,7 +106,7 @@ class OpenAIProvider(LLMProvider):
             if max_tokens:
                 kwargs["max_completion_tokens"] = max_tokens
             if "gpt-5" in model_name.lower():
-                kwargs["reasoning_effort"] = "high"
+                kwargs["reasoning_effort"] = "xhigh"
         else:
             if max_tokens:
                 kwargs["max_tokens"] = max_tokens
@@ -542,7 +542,7 @@ class OpenAIBatchProvider(BatchProvider):
             if is_o1:
                 if max_tokens: body["max_completion_tokens"] = max_tokens
                 if "gpt-5" in model_name.lower():
-                    body["reasoning_effort"] = "high"
+                    body["reasoning_effort"] = "xhigh"
             else:
                 if max_tokens: body["max_tokens"] = max_tokens
                 body["temperature"] = temperature
