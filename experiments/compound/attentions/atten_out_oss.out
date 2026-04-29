@@ -1,119 +1,0 @@
-`torch_dtype` is deprecated! Use `dtype` instead!
-MXFP4 quantization requires Triton and kernels installed: CUDA requires Triton >= 3.4.0, XPU requires Triton >= 3.5.0, we will default to dequantizing the model to bf16
-Loading data from /home/golikovp/projects/aip-gpekhime/golikovp/Robust-Reasoning-Benchmark/experiments/compound/results/openai_gpt-oss-120b/MathArena_aime_2025/openai_gpt-oss-120b_MathArena_aime_2025_compound_s42_20260405_153738.json (index 0)
-Extracted model ID from path: openai/gpt-oss-120b
-Loading tokenizer...
-Detected 3 distractors. Target problem is Problem 4.
-Finding system prompt boundary...
-Finding boundary for 'Problem 4' using the longest contiguous block heuristic...
-  -> Heuristic selected group starting with: Problem4 (Total Length: 1162)
-Total tokens: 10448
-System tokens: 113
-Distractor tokens: 8592
-Target tokens: 1743
-
---- SYSTEM REGION ---
-<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.
-Knowledge cutoff: 2024-06
-Current date: 2026-04-27
-
-Reasoning: medium
-
-# Valid channels: analysis, commentary, final. Channel must be included for every message.<|end|><|start|>developer<|message|># Instructions
-
-You are a helpful math assistant. Please reason step by step, and put your final answer within \boxed{}.
-
-
-<|end|><|start|>user<|message|>Solve these completely unrelated math problems. For each problem put your final answer within \boxed{}.
-
-
----------------------
-
-
---- BOUNDARY CHECK ---
-Last 100 chars of distractor phase: 'ngles cancel with missing quadrilateral etc. So answer is 588.\n\nThus problem3 answer: \\boxed{588}.\n\n'
-First 100 chars of target phase: 'Problem4: Find sum of integer bases b>9 such that 17_b divides 97_b.\n\nInterpretation: In base b, num'
-----------------------
-
-Loading model...
-Loading weights:   0%|          | 0/615 [00:00<?, ?it/s]Loading weights:   0%|          | 1/615 [00:05<53:29,  5.23s/it]Loading weights:   1%|          | 5/615 [00:29<1:00:45,  5.98s/it]Loading weights:   1%|          | 7/615 [00:45<1:08:20,  6.74s/it]Loading weights:   4%|▎         | 22/615 [01:08<25:20,  2.56s/it] Loading weights:   4%|▍         | 24/615 [01:16<26:44,  2.71s/it]Loading weights:   9%|▉         | 56/615 [01:16<06:18,  1.48it/s]Loading weights:  12%|█▏        | 75/615 [01:16<03:44,  2.41it/s]Loading weights:  17%|█▋        | 107/615 [01:16<01:50,  4.62it/s]Loading weights:  20%|██        | 126/615 [01:16<01:15,  6.44it/s]Loading weights:  20%|██        | 126/615 [01:30<01:15,  6.44it/s]Loading weights:  26%|██▌       | 158/615 [01:30<02:06,  3.61it/s]Loading weights:  26%|██▌       | 160/615 [02:11<07:25,  1.02it/s]Loading weights:  28%|██▊       | 175/615 [02:37<08:45,  1.20s/it]Loading weights:  29%|██▉       | 177/615 [02:38<08:22,  1.15s/it]Loading weights:  34%|███▍      | 209/615 [02:38<03:38,  1.86it/s]Loading weights:  37%|███▋      | 228/615 [02:38<02:24,  2.68it/s]Loading weights:  42%|████▏     | 260/615 [02:38<01:16,  4.65it/s]Loading weights:  45%|████▌     | 279/615 [02:38<00:53,  6.28it/s]Loading weights:  51%|█████     | 311/615 [02:38<00:30, 10.13it/s]Loading weights:  51%|█████     | 311/615 [02:50<00:30, 10.13it/s]Loading weights:  53%|█████▎    | 328/615 [02:59<01:43,  2.76it/s]Loading weights:  54%|█████▎    | 330/615 [04:02<07:06,  1.50s/it]Loading weights:  56%|█████▌    | 345/615 [04:11<05:40,  1.26s/it]Loading weights:  58%|█████▊    | 359/615 [04:24<04:55,  1.15s/it]Loading weights:  62%|██████▏   | 379/615 [04:24<02:55,  1.35it/s]Loading weights:  65%|██████▍   | 398/615 [04:24<01:48,  2.00it/s]Loading weights:  70%|██████▉   | 430/615 [04:24<00:52,  3.55it/s]Loading weights:  73%|███████▎  | 449/615 [04:24<00:34,  4.84it/s]Loading weights:  78%|███████▊  | 481/615 [04:24<00:16,  7.90it/s]Loading weights:  78%|███████▊  | 481/615 [04:40<00:16,  7.90it/s]Loading weights:  81%|████████  | 498/615 [04:43<00:41,  2.82it/s]Loading weights:  81%|████████▏ | 500/615 [05:34<02:28,  1.29s/it]Loading weights:  84%|████████▎ | 515/615 [05:47<01:56,  1.16s/it]Loading weights:  87%|████████▋ | 534/615 [05:47<01:02,  1.30it/s]Loading weights:  92%|█████████▏| 566/615 [05:47<00:20,  2.36it/s]Loading weights:  95%|█████████▌| 587/615 [05:47<00:08,  3.34it/s]Loading weights: 100%|██████████| 615/615 [05:47<00:00,  1.77it/s]
-Detected model type: gpt_oss
-Attaching dilution interceptors (chunk_size=500)...
-Executing forward pass (this may take a moment)...
-Forward pass complete. Gathering results...
-
-=== DILUTION SUMMARY (Average % mass) ===
-
-Layer  0 Averages - System: 0.0%, Distractor: 0.5%, Target: 46.0%
-
-Layer  1 Averages - System: 1.7%, Distractor: 72.9%, Target: 18.3%
-
-Layer  2 Averages - System: 0.0%, Distractor: 0.3%, Target: 43.3%
-
-Layer  3 Averages - System: 1.9%, Distractor: 66.5%, Target: 23.2%
-
-Layer  4 Averages - System: 0.0%, Distractor: 0.3%, Target: 51.1%
-
-Layer  5 Averages - System: 0.8%, Distractor: 62.9%, Target: 25.0%
-
-Layer  6 Averages - System: 0.0%, Distractor: 0.3%, Target: 52.3%
-
-Layer  7 Averages - System: 1.1%, Distractor: 84.0%, Target: 13.7%
-
-Layer  8 Averages - System: 0.0%, Distractor: 1.0%, Target: 51.2%
-
-Layer  9 Averages - System: 0.1%, Distractor: 96.0%, Target: 3.6%
-
-Layer 10 Averages - System: 0.0%, Distractor: 1.0%, Target: 47.0%
-
-Layer 11 Averages - System: 2.0%, Distractor: 90.9%, Target: 6.7%
-
-Layer 12 Averages - System: 0.0%, Distractor: 1.2%, Target: 38.8%
-
-Layer 13 Averages - System: 1.7%, Distractor: 93.6%, Target: 4.4%
-
-Layer 14 Averages - System: 0.0%, Distractor: 0.8%, Target: 49.1%
-
-Layer 15 Averages - System: 2.3%, Distractor: 87.0%, Target: 9.3%
-
-Layer 16 Averages - System: 0.0%, Distractor: 0.6%, Target: 59.6%
-
-Layer 17 Averages - System: 2.1%, Distractor: 90.3%, Target: 6.8%
-
-Layer 18 Averages - System: 0.0%, Distractor: 1.0%, Target: 56.0%
-
-Layer 19 Averages - System: 3.4%, Distractor: 80.7%, Target: 12.7%
-
-Layer 20 Averages - System: 0.0%, Distractor: 0.6%, Target: 52.7%
-
-Layer 21 Averages - System: 3.8%, Distractor: 73.6%, Target: 14.6%
-
-Layer 22 Averages - System: 0.0%, Distractor: 0.4%, Target: 48.1%
-
-Layer 23 Averages - System: 3.9%, Distractor: 76.5%, Target: 8.7%
-
-Layer 24 Averages - System: 0.0%, Distractor: 0.3%, Target: 51.5%
-
-Layer 25 Averages - System: 2.3%, Distractor: 78.9%, Target: 10.3%
-
-Layer 26 Averages - System: 0.0%, Distractor: 0.4%, Target: 58.4%
-
-Layer 27 Averages - System: 1.1%, Distractor: 77.0%, Target: 12.1%
-
-Layer 28 Averages - System: 0.0%, Distractor: 0.5%, Target: 45.8%
-
-Layer 29 Averages - System: 1.7%, Distractor: 69.2%, Target: 19.0%
-
-Layer 30 Averages - System: 0.0%, Distractor: 0.4%, Target: 53.2%
-
-Layer 31 Averages - System: 1.3%, Distractor: 80.8%, Target: 12.1%
-
-Layer 32 Averages - System: 0.0%, Distractor: 0.5%, Target: 55.7%
-
-Layer 33 Averages - System: 1.8%, Distractor: 77.5%, Target: 19.0%
-
-Layer 34 Averages - System: 0.0%, Distractor: 1.0%, Target: 75.3%
-
-Layer 35 Averages - System: 4.7%, Distractor: 80.9%, Target: 13.5%
-=========================================
-
