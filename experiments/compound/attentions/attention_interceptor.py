@@ -6,7 +6,7 @@ from transformers.modeling_utils import ALL_ATTENTION_FUNCTIONS
 # Keys will be layer index (int), Values will be CPU tensors
 dilution_results = {}
 
-def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "qwen3"):
+def get_attention_interceptor(system_end_idx: int, target_stmt_start_idx: int, target_stmt_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "qwen3"):
     """
     Creates a custom forward function that replaces the native Attention.forward.
     Handles Qwen3, Qwen2, GPT-OSS, and Llama architectures cleanly via model_type routing.
@@ -62,7 +62,9 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
             
             layer_scores = {
                 "system": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu'),
-                "distractor": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu'),
+                "distractor_pre": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu'),
+                "target_stmt": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu'),
+                "distractor_post": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu'),
                 "target": torch.zeros((bsz, num_heads, num_target_tokens), device='cpu')
             }
 
@@ -106,15 +108,19 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
                 
                 # Aggregate probability mass
                 system_mass = attn_probs[:, :, :, :system_end_idx].sum(dim=-1)
-                distractor_mass = attn_probs[:, :, :, system_end_idx:target_start_idx].sum(dim=-1)
+                distractor_pre_mass = attn_probs[:, :, :, system_end_idx:target_stmt_start_idx].sum(dim=-1)
+                target_stmt_mass = attn_probs[:, :, :, target_stmt_start_idx:target_stmt_end_idx].sum(dim=-1)
+                distractor_post_mass = attn_probs[:, :, :, target_stmt_end_idx:target_start_idx].sum(dim=-1)
                 target_mass = attn_probs[:, :, :, target_start_idx:].sum(dim=-1)
                 
                 layer_scores["system"][:, :, chunk_start:chunk_end] = system_mass.detach().cpu()
-                layer_scores["distractor"][:, :, chunk_start:chunk_end] = distractor_mass.detach().cpu()
+                layer_scores["distractor_pre"][:, :, chunk_start:chunk_end] = distractor_pre_mass.detach().cpu()
+                layer_scores["target_stmt"][:, :, chunk_start:chunk_end] = target_stmt_mass.detach().cpu()
+                layer_scores["distractor_post"][:, :, chunk_start:chunk_end] = distractor_post_mass.detach().cpu()
                 layer_scores["target"][:, :, chunk_start:chunk_end] = target_mass.detach().cpu()
                 
                 # Free VRAM
-                del attn_weights, causal_mask, attn_probs, system_mass, distractor_mass, target_mass
+                del attn_weights, causal_mask, attn_probs, system_mass, distractor_pre_mass, target_stmt_mass, distractor_post_mass, target_mass
                 if getattr(self, "sliding_window", None) is not None:
                     del sliding_window_mask
                 if is_gpt_oss and getattr(self, "sinks", None) is not None:
@@ -198,7 +204,7 @@ def get_attention_interceptor(system_end_idx: int, target_start_idx: int, chunk_
 
     return custom_forward
 
-def attach_dilution_interceptors(model, system_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "qwen3"):
+def attach_dilution_interceptors(model, system_end_idx: int, target_stmt_start_idx: int, target_stmt_end_idx: int, target_start_idx: int, chunk_size: int = 500, model_type: str = "qwen3"):
     """
     Applies the forward hook interceptor to every layer in the model.
     """
@@ -208,6 +214,8 @@ def attach_dilution_interceptors(model, system_end_idx: int, target_start_idx: i
     for layer in model.model.layers:
         layer.self_attn.forward = get_attention_interceptor(
             system_end_idx=system_end_idx,
+            target_stmt_start_idx=target_stmt_start_idx,
+            target_stmt_end_idx=target_stmt_end_idx,
             target_start_idx=target_start_idx, 
             chunk_size=chunk_size,
             model_type=model_type

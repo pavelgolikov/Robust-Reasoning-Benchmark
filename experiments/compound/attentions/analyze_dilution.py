@@ -77,6 +77,48 @@ def get_target_token_boundary(full_text: str, target_problem_num: int, tokenizer
             
     return len(offsets), char_split_idx
 
+def get_target_statement_boundary(full_text: str, original: str, target_problem_num: int, tokenizer) -> tuple[int, int]:
+    """Finds the token boundaries for the target problem statement in the input prompt.
+    The target problem is always the last problem in `original`.
+    Returns (stmt_start_token_idx, stmt_end_token_idx) as a half-open [start, end) range."""
+    
+    # Find the target problem marker in original
+    pattern = re.compile(rf"Problem\s*{target_problem_num}\s*:", re.IGNORECASE)
+    match = pattern.search(original)
+    if not match:
+        raise ValueError(f"Could not find 'Problem {target_problem_num}:' in original prompt")
+    
+    # Find where original appears in full_text
+    original_offset = full_text.find(original)
+    if original_offset == -1:
+        raise ValueError("Could not find original prompt text within full_text")
+    
+    # Map to full_text character coordinates
+    stmt_start_char = original_offset + match.start()
+    stmt_end_char = original_offset + len(original)
+    
+    # Tokenize with offset mapping
+    encoding = tokenizer(full_text, return_offsets_mapping=True, add_special_tokens=False)
+    offsets = encoding["offset_mapping"]
+    
+    # Find stmt_start_token: first token that extends past stmt_start_char
+    stmt_start_token = len(offsets)
+    for token_idx, (start_char, end_char) in enumerate(offsets):
+        if end_char > stmt_start_char:
+            stmt_start_token = token_idx
+            break
+    
+    # Find stmt_end_token: first token that starts at or after stmt_end_char
+    stmt_end_token = len(offsets)
+    for token_idx, (start_char, end_char) in enumerate(offsets):
+        if start_char >= stmt_end_char:
+            stmt_end_token = token_idx
+            break
+    
+    print(f"  -> Target statement boundary: tokens [{stmt_start_token}, {stmt_end_token}) = {stmt_end_token - stmt_start_token} tokens")
+    
+    return stmt_start_token, stmt_end_token
+
 def find_last_complete_sample(filepath):
     """Parse a partial results file to find the last completed sample number.
     Truncates any incomplete sample data at the end of the file.
@@ -227,6 +269,7 @@ def main():
         try:
             system_end_idx, system_char_idx = get_system_token_boundary(full_text, tokenizer)
             target_start_idx, target_char_idx = get_target_token_boundary(full_text, target_problem_num, tokenizer)
+            target_stmt_start_idx, target_stmt_end_idx = get_target_statement_boundary(full_text, original, target_problem_num, tokenizer)
         except ValueError as e:
             print(f"Skipping sample {idx+1} due to boundary error: {e}")
             continue
@@ -237,6 +280,8 @@ def main():
         attach_dilution_interceptors(
             model, 
             system_end_idx=system_end_idx,
+            target_stmt_start_idx=target_stmt_start_idx,
+            target_stmt_end_idx=target_stmt_end_idx,
             target_start_idx=target_start_idx, 
             chunk_size=args.chunk_size,
             model_type=model_type
@@ -257,38 +302,55 @@ def main():
         for layer_idx in sorted(dilution_results.keys()):
             layer_scores = dilution_results[layer_idx]
             sys_scores = layer_scores["system"]
-            dist_scores = layer_scores["distractor"]
+            dpre_scores = layer_scores["distractor_pre"]
+            tstmt_scores = layer_scores["target_stmt"]
+            dpost_scores = layer_scores["distractor_post"]
             target_scores = layer_scores["target"]
             
-            avg_sys_per_head = sys_scores.mean(dim=1) * 100.0
-            avg_dist_per_head = dist_scores.mean(dim=1) * 100.0
-            avg_tgt_per_head = target_scores.mean(dim=1) * 100.0
+            avg_sys = sys_scores.mean(dim=1) * 100.0
+            avg_dpre = dpre_scores.mean(dim=1) * 100.0
+            avg_tstmt = tstmt_scores.mean(dim=1) * 100.0
+            avg_dpost = dpost_scores.mean(dim=1) * 100.0
+            avg_tgt = target_scores.mean(dim=1) * 100.0
             
             # Initialize accumulator for this layer if not exists
             if layer_idx not in accumulated_results:
                 num_heads = sys_scores.shape[0]
                 accumulated_results[layer_idx] = {
                     "system": torch.zeros(num_heads, device='cpu'),
-                    "distractor": torch.zeros(num_heads, device='cpu'),
+                    "distractor_pre": torch.zeros(num_heads, device='cpu'),
+                    "target_stmt": torch.zeros(num_heads, device='cpu'),
+                    "distractor_post": torch.zeros(num_heads, device='cpu'),
                     "target": torch.zeros(num_heads, device='cpu')
                 }
                 
             # Accumulate
-            accumulated_results[layer_idx]["system"] += avg_sys_per_head.cpu()
-            accumulated_results[layer_idx]["distractor"] += avg_dist_per_head.cpu()
-            accumulated_results[layer_idx]["target"] += avg_tgt_per_head.cpu()
+            accumulated_results[layer_idx]["system"] += avg_sys.cpu()
+            accumulated_results[layer_idx]["distractor_pre"] += avg_dpre.cpu()
+            accumulated_results[layer_idx]["target_stmt"] += avg_tstmt.cpu()
+            accumulated_results[layer_idx]["distractor_post"] += avg_dpost.cpu()
+            accumulated_results[layer_idx]["target"] += avg_tgt.cpu()
             
             # Format individual table
-            line1 = f"\nLayer {layer_idx:2d} Averages - System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%, Target: {avg_tgt_per_head.mean().item():.1f}%"
-            sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys_per_head)]
-            dist_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dist_per_head)]
-            tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt_per_head)]
+            line1 = (f"\nLayer {layer_idx:2d} Averages - "
+                     f"System: {avg_sys.mean().item():.1f}%, "
+                     f"DistractorPre: {avg_dpre.mean().item():.1f}%, "
+                     f"TargetStmt: {avg_tstmt.mean().item():.1f}%, "
+                     f"DistractorPost: {avg_dpost.mean().item():.1f}%, "
+                     f"Target: {avg_tgt.mean().item():.1f}%")
+            sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys)]
+            dpre_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dpre)]
+            tstmt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tstmt)]
+            dpost_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dpost)]
+            tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt)]
             
-            line2 = f"  System Heads     : " + ", ".join(sys_head_strs)
-            line3 = f"  Distractor Heads : " + ", ".join(dist_head_strs)
-            line4 = f"  Target Heads     : " + ", ".join(tgt_head_strs)
+            line2 = f"  System Heads         : " + ", ".join(sys_head_strs)
+            line3 = f"  DistractorPre Heads  : " + ", ".join(dpre_head_strs)
+            line4 = f"  TargetStmt Heads     : " + ", ".join(tstmt_head_strs)
+            line5 = f"  DistractorPost Heads : " + ", ".join(dpost_head_strs)
+            line6 = f"  Target Heads         : " + ", ".join(tgt_head_strs)
             
-            sample_output_lines.extend([line1, line2, line3, line4])
+            sample_output_lines.extend([line1, line2, line3, line4, line5, line6])
             
         sample_output_lines.append("=========================================\n")
         sample_text = "\n".join(sample_output_lines)
@@ -308,20 +370,31 @@ def main():
     elif successful_samples > 0:
         final_lines.append(f"\n=== AGGREGATED DILUTION SUMMARY (Averaged across {successful_samples} samples) ===")
         for layer_idx in sorted(accumulated_results.keys()):
-            avg_sys_per_head = accumulated_results[layer_idx]["system"] / successful_samples
-            avg_dist_per_head = accumulated_results[layer_idx]["distractor"] / successful_samples
-            avg_tgt_per_head = accumulated_results[layer_idx]["target"] / successful_samples
+            avg_sys = accumulated_results[layer_idx]["system"] / successful_samples
+            avg_dpre = accumulated_results[layer_idx]["distractor_pre"] / successful_samples
+            avg_tstmt = accumulated_results[layer_idx]["target_stmt"] / successful_samples
+            avg_dpost = accumulated_results[layer_idx]["distractor_post"] / successful_samples
+            avg_tgt = accumulated_results[layer_idx]["target"] / successful_samples
             
-            line1 = f"\nLayer {layer_idx:2d} Averages - System: {avg_sys_per_head.mean().item():.1f}%, Distractor: {avg_dist_per_head.mean().item():.1f}%, Target: {avg_tgt_per_head.mean().item():.1f}%"
-            sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys_per_head)]
-            dist_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dist_per_head)]
-            tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt_per_head)]
+            line1 = (f"\nLayer {layer_idx:2d} Averages - "
+                     f"System: {avg_sys.mean().item():.1f}%, "
+                     f"DistractorPre: {avg_dpre.mean().item():.1f}%, "
+                     f"TargetStmt: {avg_tstmt.mean().item():.1f}%, "
+                     f"DistractorPost: {avg_dpost.mean().item():.1f}%, "
+                     f"Target: {avg_tgt.mean().item():.1f}%")
+            sys_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_sys)]
+            dpre_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dpre)]
+            tstmt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tstmt)]
+            dpost_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_dpost)]
+            tgt_head_strs = [f"H{h}:{val:.1f}%" for h, val in enumerate(avg_tgt)]
             
-            line2 = f"  System Heads     : " + ", ".join(sys_head_strs)
-            line3 = f"  Distractor Heads : " + ", ".join(dist_head_strs)
-            line4 = f"  Target Heads     : " + ", ".join(tgt_head_strs)
+            line2 = f"  System Heads         : " + ", ".join(sys_head_strs)
+            line3 = f"  DistractorPre Heads  : " + ", ".join(dpre_head_strs)
+            line4 = f"  TargetStmt Heads     : " + ", ".join(tstmt_head_strs)
+            line5 = f"  DistractorPost Heads : " + ", ".join(dpost_head_strs)
+            line6 = f"  Target Heads         : " + ", ".join(tgt_head_strs)
             
-            final_lines.extend([line1, line2, line3, line4])
+            final_lines.extend([line1, line2, line3, line4, line5, line6])
             
         final_lines.append("========================================================================\n")
         

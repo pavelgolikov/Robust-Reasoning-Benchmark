@@ -47,31 +47,13 @@ parameters: model_name, json_result, and others you can think of, it should prod
 in the distractor and target problems. Let's save the attention distributions in .pt format. Do you have any questions
 before you begin?
 
-Here is the algorithm to implement:
-The Algorithm: Memory-Efficient Attention Dilution Tracking
-Phase 1: Sequence Partitioning
-Load your pre-generated text (Prompt + Distractor Problems + Target Problem + Model Output).
-Use the get_token_boundary logic (from attention_map.py) to find the exact token index where the Target Problem begins.
-Define your sets:
-Distractor Indices ( I_D ): Token index 0 up to the Target boundary.
-Target Indices ( I_T ): From the Target boundary to the end of the sequence (length N).
-Phase 2: Model Setup and Interception
-4. Load the language model into GPU memory using standard, memory-efficient attention (FlashAttention or SDPA). Do not use eager mode, and do not ask it to output attention matrices.
-5. Attach an interception mechanism (a PyTorch forward hook) to the specific module that projects the Hidden States into Queries (Q) and Keys (K) for every layer.
-Phase 3: The Forward Pass and On-The-Fly Computation
-6. Pass the full token sequence (length N) into the model in a single forward pass.
-7. As the model executes layer L, your interceptor pauses the forward pass immediately after Q ∈ R^{B × H × N × d_k} and K ∈ R^{B × H × N × d_k} are computed.
-8. Inside the interceptor, isolate only the queries belonging to the target problem: Q_{target} = Q[:,:,I_T ,:].
-9. To avoid Out-Of-Memory errors, split Q_{target} into small chunks (e.g., 500 tokens at a time).
-10. For each chunk of queries:
-* Multiply the query chunk by the full key matrix K_{T} .
-* Apply the causal mask mathematically (setting scores for future tokens to -inf).
-* Apply the Softmax to get the true probability distribution.
-* Sum the probabilities strictly across the columns corresponding to the Distractor Indices (I_D).
-* Save this aggregated result (a small vector) to CPU RAM.
-* Delete the chunk's attention matrix from VRAM to free space.
-11. Allow the model's native forward pass to continue to the next layer.
-Phase 4: Output
-12. Once the forward pass finishes, you will have an L × H × ∣ I_T ∣ matrix containing exactly what you need: for every token generated while solving the target problem, exactly what percentage of attention was looking back at the distractor problems.
 
-I have already written the interceptor in `experiments/compound/attentions/attention_interceptor.py`. Please reuse it.
+
+This repo contains a machine learning project. The point of the project is to try and confuse LLMs or agents with
+linguistic tricks to reduce their performance on math reasoning tasks. Tricks that would have no effect on human (or
+general reasoner) performance. IMPORTANT NOTE: When you work on this repo, do NOT implement
+fallbacks, if something doens't work - throw an error.
+
+As the first task, we will look at compound directory: /home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound - scripts in that directory analyze attention that model gives to prior tokens. We do so by running the full model output results in a forward pass through the model and collecting attention scores. Take a look. We have to use tricks to avoid OOM errors. These scripts run on my school server as there is no available compute on this machine, so don't try to run them here locally.
+
+Do you have any questions? Do you understand how we split model output into regions?
