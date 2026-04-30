@@ -3,6 +3,7 @@ import json
 import re
 import os
 import torch
+import random
 from transformers import AutoTokenizer
 
 def get_system_token_boundary(full_text: str, tokenizer) -> tuple[int, int]:
@@ -129,6 +130,7 @@ def main():
     parser = argparse.ArgumentParser(description="Test Boundary Heuristic with Tokenizer")
     parser.add_argument("--json_file", type=str, default="/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound/results/Qwen_Qwen3-30B-A3B-Thinking-2507/MathArena_aime_2025/Qwen_Qwen3-30B-A3B-Thinking-2507_MathArena_aime_2025_compound_s42_20260330_155901.json", help="Path to compound JSON result file")
     parser.add_argument("--num_samples", type=int, default=5, help="Number of samples to test")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for sampling")
     args = parser.parse_args()
     
     # Extract model ID from JSON file path
@@ -143,13 +145,19 @@ def main():
         
     entries = [item for item in data if isinstance(item, dict) and "output" in item]
     num_to_process = min(len(entries), args.num_samples)
-    print(f"Found {len(entries)} output samples. Testing first {num_to_process}.\n")
+    
+    random.seed(args.seed)
+    # Get random indices to process
+    indices = list(range(len(entries)))
+    selected_indices = random.sample(indices, num_to_process)
+    
+    print(f"Found {len(entries)} output samples. Testing {num_to_process} random samples (Seed: {args.seed}).\n")
     
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     
-    for i in range(num_to_process):
-        entry = entries[i]
+    for i, idx in enumerate(selected_indices):
+        entry = entries[idx]
         original = entry.get("original", "")
         system_prompt = entry.get("system_prompt", "")
         output = entry.get("output", "")
@@ -167,7 +175,7 @@ def main():
         num_distractors = max(0, len(prompt_problems) - 1)
         target_problem_num = num_distractors + 1
         
-        print(f"--- Sample {i+1} (Target: Problem {target_problem_num}) ---")
+        print(f"--- Sample {i+1} (Index: {idx}, Target: Problem {target_problem_num}) ---")
         
         try:
             sys_end, _ = get_system_token_boundary(full_text, tokenizer)
