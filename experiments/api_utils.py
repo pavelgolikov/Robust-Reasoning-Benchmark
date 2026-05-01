@@ -602,7 +602,7 @@ class AnthropicBatchProvider(BatchProvider):
                 "params": {
                     "model": model_name,
                     "max_tokens": max_tokens,
-                    "temperature": 1.0,  # Temperature must be 1.0 when thinking is enabled
+                    # "temperature": 1.0,  # Temperature must be 1.0 when thinking is enabled
                     "system": system_prompt,
                     "messages": anthro_messages,
                     "thinking": {"type": "adaptive"},

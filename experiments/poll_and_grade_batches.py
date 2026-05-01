@@ -231,11 +231,18 @@ def parse_anthropic_results(raw_path):
                     refusals.add(custom_id)
                     outputs[custom_id] = "ERROR: Refused by model safety filter"
                 elif content:
-                    text_block = next((c for c in content if c.get("type") == "text"), None)
-                    if text_block:
-                        outputs[custom_id] = text_block["text"]
+                    # Concatenate all thinking and text blocks
+                    full_output = []
+                    for block in content:
+                        if block.get("type") == "text":
+                            full_output.append(block.get("text", ""))
+                        elif block.get("type") == "thinking":
+                            full_output.append(block.get("thinking", ""))
+                    
+                    if full_output:
+                        outputs[custom_id] = "\n\n".join(full_output)
                     else:
-                        outputs[custom_id] = "ERROR: No text block found in Anthropic response"
+                        outputs[custom_id] = "ERROR: No text or thinking blocks found in Anthropic response"
                 else:
                     outputs[custom_id] = "ERROR: Empty content block in Anthropic response"
             else:
