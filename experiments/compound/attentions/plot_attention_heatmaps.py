@@ -42,7 +42,7 @@ def parse_file(filepath):
                     
     return layer_data
 
-def generate_heatmap(layer_data, model_name, date_time, out_path):
+def generate_heatmap(layer_data, model_name, date_time, out_path, exclude_system=False):
     if not layer_data:
         print(f"No data found for {model_name}. Skipping plot.")
         return
@@ -50,13 +50,28 @@ def generate_heatmap(layer_data, model_name, date_time, out_path):
     layers = sorted(layer_data.keys())
     num_layers = len(layers)
     
-    regions = ['System', 'Distractor', 'Target']
-    
-    data_matrix = np.zeros((len(regions), num_layers))
-    
-    for i, region in enumerate(regions):
+    if exclude_system:
+        regions = ['Distractor', 'Target']
+        data_matrix = np.zeros((len(regions), num_layers))
+        
         for j, layer in enumerate(layers):
-            data_matrix[i, j] = np.mean(layer_data[layer][region])
+            d_val = np.mean(layer_data[layer]['Distractor'])
+            t_val = np.mean(layer_data[layer]['Target'])
+            total = d_val + t_val
+            
+            if total > 0:
+                data_matrix[0, j] = (d_val / total) * 100.0
+                data_matrix[1, j] = (t_val / total) * 100.0
+            else:
+                data_matrix[0, j] = 0
+                data_matrix[1, j] = 0
+    else:
+        regions = ['System', 'Distractor', 'Target']
+        data_matrix = np.zeros((len(regions), num_layers))
+        
+        for i, region in enumerate(regions):
+            for j, layer in enumerate(layers):
+                data_matrix[i, j] = np.mean(layer_data[layer][region])
             
     plt.figure(figsize=(14, 6))
     ax = plt.gca()
@@ -79,9 +94,10 @@ def generate_heatmap(layer_data, model_name, date_time, out_path):
     plt.yticks(rotation=0)
     plt.xticks(rotation=45)
     
-    plt.title(f"Attention Dilution: {model_name}\n(Run Date: {date_time})", fontsize=14, pad=15)
+    title_suffix = "\n(Excluding System Context)" if exclude_system else ""
+    plt.title(f"Attention Dilution: {model_name}\n(Run Date: {date_time}){title_suffix}", fontsize=14, pad=15)
     plt.xlabel("Layer", fontsize=12)
-    plt.ylabel("Prompt Region", fontsize=12)
+    plt.ylabel("Context Region", fontsize=12)
     
     plt.tight_layout()
     plt.savefig(out_path, format='pdf', bbox_inches='tight')
@@ -111,11 +127,15 @@ def main():
             
         layer_data = parse_file(filepath)
         
-        # Output PDF path
+        # Output PDF path for regular plot
         out_filename = f"heatmap_{model_name}_{date_time}.pdf"
         out_path = os.path.join(target_dir, out_filename)
+        generate_heatmap(layer_data, model_name, date_time, out_path, exclude_system=False)
         
-        generate_heatmap(layer_data, model_name, date_time, out_path)
+        # Output PDF path for normalized plot without system
+        out_filename_no_sys = f"heatmap_{model_name}_{date_time}_no_system.pdf"
+        out_path_no_sys = os.path.join(target_dir, out_filename_no_sys)
+        generate_heatmap(layer_data, model_name, date_time, out_path_no_sys, exclude_system=True)
 
 if __name__ == "__main__":
     main()
