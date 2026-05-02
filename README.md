@@ -57,3 +57,13 @@ fallbacks, if something doens't work - throw an error.
 As the first task, we will look at compound directory: /home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound - scripts in that directory analyze attention that model gives to prior tokens. We do so by running the full model output results in a forward pass through the model and collecting attention scores. Take a look. We have to use tricks to avoid OOM errors. These scripts run on my school server as there is no available compute on this machine, so don't try to run them here locally.
 
 Do you have any questions? Do you understand how we split model output into regions?
+
+
+This repo contains a machine learning project. The point of the project is to try and confuse LLMs or agents with
+linguistic tricks to reduce their performance on math reasoning tasks. Tricks that would have no effect on human (or
+general reasoner) performance. IMPORTANT NOTE: When you work on this repo, do NOT implement
+fallbacks, if something doens't work - throw an error.
+
+As the first task, we will look at compound directory: /home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound - scripts in that directory analyze attention that model gives to prior tokens. We do so by running the full model output results in a forward pass through the model and collecting attention scores. Take a look. We have to use tricks to avoid OOM errors. These scripts run on my school server as there is no available compute on this machine, so don't try to run them here locally.
+
+Do you have any questions? Do you understand how the code works?
