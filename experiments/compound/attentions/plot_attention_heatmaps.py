@@ -10,7 +10,6 @@ def parse_file(filepath):
     layer_data = defaultdict(lambda: {
         'System': [], 
         'Distractor': [], 
-        'TargetStmt': [], 
         'Target': []
     })
     
@@ -39,8 +38,7 @@ def parse_file(filepath):
                     
                     layer_data[layer_idx]['System'].append(sys_val)
                     layer_data[layer_idx]['Distractor'].append(dpre_val + dpost_val)
-                    layer_data[layer_idx]['TargetStmt'].append(tstmt_val)
-                    layer_data[layer_idx]['Target'].append(tgt_val)
+                    layer_data[layer_idx]['Target'].append(tstmt_val + tgt_val)
                     
     return layer_data
 
@@ -52,7 +50,7 @@ def generate_heatmap(layer_data, model_name, date_time, out_path):
     layers = sorted(layer_data.keys())
     num_layers = len(layers)
     
-    regions = ['System', 'Distractor', 'TargetStmt', 'Target']
+    regions = ['System', 'Distractor', 'Target']
     
     data_matrix = np.zeros((len(regions), num_layers))
     
