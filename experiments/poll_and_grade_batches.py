@@ -474,16 +474,24 @@ def main():
         print(f"   Refusals: {stats['refusals']}")
         print(f"   Failures (non-refusal errors): {stats['failures']}")
         
+        summary_data = {
+            "accuracy": acc,
+            "accuracy_attempted": acc_attempted,
+            "correct": stats["correct"],
+            "total": stats["total"],
+            "attempted": attempted,
+            "refusals": stats["refusals"],
+            "failures": stats["failures"],
+        }
+        
+        # Dynamically add all generation parameters recorded at launch (no fallbacks)
+        internal_tracking_keys = {"batch_id", "provider", "google_mode", "model", "dataset", "experiment", "context_type", "context_size", "context_token_count", "timestamp", "jobs_file", "status", "metadata", "output_ref"}
+        for k, v in data.items():
+            if k not in internal_tracking_keys:
+                summary_data[k] = v
+
         results.append({
-            "summary": {
-                "accuracy": acc,
-                "accuracy_attempted": acc_attempted,
-                "correct": stats["correct"],
-                "total": stats["total"],
-                "attempted": attempted,
-                "refusals": stats["refusals"],
-                "failures": stats["failures"]
-            }
+            "summary": summary_data
         })
         
         # Save final
