@@ -18,8 +18,8 @@ def main():
     parser.add_argument("--names", type=str, required=True, help="Comma-separated list of experiment names")
     parser.add_argument("--provider", type=str, default=None, help="API Provider (google, openai, anthropic). Optional if model name implies it.")
     parser.add_argument("--max_tokens", type=int, default=128000, help="Max output tokens (required to avoid accidental truncation).")
-    parser.add_argument("--temperature", type=float, default=0.7, help="Generation temperature.")
-    parser.add_argument("--top_p", type=float, default=1.0, help="Generation top_p.")
+    parser.add_argument("--temperature", type=float, default=0.6, help="Generation temperature.")
+    parser.add_argument("--top_p", type=float, default=0.95, help="Generation top_p.")
     parser.add_argument("--batch", action="store_true", help="Submit as an async batch job instead of running sequentially")
     
     args = parser.parse_args()
