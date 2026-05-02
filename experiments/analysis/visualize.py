@@ -142,10 +142,16 @@ def load_metrics_data(experiments_dir, safe_dataset):
                 else:
                     summary = {}
                     
-                # if not summary or "avg_output_tokens" not in summary:
-                #     raise ValueError(f"CRITICAL: Average token length ('avg_output_tokens') missing in summary of {latest_file}.")
+                # Define results for fallback computation
+                results = content if isinstance(content, list) else content.get("results", [])
                     
                 avg_length = summary.get("avg_output_tokens", 0.0)
+                
+                # If avg_output_tokens is missing, compute it from results
+                if avg_length == 0.0 and results:
+                    token_counts = [r.get("output_tokens", 0) for r in results if isinstance(r, dict) and r.get("id") is not None]
+                    if token_counts:
+                        avg_length = sum(token_counts) / len(token_counts)
                 
                 if summary:
                     # Parse from summary block
@@ -157,17 +163,11 @@ def load_metrics_data(experiments_dir, safe_dataset):
                     total = summary.get("total", 0)
                     fail_rate = (n_failures / total * 100.0) if total > 0 else 0.0
                 else:
-                    pass
+                    acc = 0.0
+                    fail_rate = 0.0
                     
-                # # Validate output_tokens in each prompt result
-                # results = content if isinstance(content, list) else content.get("results", [])
-                # for r in results:
-                #     if isinstance(r, dict) and r.get("id") is not None:
-                #         if "output_tokens" not in r:
-                #             raise ValueError(f"CRITICAL: 'output_tokens' field missing for a prompt in {latest_file}.")
-                            
                 # Dynamically compute from raw results array if summary misses fields
-                if not summary.get("accuracy"):
+                if "accuracy" not in summary:
                     total_computed = 0
                     correct = 0
                     n_failures_computed = 0
