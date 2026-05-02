@@ -35,7 +35,6 @@ TECHNIQUE_LABELS = {
     "interleaved_context_line":     "Interleave-L",
     "interleaved_context_word":     "Interleave-W",
     "interleaved_context_symbol":   "Interleave-S",
-    "context_saturation":           "Context",
     "rectangle_perimeter":          "Rectangle",
     "snake_vertical":               "Snake-V",
     "snake_horizontal":             "Snake-H",
@@ -45,7 +44,6 @@ TECHNIQUE_ORDER = [
     "baseline",
     "not_not", "opposites", "wrappers",
     "interleaved_context_line", "interleaved_context_word", "interleaved_context_symbol",
-    "context_saturation",
     "sentence_reversal", "word_reversal", "split_reversal",
     "rail_fence",
     "rectangle_perimeter", "snake_vertical", "snake_horizontal",
@@ -73,7 +71,7 @@ CATEGORIES = {
     "Syntactic": ["split_reversal", "word_reversal", "sentence_reversal"],
     "Semantic": ["not_not", "opposites", "wrappers"],
     "Visual": ["rail_fence"],
-    "Contextual": ["interleaved_context_line", "interleaved_context_symbol", "interleaved_context_word", "context_saturation"],
+    "Contextual": ["interleaved_context_line", "interleaved_context_symbol", "interleaved_context_word"],
 }
 
 CATEGORY_NAMES = list(CATEGORIES.keys())
@@ -325,7 +323,7 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"{metric}.pdf")
+    out_path = os.path.join(outdir, f"{metric}_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -388,7 +386,7 @@ def plot_recovery(rec_data, dataset_name, outdir, accuracy_data=None, accuracy_o
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, "prompt_recovery.pdf")
+    out_path = os.path.join(outdir, f"prompt_recovery_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -428,7 +426,7 @@ def plot_single_metric(dataset_name, technique_data, outdir):
     ax.set_ylim(min(values + [0]) * 1.1, max(values + [0]) * 1.1)
     ax.grid(axis='y', alpha=0.3)
     plt.tight_layout()
-    out_path = os.path.join(outdir, "average_accuracy_drop.pdf")
+    out_path = os.path.join(outdir, f"average_accuracy_drop_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -491,7 +489,7 @@ def plot_radar_charts(dataset_name, technique_data, outdir):
         ax.grid(True, alpha=0.3)
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
-    out_path = os.path.join(outdir, "radar_categories.pdf")
+    out_path = os.path.join(outdir, f"radar_categories_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -533,7 +531,7 @@ def plot_conditional_accuracy(dataset_name, cond_data, technique_data, outdir):
         row, col = divmod(idx, ncols); axes[row, col].set_visible(False)
 
     plt.tight_layout(rect=[0, 0, 1, 0.94])
-    out_path = os.path.join(outdir, "conditional_accuracy.pdf")
+    out_path = os.path.join(outdir, f"conditional_accuracy_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -585,7 +583,7 @@ def plot_global_conditional_accuracy(dataset_name, cond_data, technique_data, ou
                 ha='center', va='bottom', fontsize=20, fontweight='bold')
 
     plt.tight_layout()
-    out_path = os.path.join(outdir, "global_conditional_accuracy.pdf")
+    out_path = os.path.join(outdir, f"global_conditional_accuracy_{dataset_name}.pdf")
     fig.savefig(out_path, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -768,7 +766,7 @@ def plot_compound(dataset_name, outdir, experiments_dir):
     ax.set_xlim(left=0, right=xmax)
     
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, "compound.pdf")
+    out_path = os.path.join(outdir, f"compound_{dataset_name}.pdf")
     fig.savefig(out_path, bbox_inches='tight', facecolor='white', dpi=150)
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -985,7 +983,7 @@ def plot_attention_effort(dataset_name, outdir, experiments_dir):
     fig.subplots_adjust(bottom=0.35, right=0.95, top=0.95)
 
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, "attention_effort_ratios.pdf")
+    out_path = os.path.join(outdir, f"attention_effort_ratios_{dataset_name}.pdf")
     fig.savefig(out_path, bbox_inches='tight', facecolor='white', dpi=150)
     plt.close(fig)
     print(f"Saved: {out_path}")
