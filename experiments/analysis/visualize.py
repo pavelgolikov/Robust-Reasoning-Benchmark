@@ -88,7 +88,9 @@ def shorten(name, mapping):
     return mapping.get(name, name)
 
 def format_length_label(value):
-    return f"{value/1000:.0f}"
+    if value >= 1000:
+        return f"{value/1000:.1f}k"
+    return f"{int(value)}"
 
 # ── Fast Data Loading ───────────────────────────────────────────────
 
@@ -149,7 +151,20 @@ def load_metrics_data(experiments_dir, safe_dataset):
                 
                 # If avg_output_tokens is missing, compute it from results
                 if avg_length == 0.0 and results:
-                    token_counts = [r.get("output_tokens", 0) for r in results if isinstance(r, dict) and r.get("id") is not None]
+                    token_counts = []
+                    for r in results:
+                        if not isinstance(r, dict) or r.get("id") is None:
+                            continue
+                        tc = r.get("output_tokens")
+                        if tc is None:
+                            # Fallback: estimate tokens from word count if missing (approx 1.3 tokens per word)
+                            output_text = r.get("output", "")
+                            if isinstance(output_text, str):
+                                tc = int(len(output_text.split()) * 1.3)
+                            else:
+                                tc = 0
+                        token_counts.append(tc)
+                        
                     if token_counts:
                         avg_length = sum(token_counts) / len(token_counts)
                 
@@ -322,23 +337,30 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
             elif metric == 'length':
                 text = format_length_label(acc)
                 acc_val = technique_data[t][model_name]['accuracy']
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() / 2,
-                        f"{acc_val:.0f}", ha='center', va='center', fontsize=10, color='white', fontweight='bold',
-                        path_effects=[patheffects.withStroke(linewidth=2, foreground='black')])
+                # Place accuracy value inside the bar only if bar is tall enough
+                if bar.get_height() > (max(accuracies) * 0.15):
+                    ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() / 2,
+                            f"{acc_val:.0f}", ha='center', va='center', fontsize=10, color='white', fontweight='bold',
+                            path_effects=[patheffects.withStroke(linewidth=2, foreground='black')])
             else: text = f"{acc:.0f}"
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.0, text, ha='center', va='bottom', fontsize=11, fontweight='bold')
+            
+            # Use proportional offset for text above bar
+            y_offset = (max(accuracies) * 0.02) if metric == 'length' else 1.0
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + y_offset, text, ha='center', va='bottom', fontsize=11, fontweight='bold')
 
         ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=10)
         ax.set_xticks(x); ax.set_xticklabels(technique_labels, fontsize=12, rotation=45, ha='right')
         ax.set_ylabel("Length (tokens)" if metric == 'length' else "Accuracy (%)", fontsize=12)
-        if metric != 'length':
+        if metric == 'length':
+            ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, p: f'{x/1000:.1f}k' if x >= 1000 else f'{int(x)}'))
+        else:
             ax.set_ylim(0, 115); ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
 
     ncols, n_models = 2, len(all_models)
     nrows = (n_models + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.5 * ncols, 3.5 * nrows))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(6.5 * ncols, 4.5 * nrows))
     axes = np.atleast_2d(axes)
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
     # fig.suptitle(f"{('Length' if metric=='length' else 'Accuracy')} by Transform — {dataset_label}", fontsize=22, fontweight='bold', y=0.98)
@@ -348,7 +370,7 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
     for idx in range(n_models, nrows * ncols):
         row, col = divmod(idx, ncols); axes[row, col].set_visible(False)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.94])
+    plt.tight_layout(rect=[0, 0, 1, 0.96], h_pad=3.0, w_pad=2.0)
     os.makedirs(outdir, exist_ok=True)
     out_path = os.path.join(outdir, f"{metric}_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
@@ -688,23 +710,52 @@ def plot_compound(dataset_name, outdir, experiments_dir):
             
         bl_files = glob.glob(os.path.join(bl_model_dataset_dir, "*.json"))
         if not bl_files:
-            raise RuntimeError(f"No baseline JSON found for {model} in {bl_model_dataset_dir}")
-        if len(bl_files) > 1:
-            raise RuntimeError(f"Multiple baseline JSONs found for {model} in {bl_model_dataset_dir}. Unsure which to use.")
+            print(f"Warning: No baseline JSON found for {model} in {bl_model_dataset_dir}. Skipping this model.")
+            continue
+        b_correct = 0
+        b_total = 0
+        b_cutoffs = 0
+        b_files_info = []
+        
+        for blf in bl_files:
+            with open(blf) as f:
+                b_data = json.load(f)
             
-        with open(bl_files[0]) as f:
-            b_data = json.load(f)
-            if isinstance(b_data, list):
-                if len(b_data) > 0 and isinstance(b_data[-1], dict):
-                    b_acc = b_data[-1].get("summary", {}).get("accuracy", 0.0)
-                else:
-                    b_acc = 0.0
+            if isinstance(b_data, list) and len(b_data) > 0:
+                summary = b_data[-1].get("summary", {}) if isinstance(b_data[-1], dict) else {}
+            elif isinstance(b_data, dict):
+                summary = b_data.get("summary", {})
             else:
-                b_acc = b_data.get("summary", {}).get("accuracy", 0.0)
+                summary = {}
                 
-            if isinstance(b_acc, float) and b_acc <= 1.0 and b_acc > 0:
-                b_acc *= 100.0
-            model_data[model][1] = float(b_acc)
+            correct = summary.get("correct", 0)
+            total = summary.get("total", 0)
+            cutoffs = summary.get("max_token_cutoffs", 0)
+            
+            if total == 0 and isinstance(b_data, list):
+                total = len([item for item in b_data if isinstance(item, dict) and "id" in item])
+                
+            b_correct += correct
+            b_total += total
+            b_cutoffs += cutoffs
+            b_files_info.append((os.path.basename(blf), total))
+            
+        if len(b_files_info) > 1:
+            files_str = " and ".join([f"{f[0]} ({f[1]} samples)" for f in b_files_info])
+            print(f"combining result json files {files_str} for model {model} at position 1 (baseline)")
+            
+        if b_total > 0:
+            b_acc = b_correct / float(b_total)
+        else:
+            # Fallback
+            with open(bl_files[0]) as f:
+                fallback_data = json.load(f)
+                b_acc = fallback_data[-1].get("summary", {}).get("accuracy", 0.0) if isinstance(fallback_data, list) else fallback_data.get("summary", {}).get("accuracy", 0.0)
+                
+        if isinstance(b_acc, float) and b_acc <= 1.0 and b_acc > 0:
+            b_acc *= 100.0
+            
+        model_data[model][1] = float(b_acc)
             
         # Load compound runs
         cp_model_dataset_dir = os.path.join(compound_dir, model, dataset_name)
@@ -713,8 +764,10 @@ def plot_compound(dataset_name, outdir, experiments_dir):
             
         cp_files = glob.glob(os.path.join(cp_model_dataset_dir, "*.json"))
         if not cp_files:
-            raise RuntimeError(f"No compound JSONs found for {model} in {cp_model_dataset_dir}")
+            print(f"Warning: No compound JSONs found for {model} in {cp_model_dataset_dir}. Skipping this model.")
+            continue
             
+        pos_stats = {}
         for cpf in cp_files:
             with open(cpf) as f:
                 c_data = json.load(f)
@@ -732,13 +785,8 @@ def plot_compound(dataset_name, outdir, experiments_dir):
             total = summary.get("total", 0)
             cutoffs = summary.get("max_token_cutoffs", 0)
             
-            if total > 0:
-                c_acc = (correct + cutoffs) / float(total)
-            else:
-                c_acc = summary.get("accuracy", 0.0)
-                
-            if isinstance(c_acc, float) and c_acc <= 1.0 and c_acc > 0:
-                c_acc *= 100.0
+            if total == 0 and isinstance(c_data, list):
+                total = len([item for item in c_data if isinstance(item, dict) and "id" in item])
                 
             orig = first_item.get("original", "")
             distractors = max(0, len(re.findall(r'Problem \d+:', orig)) - 1)
@@ -751,10 +799,31 @@ def plot_compound(dataset_name, outdir, experiments_dir):
                 raise RuntimeError(f"Failed to determine valid distractor count in {cpf}")
                 
             position = distractors + 1
-            if position in model_data[model]:
-                raise RuntimeError(f"Duplicate position {position} found for {model}. Files conflict.")
+            filename = os.path.basename(cpf)
+            
+            if position not in pos_stats:
+                pos_stats[position] = {'correct': correct, 'total': total, 'cutoffs': cutoffs, 'files': [(filename, total)]}
+            else:
+                pos_stats[position]['correct'] += correct
+                pos_stats[position]['total'] += total
+                pos_stats[position]['cutoffs'] += cutoffs
+                pos_stats[position]['files'].append((filename, total))
                 
-            model_data[model][position] = float(c_acc)
+        for pos, stats in pos_stats.items():
+            if len(stats['files']) > 1:
+                files_str = " and ".join([f"{f[0]} ({f[1]} samples)" for f in stats['files']])
+                print(f"combining result json files {files_str} for model {model} at position {pos}")
+                
+            if stats['total'] > 0:
+                c_acc = stats['correct'] / float(stats['total'])
+            else:
+                # Fallback to default accuracy format if total is still 0
+                c_acc = summary.get("accuracy", 0.0)
+                
+            if isinstance(c_acc, float) and c_acc <= 1.0 and c_acc > 0:
+                c_acc *= 100.0
+                
+            model_data[model][pos] = float(c_acc)
 
     # Plotting
     fig, ax = plt.subplots(figsize=(14, 8))
@@ -769,7 +838,7 @@ def plot_compound(dataset_name, outdir, experiments_dir):
         "nvidia_OpenReasoning-Nemotron-7B",
         "deepseek-ai_DeepSeek-R1-Distill-Llama-70B"
     ]
-    models_to_plot = [m for m in models_found if m in target_models]
+    models_to_plot = [m for m in models_found if m in target_models and m in model_data and model_data[m]]
     # Sort models by baseline accuracy
     models_to_plot = sorted(models_to_plot, key=lambda m: model_data[m].get(1, 0), reverse=True)
     
