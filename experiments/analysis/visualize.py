@@ -57,7 +57,7 @@ MODEL_SHORT_NAMES = {
     "gpt-5.4":                                          "GPT-5.4",
     "deepseek-ai_DeepSeek-R1-Distill-Llama-70B":        "DSR1-Llama-70B",
     "gemini-3.1-pro-preview":                           "Gemini 3.1 Pro",
-    "claude-opus-4-6":                                  "Claude Opus 4.6",
+    "claude-opus-4-6":                                  "Opus 4.6",
 }
 
 DATASET_SHORT_NAMES = {
@@ -158,34 +158,61 @@ def load_metrics_data(experiments_dir, safe_dataset):
                     acc = summary.get("accuracy", 0.0)
                     if isinstance(acc, float) and acc <= 1.0 and acc > 0:
                         acc *= 100.0
-                        
-                    n_failures = summary.get("refusals", 0) + summary.get("failures", 0)
+                    
+                    refusals = summary.get("refusals", 0)
                     total = summary.get("total", 0)
+                    attempted = total - refusals
+                    
+                    if attempted > 0:
+                        acc_attempted = summary.get("accuracy_attempted", None)
+                        if acc_attempted is None:
+                            correct = summary.get("correct", 0)
+                            acc_attempted = (correct / attempted)
+                        
+                        if isinstance(acc_attempted, (float, int)) and acc_attempted <= 1.0 and acc_attempted > 0:
+                            acc_attempted *= 100.0
+                        elif acc_attempted == 0:
+                            acc_attempted = 0.0
+                    else:
+                        acc_attempted = None
+                        
+                    n_failures = refusals + summary.get("failures", 0)
                     fail_rate = (n_failures / total * 100.0) if total > 0 else 0.0
                 else:
                     acc = 0.0
+                    acc_attempted = None
                     fail_rate = 0.0
                     
                 # Dynamically compute from raw results array if summary misses fields
                 if "accuracy" not in summary:
                     total_computed = 0
                     correct = 0
+                    n_refusals_computed = 0
                     n_failures_computed = 0
                     for r in results:
                         if isinstance(r, dict) and r.get("id") is not None:
                             total_computed += 1
                             if r.get("correct", False):
                                 correct += 1
-                            if r.get("refusal") is True or (not r.get("correct") and r.get("extracted") is None):
+                            if r.get("refusal") is True:
+                                n_refusals_computed += 1
+                            elif (not r.get("correct") and r.get("extracted") is None):
                                 n_failures_computed += 1
                                 
                     acc = (correct / total_computed * 100.0) if total_computed > 0 else 0.0
-                    fail_rate = (n_failures_computed / total_computed * 100.0) if total_computed > 0 else 0.0
+                    attempted_computed = total_computed - n_refusals_computed
+                    acc_attempted = (correct / attempted_computed * 100.0) if attempted_computed > 0 else None
+                    fail_rate = ((n_refusals_computed + n_failures_computed) / total_computed * 100.0) if total_computed > 0 else 0.0
+                    total = total_computed
+                    attempted = attempted_computed
                     
                 data[technique][model] = {
                     'accuracy': acc,
+                    'accuracy_attempted': acc_attempted,
                     'failure_rate': fail_rate,
-                    'length': avg_length
+                    'length': avg_length,
+                    'total': total,
+                    'attempted': attempted
                 }
             except ValueError as ve:
                 print(ve)
@@ -391,7 +418,7 @@ def plot_recovery(rec_data, dataset_name, outdir, accuracy_data=None, accuracy_o
     plt.close(fig)
     print(f"Saved: {out_path}")
 
-def plot_single_metric(dataset_name, technique_data, outdir):
+def plot_single_metric(dataset_name, technique_data, outdir, exclude_refusals=False):
     all_models = set()
     for td in technique_data.values(): all_models.update(td.keys())
     if not all_models: return
@@ -402,31 +429,82 @@ def plot_single_metric(dataset_name, technique_data, outdir):
     all_models = sorted(all_models, key=_avg_acc, reverse=True)
 
     model_deltas = {}
+    model_attempt_rates = {}
+    metric_key = 'accuracy_attempted' if exclude_refusals else 'accuracy'
+    
     for model in all_models:
-        baseline_acc = technique_data.get('baseline', {}).get(model, {}).get('accuracy')
+        baseline_acc = technique_data.get('baseline', {}).get(model, {}).get(metric_key)
         if baseline_acc is None: continue
-        deltas = [baseline_acc - technique_data[t][model]['accuracy'] for t in technique_data if t != 'baseline' and model in technique_data[t]]
-        if deltas: model_deltas[model] = sum(deltas) / len(deltas)
+        
+        deltas = []
+        total_s = 0
+        total_a = 0
+        for t in technique_data:
+            if model not in technique_data[t]: continue
+            
+            # Aggregate attempt rates for all techniques including baseline
+            total_s += technique_data[t][model].get('total', 0)
+            total_a += technique_data[t][model].get('attempted', 0)
+            
+            if t == 'baseline': continue
+            
+            acc = technique_data[t][model].get(metric_key)
+            if acc is not None:
+                deltas.append(baseline_acc - acc)
+                
+        if deltas:
+            model_deltas[model] = sum(deltas) / len(deltas)
+            model_attempt_rates[model] = total_a / total_s if total_s > 0 else 0.0
+
+    if not model_deltas:
+        print("No models have valid data for average accuracy drop.")
+        return
 
     plot_models = sorted(model_deltas.keys(), key=lambda m: model_deltas[m])
     values = [model_deltas[m] for m in plot_models]
     colors = [PALETTE[all_models.index(m) % len(PALETTE)] for m in plot_models]
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(12, 7))
     bars = ax.bar(np.arange(len(plot_models)), values, 0.65, color=colors, edgecolor='black', linewidth=0.5)
-    for bar, val in zip(bars, values):
-        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5), f"{val:.0f}", \
-            ha='center', va='bottom' if val >= 0 else 'top', fontsize=18, fontweight='bold')
+    for i, (bar, val) in enumerate(zip(bars, values)):
+        model = plot_models[i]
+        # Standard accuracy drop label - always place 'above' the bar end
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5, f"{val:.1f}", \
+            ha='center', va='bottom', fontsize=18, fontweight='bold')
+        
+        # Add 'attempted' highlight for Claude above the bar
+        if exclude_refusals and "claude" in model.lower():
+            rate = model_attempt_rates.get(model, 1.0) * 100.0
+            # Position it higher than the drop value
+            ax.text(bar.get_x(), bar.get_height() + 6.0, 
+                    f"{rate:.1f}% attempted", 
+                    ha='left', va='bottom', fontsize=15, fontweight='bold', 
+                    color='darkred', rotation=70)
 
     dataset_label = shorten(dataset_name, DATASET_SHORT_NAMES)
     # ax.set_title(f"Average Accuracy Drop — {dataset_label}", fontsize=22, fontweight='bold', pad=20)
     ax.set_xticks(np.arange(len(plot_models)))
-    ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models], fontsize=18, rotation=45, ha='right')
+    
+    labels = []
+    for m in plot_models:
+        name = shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ')
+        if exclude_refusals:
+            rate = model_attempt_rates.get(m, 1.0) * 100.0
+            # Use the internal ID 'm' to identify Claude models
+            if "claude" in m.lower():
+                labels.append(f"{name}")
+            else:
+                labels.append(name)
+        else:
+            labels.append(name)
+            
+    ax.set_xticklabels(labels, fontsize=18, rotation=45, ha='right')
     ax.set_ylabel("Avg Accuracy Drop (%)", fontsize=20)
     ax.set_ylim(min(values + [0]) * 1.1, max(values + [0]) * 1.1)
     ax.grid(axis='y', alpha=0.3)
     plt.tight_layout()
-    out_path = os.path.join(outdir, f"average_accuracy_drop_{dataset_name}.pdf")
+    suffix = "_no_refusals" if exclude_refusals else ""
+    out_path = os.path.join(outdir, f"average_accuracy_drop{suffix}_{dataset_name}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -998,6 +1076,7 @@ def main():
     parser.add_argument("--plot_type", type=str, required=True, 
                     choices=['accuracy', 'average_accuracy_drop', 
                                  'output_length', 'radar_categories', 'compound', 'attention_effort_ratios'])
+    parser.add_argument("--exclude_refusals", action="store_true", help="Exclude refusals from sample pool (use accuracy on attempted)")
     args = parser.parse_args()
 
     if not args.experiments_dir:
@@ -1028,7 +1107,7 @@ def main():
     elif args.plot_type == 'output_length':
         plot_by_model(safe_dataset, metrics_data, outdir, metric='length')
     elif args.plot_type == 'average_accuracy_drop':
-        plot_single_metric(safe_dataset, metrics_data, outdir)
+        plot_single_metric(safe_dataset, metrics_data, outdir, exclude_refusals=args.exclude_refusals)
     elif args.plot_type == 'radar_categories':
         plot_radar_charts(safe_dataset, metrics_data, outdir)
 
