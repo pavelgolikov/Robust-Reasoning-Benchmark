@@ -830,25 +830,16 @@ def plot_compound(dataset_name, outdir, experiments_dir):
     
     target_models = [
         "gemini-3.1-pro-preview",
-        "claude-opus-4-6",
         "gpt-5.4",
-        "openai_gpt-oss-120b",
+        "claude-opus-4-6",
         "Qwen_Qwen3-30B-A3B-Thinking-2507",
         "nvidia_OpenReasoning-Nemotron-32B",
         "nvidia_OpenReasoning-Nemotron-7B",
+        "openai_gpt-oss-120b",
         "deepseek-ai_DeepSeek-R1-Distill-Llama-70B"
     ]
-    models_to_plot = [m for m in models_found if m in target_models and m in model_data and model_data[m]]
-    # Sort models by baseline accuracy
-    models_to_plot = sorted(models_to_plot, key=lambda m: model_data[m].get(1, 0), reverse=True)
-    
-    # Swap claude-opus-4-6 and gpt-5.4
-    try:
-        idx_claude = models_to_plot.index("claude-opus-4-6")
-        idx_gpt = models_to_plot.index("gpt-5.4")
-        models_to_plot[idx_claude], models_to_plot[idx_gpt] = models_to_plot[idx_gpt], models_to_plot[idx_claude]
-    except ValueError:
-        pass
+    # Keep models in the exact order specified in target_models
+    models_to_plot = [m for m in target_models if m in models_found and m in model_data and model_data[m]]
     
     x_ticks = []
     x_tick_labels = []
@@ -899,7 +890,7 @@ def plot_compound(dataset_name, outdir, experiments_dir):
     ax.set_ylabel("Accuracy on Last Problem (%)", fontsize=22)
     # ax.set_xlabel("Number of problems asked per model", fontsize=18)
     
-    ax.set_ylim(50, 105)
+    ax.set_ylim(25, 105)
     ax.grid(True, linestyle='--', alpha=0.7)
     
     ax.spines['top'].set_visible(True)
