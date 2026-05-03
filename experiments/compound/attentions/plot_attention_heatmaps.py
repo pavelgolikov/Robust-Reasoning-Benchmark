@@ -42,100 +42,107 @@ def parse_file(filepath):
                     
     return layer_data
 
-def generate_heatmap(layer_data, model_name, date_time, out_path, exclude_system=False):
-    if not layer_data:
-        print(f"No data found for {model_name}. Skipping plot.")
-        return
-        
+def get_matrix(layer_data, exclude_system=False):
     layers = sorted(layer_data.keys())
     num_layers = len(layers)
     
     if exclude_system:
         regions = ['Distractor', 'Target']
         data_matrix = np.zeros((len(regions), num_layers))
-        
         for j, layer in enumerate(layers):
             d_val = np.mean(layer_data[layer]['Distractor'])
             t_val = np.mean(layer_data[layer]['Target'])
             total = d_val + t_val
-            
             if total > 0:
                 data_matrix[0, j] = (d_val / total) * 100.0
                 data_matrix[1, j] = (t_val / total) * 100.0
-            else:
-                data_matrix[0, j] = 0
-                data_matrix[1, j] = 0
     else:
         regions = ['System', 'Distractor', 'Target']
         data_matrix = np.zeros((len(regions), num_layers))
-        
         for i, region in enumerate(regions):
             for j, layer in enumerate(layers):
                 data_matrix[i, j] = np.mean(layer_data[layer][region])
-            
-    plt.figure(figsize=(14, 6))
-    ax = plt.gca()
     
-    # Use coolwarm colormap as requested with matplotlib
-    cax = ax.imshow(data_matrix, cmap="viridis", vmin=0, vmax=100, aspect='auto')
+    # Calculate average across all layers for each region and append as last column
+    layer_averages = np.mean(data_matrix, axis=1, keepdims=True)
+    data_matrix = np.hstack((data_matrix, layer_averages))
+    x_labels = [str(l) for l in layers] + ['Avg']
     
-    # Add colorbar
-    cbar = plt.colorbar(cax, ax=ax)
-    cbar.set_label('Attention Mass (%)')
-    
-    # Set ticks
-    ax.set_xticks(np.arange(len(layers)))
-    ax.set_yticks(np.arange(len(regions)))
-    
-    # Set tick labels
-    ax.set_xticklabels(layers)
-    ax.set_yticklabels(regions)
+    return data_matrix, x_labels, regions
 
-    plt.yticks(rotation=0)
-    plt.xticks(rotation=45)
+def generate_combined_heatmap(all_results, out_path, exclude_system=False):
+    num_models = len(all_results)
+    if num_models == 0:
+        return
+
+    fig, axes = plt.subplots(num_models, 1, figsize=(16, 4 * num_models), squeeze=False)
     
-    title_suffix = "\n(Excluding System Context)" if exclude_system else ""
-    plt.title(f"Attention Dilution: {model_name}\n(Run Date: {date_time}){title_suffix}", fontsize=14, pad=15)
-    plt.xlabel("Layer", fontsize=12)
-    plt.ylabel("Context Region", fontsize=12)
-    
-    plt.tight_layout()
+    title = "Attention Dilution across Layers"
+    if exclude_system:
+        title += " (Excluding System Context)"
+    fig.suptitle(title, fontsize=18, y=0.98)
+
+    for idx, (layer_data, model_name) in enumerate(all_results):
+        ax = axes[idx, 0]
+        data_matrix, x_labels, regions = get_matrix(layer_data, exclude_system)
+        
+        cax = ax.imshow(data_matrix, cmap="viridis", vmin=0, vmax=100, aspect='auto')
+        
+        # Add text to the 'Avg' column
+        avg_col_idx = data_matrix.shape[1] - 1
+        for i in range(data_matrix.shape[0]):
+            val = data_matrix[i, avg_col_idx]
+            text_color = "black" if 25 < val < 90 else "white"
+            ax.text(avg_col_idx, i, f"{val:.1f}  ", ha="center", va="center", color=text_color, fontweight="bold")
+
+        ax.set_title(model_name, fontsize=14, pad=10)
+        ax.set_xticks(np.arange(len(x_labels)))
+        ax.set_xticklabels(x_labels, rotation=45, fontsize=8)
+        ax.set_yticks(np.arange(len(regions)))
+        ax.set_yticklabels(regions, fontsize=10)
+        ax.set_ylabel("Context Region", fontsize=11)
+        
+        if idx == num_models - 1:
+            ax.set_xlabel("Layer index", fontsize=12)
+
+    # Add a single colorbar for the whole figure
+    fig.subplots_adjust(right=0.85, hspace=0.4)
+    cbar_ax = fig.add_axes([0.88, 0.15, 0.02, 0.7])
+    fig.colorbar(axes[0, 0].images[0], cax=cbar_ax, label='Attention Mass (%)')
+
     plt.savefig(out_path, format='pdf', bbox_inches='tight')
     plt.close()
-    print(f"Saved plot to {out_path}")
+    print(f"Saved combined plot to {out_path}")
 
 def main():
     target_dir = "/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound/attentions"
     
-    # Target files for Qwen and Nemotron (7B and 32B)
-    pattern = os.path.join(target_dir, "dilution_*_3distractors_*.txt")
-    files = glob.glob(pattern)
+    # Target patterns for Qwen and Nemotron
+    patterns = [
+        os.path.join(target_dir, "dilution_Qwen_*_3distractors_*.txt"),
+        os.path.join(target_dir, "dilution_nvidia_OpenReasoning-Nemotron-7B_3distractors_*.txt"),
+        os.path.join(target_dir, "dilution_nvidia_OpenReasoning-Nemotron-32B_3distractors_*.txt")
+    ]
     
-    target_files = [f for f in files if "Qwen" in f or "Nemotron" in f]
+    all_results = []
     
-    for filepath in target_files:
-        basename = os.path.basename(filepath)
-        # Parse model name and date from filename
-        # Expected format: dilution_{model_name}_{distractors}distractors_{date}_{time}.txt
-        match = re.search(r"dilution_(.+?)_\d+distractors_(\d{8}_\d{6})\.txt", basename)
-        if match:
-            model_name = match.group(1)
-            date_time = match.group(2)
-        else:
-            model_name = basename.replace("dilution_", "").split("_3distractors")[0]
-            date_time = "Unknown"
-            
-        layer_data = parse_file(filepath)
+    for pattern in patterns:
+        files = glob.glob(pattern)
+        if not files:
+            continue
+        # Use the latest file if multiple exist
+        latest_file = max(files, key=os.path.getmtime)
         
-        # Output PDF path for regular plot
-        out_filename = f"heatmap_{model_name}_{date_time}.pdf"
-        out_path = os.path.join(target_dir, out_filename)
-        generate_heatmap(layer_data, model_name, date_time, out_path, exclude_system=False)
+        basename = os.path.basename(latest_file)
+        match = re.search(r"dilution_(.+?)_\d+distractors_", basename)
+        model_name = match.group(1) if match else basename
         
-        # Output PDF path for normalized plot without system
-        out_filename_no_sys = f"heatmap_{model_name}_{date_time}_no_system.pdf"
-        out_path_no_sys = os.path.join(target_dir, out_filename_no_sys)
-        generate_heatmap(layer_data, model_name, date_time, out_path_no_sys, exclude_system=True)
+        layer_data = parse_file(latest_file)
+        all_results.append((layer_data, model_name))
+    
+    # Generate combined plots
+    generate_combined_heatmap(all_results, os.path.join(target_dir, "combined_attention_dilution.pdf"), exclude_system=False)
+    generate_combined_heatmap(all_results, os.path.join(target_dir, "combined_attention_dilution_no_system.pdf"), exclude_system=True)
 
 if __name__ == "__main__":
     main()
