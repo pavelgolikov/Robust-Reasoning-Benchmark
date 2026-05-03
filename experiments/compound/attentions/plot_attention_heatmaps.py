@@ -93,7 +93,7 @@ def generate_combined_heatmap(all_results, out_path, exclude_system=False):
         for i in range(data_matrix.shape[0]):
             val = data_matrix[i, avg_col_idx]
             text_color = "white"
-            ax.text(avg_col_idx, i, f"{val:.1f}  ", ha="center", va="center", color=text_color, fontweight="bold", fontsize=16)
+            ax.text(avg_col_idx, i, f"{val:.1f}     ", ha="center", va="center", color=text_color, fontweight="bold", fontsize=16)
 
         ax.set_title(model_name, fontsize=20, pad=10)
         # Show every 4th layer index + the 'Avg' column
