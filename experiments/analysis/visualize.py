@@ -339,10 +339,11 @@ def plot_by_model(dataset_name, technique_data, outdir, metric='accuracy', failu
                 acc_val = technique_data[t][model_name]['accuracy']
                 # Place accuracy value inside the bar only if bar is tall enough
                 if bar.get_height() > (max(accuracies) * 0.15):
+                    acc_text = f"{acc_val:.1f}" if 0 < acc_val < 0.5 else f"{acc_val:.0f}"
                     ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() / 2,
-                            f"{acc_val:.0f}", ha='center', va='center', fontsize=10, color='white', fontweight='bold',
+                            acc_text, ha='center', va='center', fontsize=10, color='white', fontweight='bold',
                             path_effects=[patheffects.withStroke(linewidth=2, foreground='black')])
-            else: text = f"{acc:.0f}"
+            else: text = f"{acc:.1f}" if 0 < acc < 0.5 else f"{acc:.0f}"
             
             # Use proportional offset for text above bar
             y_offset = (max(accuracies) * 0.02) if metric == 'length' else 1.0
