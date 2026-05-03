@@ -75,12 +75,12 @@ def generate_combined_heatmap(all_results, out_path, exclude_system=False):
     if num_models == 0:
         return
 
-    fig, axes = plt.subplots(num_models, 1, figsize=(16, 4 * num_models), squeeze=False)
+    fig, axes = plt.subplots(num_models, 1, figsize=(16, 3.0 * num_models), squeeze=False)
     
     title = "Attention Dilution across Layers"
     if exclude_system:
         title += " (Excluding System Context)"
-    fig.suptitle(title, fontsize=18, y=0.98)
+    fig.suptitle(title, fontsize=24, y=0.98)
 
     for idx, (layer_data, model_name) in enumerate(all_results):
         ax = axes[idx, 0]
@@ -92,23 +92,32 @@ def generate_combined_heatmap(all_results, out_path, exclude_system=False):
         avg_col_idx = data_matrix.shape[1] - 1
         for i in range(data_matrix.shape[0]):
             val = data_matrix[i, avg_col_idx]
-            text_color = "black" if 25 < val < 90 else "white"
-            ax.text(avg_col_idx, i, f"{val:.1f}  ", ha="center", va="center", color=text_color, fontweight="bold")
+            text_color = "white"
+            ax.text(avg_col_idx, i, f"{val:.1f}  ", ha="center", va="center", color=text_color, fontweight="bold", fontsize=16)
 
-        ax.set_title(model_name, fontsize=14, pad=10)
-        ax.set_xticks(np.arange(len(x_labels)))
-        ax.set_xticklabels(x_labels, rotation=45, fontsize=8)
+        ax.set_title(model_name, fontsize=20, pad=10)
+        # Show every 4th layer index + the 'Avg' column
+        tick_indices = list(range(0, len(x_labels) - 1, 4))
+        if (len(x_labels) - 2) not in tick_indices: # Ensure we show something near the end if needed, but 'Avg' is always last
+             pass
+        tick_indices.append(len(x_labels) - 1)
+        tick_labels = [x_labels[i] for i in tick_indices]
+        
+        ax.set_xticks(tick_indices)
+        ax.set_xticklabels(tick_labels, rotation=0, fontsize=18)
         ax.set_yticks(np.arange(len(regions)))
-        ax.set_yticklabels(regions, fontsize=10)
-        ax.set_ylabel("Context Region", fontsize=11)
+        ax.set_yticklabels(regions, fontsize=16)
+        # ax.set_ylabel("Context Region", fontsize=18)
         
         if idx == num_models - 1:
-            ax.set_xlabel("Layer index", fontsize=12)
+            ax.set_xlabel("Layer index", fontsize=18)
 
     # Add a single colorbar for the whole figure
-    fig.subplots_adjust(right=0.85, hspace=0.4)
+    fig.subplots_adjust(right=0.85, hspace=0.7)
     cbar_ax = fig.add_axes([0.88, 0.15, 0.02, 0.7])
-    fig.colorbar(axes[0, 0].images[0], cax=cbar_ax, label='Attention Mass (%)')
+    cbar = fig.colorbar(axes[0, 0].images[0], cax=cbar_ax)
+    cbar.set_label('Attention Mass (%)', fontsize=18)
+    cbar.ax.tick_params(labelsize=14)
 
     plt.savefig(out_path, format='pdf', bbox_inches='tight')
     plt.close()
@@ -136,6 +145,7 @@ def main():
         basename = os.path.basename(latest_file)
         match = re.search(r"dilution_(.+?)_\d+distractors_", basename)
         model_name = match.group(1) if match else basename
+        model_name = model_name.replace("nvidia_", "").replace("Qwen_", "")
         
         layer_data = parse_file(latest_file)
         all_results.append((layer_data, model_name))

@@ -226,11 +226,11 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
                 if m: text = "N/A"
                 else: text = f"{a:.1f}" if 0 < a < 0.5 else f"{a:.0f}"
                 if text:
-                    ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 1.0, text, ha='center', va='bottom', fontsize=8, fontweight='bold', rotation=90)
+                    ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 1.0, text, ha='center', va='bottom', fontsize=10, fontweight='bold', rotation=90)
 
         ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=10)
         ax.set_xticks(x); ax.set_xticklabels(tech_labels, fontsize=12, rotation=45, ha='right')
-        ax.set_ylabel("Accuracy (%)", fontsize=12)
+        ax.set_ylabel("Accuracy (%)", fontsize=15)
         ax.set_ylim(0, 115); ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
@@ -307,9 +307,14 @@ def plot_single_metric(dataset_names, metrics_data_list, outdir, exclude_refusal
     
     for b1, b2, v1, v2 in zip(bars1, bars2, values1, values2):
         for b, v in [(b1, v1), (b2, v2)]:
+            # if v < 1 and v > 0:
             if v != 0:
-                ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.5, f"{v:.1f}", 
-                        ha='center', va='bottom', fontsize=14, fontweight='bold', rotation=90)
+                ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.5, f"{np.round(v):.0f}", 
+                        ha='center', va='bottom', fontsize=18, fontweight='bold', rotation=0)
+            # else:
+            #     ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.5, f"{v:.0f}", 
+            #             ha='center', va='bottom', fontsize=14, fontweight='bold', rotation=90)
+
 
     labels = [shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models]
     ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=18, rotation=45, ha='right')
@@ -390,7 +395,7 @@ def plot_radar_charts(dataset_names, metrics_data_list, outdir):
             ax.text(angle, r_label, label, ha=ha, va=va, fontsize=16, fontweight='bold', 
                     bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
         
-        ax.set_title(shorten(model, MODEL_SHORT_NAMES).replace('\n', ' '), size=15, fontweight='bold', pad=20)
+        ax.set_title(shorten(model, MODEL_SHORT_NAMES).replace('\n', ' '), size=18, fontweight='bold', pad=20)
         ax.set_xticklabels([])
         ax.grid(True, alpha=0.3)
 
