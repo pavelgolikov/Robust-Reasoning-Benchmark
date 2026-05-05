@@ -371,14 +371,12 @@ def extract_all_boxed_strings(string):
     return results
 
 def remove_boxed(s):
-    """Remove \\boxed{} wrapper to get inner content."""
-    left = "\\boxed{"
-    try:
-        assert s[:len(left)] == left
-        assert s[-1] == "}"
-        return s[len(left):-1]
-    except:
-        return None
+    """Remove \\boxed{} or \\fbox{} wrapper to get inner content."""
+    import re
+    match = re.match(r'\\(?:boxed|fbox)\s*\{(.*)\}$', s, re.DOTALL)
+    if match:
+        return match.group(1)
+    return None
 
 def is_equiv(str1, str2, verbose=False):
     """Check equivalence using Math-Verify's parse + verify."""
@@ -425,14 +423,14 @@ def extract_and_grade(model_output, ground_truth, exp_name=None):
             boxed_strs = extract_all_boxed_strings(model_output)
             for boxed_str in boxed_strs:
                 boxed_val = remove_boxed(boxed_str) if boxed_str else None
-                if boxed_val is not None:
+                if boxed_val is not None and boxed_val.strip() != "":
                     answer = parse(boxed_val)
                     correct = verify(gold, answer)
                     results.append((boxed_val, correct))
         else:
             boxed_str = last_boxed_only_string(model_output)
             boxed_val = remove_boxed(boxed_str) if boxed_str else None
-            if boxed_val is not None:
+            if boxed_val is not None and boxed_val.strip() != "":
                 answer = parse(boxed_val)
                 correct = verify(gold, answer)
                 results.append((boxed_val, correct))

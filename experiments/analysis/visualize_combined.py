@@ -422,28 +422,30 @@ def load_compound_data_for_dataset(dataset_name, experiments_dir):
         if os.path.isdir(bl_model_dataset_dir):
             bl_files = glob.glob(os.path.join(bl_model_dataset_dir, "*.json"))
             if bl_files:
-                b_correct, b_total = 0, 0
+                b_correct, b_total, b_cutoffs = 0, 0, 0
                 for blf in bl_files:
                     with open(blf) as f: b_data = json.load(f)
                     summary = b_data[-1].get("summary", {}) if isinstance(b_data, list) and b_data else b_data.get("summary", {}) if isinstance(b_data, dict) else {}
                     correct = summary.get("correct", 0)
                     total = summary.get("total", 0)
+                    cutoffs = summary.get("max_token_cutoffs", 0)
                     if total == 0 and isinstance(b_data, list): total = len([item for item in b_data if isinstance(item, dict) and "id" in item])
-                    b_correct += correct; b_total += total
+                    b_correct += correct; b_total += total; b_cutoffs += cutoffs
                 
                 b_acc = (b_correct / float(b_total)) if b_total > 0 else 0
                 if b_total == 0:
                     with open(bl_files[0]) as f:
                         fallback = json.load(f)
                         b_acc = fallback[-1].get("summary", {}).get("accuracy", 0.0) if isinstance(fallback, list) else fallback.get("summary", {}).get("accuracy", 0.0)
+                        b_cutoffs = fallback[-1].get("summary", {}).get("max_token_cutoffs", 0) if isinstance(fallback, list) else fallback.get("summary", {}).get("max_token_cutoffs", 0)
                 
                 if isinstance(b_acc, float) and 0 < b_acc <= 1.0: b_acc *= 100.0
-                model_data[model][1] = float(b_acc)
+                model_data[model][1] = {'acc': float(b_acc), 'cutoffs': b_cutoffs}
         
         cp_model_dataset_dir = os.path.join(compound_dir, model, dataset_name)
         if os.path.isdir(cp_model_dataset_dir):
             cp_files = glob.glob(os.path.join(cp_model_dataset_dir, "*.json"))
-            pos_stats = defaultdict(lambda: {'correct': 0, 'total': 0})
+            pos_stats = defaultdict(lambda: {'correct': 0, 'total': 0, 'cutoffs': 0})
             for cpf in cp_files:
                 with open(cpf) as f: c_data = json.load(f)
                 last_item = c_data[-1] if isinstance(c_data, list) and c_data else c_data
@@ -451,6 +453,7 @@ def load_compound_data_for_dataset(dataset_name, experiments_dir):
                 summary = last_item.get("summary", {})
                 correct = summary.get("correct", 0)
                 total = summary.get("total", 0)
+                cutoffs = summary.get("max_token_cutoffs", 0)
                 if total == 0 and isinstance(c_data, list): total = len([item for item in c_data if isinstance(item, dict) and "id" in item])
                 orig = first_item.get("original", "")
                 distractors = max(0, len(re.findall(r'Problem \d+:', orig)) - 1)
@@ -459,11 +462,12 @@ def load_compound_data_for_dataset(dataset_name, experiments_dir):
                 pos = distractors + 1
                 pos_stats[pos]['correct'] += correct
                 pos_stats[pos]['total'] += total
+                pos_stats[pos]['cutoffs'] += cutoffs
                 
             for pos, stats in pos_stats.items():
                 c_acc = (stats['correct'] / float(stats['total'])) if stats['total'] > 0 else summary.get("accuracy", 0.0)
                 if isinstance(c_acc, float) and 0 < c_acc <= 1.0: c_acc *= 100.0
-                model_data[model][pos] = float(c_acc)
+                model_data[model][pos] = {'acc': float(c_acc), 'cutoffs': stats['cutoffs']}
     return model_data
 
 def plot_compound(dataset_names, outdir, experiments_dir):
@@ -515,14 +519,26 @@ def plot_compound(dataset_names, outdir, experiments_dir):
         # Plot line 1
         if pos1:
             x1 = [current_x_base + p for p in pos1]
-            y1 = [data1[model][p] for p in pos1]
+            y1 = [data1[model][p]['acc'] for p in pos1]
             ax.plot(x1, y1, marker=marker1, markersize=8, linewidth=3, linestyle='-', color=color)
+            
+            # Annotate first and last point cutoffs
+            first_p, last_p = pos1[0], pos1[-1]
+            first_val, last_val = data1[model][first_p].get('cutoffs', 0), data1[model][last_p].get('cutoffs', 0)
+            ax.text(x1[0], y1[0] - 2, f"{first_val}", fontsize=14, ha='center', va='top', color=color, fontweight='bold')
+            ax.text(x1[-1], y1[-1] + 2, f"{last_val}", fontsize=14, ha='center', va='bottom', color=color, fontweight='bold')
         
         # Plot line 2
         if pos2:
             x2 = [current_x_base + p for p in pos2]
-            y2 = [data2[model][p] for p in pos2]
+            y2 = [data2[model][p]['acc'] for p in pos2]
             ax.plot(x2, y2, marker=marker2, markersize=8, linewidth=3, linestyle='-', color=color)
+            
+            # Annotate first and last point cutoffs
+            first_p, last_p = pos2[0], pos2[-1]
+            first_val, last_val = data2[model][first_p].get('cutoffs', 0), data2[model][last_p].get('cutoffs', 0)
+            ax.text(x2[0], y2[0] - 2, f"{first_val}", fontsize=14, ha='center', va='top', color=color, fontweight='bold')
+            ax.text(x2[-1], y2[-1] + 2, f"{last_val}", fontsize=14, ha='center', va='bottom', color=color, fontweight='bold')
             
         current_x = x_vals[-1] + 2  
                 
