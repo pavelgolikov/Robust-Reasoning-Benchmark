@@ -20,7 +20,7 @@ TECHNIQUE_LABELS = {
     "opposites":                    "Opposites",
     "not_not":                      "Not-Not",
     "wrappers":                     "Wrappers",
-    "split_reversal":               "Split-Rev",
+    "split_reversal":               "Symbol-Rev",
     "word_reversal":                "Word-Rev",
     "sentence_reversal":            "Sentence-Rev",
     "rail_fence":                   "Rail Fence",
