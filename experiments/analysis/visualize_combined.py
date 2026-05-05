@@ -440,7 +440,7 @@ def load_compound_data_for_dataset(dataset_name, experiments_dir):
                         b_cutoffs = fallback[-1].get("summary", {}).get("max_token_cutoffs", 0) if isinstance(fallback, list) else fallback.get("summary", {}).get("max_token_cutoffs", 0)
                 
                 if isinstance(b_acc, float) and 0 < b_acc <= 1.0: b_acc *= 100.0
-                model_data[model][1] = {'acc': float(b_acc), 'cutoffs': b_cutoffs}
+                model_data[model][1] = {'acc': float(b_acc), 'cutoffs': b_cutoffs, 'total': b_total}
         
         cp_model_dataset_dir = os.path.join(compound_dir, model, dataset_name)
         if os.path.isdir(cp_model_dataset_dir):
@@ -467,7 +467,7 @@ def load_compound_data_for_dataset(dataset_name, experiments_dir):
             for pos, stats in pos_stats.items():
                 c_acc = (stats['correct'] / float(stats['total'])) if stats['total'] > 0 else summary.get("accuracy", 0.0)
                 if isinstance(c_acc, float) and 0 < c_acc <= 1.0: c_acc *= 100.0
-                model_data[model][pos] = {'acc': float(c_acc), 'cutoffs': stats['cutoffs']}
+                model_data[model][pos] = {'acc': float(c_acc), 'cutoffs': stats['cutoffs'], 'total': stats['total']}
     return model_data
 
 def plot_compound(dataset_names, outdir, experiments_dir):
@@ -524,9 +524,11 @@ def plot_compound(dataset_names, outdir, experiments_dir):
             
             # Annotate first and last point cutoffs
             first_p, last_p = pos1[0], pos1[-1]
-            first_val, last_val = data1[model][first_p].get('cutoffs', 0), data1[model][last_p].get('cutoffs', 0)
-            ax.text(x1[0], y1[0] - 2, f"{first_val}", fontsize=14, ha='center', va='top', color=color, fontweight='bold')
-            ax.text(x1[-1], y1[-1] + 2, f"{last_val}", fontsize=14, ha='center', va='bottom', color=color, fontweight='bold')
+            f_stats, l_stats = data1[model][first_p], data1[model][last_p]
+            f_perc = (f_stats.get('cutoffs', 0) / max(1, f_stats.get('total', 1))) * 100
+            l_perc = (l_stats.get('cutoffs', 0) / max(1, l_stats.get('total', 1))) * 100
+            ax.text(x1[0] - 0.35, y1[0], f"{f_perc:.0f}", fontsize=20, ha='right', va='center', color=color, fontweight='bold')
+            ax.text(x1[-1] + 0.35, y1[-1], f"{l_perc:.0f}", fontsize=20, ha='left', va='center', color=color, fontweight='bold')
         
         # Plot line 2
         if pos2:
@@ -536,14 +538,16 @@ def plot_compound(dataset_names, outdir, experiments_dir):
             
             # Annotate first and last point cutoffs
             first_p, last_p = pos2[0], pos2[-1]
-            first_val, last_val = data2[model][first_p].get('cutoffs', 0), data2[model][last_p].get('cutoffs', 0)
-            ax.text(x2[0], y2[0] - 2, f"{first_val}", fontsize=14, ha='center', va='top', color=color, fontweight='bold')
-            ax.text(x2[-1], y2[-1] + 2, f"{last_val}", fontsize=14, ha='center', va='bottom', color=color, fontweight='bold')
+            f_stats, l_stats = data2[model][first_p], data2[model][last_p]
+            f_perc = (f_stats.get('cutoffs', 0) / max(1, f_stats.get('total', 1))) * 100
+            l_perc = (l_stats.get('cutoffs', 0) / max(1, l_stats.get('total', 1))) * 100
+            ax.text(x2[0] - 0.35, y2[0], f"{f_perc:.0f}", fontsize=20, ha='right', va='center', color=color, fontweight='bold')
+            ax.text(x2[-1] + 0.35, y2[-1], f"{l_perc:.0f}", fontsize=20, ha='left', va='center', color=color, fontweight='bold')
             
         current_x = x_vals[-1] + 2  
                 
     ax.set_xticks(x_ticks)
-    ax.set_xticklabels(x_tick_labels, fontsize=16)
+    ax.set_xticklabels(x_tick_labels, fontsize=18)
     ax.tick_params(axis='y', labelsize=16)
     
     for center, label in zip(model_centers, model_labels):
