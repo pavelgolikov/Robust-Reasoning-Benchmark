@@ -79,11 +79,45 @@ def shorten(name, mapping):
 
 # ── Fast Data Loading ───────────────────────────────────────────────
 
-def get_latest_json(target_dir):
+def get_all_valid_jsons(target_dir):
+    """Return all valid JSON files in a directory, excluding raw/summary/prompt_recovery files."""
     json_files = glob.glob(os.path.join(target_dir, "*.json"))
-    valid_files = [f for f in json_files if not f.endswith("_raw.json") and "_summary_" not in f and "prompt_recovery" not in f]
-    if not valid_files: return None
-    return max(valid_files, key=os.path.getmtime)
+    valid_files = [f for f in json_files if not f.endswith("_raw.json") and "_summary_" not in f and "prompt_recovery" not in f and not os.path.basename(f).startswith("jobs_projects_")]
+    return valid_files
+
+def _extract_counts_from_file(filepath):
+    """Extract raw counts (correct, total, refusals, failures, avg_output_tokens) from a single JSON file."""
+    with open(filepath, 'r') as f:
+        content = json.load(f)
+
+    summary = content[-1].get("summary", {}) if isinstance(content, list) and content else content.get("summary", {}) if isinstance(content, dict) else {}
+    results = content if isinstance(content, list) else content.get("results", [])
+
+    avg_length = summary.get("avg_output_tokens", 0.0)
+
+    if summary:
+        correct = summary.get("correct", 0)
+        total = summary.get("total", 0)
+        refusals = summary.get("refusals", 0)
+        failures = summary.get("failures", 0)
+
+        # If summary doesn't have 'correct' but has 'accuracy', derive correct from it
+        if correct == 0 and total > 0:
+            acc_val = summary.get("accuracy", 0.0)
+            if isinstance(acc_val, float) and 0 < acc_val <= 1.0:
+                correct = int(round(acc_val * total))
+            elif isinstance(acc_val, (int, float)) and acc_val > 1.0:
+                correct = int(round(acc_val / 100.0 * total))
+    else:
+        correct, total, refusals, failures = 0, 0, 0, 0
+        for r in results:
+            if isinstance(r, dict) and r.get("id") is not None:
+                total += 1
+                if r.get("correct", False): correct += 1
+                if r.get("refusal") is True: refusals += 1
+                elif not r.get("correct") and r.get("extracted") is None: failures += 1
+
+    return correct, total, refusals, failures, avg_length
 
 def load_metrics_data(experiments_dir, safe_dataset):
     data = defaultdict(lambda: defaultdict(dict))
@@ -101,57 +135,40 @@ def load_metrics_data(experiments_dir, safe_dataset):
             perturb_dir = os.path.join(model_dataset_dir, "perturb")
             target_dir = perturb_dir if os.path.isdir(perturb_dir) else model_dataset_dir
                 
-            latest_file = get_latest_json(target_dir)
-            if not latest_file: continue
+            valid_files = get_all_valid_jsons(target_dir)
+            if not valid_files: continue
+
+            # Aggregate raw counts across all files
+            agg_correct, agg_total, agg_refusals, agg_failures = 0, 0, 0, 0
+            weighted_length_sum, length_weight = 0.0, 0
+
+            for fpath in valid_files:
+                try:
+                    correct, total, refusals, failures, avg_length = _extract_counts_from_file(fpath)
+                    agg_correct += correct
+                    agg_total += total
+                    agg_refusals += refusals
+                    agg_failures += failures
+                    if total > 0:
+                        weighted_length_sum += avg_length * total
+                        length_weight += total
+                except Exception:
+                    continue
+
+            if agg_total == 0: continue
+
+            acc = (agg_correct / agg_total) * 100.0
+            attempted = agg_total - agg_refusals
+            acc_attempted = (agg_correct / attempted * 100.0) if attempted > 0 else None
+            n_failures_total = agg_refusals + agg_failures
+            fail_rate = (n_failures_total / agg_total) * 100.0
+            avg_length = (weighted_length_sum / length_weight) if length_weight > 0 else 0.0
                 
-            try:
-                with open(latest_file, 'r') as f:
-                    content = json.load(f)
-                    
-                acc, fail_rate, avg_length = 0.0, 0.0, 0.0
-                summary = content[-1].get("summary", {}) if isinstance(content, list) and content else content.get("summary", {}) if isinstance(content, dict) else {}
-                results = content if isinstance(content, list) else content.get("results", [])
-                    
-                avg_length = summary.get("avg_output_tokens", 0.0)
-                if summary:
-                    acc = summary.get("accuracy", 0.0)
-                    if isinstance(acc, float) and 0 < acc <= 1.0: acc *= 100.0
-                    
-                    refusals = summary.get("refusals", 0)
-                    total = summary.get("total", 0)
-                    attempted = total - refusals
-                    
-                    if attempted > 0:
-                        acc_attempted = summary.get("accuracy_attempted", summary.get("correct", 0) / attempted)
-                        if isinstance(acc_attempted, (float, int)) and 0 < acc_attempted <= 1.0: acc_attempted *= 100.0
-                        elif acc_attempted == 0: acc_attempted = 0.0
-                    else:
-                        acc_attempted = None
-                        
-                    n_failures = refusals + summary.get("failures", 0)
-                    fail_rate = (n_failures / total * 100.0) if total > 0 else 0.0
-                else:
-                    total_computed, correct, n_refusals_computed, n_failures_computed = 0, 0, 0, 0
-                    for r in results:
-                        if isinstance(r, dict) and r.get("id") is not None:
-                            total_computed += 1
-                            if r.get("correct", False): correct += 1
-                            if r.get("refusal") is True: n_refusals_computed += 1
-                            elif not r.get("correct") and r.get("extracted") is None: n_failures_computed += 1
-                                
-                    acc = (correct / total_computed * 100.0) if total_computed > 0 else 0.0
-                    attempted_computed = total_computed - n_refusals_computed
-                    acc_attempted = (correct / attempted_computed * 100.0) if attempted_computed > 0 else None
-                    fail_rate = ((n_refusals_computed + n_failures_computed) / total_computed * 100.0) if total_computed > 0 else 0.0
-                    total, attempted = total_computed, attempted_computed
-                    
-                data[technique][model] = {
-                    'accuracy': acc, 'accuracy_attempted': acc_attempted,
-                    'failure_rate': fail_rate, 'length': avg_length,
-                    'total': total, 'attempted': attempted
-                }
-            except Exception:
-                continue
+            data[technique][model] = {
+                'accuracy': acc, 'accuracy_attempted': acc_attempted,
+                'failure_rate': fail_rate, 'length': avg_length,
+                'total': agg_total, 'attempted': attempted
+            }
     return data
 
 # ── Plotting ─────────────────────────────────────────────────────────
@@ -225,12 +242,12 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
             for b, a, m in [(b1, a1, m1), (b2, a2, m2)]:
                 if m: 
                     text = "N/A"
-                elif metric == 'length' and a >= 1000:
-                    text = f"{a/1000:.0f}"
-                else: 
-                    # text = f"{a:.1f}" if 0 < a < 0.5 else f"{a:.0f}"
+                elif metric == 'accuracy':
+                    text = f"{a:.0f}"
+                elif metric == 'length':
                     text = f"{a/1000:.1f}"
-                    # text = f"0"
+                else: 
+                    text = f"{a:.0f}"
                 
                 if text:
                     ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom', fontsize=12, fontweight='bold', rotation=90)
@@ -560,7 +577,7 @@ def plot_compound(dataset_names, outdir, experiments_dir):
     ax.tick_params(axis='y', labelsize=16)
     
     for center, label in zip(model_centers, model_labels):
-        ax.text(center, -0.12, label, transform=ax.get_xaxis_transform(), ha='center', va='top', fontsize=26, rotation=45)
+        ax.text(center, -0.12, label, transform=ax.get_xaxis_transform(), ha='right', va='top', fontsize=26, rotation=45)
                 
     ax.set_ylabel("Accuracy on Last Problem (%)", fontsize=22)
     ax.set_ylim(0, 105)
