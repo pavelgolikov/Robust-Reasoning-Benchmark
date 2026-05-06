@@ -37,6 +37,8 @@ def get_exact_tokenizer(model_dir):
         hf_id = "tiiuae/Falcon-H1R-7B"
     elif model_dir == "GAIR_LIMO-v2":
         hf_id = "GAIR/LIMO-v2"
+    elif model_dir == "mistralai_Ministral-3-14B-Reasoning-2512":
+        hf_id = "mistralai/Ministral-3-14B-Reasoning-2512"
 
     if hf_id:
         try:

@@ -113,9 +113,6 @@ def load_metrics_data(experiments_dir, safe_dataset):
                 results = content if isinstance(content, list) else content.get("results", [])
                     
                 avg_length = summary.get("avg_output_tokens", 0.0)
-                if avg_length == 0.0 and results:
-                    lens = [len(r.get("output", "")) / 4.0 for r in results if isinstance(r, dict) and "output" in r]
-                    if lens: avg_length = sum(lens) / len(lens)
                 if summary:
                     acc = summary.get("accuracy", 0.0)
                     if isinstance(acc, float) and 0 < acc <= 1.0: acc *= 100.0
@@ -226,8 +223,15 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
 
         for b1, b2, a1, a2, m1, m2 in zip(bars1, bars2, accs1, accs2, is_mis1, is_mis2):
             for b, a, m in [(b1, a1, m1), (b2, a2, m2)]:
-                if m: text = "N/A"
-                else: text = f"{a:.1f}" if 0 < a < 0.5 else f"{a:.0f}"
+                if m: 
+                    text = "N/A"
+                elif metric == 'length' and a >= 1000:
+                    text = f"{a/1000:.0f}"
+                else: 
+                    # text = f"{a:.1f}" if 0 < a < 0.5 else f"{a:.0f}"
+                    text = f"{a/1000:.1f}"
+                    # text = f"0"
+                
                 if text:
                     ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom', fontsize=12, fontweight='bold', rotation=90)
 
@@ -237,7 +241,7 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
             ax.set_ylabel("Accuracy (%)", fontsize=15)
             ax.set_ylim(0, 115); ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         else:
-            ax.set_ylabel("Output Length (tokens)", fontsize=15)
+            ax.set_ylabel("Output Length (1K tokens)", fontsize=15)
             max_val = max(max(accs1) if accs1 else 0, max(accs2) if accs2 else 0)
             ax.set_ylim(0, max_val * 1.35 if max_val > 0 else 1)
         ax.grid(axis='y', alpha=0.3, linestyle='--')
