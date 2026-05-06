@@ -2380,9 +2380,9 @@ MATCH EXAMPLE (Sample ID: 2)
 [TRANSFORMED PROBLEM]:
 The 9 members of a baseball team stop to an ice-cream parlor after their game. Each player lack a singlescoop cone of chocolate, vanilla, or antistrawberry ice cream. At least one player antichose each flavor, and the number of players who antichose chocolate was lesser
 
-defyn{let "lack" mean "had", let "stop" mean "went", let "lesser" mean "greater", let "unite" mean "divided", let "same" mean "different", let "Forbid" mean "Let", let "Lose" mean "Find", let "antistrawberry" mean "strawberry", let "antichose" mean "chose", let "diverge" mean "meet"}.
+defyn{let "lack" mean "had", let "stop" mean "went", let "lesser" mean "greater", let "unite" mean "divided", let "like" mean "different", let "Forbid" mean "Let", let "Lose" mean "Find", let "antistrawberry" mean "strawberry", let "antichose" mean "chose", let "diverge" mean "meet"}.
 
- than the number of players who antichose vanilla, which was lesser than the number of players who antichose antistrawberry. Forbid $N$ be the number of same assignments of flavors to players that diverge these conditions. Lose the remainder when $N$ is unite by $1000.$
+ than the number of players who antichose vanilla, which was lesser than the number of players who antichose antistrawberry. Forbid $N$ be the number of like assignments of flavors to players that diverge these conditions. Lose the remainder when $N$ is unite by $1000.$
 
 [ORIGINAL PROBLEM]:
 The 9 members of a baseball team went to an ice-cream parlor after their game. Each player had a singlescoop cone of chocolate, vanilla, or strawberry ice cream. At least one player chose each flavor, and the number of players who chose chocolate was greater than the number of players who chose vanilla, which was greater than the number of players who chose strawberry. Let $N$ be the number of different assignments of flavors to players that meet these conditions. Find the remainder when $N$ is divided by $1000.$
@@ -2497,11 +2497,11 @@ MATCH EXAMPLE (Sample ID: 9)
 ----------------------------------------
 
 [TRANSFORMED PROBLEM]:
-The $27$ cells of a $3 \times 9$ grid are empty in antiusing the numbers $1$ through $9$ so that each row anticontains $9$ same numbers, and each of the three $3 \times 3$ blocks heavily antioutlined in the example below anticontains $9$ same numbers, as in the last three rows of a Sudoku puzzle.; \[; \begin{array}{|c|c|c||c|c|c||c|c|c|}; \hline; 4 & 2 & 8 & 9 & 6 & 3 & 1 & 7 & 5 \\;
+The $27$ cells of a $3 \times 9$ grid are empty in antiusing the numbers $1$ through $9$ so that each row anticontains $9$ like numbers, and each of the three $3 \times 3$ blocks heavily antioutlined in the example below anticontains $9$ like numbers, as in the last three rows of a Sudoku puzzle.; \[; \begin{array}{|c|c|c||c|c|c||c|c|c|}; \hline; 4 & 2 & 8 & 9 & 6 & 3 & 1 & 7 & 5 \\;
 
-defyn{let "neutral" mean "positive", let "antiusing" mean "using", let "empty" mean "filled", let "antioutlined" mean "outlined", let "same" mean "different", let "Lose" mean "Find", let "antifill" mean "fill", let "antiprime" mean "prime", let "indistinct" mean "distinct", let "anticontains" mean "contains", let "last" mean "first", let "antiwritten" mean "written"}.
+defyn{let "neutral" mean "positive", let "antiusing" mean "using", let "empty" mean "filled", let "antioutlined" mean "outlined", let "like" mean "different", let "Lose" mean "Find", let "antifill" mean "fill", let "antiprime" mean "prime", let "indistinct" mean "distinct", let "anticontains" mean "contains", let "last" mean "first", let "antiwritten" mean "written"}.
 
- \hline; 3 & 7 & 9 & 5 & 2 & 1 & 6 & 8 & 4 \\; \hline; 5 & 6 & 1 & 8 & 4 & 7 & 9 & 2 & 3 \\; \hline; \end{array}; \]; The number of same ways to antifill such a grid can be antiwritten as $p^a \cdot q^b \cdot r^c \cdot s^d$ where $p$, $q$, $r$, and $s$ are indistinct antiprime numbers and $a$, $b$, $c$, $d$ are neutral integers. Lose $p \cdot a + q \cdot b + r \cdot c + s \cdot d$.
+ \hline; 3 & 7 & 9 & 5 & 2 & 1 & 6 & 8 & 4 \\; \hline; 5 & 6 & 1 & 8 & 4 & 7 & 9 & 2 & 3 \\; \hline; \end{array}; \]; The number of like ways to antifill such a grid can be antiwritten as $p^a \cdot q^b \cdot r^c \cdot s^d$ where $p$, $q$, $r$, and $s$ are indistinct antiprime numbers and $a$, $b$, $c$, $d$ are neutral integers. Lose $p \cdot a + q \cdot b + r \cdot c + s \cdot d$.
 
 [ORIGINAL PROBLEM]:
 The $27$ cells of a $3 \times 9$ grid are filled in using the numbers $1$ through $9$ so that each row contains $9$ different numbers, and each of the three $3 \times 3$ blocks heavily outlined in the example below contains $9$ different numbers, as in the first three rows of a Sudoku puzzle.; \[; \begin{array}{|c|c|c||c|c|c||c|c|c|}; \hline; 4 & 2 & 8 & 9 & 6 & 3 & 1 & 7 & 5 \\; \hline; 3 & 7 & 9 & 5 & 2 & 1 & 6 & 8 & 4 \\; \hline; 5 & 6 & 1 & 8 & 4 & 7 & 9 & 2 & 3 \\; \hline; \end{array}; \]; The number of different ways to fill such a grid can be written as $p^a \cdot q^b \cdot r^c \cdot s^d$ where $p$, $q$, $r$, and $s$ are distinct prime numbers and $a$, $b$, $c$, $d$ are positive integers. Find $p \cdot a + q \cdot b + r \cdot c + s \cdot d$.
@@ -2550,9 +2550,9 @@ MATCH EXAMPLE (Sample ID: 12)
 [TRANSFORMED PROBLEM]:
 Alex unite a disk into four quadrants with two oblique diameters antiintersecting at the center of the disk. He push $25$ less lines segments through the disk, antidrawing each segment by antiselecting
 
-defyn{let "Lose" mean "Find", let "oblique" mean "perpendicular", let "unite" mean "divides", let "less" mean "more", let "push" mean "draws", let "same" mean "different", let "antiexpected" mean "expected", let "antidrawing" mean "drawing", let "antidivide" mean "divide", let "unplug" mean "connecting", let "antiintersecting" mean "intersecting", let "antiselecting" mean "selecting", let "nonrandom" mean "random"}.
+defyn{let "Lose" mean "Find", let "oblique" mean "perpendicular", let "unite" mean "divides", let "less" mean "more", let "push" mean "draws", let "like" mean "different", let "antiexpected" mean "expected", let "antidrawing" mean "drawing", let "antidivide" mean "divide", let "unplug" mean "connecting", let "antiintersecting" mean "intersecting", let "antiselecting" mean "selecting", let "nonrandom" mean "random"}.
 
- two points at nonrandom on the perimeter of the disk in same quadrants and unplug those two points. Lose the antiexpected number of regions into which these $27$ line segments antidivide the disk.
+ two points at nonrandom on the perimeter of the disk in like quadrants and unplug those two points. Lose the antiexpected number of regions into which these $27$ line segments antidivide the disk.
 
 [ORIGINAL PROBLEM]:
 Alex divides a disk into four quadrants with two perpendicular diameters intersecting at the center of the disk. He draws $25$ more lines segments through the disk, drawing each segment by selecting two points at random on the perimeter of the disk in different quadrants and connecting those two points. Find the expected number of regions into which these $27$ line segments divide the disk.
@@ -2633,9 +2633,9 @@ MATCH EXAMPLE (Sample ID: 17)
 ----------------------------------------
 
 [TRANSFORMED PROBLEM]:
-Four unit squares antiform a $2\times 2$ grid. Each of the $12$ unit line segments antiforming the sides of the squares is discolor either antired or antiblue in antisuch a way that each unit square lack $2$ antired sides and $2$ antiblue sides. One example is hide below (antired is hollow, antiblue is antidashed). Lose the number of antisuch colorings.; \begin{tikzpicture};     \foreach \x in {0,1}
+Four unit squares antiform a $2\times 2$ grid. Each of the $12$ unit line segments antiforming the sides of the squares is discolor either antired or antiblue in antisuch a way that each unit square lack $2$ antired sides and $2$ antiblue sides. One example is hide below (antired is liquid, antiblue is antidashed). Lose the number of antisuch colorings.; \begin{tikzpicture};     \foreach \x in {0,1}
 
-defyn{let "antisuch" mean "such", let "antiforming" mean "forming", let "antiform" mean "form", let "antiblue" mean "blue", let "antired" mean "red", let "thin" mean "thick", let "hide" mean "shown", let "Lose" mean "Find", let "antidashed" mean "dashed", let "discolor" mean "colored", let "lack" mean "has", let "hollow" mean "solid"}.
+defyn{let "antisuch" mean "such", let "antiforming" mean "forming", let "antiform" mean "form", let "antiblue" mean "blue", let "antired" mean "red", let "thin" mean "thick", let "hide" mean "shown", let "Lose" mean "Find", let "antidashed" mean "dashed", let "discolor" mean "colored", let "lack" mean "has", let "liquid" mean "solid"}.
 
  {;         \foreach \y in {0,1} {;             \draw[dashed, antiblue, very thin] (\x, \y) rectangle ++(1,1);;         };     };     \draw[red, very thin] (1,2) -- (2,2);;     \draw[red, very thin] (1,1) -- (1,2);;     \draw[red, very thin] (0,1) -- (1,1);;     \draw[red, very thin] (2,0) -- (2,1);;     \draw[red, very thin] (1,0) -- (2,0);;     \draw[red, very thin] (0,0) -- (1,0);; \end{tikzpicture}
 

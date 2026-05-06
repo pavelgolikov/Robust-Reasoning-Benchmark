@@ -113,6 +113,9 @@ def load_metrics_data(experiments_dir, safe_dataset):
                 results = content if isinstance(content, list) else content.get("results", [])
                     
                 avg_length = summary.get("avg_output_tokens", 0.0)
+                if avg_length == 0.0 and results:
+                    lens = [len(r.get("output", "")) / 4.0 for r in results if isinstance(r, dict) and "output" in r]
+                    if lens: avg_length = sum(lens) / len(lens)
                 if summary:
                     acc = summary.get("accuracy", 0.0)
                     if isinstance(acc, float) and 0 < acc <= 1.0: acc *= 100.0
@@ -230,8 +233,13 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
 
         ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=20, pad=10, loc='left')
         ax.set_xticks(x); ax.set_xticklabels(tech_labels, fontsize=16, rotation=45, ha='right')
-        ax.set_ylabel("Accuracy (%)", fontsize=15)
-        ax.set_ylim(0, 115); ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
+        if metric == 'accuracy':
+            ax.set_ylabel("Accuracy (%)", fontsize=15)
+            ax.set_ylim(0, 115); ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
+        else:
+            ax.set_ylabel("Output Length (tokens)", fontsize=15)
+            max_val = max(max(accs1) if accs1 else 0, max(accs2) if accs2 else 0)
+            ax.set_ylim(0, max_val * 1.35 if max_val > 0 else 1)
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
         
@@ -602,7 +610,7 @@ def main():
     if args.plot_type == 'accuracy':
         plot_by_model(safe_datasets, metrics_data_list, outdir, metric='accuracy')
     elif args.plot_type == 'output_length':
-        print("Output length combined plot is paused. Skipping.")
+        plot_by_model(safe_datasets, metrics_data_list, outdir, metric='length')
     elif args.plot_type == 'average_accuracy_drop':
         plot_single_metric(safe_datasets, metrics_data_list, outdir, exclude_refusals=args.exclude_refusals)
     elif args.plot_type == 'radar_categories':
