@@ -226,10 +226,10 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
                 if m: text = "N/A"
                 else: text = f"{a:.1f}" if 0 < a < 0.5 else f"{a:.0f}"
                 if text:
-                    ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 1.0, text, ha='center', va='bottom', fontsize=10, fontweight='bold', rotation=90)
+                    ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom', fontsize=12, fontweight='bold', rotation=90)
 
-        ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=15, fontweight='bold', pad=10)
-        ax.set_xticks(x); ax.set_xticklabels(tech_labels, fontsize=12, rotation=45, ha='right')
+        ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=20, pad=10, loc='left')
+        ax.set_xticks(x); ax.set_xticklabels(tech_labels, fontsize=16, rotation=45, ha='right')
         ax.set_ylabel("Accuracy (%)", fontsize=15)
         ax.set_ylim(0, 115); ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
         ax.grid(axis='y', alpha=0.3, linestyle='--')
@@ -238,11 +238,11 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
         import matplotlib.patches as mpatches
         p1 = mpatches.Patch(facecolor='white', edgecolor='black', hatch=hatch1, label=shorten(dname1, DATASET_SHORT_NAMES))
         p2 = mpatches.Patch(facecolor='white', edgecolor='black', hatch=hatch2, label=shorten(dname2, DATASET_SHORT_NAMES))
-        ax.legend(handles=[p1, p2], loc='upper right', bbox_to_anchor=(1.0, 1.15), fontsize=10)
+        ax.legend(handles=[p1, p2], loc='upper right', bbox_to_anchor=(1.0, 1.25), fontsize=10, ncol=2)
 
     ncols, n_models = 2, len(all_models)
     nrows = (n_models + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(6.5 * ncols, 4.5 * nrows))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(6.5 * ncols, 3.8 * nrows))
     axes = np.atleast_2d(axes)
 
     for idx, model_name in enumerate(all_models):
@@ -250,7 +250,7 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
     for idx in range(n_models, nrows * ncols):
         row, col = divmod(idx, ncols); axes[row, col].set_visible(False)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.96], h_pad=3.0, w_pad=2.0)
+    plt.tight_layout(rect=[0, 0, 1, 0.96], h_pad=2.2, w_pad=2.0)
     os.makedirs(outdir, exist_ok=True)
     out_path = os.path.join(outdir, f"{metric}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
@@ -289,8 +289,8 @@ def plot_single_metric(dataset_names, metrics_data_list, outdir, exclude_refusal
     plot_models = [m for m in all_models if model_deltas_1.get(m) is not None or model_deltas_2.get(m) is not None]
     plot_models.sort(key=lambda m: ((model_deltas_1.get(m) or 0) + (model_deltas_2.get(m) or 0)) / 2)
 
-    values1 = [model_deltas_1.get(m, 0) for m in plot_models]
-    values2 = [model_deltas_2.get(m, 0) for m in plot_models]
+    values1 = [model_deltas_1.get(m) if model_deltas_1.get(m) is not None else 0 for m in plot_models]
+    values2 = [model_deltas_2.get(m) if model_deltas_2.get(m) is not None else 0 for m in plot_models]
     
     colors = [PALETTE[i % len(PALETTE)] for i in range(len(plot_models))]
 
@@ -307,23 +307,20 @@ def plot_single_metric(dataset_names, metrics_data_list, outdir, exclude_refusal
     
     for b1, b2, v1, v2 in zip(bars1, bars2, values1, values2):
         for b, v in [(b1, v1), (b2, v2)]:
-            # if v < 1 and v > 0:
             if v != 0:
                 ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.5, f"{np.round(v):.0f}", 
-                        ha='center', va='bottom', fontsize=18, fontweight='bold', rotation=0)
-            # else:
-            #     ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.5, f"{v:.0f}", 
-            #             ha='center', va='bottom', fontsize=14, fontweight='bold', rotation=90)
+                        ha='center', va='bottom', fontsize=22, fontweight='bold', rotation=0)
 
 
     labels = [shorten(m, MODEL_SHORT_NAMES).replace('\n', ' ') for m in plot_models]
-    ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=18, rotation=45, ha='right')
-    ax.set_ylabel("Avg Accuracy Drop (%)", fontsize=20)
+    ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=26, rotation=45, ha='right')
+    ax.set_ylabel("Avg Accuracy Drop (%)", fontsize=24)
+    ax.tick_params(axis='y', labelsize=20)
     
     import matplotlib.patches as mpatches
     p1 = mpatches.Patch(facecolor='white', edgecolor='black', hatch=hatch1, label=shorten(dname1, DATASET_SHORT_NAMES))
     p2 = mpatches.Patch(facecolor='white', edgecolor='black', hatch=hatch2, label=shorten(dname2, DATASET_SHORT_NAMES))
-    ax.legend(handles=[p1, p2], loc='upper left', fontsize=14)
+    ax.legend(handles=[p1, p2], loc='upper left', fontsize=18)
 
     all_vals = values1 + values2
     ax.set_ylim(min(all_vals + [0]) * 1.1, max(all_vals + [0]) * 1.1)
@@ -395,7 +392,7 @@ def plot_radar_charts(dataset_names, metrics_data_list, outdir):
             ax.text(angle, r_label, label, ha=ha, va=va, fontsize=16, fontweight='bold', 
                     bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
         
-        ax.set_title(shorten(model, MODEL_SHORT_NAMES).replace('\n', ' '), size=18, fontweight='bold', pad=20)
+        ax.set_title(shorten(model, MODEL_SHORT_NAMES).replace('\n', ' '), size=22, fontweight='bold', pad=20)
         ax.set_xticklabels([])
         ax.grid(True, alpha=0.3)
 
@@ -551,7 +548,7 @@ def plot_compound(dataset_names, outdir, experiments_dir):
     ax.tick_params(axis='y', labelsize=16)
     
     for center, label in zip(model_centers, model_labels):
-        ax.text(center, -0.12, label, transform=ax.get_xaxis_transform(), ha='center', va='top', fontsize=22, rotation=45)
+        ax.text(center, -0.12, label, transform=ax.get_xaxis_transform(), ha='center', va='top', fontsize=26, rotation=45)
                 
     ax.set_ylabel("Accuracy on Last Problem (%)", fontsize=22)
     ax.set_ylim(0, 105)
