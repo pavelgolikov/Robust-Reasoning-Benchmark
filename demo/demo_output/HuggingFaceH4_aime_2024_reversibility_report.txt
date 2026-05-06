@@ -1,0 +1,633 @@
+Transformation Reversibility Demo Report
+Dataset: HuggingFaceH4/aime_2024 (30 samples)
+Seed: 42
+Print samples per transformation: 2
+================================================================================
+
+
+################################################################################
+# DATASET: HuggingFaceH4/aime_2024
+# Samples: 30
+################################################################################
+
+
+============================================================
+EXPERIMENT: interleaved_context_line
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+<Problem A> Every morning Aya goes for a $9$-kilometer-long walk and sto
+<Problem B> Let $ABC$ be a triangle inscribed in circle $\omega$. Let th
+<Problem A> ps at a coffee shop afterwards. When she walks at a constant
+<Problem B> e tangents to $\omega$ at $B$ and $C$ intersect at point $D$
+<Problem A>  speed of $s$ kilometers per hour, the walk takes her 4 hour
+<Problem B> , and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=
+<Problem A> s, including $t$ minutes spent in the coffee shop. When she 
+<Problem B> 5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\f
+<Problem A> walks $s+2$ kilometers per hour, the walk takes her 2 hours 
+<Problem B> rac{m}{n}$, where $m$ and $n$ are relatively prime integers.
+<Problem A> and 24 minutes, including $t$ minutes spent in the coffee sh
+<Problem B>  Find $m + n$.
+<Problem A> op. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour
+<Problem B> Let $ABC$ be a triangle inscribed in circle $\omega$. Let th
+<Problem A> . Find the number of minutes the walk takes her, including t
+<Problem B> e tangents to $\omega$ at $B$ and $C$ intersect at point $D$
+<Problem A> he $t$ minutes spent in the coffee shop.
+<Problem B> , and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+<Problem A> Let $ABC$ be a triangle inscribed in circle $\omega$. Let th
+<Problem B> Each vertex of a regular octagon is independently colored ei
+<Problem A> e tangents to $\omega$ at $B$ and $C$ intersect at point $D$
+<Problem B> ther red or blue with equal probability. The probability tha
+<Problem A> , and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=
+<Problem B> t the octagon can then be rotated so that all of the blue ve
+<Problem A> 5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\f
+<Problem B> rtices end up at positions where there were originally red v
+<Problem A> rac{m}{n}$, where $m$ and $n$ are relatively prime integers.
+<Problem B> ertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively 
+<Problem A>  Find $m + n$.
+<Problem B> prime positive integers. What is $m+n$?
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: interleaved_context_word
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Every Let morning $ABC$ Aya be goes a for triangle a inscribed $9$-kilometer-long in walk circle and $\omega$. stops Let at the a tangents coffee to shop $\omega$ afterwards. at When $B$ she and walks $C$ at intersect a at constant point speed $D$, of and $s$ let kilometers $\overline{AD}$ per intersect hour, $\omega$ the at walk $P$. takes If her $AB=5$, 4 $BC=9$, hours, and including $AC=10$, $t$ $AP$ minutes can spent be in written the as coffee the shop. form When $\frac{m}{n}$, she where walks $m$ $s+2$ and kilometers $n$ per are hour, relatively the prime walk integers. takes Find her $m 2 + hours n$. and Let 24 $ABC$ minutes, be including a $t$ triangle minutes inscribed spent in in circle the $\omega$. coffee Let shop. the Suppose tangents Aya to walks $\omega$ at at $s+\frac{1}{2}$ $B$ kilometers and per $C$ hour. intersect Find at the point number $D$, of and minutes let the $\overline{AD}$ walk intersect takes $\omega$ her, at including $P$. the If $t$ $AB=5$, minutes $BC=9$, spent and in $AC=10$, the $AP$ coffee can shop. be
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Let Each $ABC$ vertex be of a a triangle regular inscribed octagon in is circle independently $\omega$. colored Let either the red tangents or to blue $\omega$ with at equal $B$ probability. and The $C$ probability intersect that at the point octagon $D$, can and then let be $\overline{AD}$ rotated intersect so $\omega$ that at all $P$. of If the $AB=5$, blue $BC=9$, vertices and end $AC=10$, up $AP$ at can positions be where written there as were the originally form red $\frac{m}{n}$, vertices where is $m$ $\tfrac{m}{n}$, and where $n$ $m$ are and relatively $n$ prime are integers. relatively Find prime $m positive + integers. n$. What Let is $ABC$ $m+n$?
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$. Let $ABC$
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: interleaved_context_symbol
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+ELveetr y$ AmBoCr$n ibneg  aA ytar igaonegsl ef oirn sac r$i9b$e-dk iilno mceitrecrl-el o$n\go mweaglak$ .a nLde ts ttohpes  taatn gae nctosf fteoe  $s\hoompe gaaf$t eartw a$rBd$s .a nWdh e$nC $s hien twearlskesc ta ta ta  pcooinnstt a$nDt$ ,s paenedd  loeft  $$s\$o vkeirlloimneet{eArDs} $p eirn theorusre,c tt h$e\ owmaelgka $t aakte s$ Ph$e.r  I4f  h$oAuBr=s5,$ ,i n$cBlCu=d9i$n,g  a$ntd$  $mAiCn=u1t0e$s,  s$pAePn$t  ciann  tbhee  wcroiftfteeen  sahso pt.h eW hfeonr ms h$e\ fwraalck{sm }${sn+}2$$,  kwihleormee t$emr$s  apnedr  $hno$u ra,r et hree lwaatlikv etlayk epsr ihmeer  i2n theoguerrss .a nFdi n2d4  $mmi n+u tne$s.,L eitn c$lAuBdCi$n gb e$ ta$  tmriinauntgelse  sipnesnctr iibne dt hien  ccoifrfcelee  s$h\oopm.e gSau$p.p oLseet  Atyhae  wtaalnkgse natts  $tso+ \$f\roamce{g1a}${ 2a}t$  $kBi$l oamnedt e$rCs$  pienrt ehrosuerc.t  Faitn dp otihnet  n$uDm$b,e ra nodf  lmeitn u$t\eosv etrhlei nwea{lAkD }t$a kienst ehresre,c ti n$c\loumdeignag$  tahte  $$Pt$$.  mIifn u$tAeBs= 5s$p,e n$tB Ci=n9 $t,h ea ncdo f$fAeCe= 1s0h$o,p .$
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+LEeatc h$ AvBeCr$t ebxe  oaf  tar iraenggullea ri noscctraigboend  iisn  icnidrecpleen d$e\notmleyg ac$o.l oLreetd  tehiet htearn greendt so rt ob l$u\eo mweigtah$  eaqtu a$lB $p raonbda b$iCl$i tiyn.t eTrhsee cptr oabta bpioliintty  $tDh$a,t  atnhde  loectt a$g\oonv ecralni nteh{eAnD }b$e  irnotteartseedc ts o$ \tohmaetg aa$l la to f$ Pt$h.e  Ibfl u$eA Bv=e5r$t,i c$eBsC =e9n$d,  uapn da t$ ApCo=s1i0t$i,o n$sA Pw$h ecraen  tbhee rwer iwtetreen  oarsi gtihnea lfloyr mr e$d\ fvrearct{imc}e{sn }i$s,  $w\htefrrea c${mm$} {ann}d$ ,$ nw$h earree  $rme$l aatnidv e$lny$  parriem er eilnatteigveerlsy.  pFriinmde  $pmo s+i tni$v.eL eitn t$eAgBeCr$s .b eW haa tt riisa n$gml+en $i?
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.Let $ABC$ be a triangle i
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: not_not
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-not not long walk and stops at a coffee shop afterwards. When she walks at a not not constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her not not 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ not not intersect at point $D$, and let $\overline{AD}$ not not intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: opposites
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Every morning Aya stop for a $9$-kilometer-short walk and begin at a coffee shop afterwards. When she ride at a inconstant speed of $s$ kilometers per hour, the walk give her 4 hours, exclude $t$ minutes antispent in the coffee shop. When she ride $s+2$ kilometers
+
+defyn{let "short" mean "long", let "stop" mean "goes", let "inconstant" mean "constant", let "Lose" mean "Find", let "exclude" mean "including", let "give" mean "takes", let "Antisuppose" mean "Suppose", let "begin" mean "stops", let "ride" mean "walks", let "antispent" mean "spent"}.
+
+ per hour, the walk give her 2 hours and 24 minutes, exclude $t$ minutes antispent in the coffee shop. Antisuppose Aya ride at $s+\frac{1}{2}$ kilometers per hour. Lose the number of minutes the walk give her, exclude the $t$ minutes antispent in the coffee shop.
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Forbid $ABC$ be a triangle antiinscribed in circle $\omega$. Forbid the tangents to $\omega$ at $B$ and $C$ antiintersect at point $D$, and forbid $\overline{AD}$ antiintersect
+
+defyn{let "Lose" mean "Find", let "Forbid" mean "Let", let "forbid" mean "let", let "antiprime" mean "prime", let "antiintersect" mean "intersect", let "antiinscribed" mean "inscribed", let "antiwritten" mean "written"}.
+
+ $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be antiwritten as the form $\frac{m}{n}$, where $m$ and $n$ are relatively antiprime integers. Lose $m + n$.
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: rail_fence
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+E...y...r...g...a...e...o... ...-...o...e...o...w... ... ...p...t...c...e...h...a...r...d...W... ... ...k...t...c...t... ...e...f...$...l...t... ... ...r...h...a...t...s...r...h...s...n...d... ... ...u... ...n...n...e...f... ...p...h...s...w...s...+...k...m...r...e...o... ... ...k...k...h...2...u...a...2...i...e...i...u...g...$...n...s...e...i...h...o...e...o...S...o...A...w...s... ...\...c...{... ...o...e...p...h.......n...h...u...r... ...u... ... ...k...k...h... ...l...n...h...t...i...e...p... ...t...c...e...h...
+.v.r. .o.n.n. .y. .o.s.f.r.a.$.$.k.l.m.t.r.l.n. .a.k.a.d.s.o.s.a. . .o.f.e.s.o. .f.e.w.r.s. .h.n.s.e.w.l.s.a. . .o.s.a.t.s.e.d.o. .s. .i.o.e.e.s.p.r.h.u.,.t.e.w.l. .a.e. .e. . .o.r.,.i.c.u.i.g.$.$.m.n.t.s.s.e.t.i. .h. .o.f.e.s.o...W.e. .h. .a.k. .s.2. .i.o.e.e.s.p.r.h.u.,.t.e.w.l. .a.e. .e. . .o.r. .n. .4.m.n.t.s. .n.l.d.n. .t. .i.u.e. .p.n. .n.t.e.c.f.e. .h.p. .u.p.s. .y. .a.k. .t.$.+.f.a.{.}.2.$.k.l.m.t.r. .e. .o.r. .i.d.t.e.n.m.e. .f.m.n.t.s.t.e.w.l. .a.e. .e.,.i.c.u.i.g.t.e.$.$.m.n.t.s.s.e.t.i. .h. .o.f.e.s.o..
+..e...m...i...A...g... ... ...9...i...e...-...g...l...n...t... ...a...f... ...p...t...a.......e...h...a... ...a...n...n...p... ...$...k...m...r...e...o... ... ...k...k...h...4...u... ...l...n...t...i...e...p... ...t...c...e...h... ...n...e...l...$...$...l...t... ... ...r...h...a...t...s...r...h...s...d... ...u...,...c...i...$...m...t...s...t... ... ...f...s.......p...e...a...l...a...s...r...1...}...i...e...s...r...u...F... ... ...b...o...i...e...h...a...t...s...r...n...d... ... ... ...u... ...n...n...e...f... ...p.
+GRID END
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+L...$...$... ...r...g...i...r...d... ...c...$...e.......t...e...n...t...o...o...a...t...$...d...$...t...e...a...o... ...,...d...t...o...l...{...$...t...e...$...e... ...$... ...$...5...$...9...a...$...1... ...$...n... ...t... ...t...f... ...r...m...}...w...e...$...d...$...e...l...v... ...m...n...e... ...d... ...$.
+.e. .A.C. .e.a.t.i.n.l. .n.c.i.e. .n.c.r.l. .\.m.g.$. .e. .h. .a.g.n.s.t. .\.m.g.$.a. .B. .n. .C. .n.e.s.c. .t.p.i.t.$.$. .n. .e. .\.v.r.i.e.A.}. .n.e.s.c. .\.m.g.$.a. .P...I. .A.=.$. .B.=.$. .n. .A.=.0.,.$.P. .a. .e.w.i.t.n.a. .h. .o.m.$.f.a.{.}.n.$. .h.r. .m. .n. .n. .r. .e.a.i.e.y.p.i.e.i.t.g.r...F.n. .m.+.n..
+..t...B...b... ...a...e...s...b...i...i...e...o...a...L...t...t...e... ...$...e... ...$...a...$...i...r...t... ...n...D...a...l...$...e...n...D...i...r...t...o...a...t...$...f...B...,...C...,...d...C...$...A...c...b...r...e...s...e...r...\...c...{...,...e...$...a...$...a...r...t...l...r... ...e...s...i...$... ...
+GRID END
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: sentence_reversal
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+ Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop.Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards.
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+ Find $m + n$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$.Let $ABC$ be a triangle inscribed in circle $\omega$.
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: split_reversal
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+yrevE gninrom ayA seog rof a gnol-retemolik-$9$ klaw dna spots ta a eeffoc pohs .sdrawretfa nehW ehs sklaw ta a tnatsnoc deeps fo $s$ sretemolik rep ,ruoh eht klaw sekat reh 4 ,sruoh gnidulcni $t$ setunim tneps ni eht eeffoc .pohs nehW ehs sklaw $2+s$ sretemolik rep ,ruoh eht klaw sekat reh 2 sruoh dna 42 ,setunim gnidulcni $t$ setunim tneps ni eht eeffoc .pohs esoppuS ayA sklaw ta $}2{}1{carf\+s$ sretemolik rep .ruoh dniF eht rebmun fo setunim eht klaw sekat ,reh gnidulcni eht $t$ setunim tneps ni eht eeffoc .pohs
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+teL $CBA$ eb a elgnairt debircsni ni elcric .$agemo\$ teL eht stnegnat ot $agemo\$ ta $B$ dna $C$ tcesretni ta tniop ,$D$ dna tel $}DA{enilrevo\$ tcesretni $agemo\$ ta .$P$ fI ,$5=BA$ ,$9=CB$ dna ,$01=CA$ $PA$ nac eb nettirw sa eht mrof ,$}n{}m{carf\$ erehw $m$ dna $n$ era ylevitaler emirp .sregetni dniF m$ + .$n
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: word_reversal
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+shop. coffee the in spent minutes $t$ the including her, takes walk the minutes of number the Find hour. per kilometers $s+\frac{1}{2}$ at walks Aya Suppose shop. coffee the in spent minutes $t$ including minutes, 24 and hours 2 her takes walk the hour, per kilometers $s+2$ walks she When shop. coffee the in spent minutes $t$ including hours, 4 her takes walk the hour, per kilometers $s$ of speed constant a at walks she When afterwards. shop coffee a at stops and walk $9$-kilometer-long a for goes Aya morning Every
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+n$. + $m Find integers. prime relatively are $n$ and $m$ where $\frac{m}{n}$, form the as written be can $AP$ $AC=10$, and $BC=9$, $AB=5$, If $P$. at $\omega$ intersect $\overline{AD}$ let and $D$, point at intersect $C$ and $B$ at $\omega$ to tangents the Let $\omega$. circle in inscribed triangle a be $ABC$ Let
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: wrappers
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Every 3(morning) 2(Aya) goes for a $6(9)$-kilometer-long 5(walk) and stops at a 4(coffee) 10(shop) afterwards. When she walks at a constant 8(speed) of $9(s)$ 7(kilometers) per 6(hour), the 4(walk) takes her 5(4) 7(hours), including $3(t)$ 3(minutes) spent in the 8(coffee) 3(shop). When she walks $7(s)+7(2)$ 6(kilometers) per
+
+defyn{let "3(morning)" mean "morning", let "2(Aya)" mean "Aya", let "6(9)" mean "9", let "5(walk)" mean "walk", let "4(coffee)" mean "coffee", let "10(shop)" mean "shop", let "8(speed)" mean "speed", let "9(s)" mean "s", let "7(kilometers)" mean "kilometers", let "6(hour)" mean "hour", let "4(walk)" mean "walk", let "5(4)" mean "4", let "7(hours)" mean "hours", let "3(t)" mean "t", let "3(minutes)" mean "minutes", let "8(coffee)" mean "coffee", let "3(shop)" mean "shop", let "7(2)" mean "2", let "7(s)" mean "s", let "6(kilometers)" mean "kilometers", let "2(hour)" mean "hour", let "9(walk)" mean "walk", let "10(2)" mean "2", let "3(hours)" mean "hours", let "8(24)" mean "24", let "3(minutes)" mean "minutes", let "10(t)" mean "t", let "6(minutes)" mean "minutes", let "7(coffee)" mean "coffee", let "5(shop)" mean "shop", let "3(Aya)" mean "Aya", let "2(1)" mean "1", let "5(2)" mean "2", let "6(s)" mean "s", let "3(kilometers)" mean "kilometers", let "5(hour)" mean "hour", let "3(number)" mean "number", let "8(minutes)" mean "minutes", let "6(walk)" mean "walk", let "9(t)" mean "t", let "7(minutes)" mean "minutes", let "4(coffee)" mean "coffee", let "7(shop)" mean "shop"}.
+
+ 2(hour), the 9(walk) takes her 10(2) 3(hours) and 8(24) 3(minutes), including $10(t)$ 6(minutes) spent in the 7(coffee) 5(shop). Suppose 3(Aya) walks at $6(s)+\frac{2(1)}{5(2)}$ 3(kilometers) per 5(hour). Find the 3(number) of 8(minutes) the 6(walk) takes her, including the $9(t)$ 7(minutes) spent in the 4(coffee) 7(shop).
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per
+
+ hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+Let $ABC$ be a 3(triangle) inscribed in 2(circle) $\omega$. Let the 6(tangents) to $\omega$ at $5(B)$ and $4(C)$ 10(intersect) at 8(point) $9(D)$, and let $\overline{AD}$ intersect $\omega$
+
+defyn{let "3(triangle)" mean "triangle", let "2(circle)" mean "circle", let "6(tangents)" mean "tangents", let "5(B)" mean "B", let "4(C)" mean "C", let "10(intersect)" mean "intersect", let "8(point)" mean "point", let "9(D)" mean "D", let "7(P)" mean "P", let "6(5)" mean "5", let "4(9)" mean "9", let "5(10)" mean "10", let "7(form)" mean "form", let "3(m)" mean "m", let "3(n)" mean "n", let "8(m)" mean "m", let "3(n)" mean "n", let "7(integers)" mean "integers", let "7(m)" mean "m", let "6(n)" mean "n"}.
+
+ at $7(P)$. If $AB=6(5)$, $BC=4(9)$, and $AC=5(10)$, $AP$ can be written as the 7(form) $\frac{3(m)}{3(n)}$, where $8(m)$ and $3(n)$ are relatively prime 7(integers). Find $7(m) + 6(n)$.
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$
+
+ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: snake_horizontal
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she wal
+eps setunim $t$ gnidulcni ,sruoh 4 reh sekat klaw eht ,ruoh rep sretemolik $s$ fo deeps tnatsnoc a ta sk
+nt in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minut
+ rep sretemolik $}2{}1{carf\+s$ ta sklaw ayA esoppuS .pohs eeffoc eht ni tneps setunim $t$ gnidulcni ,se
+hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+GRID END
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the t
+ dna ,$D$ tniop ta tcesretni $C$ dna $B$ ta $agemo\$ ot stnegna
+let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9
+ ,$}n{}m{carf\$ mrof eht sa nettirw eb nac $PA$ ,$01=CA$ dna ,$
+where $m$ and $n$ are relatively prime integers. Find $m + n$.
+GRID END
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$. 
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: snake_vertical
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+Enioe$9tealopof as.e  at  $ethowa hrsinnut of.  w2$erurlker anulu mpee hoseksfr$ rsr.e f thakinthnut of.
+vrngs $erwktscfpfd hwt nsfsme u lseu,dgitnicfpWea+ tso,a h snitcd$isnhcspo l \a}ke u hnom ete c eitnicfp
+eog  a-m-  s  eotrWsaacapo$orrrekero u meen eohhlske h wt 2rdmenitn tto .pAaa+c2itpoFtu is  s,lg meen eo
+rm af kolga aaeheah l ote  lse,h k hil$ sp eehesk$imp t as u  sin$us  fe pywts{{leehi mrnewk run$ sp eeh
+y Ayorilonndt  srwenksnsedki p tta4 nct$ sth sn s loerhekeho24, g teinfeSua  $1}omr ndbeutalhedit$ sth s
+GRID END
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+L bngibrcgahes ga antt $, $e{ermeP$=5$,=1 cithefr$,m$ aive . + 
+e$ealreile$t tte$$nieapD t\nAtsog$.B$9 C0$artt \a} $ $rtemisF n
+tC iecdcem. tnom Bd r o$aeoiDne\a  A,=aA$Pnwe f$cnw anealinrim$
+ Bar s   o tae oa$ $sti nlvl}ic$$tI$ Cn$,A  nso {{hen$ lyrten$.
+$A tinin$\Leng$\t $Cecntd er$ t  af $Bd  $be armm}erd re pegd 
+GRID END
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$. 
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
+
+
+============================================================
+EXPERIMENT: rectangle_perimeter
+============================================================
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 0)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spen
+................................................................................................................................................................................................................t
+p............................................................................................................................................................................................................... 
+o...............................................................................................................................................................................................................i
+h...............................................................................................................................................................................................................n
+s............................................................................................................................................................................................................... 
+ ...............................................................................................................................................................................................................t
+e...............................................................................................................................................................................................................h
+e...............................................................................................................................................................................................................e
+f............................................................................................................................................................................................................... 
+f...............................................................................................................................................................................................................c
+o...............................................................................................................................................................................................................o
+c...............................................................................................................................................................................................................f
+ ...............................................................................................................................................................................................................f
+e...............................................................................................................................................................................................................e
+h...............................................................................................................................................................................................................e
+t............................................................................................................................................................................................................... 
+ ...............................................................................................................................................................................................................s
+n...............................................................................................................................................................................................................h
+i...............................................................................................................................................................................................................o
+ ...............................................................................................................................................................................................................p
+t................................................................................................................................................................................................................
+n............................................................................................................................................................................................................... 
+e...............................................................................................................................................................................................................W
+p...............................................................................................................................................................................................................h
+s...............................................................................................................................................................................................................e
+ ...............................................................................................................................................................................................................n
+s............................................................................................................................................................................................................... 
+e...............................................................................................................................................................................................................s
+t...............................................................................................................................................................................................................h
+u...............................................................................................................................................................................................................e
+n............................................................................................................................................................................................................... 
+i...............................................................................................................................................................................................................w
+m...............................................................................................................................................................................................................a
+ ...............................................................................................................................................................................................................l
+$...............................................................................................................................................................................................................k
+t...............................................................................................................................................................................................................s
+$............................................................................................................................................................................................................... 
+ ...............................................................................................................................................................................................................$
+e...............................................................................................................................................................................................................s
+h...............................................................................................................................................................................................................+
+t...............................................................................................................................................................................................................2
+ ...............................................................................................................................................................................................................$
+g............................................................................................................................................................................................................... 
+n...............................................................................................................................................................................................................k
+i...............................................................................................................................................................................................................i
+d...............................................................................................................................................................................................................l
+u...............................................................................................................................................................................................................o
+l...............................................................................................................................................................................................................m
+c...............................................................................................................................................................................................................e
+n...............................................................................................................................................................................................................t
+i...............................................................................................................................................................................................................e
+ ,reh sekat klaw eht setunim fo rebmun eht dniF .ruoh rep sretemolik $}2{}1{carf\+s$ ta sklaw ayA esoppuS .pohs eeffoc eht ni tneps setunim $t$ gnidulcni ,setunim 42 dna sruoh 2 reh sekat klaw eht ,ruoh rep sr
+GRID END
+
+[ORIGINAL PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+[REVERSED PROBLEM]:
+Every morning Aya goes for a $9$-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of $s$ kilometers per hour, the walk takes her 4 hours, including $t$ minutes spent in the coffee shop. When she walks $s+2$ kilometers per hour, the walk takes her 2 hours and 24 minutes, including $t$ minutes spent in the coffee shop. Suppose Aya walks at $s+\frac{1}{2}$ kilometers per hour. Find the number of minutes the walk takes her, including the $t$ minutes spent in the coffee shop.
+
+----------------------------------------
+MATCH EXAMPLE (Sample ID: 1)
+----------------------------------------
+
+[TRANSFORMED PROBLEM]:
+GRID START
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and l
+..............................................................................................................................e
+$.............................................................................................................................t
+n............................................................................................................................. 
+ .............................................................................................................................$
++.............................................................................................................................\
+ .............................................................................................................................o
+m.............................................................................................................................v
+$.............................................................................................................................e
+ .............................................................................................................................r
+d.............................................................................................................................l
+n.............................................................................................................................i
+i.............................................................................................................................n
+F.............................................................................................................................e
+ .............................................................................................................................{
+..............................................................................................................................A
+s.............................................................................................................................D
+r.............................................................................................................................}
+e.............................................................................................................................$
+g............................................................................................................................. 
+e.............................................................................................................................i
+t.............................................................................................................................n
+n.............................................................................................................................t
+i.............................................................................................................................e
+ .............................................................................................................................r
+e.............................................................................................................................s
+m.............................................................................................................................e
+i.............................................................................................................................c
+r.............................................................................................................................t
+p............................................................................................................................. 
+ .............................................................................................................................$
+ylevitaler era $n$ dna $m$ erehw ,$}n{}m{carf\$ mrof eht sa nettirw eb nac $PA$ ,$01=CA$ dna ,$9=CB$ ,$5=BA$ fI .$P$ ta $agemo\
+GRID END
+
+[ORIGINAL PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+[REVERSED PROBLEM]:
+Let $ABC$ be a triangle inscribed in circle $\omega$. Let the tangents to $\omega$ at $B$ and $C$ intersect at point $D$, and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\frac{m}{n}$, where $m$ and $n$ are relatively prime integers. Find $m + n$.
+
+----------------------------------------
+Result: 30/30 Passed
+============================================================
