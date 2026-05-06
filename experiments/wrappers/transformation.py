@@ -14,13 +14,6 @@ def apply_wrappers(text, k=1, seed=None):
         random.seed(seed)
         
     doc = nlp(text)
-    
-    # Store replacements: index -> formatting logic or replacement text
-    # But since we might make multiple decisions per token, we can't pre-calculate easily without doing it live?
-    # We can pre-calculate candidates, but for complex tokens it's easier to just build the replacement string.
-    
-    # We will build "final tokens" list directly.
-    
     # Global definitions list
     definitions = []
     used_numbers = set()
@@ -43,9 +36,6 @@ def apply_wrappers(text, k=1, seed=None):
     def wrap_word(match):
         word = match.group()
         # Decision: do we wrap this specific word?
-        # To respect k parameter strictly is hard if we do it on the fly.
-        # But if k=1 (default for this check), we wrap everything.
-        # For k>1, we might skip.
         
         # Simple sampling: chance = 1/k
         if k > 1 and random.random() > (1.0/k):
@@ -71,48 +61,10 @@ def apply_wrappers(text, k=1, seed=None):
                 output_tokens.append(token.text_with_ws)
             continue
             
-        # 2. Complex tokens
-        # We want to wrap numbers (\d+) and single letter variables ([a-zA-Z]) inside them.
-        # Spacy definition of token generally separates words, so "kilometer" inside "9$-kilometer" 
-        # is actually unlikely to be a "word" in non-symbol sense if stuck to $.
-        # Regex to find wrap-able chunks:
-        # Numbers: \d+
-        # Single Variables: \b[a-zA-Z]\b ? No, "s" in "s+2" is \b. 
-        # But "s" in "steps" is not variable.
-        # We should capture single letters that are surrounded by non-letters?
-        # Or just numbers for now to satisfy "9".
-        # User said: "wrap variables... e.g. B and C... and 9".
-        
-        # Pattern: Numbers OR Single Letters (Variables)
-        # Note: Be careful not to wrap "a" in "parameter". 
-        # But inside a single token like "s+2", "parameter" isn't there.
-        # If token is "steps", single letter 's' is at start/end.
-        # Complex token implies it contains symbols.
-        # If token text is just "steps", it fell through (unless pos is NOUN?). "steps" is NOUN.
-        # So "steps" was handled in block 1 (if isalnum).
-        
-        # If we are here, token is NOT isalnum or NOT target POS.
-        # e.g. "s+2" (NOUN?), "$9$-kilometer" (NUM).
-        
-        # We apply regex replacement for digits and single-letter-vars.
         original_text = token.text
         
         # Regex for integers
-        # We use a lambda to wrap
         text_1 = re.sub(r'\d+', wrap_word, original_text)
-        
-        # Regex for single letters that look like variables?
-        # e.g. 's' in 's+2'. 't' in '$t$'.
-        # We generally want to avoid 'a' (article).
-        # And avoid parts of words like 'k' in 'kilometer' if 'kilometer' is part of the token?
-        # In '9$-kilometer', 'k', 'i', 'l'...
-        # 'kilometer' is a word.
-        # If we just target \d+, we solve the '9' problem.
-        # If we target single letters surrounded by non-word chars?
-        # (?<![a-zA-Z])[a-zA-Z](?![a-zA-Z])
-        # This handles 's' in 's+2'.
-        # This handles 't' in '$t$'.
-        # This ignores 'k' in 'kilometer'.
         
         def wrap_var(match):
             w = match.group()
@@ -126,14 +78,6 @@ def apply_wrappers(text, k=1, seed=None):
     transformed_text = "".join(output_tokens)
     
     if definitions:
-        # Deduplicate definitions?
-        # My logic appends for every instance.
-        # Unique definitions only to keep block clean?
-        # "let 123(x) mean x".
-        # If I wrap x twice with 123, duplicate def is fine but redundant.
-        # If I wrap x twice with different numbers (random behavior), I need both defs.
-        # Since I generate random num every time, keep all defs.
-        
         # Format block
         def_block = "defyn{" + ", ".join(definitions) + "}."
         
@@ -189,9 +133,6 @@ def reverse_wrappers(text):
     text_clean = text.replace(match.group(0), "")
     
     # 4. Apply replacements
-    # To avoid iterative collisions (e.g. 2(2)->2, 6(1)->1 creating 2(1) which is then replaced),
-    # we must use a single-pass regex replacement.
-    
     if not mappings:
         return text_clean
 

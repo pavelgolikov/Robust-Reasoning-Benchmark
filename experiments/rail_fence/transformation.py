@@ -59,15 +59,6 @@ def reverse_rail_fence(text):
         
     length = len(grid_rows[0])
     
-    # We need to traverse the zigzag path exactly as we did during construction
-    # and pick up the non-dot characters?
-    # NO. The grid contains the characters in their positions.
-    # We just need to traverse the same path (0,0), (1,1), (2,2), (1,3)...
-    # and read whatever character is at grid[row][col].
-    
-    # Check consistency
-    # Assuming valid grid where all rows are same length
-    
     result = []
     row, col = 0, 0
     dir_down = False
@@ -75,18 +66,6 @@ def reverse_rail_fence(text):
     for i in range(length):
         try:
             char = grid_rows[row][col]
-            # Verify? The logic is we just read what is there.
-            # But wait, is it possible that the grid is just visualization?
-            # Yes. apply_rail_fence_cipher places chars at specific (row, col).
-            # So traversing the same (row, col) sequence should yield the chars in order.
-            
-            # The 'dots' are effectively skipped because we only look at specific coords.
-            # BUT, we must ensure we are reading the CHAR, not a dot.
-            # By definition of the cipher, the path visits exactly where we placed chars.
-            # So grid[row][col] MUST be the character, NOT a dot (unless the char itself was a dot?).
-            # If the original text had dots, they are just chars.
-            # The 'fillers' are only at (r, c) where the path didn't visit.
-            
             result.append(char)
             
         except IndexError:

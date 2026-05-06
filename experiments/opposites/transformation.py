@@ -22,10 +22,6 @@ def get_antonym(word, pos_tag):
         wn_pos = wordnet.ADJ
     elif pos_tag == "VERB":
         wn_pos = wordnet.VERB
-    # elif pos_tag == "ADV":
-    #     wn_pos = wordnet.ADV
-    # elif pos_tag == "NOUN":
-    #     wn_pos = wordnet.NOUN
         
     for syn in wordnet.synsets(word, pos=wn_pos):
         for lemma in syn.lemmas():
@@ -81,9 +77,7 @@ def apply_opposites(text, k=1, seed=None):
     # Randomly select WORDS to swap, not just tokens
     words_to_swap = random.sample(unique_words, num_to_swap)
     
-    # Pass 1: Identify "occupied" words (Sample 279 Fix)
-    # Use regex splitting to find words even if attached to symbols (e.g. "black" in "black+linewidth")
-    # This prevents swapping a word into something that already exists in a code block or formula.
+    # Pass 1: Identify "occupied" words
     import re
     tokens_regex = re.split(r'[^a-zA-Z]+', text)
     occupied_words = set(t.lower() for t in tokens_regex if t)
@@ -93,10 +87,6 @@ def apply_opposites(text, k=1, seed=None):
     
     # Pass 2: Select replacements for each chosen WORD
     for word_lower in words_to_swap:
-        # Get one of the tokens to check POS (assuming POS is consistent for the word, 
-        # or just use the first one's POS as a heuristic).
-        # Note: A word might have different POS tags in different contexts (left as VBD vs ADJ).
-        # We'll try to find an antonym based on the most common POS or just the first one.
         example_token = candidates_by_word[word_lower][0]
         
         # 1. Try NLTK
@@ -193,11 +183,6 @@ def reverse_opposites(text):
     
     # 2. Parse definitions
     # let "replacement" mean "word"
-    # Note: replacements might be multi-word? 
-    # The transformation function standardizes antonyms (replacing '_' with ' ').
-    # So "replacement" could be "fall apart".
-    # But usually it's single word or "anti" + word.
-    
     def_pattern = re.compile(r'let "(.*?)" mean "(.*?)"')
     mappings = {}
     
@@ -206,11 +191,7 @@ def reverse_opposites(text):
         original = m.group(2)
         mappings[replacement] = original
         
-    # 3. Remove the defyn block AND surrounding whitespace artifacts (Sample 279 Fix)
-    # The transformation inserts \n\n{block}\n\n. We want to collapse that back to a single space
-    # if it was split at a space, or generally clean it up.
-    # Note: transformation logic prefers splitting at a space.
-    
+    # 3. Remove the defyn block AND surrounding whitespace artifacts
     # Replace the block and surrounding whitespace with a single space
     # Pattern explanation: 
     # \s* match preceding whitespace (including the \n\n inserted)
@@ -222,23 +203,11 @@ def reverse_opposites(text):
     # Collapse multiple spaces
     text_clean = " ".join(text_clean.split())
     
-    # 5. Apply replacements
-    # To handle swaps (A->B, B->A) and avoid substring issues, use regex with \b
-    # Sort keys by length descending to prioritize longer matches (if overlaps exist)
-    
     if not mappings:
         return text_clean
         
     # Escape keys for regex
     escaped_keys = [re.escape(k) for k in sorted(mappings.keys(), key=len, reverse=True)]
-    
-    # Create master regex: \b(Key1|Key2|...)\b
-    # Note: If antonym contains spaces, \b works at ends.
-    # "fall apart" -> \bfall apart\b matches "fall apart".
-    
-    # Create master regex: (?:\b|(?<=\d))(Key1|Key2|...)(?:\b|(?=n't))
-    # Sample 175 Fix: Use lookbehind (?<=\d) to match words attached to numbers (e.g. 3m)
-    # Sample 1059 Fix: Allow matching if followed by "n't" (e.g. "don't" -> "unmaken't")
     
     master_pattern = re.compile(r'(?:\b|(?<=\d))(' + '|'.join(escaped_keys) + r')(?:(?=n\'t)|\b)')
     

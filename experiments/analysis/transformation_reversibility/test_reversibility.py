@@ -24,9 +24,6 @@ if experiments_dir not in sys.path:
 from experiments.util import remove_latex_comments, sanitize_inverted_escapes, flatten_text
 
 def normalize_text(text, method='standard'):
-    if method == 'aggressive':
-        # Remove all whitespace for very robust comparison (e.g. context_saturation LaTeX issues)
-        return "".join(text.split())
     # Always normalize whitespace for robust comparison as requested
     return " ".join(text.split())
 
