@@ -245,12 +245,13 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
                 elif metric == 'accuracy':
                     text = f"{a:.0f}"
                 elif metric == 'length':
-                    text = f"{a/1000:.1f}"
+                    text = f"{a/1000:.0f}"
                 else: 
                     text = f"{a:.0f}"
                 
                 if text:
-                    ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom', fontsize=12, fontweight='bold', rotation=90)
+                    ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom',
+                    fontsize=12, fontweight='bold', rotation=90)
 
         ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=20, pad=10, loc='left')
         ax.set_xticks(x); ax.set_xticklabels(tech_labels, fontsize=16, rotation=45, ha='right')

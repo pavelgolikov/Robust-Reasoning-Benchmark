@@ -77,9 +77,10 @@ def generate_combined_heatmap(all_results, out_path, exclude_system=False):
 
     fig, axes = plt.subplots(num_models, 1, figsize=(16, 3.0 * num_models), squeeze=False)
     
-    title = "Attention Dilution across Layers"
-    if exclude_system:
-        title += " (Excluding System Context)"
+    # title = "Attention Dilution across Layers"
+    # if exclude_system:
+    #     title += " (Excluding System Context)"
+    title = ""
     fig.suptitle(title, fontsize=24, y=0.98)
 
     for idx, (layer_data, model_name) in enumerate(all_results):
@@ -152,7 +153,7 @@ def main():
     
     # Generate combined plots
     generate_combined_heatmap(all_results, os.path.join(target_dir, "combined_attention_dilution.pdf"), exclude_system=False)
-    generate_combined_heatmap(all_results, os.path.join(target_dir, "combined_attention_dilution_no_system.pdf"), exclude_system=True)
+    # generate_combined_heatmap(all_results, os.path.join(target_dir, "combined_attention_dilution_no_system.pdf"), exclude_system=True)
 
 if __name__ == "__main__":
     main()
