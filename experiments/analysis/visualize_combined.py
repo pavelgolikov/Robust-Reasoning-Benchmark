@@ -214,6 +214,8 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
 
     def _plot_model_on_ax(ax, model_name):
         accs1, accs2, fails1, fails2, colors, is_mis1, is_mis2 = [], [], [], [], [], [], []
+        # When plotting length, also collect accuracy values to display inside bars
+        acc_vals1, acc_vals2 = [], []
         for t in ordered_techniques:
             td1 = data1.get(t, {})
             td2 = data2.get(t, {})
@@ -221,10 +223,12 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
             accs1.append(td1[model_name][metric] if model_name in td1 else 0)
             fails1.append(td1[model_name].get('failure_rate', 0) if model_name in td1 else 0)
             is_mis1.append(model_name not in td1)
+            acc_vals1.append(td1[model_name].get('accuracy', 0) if model_name in td1 else 0)
             
             accs2.append(td2[model_name][metric] if model_name in td2 else 0)
             fails2.append(td2[model_name].get('failure_rate', 0) if model_name in td2 else 0)
             is_mis2.append(model_name not in td2)
+            acc_vals2.append(td2[model_name].get('accuracy', 0) if model_name in td2 else 0)
             
             colors.append(tech_colors[t])
 
@@ -238,20 +242,31 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
             ax.bar(x - width/2, fails1, width, bottom=accs1, color=colors, edgecolor='black', linewidth=0.5, alpha=0.4)
             ax.bar(x + width/2, fails2, width, bottom=accs2, color=colors, edgecolor='black', linewidth=0.5, alpha=0.4)
 
-        for b1, b2, a1, a2, m1, m2 in zip(bars1, bars2, accs1, accs2, is_mis1, is_mis2):
-            for b, a, m in [(b1, a1, m1), (b2, a2, m2)]:
+        for b1, b2, a1, a2, m1, m2, av1, av2 in zip(bars1, bars2, accs1, accs2, is_mis1, is_mis2, acc_vals1, acc_vals2):
+            for b, a, m, av in [(b1, a1, m1, av1), (b2, a2, m2, av2)]:
                 if m: 
                     text = "N/A"
                 elif metric == 'accuracy':
                     text = f"{a:.0f}"
                 elif metric == 'length':
-                    text = f"{a/1000:.0f}"
+                    text = f"{a/1000:.1f}"
                 else: 
                     text = f"{a:.0f}"
                 
                 if text:
-                    ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom',
-                    fontsize=12, fontweight='bold', rotation=90)
+                    if metric == 'length':
+                        # Length value on top of bar
+                        ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom',
+                        fontsize=12, fontweight='bold', rotation=90)
+                        # Accuracy value in the middle of the bar
+                        if not m:
+                            acc_text = f"{av:.0f}"
+                            ax.text(b.get_x() + b.get_width() / 2, b.get_height() / 2, acc_text, ha='center', va='center',
+                            fontsize=10, fontweight='bold', rotation=90, color='white',
+                            path_effects=[patheffects.withStroke(linewidth=2, foreground='black')])
+                    else:
+                        ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom',
+                        fontsize=12, fontweight='bold', rotation=90)
 
         ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=20, pad=10, loc='left')
         ax.set_xticks(x); ax.set_xticklabels(tech_labels, fontsize=16, rotation=45, ha='right')
