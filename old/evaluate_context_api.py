@@ -15,9 +15,6 @@ from api_utils import (
 from transformers import AutoTokenizer
 
 
-
-
-
 def prepare_trimmed_context(context_type, args):
     """
     Load precomputed context from the specified file, and fix the system prompt.
