@@ -36,6 +36,12 @@ python experiments/evaluate_api.py \
   --batch
 ```
 
+### Polling API Batches
+For asynchronous batch evaluations submitted via the `--batch` flag, use `poll_and_grade_batches.py` to monitor their status, download the results once completed, and automatically extract and grade them:
+```bash
+python experiments/poll_and_grade_batches.py --dir experiments/
+```
+
 ## Citation
 
 If you find this benchmark useful in your research, please cite our paper:
