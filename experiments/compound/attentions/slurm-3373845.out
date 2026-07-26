@@ -1,0 +1,767 @@
+Starting Evaluation...
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading data from /home/golikovp/projects/aip-gpekhime/golikovp/Robust-Reasoning-Benchmark/experiments/compound/results/nvidia_OpenReasoning-Nemotron-7B/MathArena_aime_2025/nvidia_OpenReasoning-Nemotron-7B_MathArena_aime_2025_compound_s42_20260405_054949.json
+Extracted model ID from path: nvidia/OpenReasoning-Nemotron-7B
+Found 480 valid entries to process.
+Output will be saved to: dilution_nvidia_OpenReasoning-Nemotron-7B_3distractors_20260405_054949.txt
+Found existing results file with 294 completed sample(s).
+Resuming from sample 295...
+Loading tokenizer...
+Loading model...
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:07<42:54,  7.62s/it]Loading weights:   1%|▏         | 5/339 [00:07<06:31,  1.17s/it]Loading weights:   2%|▏         | 7/339 [00:08<05:06,  1.08it/s]Loading weights:   3%|▎         | 10/339 [00:09<02:56,  1.86it/s]Loading weights:   5%|▍         | 16/339 [00:10<01:51,  2.90it/s]Loading weights:   5%|▌         | 17/339 [00:11<02:46,  1.93it/s]Loading weights:   8%|▊         | 27/339 [00:12<01:07,  4.62it/s]Loading weights:   9%|▊         | 29/339 [00:12<01:10,  4.38it/s]Loading weights:   9%|▉         | 30/339 [00:13<01:26,  3.56it/s]Loading weights:  10%|█         | 34/339 [00:13<00:58,  5.19it/s]Loading weights:  12%|█▏        | 40/339 [00:14<00:41,  7.19it/s]Loading weights:  12%|█▏        | 42/339 [00:15<00:58,  5.04it/s]Loading weights:  15%|█▌        | 52/339 [00:15<00:36,  7.88it/s]Loading weights:  16%|█▌        | 54/339 [00:16<00:36,  7.73it/s]Loading weights:  19%|█▉        | 64/339 [00:16<00:23, 11.89it/s]Loading weights:  19%|█▉        | 66/339 [00:17<00:28,  9.58it/s]Loading weights:  20%|██        | 69/339 [00:17<00:25, 10.68it/s]Loading weights:  21%|██        | 71/339 [00:17<00:24, 11.01it/s]Loading weights:  22%|██▏       | 76/339 [00:17<00:21, 11.96it/s]Loading weights:  23%|██▎       | 78/339 [00:18<00:29,  8.81it/s]Loading weights:  26%|██▌       | 87/339 [00:18<00:17, 14.80it/s]Loading weights:  26%|██▋       | 89/339 [00:18<00:21, 11.89it/s]Loading weights:  27%|██▋       | 91/339 [00:19<00:23, 10.50it/s]Loading weights:  30%|██▉       | 101/339 [00:19<00:11, 20.18it/s]Loading weights:  31%|███       | 105/339 [00:19<00:15, 15.25it/s]Loading weights:  33%|███▎      | 112/339 [00:19<00:11, 20.06it/s]Loading weights:  34%|███▍      | 116/339 [00:20<00:12, 18.50it/s]Loading weights:  35%|███▌      | 119/339 [00:20<00:12, 16.93it/s]Loading weights:  37%|███▋      | 125/339 [00:20<00:11, 18.87it/s]Loading weights:  40%|████      | 136/339 [00:21<00:10, 19.62it/s]Loading weights:  41%|████      | 139/339 [00:21<00:12, 15.69it/s]Loading weights:  44%|████▍     | 149/339 [00:21<00:07, 24.58it/s]Loading weights:  47%|████▋     | 160/339 [00:21<00:05, 35.40it/s]Loading weights:  49%|████▉     | 166/339 [00:21<00:04, 37.39it/s]Loading weights:  51%|█████     | 172/339 [00:22<00:04, 41.34it/s]Loading weights:  53%|█████▎    | 178/339 [00:22<00:04, 38.39it/s]Loading weights:  54%|█████▍    | 184/339 [00:22<00:06, 24.93it/s]Loading weights:  55%|█████▌    | 188/339 [00:22<00:06, 23.07it/s]Loading weights:  57%|█████▋    | 192/339 [00:23<00:06, 22.05it/s]Loading weights:  58%|█████▊    | 196/339 [00:23<00:07, 19.62it/s]Loading weights:  59%|█████▊    | 199/339 [00:24<00:11, 11.98it/s]Loading weights:  62%|██████▏   | 209/339 [00:24<00:06, 20.50it/s]Loading weights:  63%|██████▎   | 213/339 [00:24<00:05, 21.93it/s]Loading weights:  65%|██████▍   | 220/339 [00:24<00:06, 18.87it/s]Loading weights:  67%|██████▋   | 227/339 [00:24<00:05, 21.89it/s]Loading weights:  68%|██████▊   | 232/339 [00:25<00:07, 13.59it/s]Loading weights:  72%|███████▏  | 244/339 [00:25<00:04, 22.12it/s]Loading weights:  73%|███████▎  | 248/339 [00:26<00:04, 22.29it/s]Loading weights:  76%|███████▌  | 257/339 [00:26<00:03, 27.12it/s]Loading weights:  79%|███████▉  | 268/339 [00:26<00:01, 38.14it/s]Loading weights:  81%|████████  | 274/339 [00:26<00:01, 35.63it/s]Loading weights:  83%|████████▎ | 280/339 [00:26<00:02, 27.64it/s]Loading weights:  84%|████████▍ | 284/339 [00:27<00:01, 27.87it/s]Loading weights:  86%|████████▌ | 292/339 [00:27<00:01, 34.50it/s]Loading weights:  88%|████████▊ | 297/339 [00:27<00:01, 31.40it/s]Loading weights:  90%|████████▉ | 304/339 [00:27<00:01, 28.44it/s]Loading weights:  93%|█████████▎| 315/339 [00:27<00:00, 34.58it/s]Loading weights:  94%|█████████▍| 319/339 [00:28<00:00, 35.20it/s]Loading weights:  97%|█████████▋| 328/339 [00:28<00:00, 38.97it/s]Loading weights:  98%|█████████▊| 333/339 [00:28<00:00, 28.47it/s]Loading weights: 100%|██████████| 339/339 [00:28<00:00, 11.84it/s]
+Detected model type: qwen2
+
+[295/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 2537)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[296/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 5840)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[297/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 4717)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[298/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 4694)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[299/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 4066)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[300/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 6786)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[301/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 6280)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[302/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 6566)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[303/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1119)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[304/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 4366)
+  -> Target statement boundary: tokens [1075, 1278) = 203 tokens
+
+[305/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 54094)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[306/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1736)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[307/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 25572)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[308/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1736)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[309/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 59006)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[310/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 51734)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[311/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 35743)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[312/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 33397)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[313/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1736)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[314/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 76430)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[315/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 31995)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[316/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 46503)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[317/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 30805)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[318/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 42921)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[319/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1803)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[320/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 36381)
+  -> Target statement boundary: tokens [1103, 1748) = 645 tokens
+
+[321/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 19488)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[322/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 32993)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[323/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 16154)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[324/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 18837)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[325/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 8377)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[326/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 2073)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[327/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 3073)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[328/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 43954)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[329/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 2146)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[330/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 47036)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[331/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 49327)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[332/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 37200)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[333/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 2205)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[334/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 24796)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[335/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 54358)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[336/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 60359)
+  -> Target statement boundary: tokens [484, 1296) = 812 tokens
+
+[337/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 14703)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[338/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 12052)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[339/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 13717)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[340/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 9666)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[341/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 15179)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[342/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 11910)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[343/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 22954)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[344/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 17890)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[345/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 19680)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[346/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 16201)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[347/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 13049)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[348/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 12640)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[349/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 10208)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[350/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 17297)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[351/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 14757)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[352/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 11040)
+  -> Target statement boundary: tokens [310, 404) = 94 tokens
+
+[353/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1226)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[354/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1214)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[355/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 19471)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[356/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1790)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[357/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1190)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[358/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 35543)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[359/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 27007)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[360/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1560)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[361/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1192)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[362/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 34590)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[363/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 16316)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[364/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 24417)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[365/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 25483)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[366/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1187)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[367/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 14359)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[368/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 23704)
+  -> Target statement boundary: tokens [787, 1084) = 297 tokens
+
+[369/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 388)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[370/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 7435)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[371/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 5029)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[372/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 6646)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[373/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 4877)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[374/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 12139)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[375/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 6348)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[376/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 5405)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[377/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 3649)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[378/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 604)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[379/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 7537)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[380/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 5296)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[381/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 7137)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[382/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 4495)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[383/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 4658)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[384/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 411)
+  -> Target statement boundary: tokens [1594, 1688) = 94 tokens
+
+[385/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 2847)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[386/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 463)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[387/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 16736)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[388/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 12644)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[389/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 13218)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[390/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 21179)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[391/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 10430)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[392/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 5802)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[393/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 18293)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[394/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 22695)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[395/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 19769)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[396/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 30973)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[397/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 20847)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[398/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 24146)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[399/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 12025)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[400/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 25431)
+  -> Target statement boundary: tokens [467, 537) = 70 tokens
+
+[401/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 396)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[402/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 18801)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[403/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 18895)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[404/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 20858)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[405/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 22720)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[406/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 22536)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[407/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 13615)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[408/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 14158)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[409/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 18177)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[410/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 16199)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[411/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 24108)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[412/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 20656)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[413/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 16756)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[414/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 14689)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[415/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 14410)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[416/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 12052)
+  -> Target statement boundary: tokens [611, 671) = 60 tokens
+
+[417/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 34304)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[418/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 13527)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[419/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 28248)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[420/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 12512)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[421/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 13439)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[422/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 17811)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[423/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 9762)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[424/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 50946)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[425/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 31776)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[426/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 25341)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[427/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 16134)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[428/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 12189)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[429/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 10433)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[430/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 19567)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[431/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 12591)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[432/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 26747)
+  -> Target statement boundary: tokens [938, 1205) = 267 tokens
+
+[433/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 37595)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[434/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 40600)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[435/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 45308)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[436/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 19692)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[437/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 46019)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[438/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 49642)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[439/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 17757)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[440/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 51246)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[441/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 46125)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[442/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 39368)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[443/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 36020)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[444/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 42357)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[445/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 19283)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[446/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 29824)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[447/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 34983)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[448/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 43659)
+  -> Target statement boundary: tokens [547, 690) = 143 tokens
+
+[449/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 18537)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[450/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 30061)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[451/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 15649)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[452/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 31429)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[453/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 28160)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[454/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 28392)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[455/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 28469)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[456/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 31135)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[457/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 41781)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[458/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 22132)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[459/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 35658)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[460/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 24840)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[461/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 10838)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[462/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 13331)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[463/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 21826)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[464/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 29723)
+  -> Target statement boundary: tokens [372, 468) = 96 tokens
+
+[465/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 465)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[466/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 3878)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[467/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 534)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[468/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 1056)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[469/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 10600)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[470/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 35354)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[471/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 7366)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[472/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 471)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[473/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 13254)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[474/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 458)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[475/480] Processing sample...
+  -> Heuristic selected group starting with: problem 4 (Total Length: 13886)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[476/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 19234)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[477/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 11739)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[478/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 471)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[479/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 465)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+[480/480] Processing sample...
+  -> Heuristic selected group starting with: Problem 4 (Total Length: 458)
+  -> Target statement boundary: tokens [322, 406) = 84 tokens
+
+Run was resumed from sample 295. Aggregation step skipped.
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading data from /home/golikovp/projects/aip-gpekhime/golikovp/Robust-Reasoning-Benchmark/experiments/compound/results/nvidia_OpenReasoning-Nemotron-32B/MathArena_aime_2025/nvidia_OpenReasoning-Nemotron-32B_MathArena_aime_2025_compound_s42_20260406_102432.json
+Extracted model ID from path: nvidia/OpenReasoning-Nemotron-32B
+Found 480 valid entries to process.
+Output will be saved to: dilution_nvidia_OpenReasoning-Nemotron-32B_3distractors_20260406_102432.txt
+Loading tokenizer...
+Loading model...
+Loading weights:   0%|          | 0/771 [00:00<?, ?it/s]Loading weights:   0%|          | 1/771 [00:06<1:28:26,  6.89s/it]Loading weights:   1%|          | 4/771 [00:07<20:21,  1.59s/it]  Loading weights:   1%|          | 5/771 [00:09<20:12,  1.58s/it]Loading weights:   1%|          | 6/771 [00:10<19:44,  1.55s/it]Loading weights:   1%|▏         | 10/771 [00:11<07:58,  1.59it/s]Loading weights:   2%|▏         | 12/771 [00:11<06:08,  2.06it/s]Loading weights:   2%|▏         | 16/771 [00:13<05:43,  2.20it/s]Loading weights:   2%|▏         | 17/771 [00:14<07:08,  1.76it/s]Loading weights:   2%|▏         | 18/771 [00:15<08:13,  1.53it/s]Loading weights:   3%|▎         | 22/771 [00:16<05:08,  2.43it/s]Loading weights:   4%|▎         | 28/771 [00:17<03:56,  3.14it/s]Loading weights:   4%|▍         | 29/771 [00:19<05:43,  2.16it/s]Loading weights:   4%|▍         | 30/771 [00:20<07:49,  1.58it/s]Loading weights:   4%|▍         | 34/771 [00:21<05:02,  2.44it/s]Loading weights:   5%|▍         | 36/771 [00:21<04:20,  2.82it/s]Loading weights:   5%|▌         | 40/771 [00:25<07:33,  1.61it/s]Loading weights:   5%|▌         | 42/771 [00:27<08:43,  1.39it/s]Loading weights:   6%|▌         | 46/771 [00:28<06:11,  1.95it/s]Loading weights:   7%|▋         | 52/771 [00:30<05:07,  2.34it/s]Loading weights:   7%|▋         | 53/771 [00:32<06:48,  1.76it/s]Loading weights:   7%|▋         | 54/771 [00:34<08:34,  1.39it/s]Loading weights:   8%|▊         | 58/771 [00:34<05:29,  2.16it/s]Loading weights:   8%|▊         | 60/771 [00:35<04:37,  2.57it/s]Loading weights:   8%|▊         | 64/771 [00:36<04:48,  2.45it/s]Loading weights:   8%|▊         | 65/771 [00:38<06:50,  1.72it/s]Loading weights:   9%|▊         | 66/771 [00:40<08:56,  1.31it/s]Loading weights:   9%|▉         | 70/771 [00:40<05:18,  2.20it/s]Loading weights:   9%|▉         | 71/771 [00:41<05:01,  2.32it/s]Loading weights:  10%|▉         | 76/771 [00:42<04:33,  2.54it/s]Loading weights:  10%|▉         | 77/771 [00:44<06:32,  1.77it/s]Loading weights:  10%|█         | 78/771 [00:46<08:47,  1.31it/s]Loading weights:  11%|█         | 82/771 [00:46<05:11,  2.21it/s]Loading weights:  11%|█         | 84/771 [00:47<04:20,  2.64it/s]Loading weights:  11%|█▏        | 88/771 [00:50<06:50,  1.66it/s]Loading weights:  12%|█▏        | 90/771 [00:52<07:32,  1.50it/s]Loading weights:  12%|█▏        | 94/771 [00:52<04:58,  2.26it/s]Loading weights:  12%|█▏        | 96/771 [00:53<04:12,  2.68it/s]Loading weights:  13%|█▎        | 100/771 [00:55<04:31,  2.47it/s]Loading weights:  13%|█▎        | 101/771 [00:56<06:22,  1.75it/s]Loading weights:  13%|█▎        | 102/771 [00:58<08:31,  1.31it/s]Loading weights:  14%|█▎        | 106/771 [00:59<05:04,  2.18it/s]Loading weights:  14%|█▍        | 108/771 [00:59<04:16,  2.59it/s]Loading weights:  15%|█▍        | 112/771 [01:01<04:26,  2.47it/s]Loading weights:  15%|█▍        | 113/771 [01:03<06:42,  1.64it/s]Loading weights:  15%|█▍        | 114/771 [01:04<08:49,  1.24it/s]Loading weights:  15%|█▌        | 118/771 [01:05<05:09,  2.11it/s]Loading weights:  15%|█▌        | 119/771 [01:05<04:55,  2.20it/s]Loading weights:  16%|█▌        | 124/771 [01:09<06:29,  1.66it/s]Loading weights:  16%|█▋        | 126/771 [01:11<07:19,  1.47it/s]Loading weights:  17%|█▋        | 130/771 [01:11<04:53,  2.18it/s]Loading weights:  17%|█▋        | 132/771 [01:12<04:10,  2.55it/s]Loading weights:  18%|█▊        | 136/771 [01:14<04:37,  2.29it/s]Loading weights:  18%|█▊        | 137/771 [01:15<06:16,  1.69it/s]Loading weights:  18%|█▊        | 138/771 [01:17<08:04,  1.31it/s]Loading weights:  18%|█▊        | 142/771 [01:18<05:11,  2.02it/s]Loading weights:  19%|█▉        | 148/771 [01:20<04:12,  2.47it/s]Loading weights:  19%|█▉        | 149/771 [01:22<05:52,  1.77it/s]Loading weights:  19%|█▉        | 150/771 [01:23<07:16,  1.42it/s]Loading weights:  20%|█▉        | 154/771 [01:24<04:51,  2.12it/s]Loading weights:  21%|██        | 160/771 [01:26<03:49,  2.66it/s]Loading weights:  21%|██        | 161/771 [01:27<05:06,  1.99it/s]Loading weights:  21%|██        | 162/771 [01:29<06:44,  1.51it/s]Loading weights:  22%|██▏       | 166/771 [01:29<04:17,  2.35it/s]Loading weights:  22%|██▏       | 167/771 [01:30<04:12,  2.40it/s]Loading weights:  22%|██▏       | 172/771 [01:32<03:58,  2.51it/s]Loading weights:  22%|██▏       | 173/771 [01:33<05:42,  1.75it/s]Loading weights:  23%|██▎       | 174/771 [01:35<07:42,  1.29it/s]Loading weights:  23%|██▎       | 178/771 [01:36<04:34,  2.16it/s]Loading weights:  23%|██▎       | 180/771 [01:36<03:58,  2.48it/s]Loading weights:  24%|██▍       | 184/771 [01:38<04:20,  2.25it/s]Loading weights:  24%|██▍       | 185/771 [01:40<06:15,  1.56it/s]Loading weights:  24%|██▍       | 186/771 [01:42<08:15,  1.18it/s]Loading weights:  25%|██▍       | 190/771 [01:43<04:49,  2.01it/s]Loading weights:  25%|██▍       | 192/771 [01:43<04:06,  2.35it/s]Loading weights:  25%|██▌       | 196/771 [01:47<06:26,  1.49it/s]Loading weights:  26%|██▌       | 198/771 [01:49<07:19,  1.30it/s]Loading weights:  26%|██▌       | 202/771 [01:50<05:08,  1.85it/s]Loading weights:  27%|██▋       | 208/771 [01:52<04:10,  2.25it/s]Loading weights:  27%|██▋       | 209/771 [01:54<05:32,  1.69it/s]Loading weights:  27%|██▋       | 210/771 [01:56<07:11,  1.30it/s]Loading weights:  28%|██▊       | 214/771 [01:57<04:57,  1.88it/s]Loading weights:  29%|██▊       | 220/771 [01:59<03:57,  2.32it/s]Loading weights:  29%|██▊       | 221/771 [02:01<05:23,  1.70it/s]Loading weights:  29%|██▉       | 222/771 [02:03<07:00,  1.30it/s]Loading weights:  29%|██▉       | 226/771 [02:03<04:24,  2.06it/s]Loading weights:  30%|██▉       | 228/771 [02:03<03:42,  2.44it/s]Loading weights:  30%|███       | 232/771 [02:07<05:16,  1.70it/s]Loading weights:  30%|███       | 234/771 [02:09<06:03,  1.48it/s]Loading weights:  31%|███       | 238/771 [02:09<04:02,  2.20it/s]Loading weights:  31%|███       | 239/771 [02:09<03:53,  2.28it/s]Loading weights:  32%|███▏      | 244/771 [02:14<05:21,  1.64it/s]Loading weights:  32%|███▏      | 246/771 [02:16<06:10,  1.42it/s]Loading weights:  32%|███▏      | 250/771 [02:16<04:27,  1.95it/s]Loading weights:  33%|███▎      | 256/771 [02:19<03:49,  2.25it/s]Loading weights:  33%|███▎      | 257/771 [02:20<05:01,  1.70it/s]Loading weights:  33%|███▎      | 258/771 [02:23<06:33,  1.31it/s]Loading weights:  34%|███▍      | 262/771 [02:23<04:09,  2.04it/s]Loading weights:  34%|███▍      | 263/771 [02:23<04:00,  2.11it/s]Loading weights:  35%|███▍      | 268/771 [02:25<03:43,  2.25it/s]Loading weights:  35%|███▍      | 269/771 [02:27<05:07,  1.63it/s]Loading weights:  35%|███▌      | 270/771 [02:29<06:31,  1.28it/s]Loading weights:  36%|███▌      | 274/771 [02:29<03:52,  2.14it/s]Loading weights:  36%|███▌      | 275/771 [02:30<03:44,  2.21it/s]Loading weights:  36%|███▋      | 280/771 [02:32<03:31,  2.32it/s]Loading weights:  36%|███▋      | 281/771 [02:34<05:01,  1.63it/s]Loading weights:  37%|███▋      | 282/771 [02:36<06:41,  1.22it/s]Loading weights:  37%|███▋      | 286/771 [02:36<03:58,  2.03it/s]Loading weights:  37%|███▋      | 288/771 [02:36<03:19,  2.42it/s]Loading weights:  38%|███▊      | 292/771 [02:40<04:57,  1.61it/s]Loading weights:  38%|███▊      | 294/771 [02:42<05:48,  1.37it/s]Loading weights:  39%|███▊      | 298/771 [02:43<04:06,  1.92it/s]Loading weights:  39%|███▉      | 304/771 [02:45<03:17,  2.37it/s]Loading weights:  40%|███▉      | 305/771 [02:47<04:23,  1.77it/s]Loading weights:  40%|███▉      | 306/771 [02:49<05:39,  1.37it/s]Loading weights:  40%|████      | 310/771 [02:49<03:40,  2.09it/s]Loading weights:  40%|████      | 312/771 [02:50<03:08,  2.43it/s]Loading weights:  41%|████      | 316/771 [02:52<03:24,  2.23it/s]Loading weights:  41%|████      | 317/771 [02:53<04:39,  1.62it/s]Loading weights:  41%|████      | 318/771 [02:55<06:18,  1.20it/s]Loading weights:  42%|████▏     | 322/771 [02:56<03:39,  2.04it/s]Loading weights:  42%|████▏     | 323/771 [02:56<03:28,  2.15it/s]Loading weights:  42%|████▏     | 327/771 [02:58<03:38,  2.03it/s]Loading weights:  43%|████▎     | 329/771 [03:00<04:26,  1.66it/s]Loading weights:  43%|████▎     | 330/771 [03:02<06:02,  1.22it/s]Loading weights:  43%|████▎     | 334/771 [03:03<03:39,  1.99it/s]Loading weights:  43%|████▎     | 335/771 [03:03<03:28,  2.09it/s]Loading weights:  44%|████▍     | 339/771 [03:05<03:30,  2.05it/s]Loading weights:  44%|████▍     | 341/771 [03:07<04:24,  1.63it/s]Loading weights:  44%|████▍     | 342/771 [03:09<05:50,  1.22it/s]Loading weights:  45%|████▍     | 346/771 [03:09<03:28,  2.04it/s]Loading weights:  45%|████▌     | 348/771 [03:10<02:55,  2.41it/s]Loading weights:  46%|████▌     | 352/771 [03:14<04:54,  1.42it/s]Loading weights:  46%|████▌     | 354/771 [03:16<05:16,  1.32it/s]Loading weights:  46%|████▋     | 358/771 [03:17<03:29,  1.98it/s]Loading weights:  47%|████▋     | 360/771 [03:17<02:58,  2.31it/s]Loading weights:  47%|████▋     | 364/771 [03:19<03:14,  2.10it/s]Loading weights:  47%|████▋     | 365/771 [03:21<04:38,  1.46it/s]Loading weights:  47%|████▋     | 366/771 [03:24<06:09,  1.10it/s]Loading weights:  48%|████▊     | 370/771 [03:24<03:39,  1.83it/s]Loading weights:  48%|████▊     | 372/771 [03:24<03:02,  2.19it/s]Loading weights:  49%|████▉     | 376/771 [03:27<03:17,  2.00it/s]Loading weights:  49%|████▉     | 377/771 [03:29<04:48,  1.37it/s]Loading weights:  49%|████▉     | 378/771 [03:31<06:33,  1.00s/it]Loading weights:  49%|████▉     | 381/771 [03:32<03:59,  1.63it/s]Loading weights:  50%|████▉     | 382/771 [03:32<03:46,  1.72it/s]Loading weights:  50%|████▉     | 383/771 [03:32<03:33,  1.82it/s]Loading weights:  50%|█████     | 388/771 [03:35<03:12,  1.99it/s]Loading weights:  50%|█████     | 389/771 [03:37<04:50,  1.31it/s]Loading weights:  51%|█████     | 390/771 [03:39<06:21,  1.00s/it]Loading weights:  51%|█████     | 393/771 [03:39<03:47,  1.67it/s]Loading weights:  51%|█████     | 394/771 [03:40<03:35,  1.75it/s]Loading weights:  51%|█████▏    | 396/771 [03:40<02:51,  2.18it/s]Loading weights:  52%|█████▏    | 400/771 [03:43<03:21,  1.84it/s]Loading weights:  52%|█████▏    | 401/771 [03:45<04:37,  1.33it/s]Loading weights:  52%|█████▏    | 402/771 [03:47<05:59,  1.03it/s]Loading weights:  53%|█████▎    | 405/771 [03:47<03:30,  1.74it/s]Loading weights:  53%|█████▎    | 407/771 [03:48<03:13,  1.88it/s]Loading weights:  53%|█████▎    | 412/771 [03:53<04:31,  1.32it/s]Loading weights:  54%|█████▎    | 414/771 [03:55<05:10,  1.15it/s]Loading weights:  54%|█████▍    | 418/771 [03:56<03:38,  1.62it/s]Loading weights:  55%|█████▍    | 423/771 [04:01<04:24,  1.32it/s]Loading weights:  55%|█████▌    | 426/771 [04:03<04:28,  1.29it/s]Loading weights:  56%|█████▌    | 430/771 [04:04<03:11,  1.78it/s]Loading weights:  56%|█████▌    | 432/771 [04:04<02:47,  2.02it/s]Loading weights:  57%|█████▋    | 436/771 [04:11<05:18,  1.05it/s]Loading weights:  57%|█████▋    | 442/771 [04:12<03:08,  1.74it/s]Loading weights:  58%|█████▊    | 444/771 [04:12<02:49,  1.93it/s]Loading weights:  58%|█████▊    | 446/771 [04:12<02:19,  2.34it/s]Loading weights:  58%|█████▊    | 448/771 [04:15<03:13,  1.67it/s]Loading weights:  58%|█████▊    | 449/771 [04:17<04:29,  1.19it/s]Loading weights:  58%|█████▊    | 450/771 [04:19<05:37,  1.05s/it]Loading weights:  59%|█████▉    | 454/771 [04:20<03:11,  1.65it/s]Loading weights:  59%|█████▉    | 456/771 [04:20<02:40,  1.96it/s]Loading weights:  60%|█████▉    | 460/771 [04:25<04:09,  1.25it/s]Loading weights:  60%|█████▉    | 462/771 [04:28<04:40,  1.10it/s]Loading weights:  60%|██████    | 466/771 [04:28<03:03,  1.66it/s]Loading weights:  61%|██████    | 467/771 [04:29<02:57,  1.71it/s]Loading weights:  61%|██████    | 470/771 [04:29<01:59,  2.51it/s]Loading weights:  61%|██████    | 472/771 [04:31<03:00,  1.66it/s]Loading weights:  61%|██████▏   | 473/771 [04:34<04:20,  1.14it/s]Loading weights:  61%|██████▏   | 474/771 [04:36<05:16,  1.07s/it]Loading weights:  62%|██████▏   | 478/771 [04:36<02:52,  1.70it/s]Loading weights:  62%|██████▏   | 480/771 [04:36<02:20,  2.07it/s]Loading weights:  63%|██████▎   | 484/771 [04:39<02:27,  1.95it/s]Loading weights:  63%|██████▎   | 485/771 [04:41<03:22,  1.41it/s]Loading weights:  63%|██████▎   | 486/771 [04:43<04:25,  1.07it/s]Loading weights:  64%|██████▎   | 490/771 [04:43<02:29,  1.88it/s]Loading weights:  64%|██████▎   | 491/771 [04:44<02:24,  1.93it/s]Loading weights:  64%|██████▍   | 496/771 [04:46<02:12,  2.08it/s]Loading weights:  64%|██████▍   | 497/771 [04:48<03:07,  1.46it/s]Loading weights:  65%|██████▍   | 498/771 [04:50<04:05,  1.11it/s]Loading weights:  65%|██████▌   | 502/771 [04:51<02:25,  1.85it/s]Loading weights:  65%|██████▌   | 504/771 [04:51<02:02,  2.18it/s]Loading weights:  66%|██████▌   | 508/771 [04:53<02:14,  1.95it/s]Loading weights:  66%|██████▌   | 509/771 [04:55<03:09,  1.38it/s]Loading weights:  66%|██████▌   | 510/771 [04:58<04:09,  1.05it/s]Loading weights:  67%|██████▋   | 514/771 [04:59<02:38,  1.62it/s]Loading weights:  67%|██████▋   | 519/771 [04:59<01:26,  2.91it/s]Loading weights:  68%|██████▊   | 521/771 [05:03<03:03,  1.37it/s]Loading weights:  68%|██████▊   | 523/771 [05:05<03:19,  1.24it/s]Loading weights:  68%|██████▊   | 526/771 [05:06<02:24,  1.70it/s]Loading weights:  68%|██████▊   | 528/771 [05:06<02:01,  2.01it/s]Loading weights:  69%|██████▉   | 532/771 [05:08<01:59,  1.99it/s]Loading weights:  69%|██████▉   | 533/771 [05:10<02:52,  1.38it/s]Loading weights:  69%|██████▉   | 534/771 [05:13<03:49,  1.03it/s]Loading weights:  70%|██████▉   | 538/771 [05:13<02:15,  1.72it/s]Loading weights:  70%|██████▉   | 539/771 [05:14<02:11,  1.76it/s]Loading weights:  71%|███████   | 544/771 [05:16<01:57,  1.93it/s]Loading weights:  71%|███████   | 545/771 [05:18<02:42,  1.39it/s]Loading weights:  71%|███████   | 546/771 [05:20<03:27,  1.08it/s]Loading weights:  71%|███████▏  | 550/771 [05:21<01:59,  1.84it/s]Loading weights:  72%|███████▏  | 552/771 [05:21<01:40,  2.18it/s]Loading weights:  72%|███████▏  | 554/771 [05:21<01:16,  2.85it/s]Loading weights:  72%|███████▏  | 556/771 [05:23<01:58,  1.81it/s]Loading weights:  72%|███████▏  | 557/771 [05:25<02:49,  1.26it/s]Loading weights:  72%|███████▏  | 558/771 [05:27<03:40,  1.03s/it]Loading weights:  73%|███████▎  | 561/771 [05:28<02:14,  1.56it/s]Loading weights:  73%|███████▎  | 563/771 [05:28<01:45,  1.97it/s]Loading weights:  74%|███████▎  | 568/771 [05:31<01:38,  2.07it/s]Loading weights:  74%|███████▍  | 569/771 [05:33<02:19,  1.44it/s]Loading weights:  74%|███████▍  | 570/771 [05:35<03:08,  1.07it/s]Loading weights:  74%|███████▍  | 574/771 [05:35<01:47,  1.83it/s]Loading weights:  75%|███████▍  | 575/771 [05:36<01:43,  1.89it/s]Loading weights:  75%|███████▌  | 579/771 [05:38<01:42,  1.88it/s]Loading weights:  75%|███████▌  | 581/771 [05:40<02:09,  1.47it/s]Loading weights:  75%|███████▌  | 582/771 [05:43<02:53,  1.09it/s]Loading weights:  76%|███████▌  | 586/771 [05:43<01:44,  1.77it/s]Loading weights:  76%|███████▋  | 588/771 [05:44<01:27,  2.10it/s]Loading weights:  77%|███████▋  | 592/771 [05:48<02:15,  1.32it/s]Loading weights:  77%|███████▋  | 594/771 [05:51<02:31,  1.17it/s]Loading weights:  78%|███████▊  | 598/771 [05:51<01:38,  1.76it/s]Loading weights:  78%|███████▊  | 600/771 [05:51<01:21,  2.10it/s]Loading weights:  78%|███████▊  | 604/771 [05:53<01:18,  2.13it/s]Loading weights:  78%|███████▊  | 605/771 [05:56<01:55,  1.44it/s]Loading weights:  79%|███████▊  | 606/771 [05:58<02:32,  1.08it/s]Loading weights:  79%|███████▉  | 610/771 [05:58<01:29,  1.80it/s]Loading weights:  79%|███████▉  | 611/771 [05:59<01:25,  1.88it/s]Loading weights:  80%|███████▉  | 615/771 [06:03<02:05,  1.24it/s]Loading weights:  80%|████████  | 618/771 [06:06<02:02,  1.25it/s]Loading weights:  81%|████████  | 621/771 [06:06<01:24,  1.78it/s]Loading weights:  81%|████████  | 622/771 [06:06<01:19,  1.86it/s]Loading weights:  81%|████████  | 624/771 [06:07<01:05,  2.23it/s]Loading weights:  81%|████████▏ | 628/771 [06:11<01:45,  1.36it/s]Loading weights:  82%|████████▏ | 630/771 [06:13<01:58,  1.19it/s]Loading weights:  82%|████████▏ | 634/771 [06:14<01:15,  1.82it/s]Loading weights:  82%|████████▏ | 636/771 [06:14<01:03,  2.14it/s]Loading weights:  83%|████████▎ | 640/771 [06:16<01:07,  1.95it/s]Loading weights:  83%|████████▎ | 641/771 [06:21<02:13,  1.02s/it]Loading weights:  84%|████████▍ | 646/771 [06:22<01:13,  1.70it/s]Loading weights:  84%|████████▍ | 647/771 [06:22<01:10,  1.75it/s]Loading weights:  84%|████████▍ | 650/771 [06:22<00:47,  2.56it/s]Loading weights:  85%|████████▍ | 652/771 [06:25<01:08,  1.72it/s]Loading weights:  85%|████████▍ | 653/771 [06:27<01:41,  1.16it/s]Loading weights:  85%|████████▍ | 654/771 [06:29<02:13,  1.14s/it]Loading weights:  85%|████████▌ | 657/771 [06:30<01:16,  1.49it/s]Loading weights:  85%|████████▌ | 658/771 [06:30<01:11,  1.58it/s]Loading weights:  86%|████████▌ | 660/771 [06:30<00:54,  2.03it/s]Loading weights:  86%|████████▌ | 664/771 [06:33<00:56,  1.89it/s]Loading weights:  86%|████████▋ | 665/771 [06:35<01:23,  1.26it/s]Loading weights:  86%|████████▋ | 666/771 [06:37<01:50,  1.05s/it]Loading weights:  87%|████████▋ | 670/771 [06:38<01:04,  1.56it/s]Loading weights:  88%|████████▊ | 676/771 [06:40<00:47,  1.99it/s]Loading weights:  88%|████████▊ | 677/771 [06:43<01:04,  1.45it/s]Loading weights:  88%|████████▊ | 678/771 [06:45<01:24,  1.10it/s]Loading weights:  88%|████████▊ | 682/771 [06:45<00:49,  1.78it/s]Loading weights:  89%|████████▊ | 684/771 [06:46<00:41,  2.11it/s]Loading weights:  89%|████████▉ | 688/771 [06:48<00:43,  1.90it/s]Loading weights:  89%|████████▉ | 689/771 [06:50<01:00,  1.37it/s]Loading weights:  89%|████████▉ | 690/771 [06:53<01:17,  1.05it/s]Loading weights:  90%|█████████ | 694/771 [06:53<00:43,  1.78it/s]Loading weights:  90%|█████████ | 695/771 [06:53<00:40,  1.87it/s]Loading weights:  91%|█████████ | 700/771 [06:56<00:34,  2.03it/s]Loading weights:  91%|█████████ | 701/771 [06:58<00:49,  1.41it/s]Loading weights:  91%|█████████ | 702/771 [07:00<01:00,  1.15it/s]Loading weights:  92%|█████████▏| 706/771 [07:00<00:33,  1.95it/s]Loading weights:  92%|█████████▏| 708/771 [07:00<00:26,  2.36it/s]Loading weights:  92%|█████████▏| 712/771 [07:02<00:25,  2.34it/s]Loading weights:  92%|█████████▏| 713/771 [07:04<00:36,  1.60it/s]Loading weights:  93%|█████████▎| 714/771 [07:06<00:46,  1.22it/s]Loading weights:  93%|█████████▎| 718/771 [07:06<00:24,  2.13it/s]Loading weights:  93%|█████████▎| 720/771 [07:06<00:19,  2.61it/s]Loading weights:  94%|█████████▍| 724/771 [07:08<00:17,  2.63it/s]Loading weights:  94%|█████████▍| 725/771 [07:10<00:24,  1.85it/s]Loading weights:  94%|█████████▍| 726/771 [07:11<00:30,  1.46it/s]Loading weights:  95%|█████████▍| 730/771 [07:12<00:18,  2.27it/s]Loading weights:  95%|█████████▌| 735/771 [07:14<00:14,  2.45it/s]Loading weights:  96%|█████████▌| 737/771 [07:16<00:18,  1.88it/s]Loading weights:  96%|█████████▌| 738/771 [07:17<00:20,  1.60it/s]Loading weights:  96%|█████████▌| 742/771 [07:17<00:11,  2.55it/s]Loading weights:  96%|█████████▋| 744/771 [07:17<00:08,  3.03it/s]Loading weights:  97%|█████████▋| 748/771 [07:21<00:12,  1.79it/s]Loading weights:  97%|█████████▋| 750/771 [07:23<00:14,  1.49it/s]Loading weights:  98%|█████████▊| 754/771 [07:24<00:07,  2.22it/s]Loading weights:  98%|█████████▊| 756/771 [07:24<00:05,  2.55it/s]Loading weights:  99%|█████████▊| 760/771 [07:28<00:07,  1.57it/s]Loading weights:  99%|█████████▉| 762/771 [07:30<00:06,  1.39it/s]Loading weights:  99%|█████████▉| 765/771 [07:30<00:03,  1.98it/s]Loading weights:  99%|█████████▉| 767/771 [07:31<00:01,  2.27it/s]Loading weights: 100%|█████████▉| 768/771 [07:31<00:01,  2.30it/s]Loading weights: 100%|██████████| 771/771 [07:31<00:00,  1.71it/s]
+slurmstepd: error: *** JOB 3373845 ON kn174 CANCELLED AT 2026-05-01T02:12:57 DUE TO TIME LIMIT ***
