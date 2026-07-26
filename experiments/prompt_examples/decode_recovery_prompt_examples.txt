@@ -1,0 +1,74 @@
+====================================================================================================
+DECODE-ONLY EXAMPLE: word_reversal, dataset index 0
+====================================================================================================
+
+SYSTEM:
+You are a precise text reconstruction assistant. Do not solve math problems. Only recover the requested text.
+
+USER:
+YOUR TASK:
+1. Read the TRANSFORMATION RULE and the TRANSFORMED INPUT.
+2. Reverse the transformation and recover the original target problem statement.
+3. Do not solve the math problem.
+4. Output only the recovered problem statement between <RECOVERED_PROBLEM> and </RECOVERED_PROBLEM>.
+
+TRANSFORMATION RULE:
+The order of words in the input has been reversed. Words are defined as sequences of symbols separated by spaces. Reverse the word order to recover the original problem.
+
+TRANSFORMED INPUT:
+shop. coffee the in spent minutes $t$ the including her, takes walk the minutes of number the Find hour. per kilometers $s+\frac{1}{2}$ at walks Aya Suppose shop. coffee the in spent minutes $t$ including minutes, 24 and hours 2 her takes walk the hour, per kilometers $s+2$ walks she When shop. coffee the in spent minutes $t$ including hours, 4 her takes walk the hour, per kilometers $s$ of speed constant a at walks she When afterwards. shop coffee a at stops and walk $9$-kilometer-long a for goes Aya morning Every
+
+====================================================================================================
+DECODE-ONLY EXAMPLE: interleaved_context_line, dataset index 1
+====================================================================================================
+
+SYSTEM:
+You are a precise text reconstruction assistant. Do not solve math problems. Only recover the requested text.
+
+USER:
+YOUR TASK:
+1. Read the TRANSFORMATION RULE and the TRANSFORMED INPUT.
+2. Reverse the transformation and recover the original target problem statement.
+3. Do not solve the math problem.
+4. Output only the recovered problem statement between <RECOVERED_PROBLEM> and </RECOVERED_PROBLEM>.
+
+TRANSFORMATION RULE:
+The input consists of two problems, A and B, split into line segments of at most 60 symbols. Each segment is prefixed by a problem tag. Recover only the original statement of Problem A.
+
+TRANSFORMED INPUT:
+<Problem A> Let $ABC$ be a triangle inscribed in circle $\omega$. Let th
+<Problem B> Each vertex of a regular octagon is independently colored ei
+<Problem A> e tangents to $\omega$ at $B$ and $C$ intersect at point $D$
+<Problem B> ther red or blue with equal probability. The probability tha
+<Problem A> , and let $\overline{AD}$ intersect $\omega$ at $P$. If $AB=
+<Problem B> t the octagon can then be rotated so that all of the blue ve
+<Problem A> 5$, $BC=9$, and $AC=10$, $AP$ can be written as the form $\f
+<Problem B> rtices end up at positions where there were originally red v
+<Problem A> rac{m}{n}$, where $m$ and $n$ are relatively prime integers.
+<Problem B> ertices is $\tfrac{m}{n}$, where $m$ and $n$ are relatively 
+<Problem A>  Find $m + n$.
+<Problem B> prime positive integers. What is $m+n$?
+
+====================================================================================================
+DECODE-ONLY EXAMPLE: rail_fence, dataset index 2
+====================================================================================================
+
+SYSTEM:
+You are a precise text reconstruction assistant. Do not solve math problems. Only recover the requested text.
+
+USER:
+YOUR TASK:
+1. Read the TRANSFORMATION RULE and the TRANSFORMED INPUT.
+2. Reverse the transformation and recover the original target problem statement.
+3. Do not solve the math problem.
+4. Output only the recovered problem statement between <RECOVERED_PROBLEM> and </RECOVERED_PROBLEM>.
+
+TRANSFORMATION RULE:
+The input is encoded using the Rail Fence Cipher as a visual grid. Empty spaces are filled with dots. Read the characters in the zigzag rail-fence order to recover the original problem.
+
+TRANSFORMED INPUT:
+GRID START
+E... ...t...o... ...u... ...a... ...i...p...e...y...l...d...t... ... ...b... ...h...u...p...a...i... ... ...b...l... ...t...e...t...n...n...e...e...t...d... ...t...l... ... ...e...r...e...n...p... ...i...n...h... ...r...e...o...i...l...e...e...c...i...\...a...}...$...h... ... ... ... ... ...a...e...p...e...s...v...n...e... ...t... ...n..
+.a.h.v.r.e. .f.a.r.g.l.r.o.t.g.n.i. .n.e.e.d.n.l. .o.o.e. .i.h.r.r.d.o. .l.e.w.t. .q.a. .r.b.b.l.t...T.e.p.o.a.i.i.y.t.a. .h. .c.a.o. .a. .h.n.b. .o.a.e. .o.t.a. .l. .f.t.e.b.u. .e.t.c.s.e.d.u. .t.p.s.t.o.s.w.e.e.t.e.e.w.r. .r.g.n.l.y.r.d.v.r.i.e. .s.$.t.r.c.m.{.}.,.w.e.e.$.$.a.d.$.$.a.e.r.l.t.v.l. .r.m. .o.i.i.e.i.t.g.r...W.a. .s.$.+.$.
+..c...e...x... ...e...a...c...o...s...d...n...t...c...r...e...e...e...r...u...i...e...l...o...i...y...h...r...b...t...h...t...o...g...c...t... ...r...t...s...h...a...o...h...l...v...i... ... ...a...o...i... ...r...h... ...e...i...a... ... ...t...s... ...f...{...n... ...r...m...n...n...r...e...i...y...i...p...t... ...e...s...h...i...m...?
+GRID END
