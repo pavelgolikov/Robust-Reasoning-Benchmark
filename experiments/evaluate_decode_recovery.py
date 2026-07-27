@@ -19,11 +19,11 @@ RECOVERED_OPEN = "<RECOVERED_PROBLEM>"
 RECOVERED_CLOSE = "</RECOVERED_PROBLEM>"
 
 TRANSFORMATION_NAMES = [
-    # "not_not",
-    # "opposites",
-    # "wrappers",
-    # "interleaved_context_line",
-    # "interleaved_context_word",
+    "not_not",
+    "opposites",
+    "wrappers",
+    "interleaved_context_line",
+    "interleaved_context_word",
     "interleaved_context_symbol",
     "sentence_reversal",
     "word_reversal",
