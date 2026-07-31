@@ -29,7 +29,7 @@ TRANSFORMATION_NAMES = [
     # "word_reversal",
     # "split_reversal",
     # "rail_fence",
-    "rectangle_perimeter",
+    # "rectangle_perimeter",
     "snake_vertical",
     "snake_horizontal",
 ]
