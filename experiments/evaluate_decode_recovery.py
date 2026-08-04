@@ -21,17 +21,17 @@ RECOVERED_CLOSE = "</RECOVERED_PROBLEM>"
 TRANSFORMATION_NAMES = [
     # "not_not",
     # "opposites",
-    # "wrappers",
-    # "interleaved_context_line",
-    # "interleaved_context_word",
-    # "interleaved_context_symbol",
-    # "sentence_reversal",
-    # "word_reversal",
-    # "split_reversal",
-    # "rail_fence",
+    "wrappers",
+    "interleaved_context_line",
+    "interleaved_context_word",
+    "interleaved_context_symbol",
+    "sentence_reversal",
+    "word_reversal",
+    "split_reversal",
+    "rail_fence",
     # "rectangle_perimeter",
-    "snake_vertical",
-    "snake_horizontal",
+    # "snake_vertical",
+    # "snake_horizontal",
 ]
 
 TECHNIQUE_DESCRIPTIONS = {
