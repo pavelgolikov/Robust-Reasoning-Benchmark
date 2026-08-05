@@ -110,74 +110,20 @@ def pick_latest_file(files):
     return max(files, key=os.path.getmtime)
 
 
-def load_json_results(path):
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+def split_result_entries(data):
     if isinstance(data, dict) and "results" in data:
-        return data["results"]
-    if isinstance(data, list):
-        return data
-    raise ValueError(f"Unsupported result JSON shape in {path}")
+        data = data["results"]
+    if not isinstance(data, list):
+        raise ValueError("Unsupported result JSON shape")
 
-
-def find_prior_reasoning_file(base_dir, safe_model_name, safe_dataset_name):
-    baseline_dir = os.path.join(base_dir, "baseline", "results", safe_model_name, safe_dataset_name)
-    for subdir in ("compound", "perturb", ""):
-        pattern = os.path.join(baseline_dir, subdir, "*.json") if subdir else os.path.join(baseline_dir, "*.json")
-        candidates = [
-            path for path in glob.glob(pattern)
-            if not os.path.basename(path).endswith("_raw.json")
-        ]
-        latest = pick_latest_file(candidates)
-        if latest:
-            return latest
-    return None
-
-
-def load_prior_reasoning_lengths(path):
-    per_id = defaultdict(list)
-    all_lengths = []
-    for entry in load_json_results(path):
-        if not isinstance(entry, dict) or "summary" in entry:
-            continue
-        if entry.get("id") is None or entry.get("output_tokens") is None:
-            continue
-        try:
-            output_tokens = int(entry["output_tokens"])
-        except (TypeError, ValueError):
-            continue
-        problem_id = str(entry["id"])
-        per_id[problem_id].append(output_tokens)
-        all_lengths.append(output_tokens)
-
-    if not all_lengths:
-        raise ValueError(f"No usable output_tokens found in {path}")
-
-    mean_by_id = {
-        problem_id: round(sum(lengths) / len(lengths))
-        for problem_id, lengths in per_id.items()
-    }
-    global_mean = round(sum(all_lengths) / len(all_lengths))
-    return mean_by_id, global_mean
-
-
-def resolve_prior_reasoning_source(args, base_dir, safe_model_name, safe_dataset_name):
-    source_file = args.prior_reasoning_tokens_file
-    if source_file is None:
-        source_file = find_prior_reasoning_file(base_dir, safe_model_name, safe_dataset_name)
-
-    if source_file:
-        lengths_by_id, fallback_tokens = load_prior_reasoning_lengths(source_file)
-        if args.fallback_prior_reasoning_tokens is not None:
-            fallback_tokens = args.fallback_prior_reasoning_tokens
-        return source_file, lengths_by_id, fallback_tokens
-
-    if args.fallback_prior_reasoning_tokens is None:
-        raise FileNotFoundError(
-            "Could not find baseline output-token results for this model/dataset. "
-            "Provide --prior_reasoning_tokens_file or --fallback_prior_reasoning_tokens."
-        )
-    return None, {}, args.fallback_prior_reasoning_tokens
+    entries = []
+    summary = {}
+    for item in data:
+        if isinstance(item, dict) and "summary" in item and len(item) == 1:
+            summary = item["summary"] or {}
+        elif isinstance(item, dict) and "output" in item:
+            entries.append(item)
+    return entries, summary
 
 
 def count_tokens(tokenizer, text):
@@ -194,6 +140,20 @@ def decode_tokens(tokenizer, token_ids):
         return tokenizer.decode(token_ids, skip_special_tokens=True)
     except TypeError:
         return tokenizer.decode(token_ids)
+
+
+def format_chat_text(tokenizer, system_prompt, user_prompt):
+    if tokenizer is None:
+        return f"{system_prompt}\n{user_prompt}"
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    return tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
 
 
 def make_passive_body(passive_source, target_tokens, tokenizer, seed):
@@ -224,14 +184,176 @@ def make_passive_body(passive_source, target_tokens, tokenizer, seed):
 
 
 def build_passive_prompt(target_problem, passive_body):
-    return f"""Solve the following problem:
-
-{target_problem}
-
-Also take a look at this historical passage:
+    return f"""Take a look at this historical passage:
 
 {passive_body}
+
+Solve the following problem:
+
+{target_problem}
 """.strip()
+
+
+def find_compound_results_file(base_dir, safe_model_name, safe_dataset_name, num_distractors):
+    results_dir = os.path.join(base_dir, "compound", "results", safe_model_name, safe_dataset_name)
+    pattern = os.path.join(results_dir, "*.json")
+    candidates = [
+        path for path in glob.glob(pattern)
+        if "_raw.json" not in os.path.basename(path)
+        and os.path.basename(path).endswith(".json")
+        and "compound" in os.path.basename(path)
+    ]
+
+    matching = []
+    for path in candidates:
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            entries, summary = split_result_entries(data)
+            if not entries:
+                continue
+            found_distractors = summary.get("num_distractors")
+            if found_distractors is None:
+                prompt_problems = re.findall(r"Problem \d+:", entries[0].get("original", ""))
+                found_distractors = max(0, len(prompt_problems) - 1)
+            if int(found_distractors) == int(num_distractors):
+                matching.append(path)
+        except Exception:
+            continue
+
+    return pick_latest_file(matching)
+
+
+def target_solution_start_char(output, target_problem_num):
+    pattern = re.compile(r"Problem\s*(\d+)", re.IGNORECASE)
+    matches = list(pattern.finditer(output))
+    if not matches:
+        raise ValueError("No 'Problem N' markers found in model output.")
+
+    groups = []
+    current_group = None
+    for j, match in enumerate(matches):
+        start = match.start()
+        end = matches[j + 1].start() if j + 1 < len(matches) else len(output)
+        length = end - start
+        prob_num = int(match.group(1))
+
+        if current_group is None:
+            current_group = {"prob_num": prob_num, "start_idx": start, "total_len": length}
+        elif current_group["prob_num"] == prob_num:
+            current_group["total_len"] += length
+        else:
+            groups.append(current_group)
+            current_group = {"prob_num": prob_num, "start_idx": start, "total_len": length}
+
+    if current_group is not None:
+        groups.append(current_group)
+
+    target_groups = [group for group in groups if group["prob_num"] == target_problem_num]
+    if not target_groups:
+        raise ValueError(f"No Problem {target_problem_num} group found in model output.")
+
+    return max(target_groups, key=lambda group: group["total_len"])["start_idx"]
+
+
+def char_to_token_index(text, char_idx, tokenizer):
+    if tokenizer is None:
+        return len(text[:char_idx].split())
+
+    try:
+        encoding = tokenizer(text, return_offsets_mapping=True, add_special_tokens=False)
+        for token_idx, (start_char, end_char) in enumerate(encoding["offset_mapping"]):
+            if end_char > char_idx:
+                return token_idx
+        return len(encoding["offset_mapping"])
+    except Exception:
+        return count_tokens(tokenizer, text[:char_idx])
+
+
+def load_compound_pre_target_lengths(path, tokenizer):
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    entries, summary = split_result_entries(data)
+
+    by_id = defaultdict(list)
+    all_lengths = []
+    skipped = 0
+    for entry in entries:
+        original = entry.get("original", "")
+        output = entry.get("output", "")
+        system_prompt = entry.get("system_prompt", BASELINE_SYSTEM_PROMPT)
+        prompt_problems = re.findall(r"Problem \d+:", original)
+        if not prompt_problems:
+            skipped += 1
+            continue
+
+        target_problem_num = len(prompt_problems)
+        try:
+            output_start_char = target_solution_start_char(output, target_problem_num)
+        except ValueError:
+            skipped += 1
+            continue
+
+        formatted_prompt = format_chat_text(tokenizer, system_prompt, original)
+        full_text = formatted_prompt + output
+        full_start_char = len(formatted_prompt) + output_start_char
+        pre_target_tokens = char_to_token_index(full_text, full_start_char, tokenizer)
+        problem_id = str(entry.get("id"))
+        sample_idx = len(by_id[problem_id])
+        info = {
+            "sample_idx": sample_idx,
+            "target_problem_num": target_problem_num,
+            "pre_target_tokens": pre_target_tokens,
+            "target_solution_start_char": full_start_char,
+        }
+        by_id[problem_id].append(info)
+        all_lengths.append(pre_target_tokens)
+
+    if not all_lengths:
+        raise ValueError(f"No usable target-solution boundaries found in {path}")
+
+    fallback = round(sum(all_lengths) / len(all_lengths))
+    return by_id, fallback, skipped, summary
+
+
+def build_context_matched_passive_prompt(
+    target_problem,
+    passive_source,
+    tokenizer,
+    desired_context_tokens,
+    seed,
+):
+    skeleton_prompt = build_passive_prompt(target_problem, "")
+    skeleton_text = format_chat_text(tokenizer, BASELINE_SYSTEM_PROMPT, skeleton_prompt)
+    skeleton_tokens = count_tokens(tokenizer, skeleton_text)
+    passive_body_tokens_target = max(1, desired_context_tokens - skeleton_tokens)
+
+    best = None
+    for _ in range(4):
+        passive_body = make_passive_body(
+            passive_source,
+            passive_body_tokens_target,
+            tokenizer,
+            seed=seed,
+        )
+        user_prompt = build_passive_prompt(target_problem, passive_body)
+        formatted_prompt = format_chat_text(tokenizer, BASELINE_SYSTEM_PROMPT, user_prompt)
+        actual_context_tokens = count_tokens(tokenizer, formatted_prompt)
+        actual_passive_tokens = count_tokens(tokenizer, passive_body)
+        diff = desired_context_tokens - actual_context_tokens
+        best = (
+            user_prompt,
+            formatted_prompt,
+            passive_body_tokens_target,
+            actual_passive_tokens,
+            actual_context_tokens,
+            skeleton_tokens,
+        )
+        if abs(diff) <= 2:
+            break
+        passive_body_tokens_target = max(1, passive_body_tokens_target + diff)
+
+    return best
 
 
 def main():
@@ -242,23 +364,18 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--n_samples", type=int, default=1)
-    parser.add_argument("--num_distractors", type=int, default=3, help="Match the generated reasoning length of this many pre-target math problems.")
+    parser.add_argument("--num_distractors", type=int, default=3, help="Match a compound run with this many pre-target math problems.")
     parser.add_argument(
-        "--prior_reasoning_tokens_file",
+        "--compound_results_file",
         type=str,
         default=None,
-        help="Baseline result JSON with per-problem output_tokens. Defaults to the newest baseline result for this model/dataset.",
+        help="Compound result JSON used to detect where target-problem solving starts. Defaults to the newest matching compound result.",
     )
     parser.add_argument(
-        "--fallback_prior_reasoning_tokens",
+        "--fallback_pre_target_tokens",
         type=int,
         default=None,
-        help="Use this many tokens per missing prior problem when no matching baseline length is available.",
-    )
-    parser.add_argument(
-        "--include_prior_problem_tokens",
-        action="store_true",
-        help="Also add the prompt-token length of the sampled prior problem statements to the passive context length.",
+        help="Use this many pre-target context tokens if a target problem is missing from the compound boundary file.",
     )
     parser.add_argument("--passive_text_file", type=str, default=None)
     parser.add_argument("--dry", action="store_true")
@@ -280,17 +397,6 @@ def main():
         "gibbon_decline_and_fall_excerpt.txt",
     )
     passive_source = load_passive_source(passive_path)
-    prior_source_file, prior_lengths_by_id, fallback_prior_tokens = resolve_prior_reasoning_source(
-        args,
-        base_dir,
-        safe_model_name,
-        safe_dataset_name,
-    )
-    if prior_source_file:
-        print(f"Matching passive context to prior generated reasoning lengths from: {prior_source_file}")
-        print(f"Loaded token lengths for {len(prior_lengths_by_id)} problem ids; fallback mean={fallback_prior_tokens}")
-    else:
-        print(f"Matching passive context using fallback prior reasoning length: {fallback_prior_tokens} tokens/problem")
 
     llm = None
     sampling_params = None
@@ -313,6 +419,31 @@ def main():
         )
         tokenizer = llm.get_tokenizer()
 
+    compound_source_file = args.compound_results_file or find_compound_results_file(
+        base_dir,
+        safe_model_name,
+        safe_dataset_name,
+        args.num_distractors,
+    )
+    if compound_source_file is None:
+        raise FileNotFoundError(
+            "Could not find a matching compound result file. "
+            "Provide --compound_results_file explicitly."
+        )
+
+    compound_lengths_by_id, fallback_pre_target_tokens, skipped_boundaries, compound_summary = load_compound_pre_target_lengths(
+        compound_source_file,
+        tokenizer,
+    )
+    if args.fallback_pre_target_tokens is not None:
+        fallback_pre_target_tokens = args.fallback_pre_target_tokens
+
+    print(f"Matching passive context to target-solution boundaries from: {compound_source_file}")
+    print(
+        f"Loaded boundaries for {len(compound_lengths_by_id)} problem ids; "
+        f"fallback mean={fallback_pre_target_tokens}; skipped={skipped_boundaries}"
+    )
+
     print(f"Loading dataset: {args.dataset} [{args.split}]")
     source_dataset = load_dataset(args.dataset, split=args.split)
     dataset = source_dataset
@@ -323,64 +454,55 @@ def main():
     prompt_metadata = []
 
     for i, example in enumerate(dataset):
+        problem_id = str(example.get("id", i))
         target_problem = sanitize_problem(example["problem"])
-        candidate_indices = [idx for idx in range(len(source_dataset)) if idx != i]
-        sampled_indices = random.sample(
-            candidate_indices,
-            min(args.num_distractors, len(candidate_indices)),
-        )
-        sampled_distractors = [sanitize_problem(source_dataset[idx]["problem"]) for idx in sampled_indices]
-        sampled_distractor_ids = [
-            str(source_dataset[idx].get("id", idx))
-            for idx in sampled_indices
-        ]
-
-        prior_reasoning_tokens_by_distractor = {
-            problem_id: int(prior_lengths_by_id.get(problem_id, fallback_prior_tokens))
-            for problem_id in sampled_distractor_ids
-        }
-        prior_reasoning_tokens_target = sum(prior_reasoning_tokens_by_distractor.values())
-
-        math_context = "\n\n".join(
-            f"Problem {j + 1}:\n{problem}"
-            for j, problem in enumerate(sampled_distractors)
-        )
-        prior_problem_statement_tokens = count_tokens(tokenizer, math_context)
-        passive_body_tokens_target = prior_reasoning_tokens_target
-        if args.include_prior_problem_tokens:
-            passive_body_tokens_target += prior_problem_statement_tokens
-        passive_body_tokens_target = max(1, passive_body_tokens_target)
-        passive_body = make_passive_body(
-            passive_source,
-            passive_body_tokens_target,
-            tokenizer,
-            seed=args.seed + i,
-        )
-        actual_passive_tokens = count_tokens(tokenizer, passive_body)
-        user_prompt = build_passive_prompt(target_problem, passive_body)
-
-        if i == 0:
-            print(f"\nSystem Prompt:\n{BASELINE_SYSTEM_PROMPT}")
-            print(f"\nExample User Prompt:\n{user_prompt[:3000]}")
-            print("-" * 30)
-            print(f"Matched prior reasoning tokens: {prior_reasoning_tokens_target}")
-            print(f"Prior problem statement tokens: {prior_problem_statement_tokens}")
-            print(f"Actual passive body tokens: {actual_passive_tokens}")
-
-        messages = [
-            {"role": "system", "content": BASELINE_SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ]
-        if not args.dry:
-            formatted_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
-            )
-        else:
-            formatted_prompt = messages
+        boundary_options = compound_lengths_by_id.get(problem_id, [])
 
         for sample_idx in range(args.n_samples):
+            if boundary_options:
+                boundary = boundary_options[sample_idx % len(boundary_options)]
+            else:
+                boundary = {
+                    "sample_idx": None,
+                    "target_problem_num": args.num_distractors + 1,
+                    "pre_target_tokens": fallback_pre_target_tokens,
+                    "target_solution_start_char": None,
+                }
+
+            desired_context_tokens = int(boundary["pre_target_tokens"])
+            (
+                user_prompt,
+                formatted_prompt_text,
+                passive_body_tokens_target,
+                actual_passive_tokens,
+                actual_context_tokens,
+                passive_prompt_skeleton_tokens,
+            ) = build_context_matched_passive_prompt(
+                target_problem,
+                passive_source,
+                tokenizer,
+                desired_context_tokens,
+                seed=args.seed + (i * max(1, args.n_samples)) + sample_idx,
+            )
+
+            if i == 0 and sample_idx == 0:
+                print(f"\nSystem Prompt:\n{BASELINE_SYSTEM_PROMPT}")
+                print(f"\nExample User Prompt:\n{user_prompt[:3000]}")
+                print("-" * 30)
+                print(f"Matched compound pre-target tokens: {desired_context_tokens}")
+                print(f"Passive prompt skeleton tokens: {passive_prompt_skeleton_tokens}")
+                print(f"Passive body target tokens: {passive_body_tokens_target}")
+                print(f"Actual passive body tokens: {actual_passive_tokens}")
+                print(f"Actual pre-generation context tokens: {actual_context_tokens}")
+
+            if not args.dry:
+                formatted_prompt = formatted_prompt_text
+            else:
+                formatted_prompt = [
+                    {"role": "system", "content": BASELINE_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ]
+
             prompts.append(formatted_prompt)
             prompt_metadata.append(
                 {
@@ -391,16 +513,18 @@ def main():
                     "target_problem": target_problem,
                     "ground_truth": example["answer"],
                     "system_prompt": BASELINE_SYSTEM_PROMPT,
-                    "sampled_distractor_ids_for_length": sampled_distractor_ids,
-                    "prior_reasoning_tokens_by_distractor": prior_reasoning_tokens_by_distractor,
-                    "matched_prior_reasoning_tokens": prior_reasoning_tokens_target,
-                    "matched_prior_problem_statement_tokens": prior_problem_statement_tokens,
+                    "length_match_source": "compound_target_solution_boundary",
+                    "compound_results_file": compound_source_file,
+                    "compound_boundary_sample_idx": boundary["sample_idx"],
+                    "compound_target_problem_num": boundary["target_problem_num"],
+                    "compound_target_solution_start_char": boundary["target_solution_start_char"],
+                    "matched_compound_pre_target_tokens": desired_context_tokens,
+                    "passive_prompt_skeleton_tokens": passive_prompt_skeleton_tokens,
                     "passive_body_tokens_target": passive_body_tokens_target,
                     "actual_passive_body_tokens": actual_passive_tokens,
+                    "actual_pre_generation_context_tokens": actual_context_tokens,
                     "passive_text_file": passive_path,
-                    "prior_reasoning_tokens_file": prior_source_file,
-                    "fallback_prior_reasoning_tokens": fallback_prior_tokens,
-                    "include_prior_problem_tokens": args.include_prior_problem_tokens,
+                    "fallback_pre_target_tokens": fallback_pre_target_tokens,
                 }
             )
 
@@ -413,8 +537,8 @@ def main():
         "total": 0,
         "failures": 0,
         "max_token_cutoffs": 0,
-        "matched_prior_reasoning_tokens": 0,
-        "matched_prior_problem_statement_tokens": 0,
+        "matched_compound_pre_target_tokens": 0,
+        "actual_pre_generation_context_tokens": 0,
         "actual_passive_body_tokens": 0,
     }
 
@@ -437,8 +561,8 @@ def main():
         stats["correct"] += int(is_correct)
         stats["failures"] += int(extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")))
         stats["max_token_cutoffs"] += int(output_tokens >= args.max_tokens * 0.98)
-        stats["matched_prior_reasoning_tokens"] += meta["matched_prior_reasoning_tokens"]
-        stats["matched_prior_problem_statement_tokens"] += meta["matched_prior_problem_statement_tokens"]
+        stats["matched_compound_pre_target_tokens"] += meta["matched_compound_pre_target_tokens"]
+        stats["actual_pre_generation_context_tokens"] += meta["actual_pre_generation_context_tokens"]
         stats["actual_passive_body_tokens"] += meta["actual_passive_body_tokens"]
 
         results.append(
@@ -450,16 +574,18 @@ def main():
                 "unmodified_original": meta["unmodified_original"],
                 "target_problem": meta["target_problem"],
                 "ground_truth": meta["ground_truth"],
-                "sampled_distractor_ids_for_length": meta["sampled_distractor_ids_for_length"],
-                "prior_reasoning_tokens_by_distractor": meta["prior_reasoning_tokens_by_distractor"],
-                "matched_prior_reasoning_tokens": meta["matched_prior_reasoning_tokens"],
-                "matched_prior_problem_statement_tokens": meta["matched_prior_problem_statement_tokens"],
+                "length_match_source": meta["length_match_source"],
+                "compound_results_file": meta["compound_results_file"],
+                "compound_boundary_sample_idx": meta["compound_boundary_sample_idx"],
+                "compound_target_problem_num": meta["compound_target_problem_num"],
+                "compound_target_solution_start_char": meta["compound_target_solution_start_char"],
+                "matched_compound_pre_target_tokens": meta["matched_compound_pre_target_tokens"],
+                "passive_prompt_skeleton_tokens": meta["passive_prompt_skeleton_tokens"],
                 "passive_body_tokens_target": meta["passive_body_tokens_target"],
                 "actual_passive_body_tokens": meta["actual_passive_body_tokens"],
+                "actual_pre_generation_context_tokens": meta["actual_pre_generation_context_tokens"],
                 "passive_text_file": meta["passive_text_file"],
-                "prior_reasoning_tokens_file": meta["prior_reasoning_tokens_file"],
-                "fallback_prior_reasoning_tokens": meta["fallback_prior_reasoning_tokens"],
-                "include_prior_problem_tokens": meta["include_prior_problem_tokens"],
+                "fallback_pre_target_tokens": meta["fallback_pre_target_tokens"],
                 "output": generated_text,
                 "extracted": extracted,
                 "correct": is_correct,
@@ -468,15 +594,15 @@ def main():
         )
 
     acc = stats["correct"] / stats["total"] if stats["total"] else 0.0
-    avg_matched_reasoning = stats["matched_prior_reasoning_tokens"] / stats["total"] if stats["total"] else 0.0
-    avg_matched_problem_statements = stats["matched_prior_problem_statement_tokens"] / stats["total"] if stats["total"] else 0.0
+    avg_matched_pre_target = stats["matched_compound_pre_target_tokens"] / stats["total"] if stats["total"] else 0.0
+    avg_actual_context = stats["actual_pre_generation_context_tokens"] / stats["total"] if stats["total"] else 0.0
     avg_passive = stats["actual_passive_body_tokens"] / stats["total"] if stats["total"] else 0.0
 
     print(f"\nAccuracy: {acc:.2%} ({stats['correct']}/{stats['total']})")
     print(f"Failures: {stats['failures']}")
     print(f"Max Token Cutoffs: {stats['max_token_cutoffs']}")
-    print(f"Avg matched prior reasoning tokens: {avg_matched_reasoning:.1f}")
-    print(f"Avg matched prior problem statement tokens: {avg_matched_problem_statements:.1f}")
+    print(f"Avg matched compound pre-target tokens: {avg_matched_pre_target:.1f}")
+    print(f"Avg actual pre-generation context tokens: {avg_actual_context:.1f}")
     print(f"Avg actual passive body tokens: {avg_passive:.1f}")
 
     results.append(
@@ -494,13 +620,15 @@ def main():
                 "n_samples": args.n_samples,
                 "temperature": args.temperature,
                 "top_p": args.top_p,
-                "avg_matched_prior_reasoning_tokens": avg_matched_reasoning,
-                "avg_matched_prior_problem_statement_tokens": avg_matched_problem_statements,
+                "length_match_source": "compound_target_solution_boundary",
+                "avg_matched_compound_pre_target_tokens": avg_matched_pre_target,
+                "avg_actual_pre_generation_context_tokens": avg_actual_context,
                 "avg_actual_passive_body_tokens": avg_passive,
                 "passive_text_file": passive_path,
-                "prior_reasoning_tokens_file": prior_source_file,
-                "fallback_prior_reasoning_tokens": fallback_prior_tokens,
-                "include_prior_problem_tokens": args.include_prior_problem_tokens,
+                "compound_results_file": compound_source_file,
+                "fallback_pre_target_tokens": fallback_pre_target_tokens,
+                "compound_boundary_skipped": skipped_boundaries,
+                "compound_summary": compound_summary,
                 "task": "equal_length_passive_context",
             }
         }
