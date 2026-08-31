@@ -7,6 +7,7 @@ Sources data from pre-generated summary JSONs in:
 """
 
 import argparse
+import csv
 import json
 import os
 import glob
@@ -1129,6 +1130,163 @@ def plot_attention_effort(dataset_name, outdir, experiments_dir):
 
 # ── Main ─────────────────────────────────────────────────────────────
 
+# ── Rebuttal plots ───────────────────────────────────────────────────
+
+REBUTTAL_STATS_DIR = os.path.join("analysis", "rebuttal_stats")
+
+
+def _read_csv_rows(path):
+    if not os.path.isfile(path):
+        raise RuntimeError(
+            f"{path} not found. Generate it first:\n"
+            f"  python experiments/analysis/decode_recovery_metrics.py\n"
+            f"  bash experiments/analysis/run_rebuttal_statistics.sh"
+        )
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def _as_float(value, default=None):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def plot_decode_recovery(dataset_name, outdir, experiments_dir):
+    """Decode-only recovery quality per transformation, one panel per model.
+
+    Two bars per transformation: the score as the run script recorded it (a strict character
+    error rate gate that also penalizes LaTeX reformatting) and the same gate applied after
+    normalizing away presentation-only differences. The gap is the share of "decode failures"
+    that were actually correct reconstructions rendered differently.
+    """
+    rows = [
+        r for r in _read_csv_rows(os.path.join(experiments_dir, REBUTTAL_STATS_DIR, "decode_recovery_metrics.csv"))
+        if r["dataset"] == dataset_name
+    ]
+    if not rows:
+        print(f"No decode-recovery rows for {dataset_name}")
+        return
+
+    models = sorted({r["model"] for r in rows}, key=lambda m: shorten(m, MODEL_SHORT_NAMES))
+    techniques = [t for t in TECHNIQUE_ORDER if t != "baseline"]
+    by_key = {(r["model"], r["transformation"]): r for r in rows}
+
+    fig, axes = plt.subplots(len(models), 1, figsize=(13, 3.2 * len(models)), squeeze=False)
+    x = np.arange(len(techniques))
+    width = 0.38
+
+    for ax, model in zip(axes.ravel(), models):
+        normalized, as_run = [], []
+        for technique in techniques:
+            row = by_key.get((model, technique))
+            normalized.append(100.0 * _as_float(row["recovered_rate"], 0.0) if row else np.nan)
+            as_run.append(100.0 * _as_float(row["recovered_rate_as_run"], 0.0) if row else np.nan)
+
+        ax.bar(x - width / 2, normalized, width, color=PALETTE[0], label="Recovered (presentation-normalized)")
+        ax.bar(x + width / 2, as_run, width, color=PALETTE[3], alpha=0.75, hatch="//",
+               label="Recovered (as run: strict CER gate)")
+
+        for xi, (n, a) in enumerate(zip(normalized, as_run)):
+            if not np.isnan(n):
+                ax.text(xi - width / 2, n + 1.5, f"{n:.0f}", ha="center", va="bottom", fontsize=6.5)
+            if not np.isnan(a):
+                ax.text(xi + width / 2, a + 1.5, f"{a:.0f}", ha="center", va="bottom", fontsize=6.5)
+
+        ax.set_title(shorten(model, MODEL_SHORT_NAMES), fontsize=11, loc="left")
+        ax.set_ylabel("Recovery (%)")
+        ax.set_ylim(0, 105)
+        ax.set_xticks(x)
+        ax.set_xticklabels([TECHNIQUE_LABELS.get(t, t) for t in techniques], rotation=45, ha="right", fontsize=8)
+        ax.grid(axis="y", alpha=0.3)
+        ax.set_axisbelow(True)
+
+    axes.ravel()[0].legend(fontsize=8, ncol=2, loc="upper right")
+    fig.suptitle(f"Decode-only recovery — {shorten(dataset_name, DATASET_SHORT_NAMES)}", y=0.995)
+    fig.tight_layout()
+
+    os.makedirs(outdir, exist_ok=True)
+    out_path = os.path.join(outdir, f"decode_recovery_{dataset_name}.pdf")
+    fig.savefig(out_path, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {out_path}")
+
+
+PASSIVE_ARMS = [
+    ("baseline:compound", "Baseline (1 problem)", PALETTE[9]),
+    ("compound:d3", "Prior math + own CoT (4 problems)", PALETTE[3]),
+    ("passive_context:unique:d3", "Passive text, non-repeating", PALETTE[0]),
+    ("passive_context:repeat:d3", "Passive text, repeated excerpt", PALETTE[2]),
+]
+
+
+def plot_passive_context(dataset_name, outdir, experiments_dir):
+    """Target accuracy under matched context length, by what fills the context.
+
+    Error bars are the problem-level bootstrap interval from rebuttal_statistics.py: the
+    AIME problem, not the individual trajectory, is the unit of analysis.
+    """
+    rows = [
+        r for r in _read_csv_rows(os.path.join(experiments_dir, REBUTTAL_STATS_DIR, "summary_counts.csv"))
+        if r["dataset"] == dataset_name
+    ]
+    if not rows:
+        print(f"No summary rows for {dataset_name}")
+        return
+
+    by_key = {(r["model"], r["condition"]): r for r in rows}
+    models = sorted(
+        {r["model"] for r in rows if r["condition"].startswith("passive_context")},
+        key=lambda m: shorten(m, MODEL_SHORT_NAMES),
+    )
+    if not models:
+        print(f"No passive-context runs for {dataset_name}")
+        return
+
+    fig, ax = plt.subplots(figsize=(2.4 * len(models) + 2.5, 5.2))
+    x = np.arange(len(models))
+    width = 0.8 / len(PASSIVE_ARMS)
+
+    for arm_idx, (condition, label, color) in enumerate(PASSIVE_ARMS):
+        heights, lows, highs = [], [], []
+        for model in models:
+            row = by_key.get((model, condition))
+            mean_value = 100.0 * _as_float(row["problem_mean"], np.nan) if row else np.nan
+            low = 100.0 * _as_float(row["problem_interval_low"], np.nan) if row else np.nan
+            high = 100.0 * _as_float(row["problem_interval_high"], np.nan) if row else np.nan
+            heights.append(mean_value)
+            lows.append(max(0.0, mean_value - low) if not np.isnan(low) else 0.0)
+            highs.append(max(0.0, high - mean_value) if not np.isnan(high) else 0.0)
+
+        offset = (arm_idx - (len(PASSIVE_ARMS) - 1) / 2) * width
+        bars = ax.bar(x + offset, heights, width, label=label, color=color,
+                      yerr=[lows, highs], capsize=2.5, error_kw={"elinewidth": 0.9})
+        for bar, value, high in zip(bars, heights, highs):
+            if not np.isnan(value):
+                ax.text(bar.get_x() + bar.get_width() / 2, value + high + 1.5, f"{value:.0f}",
+                        ha="center", va="bottom", fontsize=8)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels([shorten(m, MODEL_SHORT_NAMES) for m in models])
+    ax.set_ylabel("Accuracy on target problem (%)")
+    ax.set_ylim(0, 105)
+    ax.grid(axis="y", alpha=0.3)
+    ax.set_axisbelow(True)
+    ax.legend(fontsize=8, ncol=2, loc="lower center", bbox_to_anchor=(0.5, -0.28), frameon=False)
+    ax.set_title(
+        f"Equal-length context control — {shorten(dataset_name, DATASET_SHORT_NAMES)}",
+        loc="left",
+    )
+    fig.tight_layout()
+
+    os.makedirs(outdir, exist_ok=True)
+    out_path = os.path.join(outdir, f"passive_context_{dataset_name}.pdf")
+    fig.savefig(out_path, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {out_path}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Consolidated Optimized Visualization Script")
     parser.add_argument("--experiments_dir", type=str, default=None)
@@ -1136,7 +1294,8 @@ def main():
     parser.add_argument("--outdir", type=str, default=None)
     parser.add_argument("--plot_type", type=str, required=True, 
                     choices=['accuracy', 'average_accuracy_drop', 
-                                 'output_length', 'radar_categories', 'compound', 'attention_effort_ratios'])
+                                 'output_length', 'radar_categories', 'compound', 'attention_effort_ratios',
+                                 'decode_recovery', 'passive_context'])
     parser.add_argument("--exclude_refusals", action="store_true", help="Exclude refusals from sample pool (use accuracy on attempted)")
     args = parser.parse_args()
 
@@ -1152,6 +1311,16 @@ def main():
     if args.plot_type == 'compound':
         print(f"Generating compound plot for {args.dataset}...")
         plot_compound(safe_dataset, outdir, experiments_dir)
+        return
+
+    if args.plot_type == 'decode_recovery':
+        print(f"Generating decode-recovery plot for {args.dataset}...")
+        plot_decode_recovery(safe_dataset, outdir, experiments_dir)
+        return
+
+    if args.plot_type == 'passive_context':
+        print(f"Generating passive-context plot for {args.dataset}...")
+        plot_passive_context(safe_dataset, outdir, experiments_dir)
         return
 
     if args.plot_type == 'attention_effort_ratios':

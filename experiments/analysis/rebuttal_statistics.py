@@ -13,6 +13,7 @@ import json
 import math
 import os
 import random
+import re
 from collections import defaultdict
 
 
@@ -115,16 +116,47 @@ def infer_decode_name(file_name):
     return "unknown"
 
 
-def infer_condition(technique, subcondition, file_name, summary):
+def detect_num_distractors(summary, entries):
+    """Compound runs from the API path do not record num_distractors in their summary."""
+    value = summary.get("num_distractors")
+    if value not in (None, ""):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            pass
+    if entries:
+        found = len(re.findall(r"Problem \d+:", entries[0].get("original", "") or ""))
+        if found:
+            return max(0, found - 1)
+    return None
+
+
+def detect_passive_mode(summary):
+    """Runs predating --passive_mode used the repeated short excerpt."""
+    mode = summary.get("passive_mode")
+    if mode:
+        return mode
+    if "avg_matched_prior_reasoning_tokens" in summary:
+        return "repeat"
+    return "unique"
+
+
+def infer_condition(technique, subcondition, file_name, summary, entries):
     task = summary.get("task", "")
     if technique == "baseline":
         return f"baseline:{subcondition or 'unknown'}"
     if task == "decode_only_recovery" or technique == "decode_recovery":
         return f"decode_recovery:{infer_decode_name(file_name)}"
     if task == "equal_length_passive_context" or technique == "passive_context":
-        num_distractors = summary.get("num_distractors", "")
-        suffix = f":d{num_distractors}" if num_distractors != "" else ""
-        return f"passive_context{suffix}"
+        mode = detect_passive_mode(summary)
+        num_distractors = detect_num_distractors(summary, entries)
+        suffix = f":d{num_distractors}" if num_distractors is not None else ""
+        return f"passive_context:{mode}{suffix}"
+    if technique == "compound":
+        num_distractors = detect_num_distractors(summary, entries)
+        if num_distractors is not None:
+            return f"compound:d{num_distractors}"
+        return "compound"
     return technique
 
 
@@ -177,7 +209,7 @@ def summarize_file(path, experiments_dir, n_draws, seed):
     if not entries:
         return None
 
-    condition = infer_condition(technique, subcondition, file_name, summary)
+    condition = infer_condition(technique, subcondition, file_name, summary, entries)
     score_key = score_key_for(entries, summary, technique)
 
     successes = sum(entry_success(entry, score_key) for entry in entries)
@@ -186,6 +218,14 @@ def summarize_file(path, experiments_dir, n_draws, seed):
     cutoffs = sum(entry_cutoff(entry, summary) for entry in entries)
     if cutoffs == 0 and isinstance(summary.get("max_token_cutoffs"), int):
         cutoffs = summary["max_token_cutoffs"]
+
+    # Reviewers asked whether degradation is just max-token truncation. Recompute accuracy
+    # over the samples that did not hit the cap, so the two can be compared directly.
+    non_cutoff = [entry for entry in entries if not entry_cutoff(entry, summary)]
+    successes_excl = sum(entry_success(entry, score_key) for entry in non_cutoff)
+    rate = successes / total if total else None
+    rate_excl = successes_excl / len(non_cutoff) if non_cutoff else None
+    rate_delta = (rate_excl - rate) if (rate is not None and rate_excl is not None) else None
 
     by_problem = defaultdict(list)
     for entry in entries:
@@ -218,7 +258,10 @@ def summarize_file(path, experiments_dir, n_draws, seed):
         "score_key": score_key,
         "successes": successes,
         "total": total,
-        "rate": successes / total if total else None,
+        "rate": rate,
+        "cutoff_rate": cutoffs / total if total else None,
+        "accuracy_excluding_cutoffs": rate_excl,
+        "accuracy_delta_excluding_cutoffs": rate_delta,
         "sample_interval_low": sample_low,
         "sample_interval_high": sample_high,
         "problem_count": len(problem_scores),
@@ -239,19 +282,26 @@ def summarize_file(path, experiments_dir, n_draws, seed):
         "temperature": summary.get("temperature", ""),
         "top_p": summary.get("top_p", ""),
         "n_samples": summary.get("n_samples", ""),
-        "num_distractors": summary.get("num_distractors", ""),
+        "num_distractors": (
+            detect_num_distractors(summary, entries)
+            if detect_num_distractors(summary, entries) is not None
+            else ""
+        ),
         "summary_task": summary.get("task", ""),
         "mtime": os.path.getmtime(path),
         "problem_scores": problem_scores,
     }
 
 
-def discover_result_files(experiments_dir):
+def discover_result_files(experiments_dir, include_decode_recovery=False):
     pattern = os.path.join(experiments_dir, "*", "results", "**", "*.json")
     files = glob.glob(pattern, recursive=True)
     keep = []
     for path in files:
         name = os.path.basename(path)
+        # Decode-recovery runs are large and are scored by analysis/decode_recovery_metrics.py.
+        if not include_decode_recovery and f"{os.sep}decode_recovery{os.sep}" in path:
+            continue
         if name.endswith("_raw.json"):
             continue
         if name.startswith(("jobs_", "tracking_", "batch_")):
@@ -339,7 +389,7 @@ def build_comparisons(rows, n_draws, seed):
                 comparisons.append(
                     paired_comparison(ref, row, n_draws, seed, "perturbation_vs_baseline")
                 )
-        elif condition == "compound":
+        elif condition.startswith("compound"):
             ref = by_key.get((model, dataset, "baseline:compound"))
             if ref:
                 comparisons.append(
@@ -351,7 +401,10 @@ def build_comparisons(rows, n_draws, seed):
                 comparisons.append(
                     paired_comparison(ref, row, n_draws, seed, "passive_context_vs_baseline")
                 )
-            ref = by_key.get((model, dataset, "compound"))
+            # Compare against the compound level whose context length this run was matched to.
+            distractors = row.get("num_distractors")
+            compound_key = f"compound:d{distractors}" if distractors not in (None, "") else "compound"
+            ref = by_key.get((model, dataset, compound_key))
             if ref:
                 comparisons.append(
                     paired_comparison(ref, row, n_draws, seed, "passive_context_vs_compound")
@@ -368,6 +421,9 @@ SUMMARY_COLUMNS = [
     "successes",
     "total",
     "rate",
+    "cutoff_rate",
+    "accuracy_excluding_cutoffs",
+    "accuracy_delta_excluding_cutoffs",
     "sample_interval_low",
     "sample_interval_high",
     "problem_count",
@@ -491,6 +547,11 @@ def main():
         help="Number of repeated problem-subset calculations for interval estimates.",
     )
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--include_decode_recovery",
+        action="store_true",
+        help="Also summarize decode_recovery runs (scored separately by decode_recovery_metrics.py).",
+    )
     parser.add_argument("--print_limit", type=int, default=40)
     args = parser.parse_args()
 
@@ -498,7 +559,7 @@ def main():
     out_dir = args.out_dir or os.path.join(experiments_dir, "analysis", "rebuttal_stats")
 
     summaries = []
-    for path in discover_result_files(experiments_dir):
+    for path in discover_result_files(experiments_dir, args.include_decode_recovery):
         try:
             row = summarize_file(path, experiments_dir, args.draws, args.seed)
         except Exception as exc:

@@ -19,8 +19,8 @@ RECOVERED_OPEN = "<RECOVERED_PROBLEM>"
 RECOVERED_CLOSE = "</RECOVERED_PROBLEM>"
 
 TRANSFORMATION_NAMES = [
-    # "not_not",
-    # "opposites",
+    "not_not",
+    "opposites",
     "wrappers",
     "interleaved_context_line",
     "interleaved_context_word",
@@ -29,9 +29,9 @@ TRANSFORMATION_NAMES = [
     "word_reversal",
     "split_reversal",
     "rail_fence",
-    # "rectangle_perimeter",
-    # "snake_vertical",
-    # "snake_horizontal",
+    "rectangle_perimeter",
+    "snake_vertical",
+    "snake_horizontal",
 ]
 
 TECHNIQUE_DESCRIPTIONS = {

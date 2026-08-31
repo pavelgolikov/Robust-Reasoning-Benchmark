@@ -156,15 +156,50 @@ def format_chat_text(tokenizer, system_prompt, user_prompt):
     )
 
 
-def make_passive_body(passive_source, target_tokens, tokenizer, seed):
+_SOURCE_TOKEN_CACHE = {}
+
+
+def source_token_ids(passive_source, tokenizer):
+    """Tokenize the passive source once per (tokenizer, source); it is reused for every prompt."""
+    key = (id(tokenizer), len(passive_source))
+    if key not in _SOURCE_TOKEN_CACHE:
+        if tokenizer is None:
+            _SOURCE_TOKEN_CACHE[key] = passive_source.split()
+        else:
+            _SOURCE_TOKEN_CACHE[key] = tokenizer.encode(passive_source, add_special_tokens=False)
+    return _SOURCE_TOKEN_CACHE[key]
+
+
+def make_passive_body(passive_source, target_tokens, tokenizer, seed, mode="unique"):
+    """Return (passive_body, repeat_factor).
+
+    mode="unique": take one contiguous, non-repeating window of the source. Raises if the
+    source is too short, so a corpus that would silently force repetition fails immediately.
+    mode="repeat": rotate the source and repeat it until the target length is reached.
+    """
     if target_tokens <= 0:
-        return ""
+        return "", 0.0
 
     rng = random.Random(seed)
     source = " ".join(passive_source.split())
     words = source.split()
     if not words:
         raise ValueError("Passive source is empty after whitespace normalization.")
+
+    if mode == "unique":
+        token_ids = source_token_ids(source, tokenizer)
+        if len(token_ids) < target_tokens:
+            raise ValueError(
+                f"Passive source has {len(token_ids)} tokens but {target_tokens} are needed for a "
+                f"non-repeating body. Use a longer corpus or --passive_mode repeat."
+            )
+        offset = rng.randrange(len(token_ids) - target_tokens + 1)
+        window = token_ids[offset:offset + target_tokens]
+        body = " ".join(window) if tokenizer is None else decode_tokens(tokenizer, window)
+        return body.strip(), 1.0
+
+    if mode != "repeat":
+        raise ValueError(f"Unknown passive mode: {mode}")
 
     offset = rng.randrange(len(words))
     rotated_words = words[offset:] + words[:offset]
@@ -173,14 +208,17 @@ def make_passive_body(passive_source, target_tokens, tokenizer, seed):
 
     if tokenizer is None:
         repeated_words = repeated.split()
-        return " ".join(repeated_words[:target_tokens])
+        body = " ".join(repeated_words[:target_tokens])
+        factor = target_tokens / max(1, len(words))
+        return body, factor
 
     token_ids = tokenizer.encode(repeated, add_special_tokens=False)
     if len(token_ids) < target_tokens:
         token_ids = (token_ids * ((target_tokens // max(1, len(token_ids))) + 2))[:target_tokens]
     else:
         token_ids = token_ids[:target_tokens]
-    return decode_tokens(tokenizer, token_ids).strip()
+    source_len = len(source_token_ids(source, tokenizer))
+    return decode_tokens(tokenizer, token_ids).strip(), target_tokens / max(1, source_len)
 
 
 def build_passive_prompt(target_problem, passive_body):
@@ -322,6 +360,7 @@ def build_context_matched_passive_prompt(
     tokenizer,
     desired_context_tokens,
     seed,
+    passive_mode="unique",
 ):
     skeleton_prompt = build_passive_prompt(target_problem, "")
     skeleton_text = format_chat_text(tokenizer, BASELINE_SYSTEM_PROMPT, skeleton_prompt)
@@ -330,11 +369,12 @@ def build_context_matched_passive_prompt(
 
     best = None
     for _ in range(4):
-        passive_body = make_passive_body(
+        passive_body, repeat_factor = make_passive_body(
             passive_source,
             passive_body_tokens_target,
             tokenizer,
             seed=seed,
+            mode=passive_mode,
         )
         user_prompt = build_passive_prompt(target_problem, passive_body)
         formatted_prompt = format_chat_text(tokenizer, BASELINE_SYSTEM_PROMPT, user_prompt)
@@ -348,6 +388,7 @@ def build_context_matched_passive_prompt(
             actual_passive_tokens,
             actual_context_tokens,
             skeleton_tokens,
+            repeat_factor,
         )
         if abs(diff) <= 2:
             break
@@ -378,6 +419,14 @@ def main():
         help="Use this many pre-target context tokens if a target problem is missing from the compound boundary file.",
     )
     parser.add_argument("--passive_text_file", type=str, default=None)
+    parser.add_argument(
+        "--passive_mode",
+        type=str,
+        default="unique",
+        choices=["unique", "repeat"],
+        help="unique: one contiguous non-repeating window of the corpus (default). "
+             "repeat: rotate and repeat a short excerpt, as in the original runs.",
+    )
     parser.add_argument("--dry", action="store_true")
     parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--max_model_length", type=int, default=131072)
@@ -391,10 +440,15 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     safe_model_name = args.model.replace("/", "_").replace(" ", "_")
     safe_dataset_name = args.dataset.replace("/", "_")
+    default_passive_file = (
+        "gibbon_decline_and_fall_long.txt"
+        if args.passive_mode == "unique"
+        else "gibbon_decline_and_fall_excerpt.txt"
+    )
     passive_path = args.passive_text_file or os.path.join(
         base_dir,
         "passive_context",
-        "gibbon_decline_and_fall_excerpt.txt",
+        default_passive_file,
     )
     passive_source = load_passive_source(passive_path)
 
@@ -477,12 +531,14 @@ def main():
                 actual_passive_tokens,
                 actual_context_tokens,
                 passive_prompt_skeleton_tokens,
+                passive_repeat_factor,
             ) = build_context_matched_passive_prompt(
                 target_problem,
                 passive_source,
                 tokenizer,
                 desired_context_tokens,
                 seed=args.seed + (i * max(1, args.n_samples)) + sample_idx,
+                passive_mode=args.passive_mode,
             )
 
             if i == 0 and sample_idx == 0:
@@ -494,6 +550,9 @@ def main():
                 print(f"Passive body target tokens: {passive_body_tokens_target}")
                 print(f"Actual passive body tokens: {actual_passive_tokens}")
                 print(f"Actual pre-generation context tokens: {actual_context_tokens}")
+                print(f"Passive mode: {args.passive_mode}")
+                print(f"Passive repeat factor: {passive_repeat_factor:.2f}")
+                print(f"Passive source tokens available: {len(source_token_ids(' '.join(passive_source.split()), tokenizer))}")
 
             if not args.dry:
                 formatted_prompt = formatted_prompt_text
@@ -524,6 +583,8 @@ def main():
                     "actual_passive_body_tokens": actual_passive_tokens,
                     "actual_pre_generation_context_tokens": actual_context_tokens,
                     "passive_text_file": passive_path,
+                    "passive_mode": args.passive_mode,
+                    "passive_repeat_factor": passive_repeat_factor,
                     "fallback_pre_target_tokens": fallback_pre_target_tokens,
                 }
             )
@@ -585,6 +646,8 @@ def main():
                 "actual_passive_body_tokens": meta["actual_passive_body_tokens"],
                 "actual_pre_generation_context_tokens": meta["actual_pre_generation_context_tokens"],
                 "passive_text_file": meta["passive_text_file"],
+                "passive_mode": meta["passive_mode"],
+                "passive_repeat_factor": meta["passive_repeat_factor"],
                 "fallback_pre_target_tokens": meta["fallback_pre_target_tokens"],
                 "output": generated_text,
                 "extracted": extracted,
@@ -625,6 +688,15 @@ def main():
                 "avg_actual_pre_generation_context_tokens": avg_actual_context,
                 "avg_actual_passive_body_tokens": avg_passive,
                 "passive_text_file": passive_path,
+                "passive_mode": args.passive_mode,
+                "avg_passive_repeat_factor": (
+                    sum(m["passive_repeat_factor"] for m in prompt_metadata) / len(prompt_metadata)
+                    if prompt_metadata
+                    else 0.0
+                ),
+                "passive_source_tokens": len(
+                    source_token_ids(" ".join(passive_source.split()), tokenizer)
+                ),
                 "compound_results_file": compound_source_file,
                 "fallback_pre_target_tokens": fallback_pre_target_tokens,
                 "compound_boundary_skipped": skipped_boundaries,
@@ -637,7 +709,10 @@ def main():
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     output_dir = os.path.join(base_dir, "passive_context", "results", safe_model_name, safe_dataset_name)
     os.makedirs(output_dir, exist_ok=True)
-    run_id = f"{safe_model_name}_{safe_dataset_name}_passive_context_d{args.num_distractors}_s{args.seed}_{timestamp}"
+    run_id = (
+        f"{safe_model_name}_{safe_dataset_name}_passive_context_{args.passive_mode}"
+        f"_d{args.num_distractors}_s{args.seed}_{timestamp}"
+    )
     json_file = os.path.join(output_dir, f"{run_id}.json")
     with open(json_file, "w") as f:
         json.dump(results, f, indent=2)
