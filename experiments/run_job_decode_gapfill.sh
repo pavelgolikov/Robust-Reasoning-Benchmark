@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:h100:4
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
-#SBATCH --time=23:00:00
+#SBATCH --time=7:00:00
 #SBATCH --output=decode_gapfill_out.out
 #SBATCH --error=decode_gapfill_out.out
 #SBATCH --account=aip-gpekhime
