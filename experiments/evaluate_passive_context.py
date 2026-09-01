@@ -6,9 +6,8 @@ import random
 import re
 import time
 from collections import defaultdict
-
 from datasets import load_dataset
-from math_verify import parse, verify
+from util import extract_and_grade
 
 
 BASELINE_SYSTEM_PROMPT = "You are a helpful math assistant. Please reason step by step, and put your final answer within \\boxed{}.\n"
@@ -40,63 +39,6 @@ def flatten_text(text):
 
 def sanitize_problem(text):
     return flatten_text(sanitize_inverted_escapes(remove_latex_comments(text)))
-
-
-def last_boxed_only_string(string):
-    idx = string.rfind("\\boxed")
-    if idx < 0:
-        idx = string.rfind("\\fbox")
-        if idx < 0:
-            return None
-
-    i = string.find("{", idx)
-    if i < 0:
-        return None
-
-    num_left_braces_open = 1
-    right_brace_idx = None
-    i += 1
-    while i < len(string):
-        if string[i] == "{":
-            num_left_braces_open += 1
-        elif string[i] == "}":
-            num_left_braces_open -= 1
-            if num_left_braces_open == 0:
-                right_brace_idx = i
-                break
-        i += 1
-
-    if right_brace_idx is None:
-        return None
-    return string[idx:right_brace_idx + 1]
-
-
-def remove_boxed(s):
-    match = re.match(r"\\(?:boxed|fbox)\s*\{(.*)\}$", s, re.DOTALL)
-    if match:
-        return match.group(1)
-    return None
-
-
-def extract_and_grade(model_output, ground_truth):
-    try:
-        gold = parse(str(ground_truth))
-    except Exception:
-        return None, False
-
-    boxed_str = last_boxed_only_string(model_output)
-    boxed_val = remove_boxed(boxed_str) if boxed_str else None
-    if boxed_val is not None and boxed_val.strip():
-        try:
-            return boxed_val, verify(gold, parse(boxed_val))
-        except Exception:
-            return boxed_val, False
-
-    try:
-        answer = parse(model_output)
-        return str(answer) if answer else None, verify(gold, answer)
-    except Exception:
-        return None, False
 
 
 def load_passive_source(path):
@@ -222,12 +164,18 @@ def make_passive_body(passive_source, target_tokens, tokenizer, seed, mode="uniq
 
 
 def build_passive_prompt(target_problem, passive_body):
-    return f"""Take a look at this historical passage:
+    """Mirror the compound prompt's shape: one instruction naming the whole task and the
+    answer format, then labelled blocks. Compound opens with "Solve these completely
+    unrelated math problems. For each problem put your final answer within \\boxed{}."
+    and labels each block "Problem N:".
+    """
+    return f"""Read the historical passage below, then solve the math problem that follows it.
+Put your final answer within \\boxed{{}}.
 
+Historical passage:
 {passive_body}
 
-Solve the following problem:
-
+Problem:
 {target_problem}
 """.strip()
 
@@ -608,7 +556,7 @@ def main():
         meta = prompt_metadata[i]
 
         try:
-            extracted, is_correct = extract_and_grade(generated_text, meta["ground_truth"])
+            extracted, is_correct = extract_and_grade(generated_text, meta["ground_truth"], exp_name="compound")
         except Exception as exc:
             print(f"Error grading sample {meta['id']}: {exc}")
             extracted, is_correct = f"ERROR: {exc}", False
