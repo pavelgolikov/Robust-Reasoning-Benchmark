@@ -1153,64 +1153,92 @@ def _as_float(value, default=None):
         return default
 
 
-def plot_decode_recovery(dataset_name, outdir, experiments_dir):
-    """Decode-only recovery quality per transformation, one panel per model.
+def plot_decode_recovery(outdir, experiments_dir):
+    """Solve accuracy against decode-only recovery, one panel per model.
 
-    Two bars per transformation: the score as the run script recorded it (a strict character
-    error rate gate that also penalizes LaTeX reformatting) and the same gate applied after
-    normalizing away presentation-only differences. The gap is the share of "decode failures"
-    that were actually correct reconstructions rendered differently.
+    Each transformation gets two adjacent bars, one per dataset. The opaque bar is solve
+    accuracy on the perturbed problem; the translucent bar drawn over it is decode-only
+    recovery. The exposed part of the opaque bar is the gap between being able to answer the
+    perturbed problem and being able to reconstruct it.
     """
-    rows = [
-        r for r in _read_csv_rows(os.path.join(experiments_dir, REBUTTAL_STATS_DIR, "decode_recovery_metrics.csv"))
-        if r["dataset"] == dataset_name
-    ]
-    if not rows:
-        print(f"No decode-recovery rows for {dataset_name}")
+    decode_rows = _read_csv_rows(os.path.join(experiments_dir, REBUTTAL_STATS_DIR, "decode_recovery_metrics.csv"))
+    if not decode_rows:
+        print("No decode-recovery rows found")
         return
+    summary_rows = _read_csv_rows(os.path.join(experiments_dir, REBUTTAL_STATS_DIR, "summary_counts.csv"))
 
-    models = sorted({r["model"] for r in rows}, key=lambda m: shorten(m, MODEL_SHORT_NAMES))
-    techniques = [t for t in TECHNIQUE_ORDER if t != "baseline"]
-    by_key = {(r["model"], r["transformation"]): r for r in rows}
+    recovery = {
+        (r["model"], r["dataset"], r["transformation"]): 100.0 * _as_float(r["recovered_rate"], 0.0)
+        for r in decode_rows
+    }
+    accuracy = {
+        (r["model"], r["dataset"], r["condition"]): 100.0 * _as_float(r["rate"], 0.0)
+        for r in summary_rows
+    }
 
-    fig, axes = plt.subplots(len(models), 1, figsize=(13, 3.2 * len(models)), squeeze=False)
+    datasets = [d for d in ("HuggingFaceH4_aime_2024", "MathArena_aime_2025")
+                if any(k[1] == d for k in recovery)]
+    techniques = [t for t in TECHNIQUE_ORDER if t != "baseline" and any(k[2] == t for k in recovery)]
+    models = sorted({k[0] for k in recovery},
+                    key=lambda m: -sum(accuracy.get((m, d, t), 0.0) for d in datasets for t in techniques))
+
     x = np.arange(len(techniques))
-    width = 0.38
+    width = 0.8 / max(1, len(datasets))
 
-    for ax, model in zip(axes.ravel(), models):
-        normalized, as_run = [], []
-        for technique in techniques:
-            row = by_key.get((model, technique))
-            normalized.append(100.0 * _as_float(row["recovered_rate"], 0.0) if row else np.nan)
-            as_run.append(100.0 * _as_float(row["recovered_rate_as_run"], 0.0) if row else np.nan)
+    def _plot_model_on_ax(ax, model_name):
+        for di, dataset in enumerate(datasets):
+            offset = (di - (len(datasets) - 1) / 2) * width
+            color = PALETTE[di]
+            acc = [accuracy.get((model_name, dataset, t), np.nan) for t in techniques]
+            rec = [recovery.get((model_name, dataset, t), np.nan) for t in techniques]
 
-        ax.bar(x - width / 2, normalized, width, color=PALETTE[0], label="Recovered (presentation-normalized)")
-        ax.bar(x + width / 2, as_run, width, color=PALETTE[3], alpha=0.75, hatch="//",
-               label="Recovered (as run: strict CER gate)")
+            ax.bar(x + offset, acc, width * 0.92, color=color, edgecolor="black", linewidth=0.5,
+                   label=f"{shorten(dataset, DATASET_SHORT_NAMES)} accuracy" if True else None, zorder=2)
+            ax.bar(x + offset, rec, width * 0.92, color=color, edgecolor="black", linewidth=0.9,
+                   alpha=0.35, hatch="///",
+                   label=f"{shorten(dataset, DATASET_SHORT_NAMES)} decode recovery", zorder=3)
 
-        for xi, (n, a) in enumerate(zip(normalized, as_run)):
-            if not np.isnan(n):
-                ax.text(xi - width / 2, n + 1.5, f"{n:.0f}", ha="center", va="bottom", fontsize=6.5)
-            if not np.isnan(a):
-                ax.text(xi + width / 2, a + 1.5, f"{a:.0f}", ha="center", va="bottom", fontsize=6.5)
+            for xi, (a, r) in enumerate(zip(acc, rec)):
+                top = np.nanmax([a if not np.isnan(a) else 0.0, r if not np.isnan(r) else 0.0])
+                if np.isnan(a) and np.isnan(r):
+                    continue
+                label = f"{0 if np.isnan(a) else a:.0f}/{0 if np.isnan(r) else r:.0f}"
+                ax.text(xi + offset, top + 2.0, label, ha="center", va="bottom",
+                        fontsize=6.5, rotation=90, color=color, fontweight="bold")
 
-        ax.set_title(shorten(model, MODEL_SHORT_NAMES), fontsize=11, loc="left")
-        ax.set_ylabel("Recovery (%)")
-        ax.set_ylim(0, 105)
+        ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace("\n", " "),
+                     fontsize=15, fontweight="bold", pad=10)
         ax.set_xticks(x)
-        ax.set_xticklabels([TECHNIQUE_LABELS.get(t, t) for t in techniques], rotation=45, ha="right", fontsize=8)
-        ax.grid(axis="y", alpha=0.3)
-        ax.set_axisbelow(True)
+        ax.set_xticklabels([TECHNIQUE_LABELS.get(t, t) for t in techniques],
+                           fontsize=12, rotation=45, ha="right")
+        ax.set_ylabel("Percent", fontsize=12)
+        ax.set_ylim(0, 125)
+        ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
+        ax.grid(axis="y", alpha=0.3, linestyle="--")
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
 
-    axes.ravel()[0].legend(fontsize=8, ncol=2, loc="upper right")
-    fig.suptitle(f"Decode-only recovery — {shorten(dataset_name, DATASET_SHORT_NAMES)}", y=0.995)
-    fig.tight_layout()
+    ncols = 2
+    nrows = (len(models) + ncols - 1) // ncols
+    fig, axes = plt.subplots(nrows, ncols, figsize=(7.5 * ncols, 4.6 * nrows))
+    axes = np.atleast_2d(axes)
+    for idx, model_name in enumerate(models):
+        row, col = divmod(idx, ncols)
+        _plot_model_on_ax(axes[row, col], model_name)
+    for idx in range(len(models), nrows * ncols):
+        row, col = divmod(idx, ncols)
+        axes[row, col].set_visible(False)
 
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower right", bbox_to_anchor=(0.98, 0.06),
+               fontsize=12, frameon=True, ncol=1)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96], h_pad=3.0, w_pad=2.0)
     os.makedirs(outdir, exist_ok=True)
-    out_path = os.path.join(outdir, f"decode_recovery_{dataset_name}.pdf")
-    fig.savefig(out_path, bbox_inches="tight")
+    out_path = os.path.join(outdir, "decode_recovery_vs_accuracy.pdf")
+    fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor="white")
     plt.close(fig)
-    print(f"Saved {out_path}")
+    print(f"Saved: {out_path}")
 
 
 PASSIVE_ARMS = [
@@ -1314,8 +1342,8 @@ def main():
         return
 
     if args.plot_type == 'decode_recovery':
-        print(f"Generating decode-recovery plot for {args.dataset}...")
-        plot_decode_recovery(safe_dataset, outdir, experiments_dir)
+        print("Generating decode-recovery vs accuracy plot (both datasets)...")
+        plot_decode_recovery(outdir, experiments_dir)
         return
 
     if args.plot_type == 'passive_context':

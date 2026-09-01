@@ -24,14 +24,14 @@ module load gcc opencv/4.13.0
 module load arrow/25.0.0
 
 # decode recovery eval on AIME 2024
-# python evaluate_decode_recovery.py --dataset HuggingFaceH4/aime_2024 --names all --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_qwen_aime2024.out
-# python evaluate_decode_recovery.py --dataset HuggingFaceH4/aime_2024 --names all --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron32_aime2024.out
-# python evaluate_decode_recovery.py --dataset HuggingFaceH4/aime_2024 --names all --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron7_aime2024.out
+python evaluate_decode_recovery.py --dataset HuggingFaceH4/aime_2024 --names all --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_qwen_aime2024.out
+python evaluate_decode_recovery.py --dataset HuggingFaceH4/aime_2024 --names all --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron32_aime2024.out
+python evaluate_decode_recovery.py --dataset HuggingFaceH4/aime_2024 --names all --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron7_aime2024.out
 
 # decode recovery eval on AIME 2025
-# python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --model Qwen/Qwen3-30B-A3B-Thinking-2507              --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_qwen_aime2025.out
-# python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --model nvidia/OpenReasoning-Nemotron-32B             --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron32_aime2025.out
-# python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --model nvidia/OpenReasoning-Nemotron-7B              --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron7_aime2025.out
+python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --model Qwen/Qwen3-30B-A3B-Thinking-2507              --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_qwen_aime2025.out
+python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --model nvidia/OpenReasoning-Nemotron-32B             --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron32_aime2025.out
+python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --model nvidia/OpenReasoning-Nemotron-7B              --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron7_aime2025.out
 
 # NOTE: the passive-context commands below produced the REPEATED-excerpt arm
 # (passive_context/results/*_passive_context_d3_*.json). evaluate_passive_context.py now

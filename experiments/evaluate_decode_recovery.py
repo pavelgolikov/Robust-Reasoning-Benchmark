@@ -9,6 +9,23 @@ import time
 
 from datasets import load_dataset
 
+TECHNIQUE_DESCRIPTIONS = {
+    'baseline': "No transformation applied. Recover the problem as it is presented in TRANSFORMED INPUT.",
+    'word_reversal': "The order of words (words are defined as sequences of symbols separated by spaces) in the user query has been reversed.",
+    'sentence_reversal': "The order of sentences in the user query has been reversed. Sentences are defined as sequences of symbols separated by periods.",
+    'interleaved_context_word': "User query will consist of two problems - A and B, whose statements are interleaved word by word. First word belongs to problem A, second word belongs to problem B, third word belongs to problem A, and so on. You need to recover only problem A. Words are defined as sequences of symbols separated by spaces. If one problem statement is shorter than the other, the shorter problem statement will be repeated from the beginning to fill the remaining space.",
+    'interleaved_context_symbol': "User query will consist of two problems - A and B, whose statements are interleaved symbol by symbol (including punctuation and spaces). First symbol belongs to problem A, second symbol belongs to problem B, third symbol belongs to problem A, and so on. You need to recover only problem A. If one problem statement is shorter than the other, the shorter problem statement will be repeated from the beginning to fill the remaining space.",
+    'interleaved_context_line': "User query will consist of two problems - A and B, whose statements are split into line segments at most 60 symbols long. Each segment is placed on a separate line and is prefixed by a problem tag (e.g. problem A or B) and a space. The segments for different problems are interleaved. You need to recover only problem A. If one problem statement is shorter than the other, the shorter problem statement will be repeated from the beginning to fill the remaining space.",
+    'split_reversal':  "Every word (words are defined as sequences of symbols separated by spaces) in user query has its symbols in reverse order.",
+    'opposites': "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
+    'wrappers':  "There will be terms remapped in the user query. The remappings are defined inside 'defyn{}' block in the middle of user query.",
+    'rail_fence': "The user query is encoded using the Rail Fence Cipher. The input is provided as a visual grid where the symbols (including spaces) of the encoded message string (message string does NOT contain any newline characters) are placed in a zigzag pattern across multiple rails (rows), and empty spaces are filled with dots (.). To decode, read the characters in zigzag order: Down-and-Right diagonally until you hit bottom rail, then Up-and-Right diagonally until you hit top rail, then Down-and-Right again etc... Rows are given on separate lines and all have equal lengths.",
+    'rectangle_perimeter': "The user query is mapped onto the perimeter of a rectangle. The message is written as a single continuous string following the edges of the shape in a clockwise manner, beginning at the top-left. The TRANSFORMED INPUT is provided as a visual text block representing this rectangle with GRID START and GRID END markers. The center of the shape is filled with dots.",
+    'snake_vertical': "The user query is written into a grid using a vertical 'snake' (zigzag) pattern. Starting from the top-left, the text is written down the first column, then up the second column, then down the third, and so on. The TRANSFORMED INPUT is provided as a visual grid with GRID START and GRID END markers.",
+    'snake_horizontal': "The user query is written into a grid using a horizontal 'snake' (zigzag) pattern. Starting from the top-left, the text is written across the first row, then left across the second row, then right across the third, and so on. The TRANSFORMED INPUT is provided as a visual grid with GRID START and GRID END markers.",
+    'compound': "The user query contains multiple unrelated math problems.",
+}
+
 
 BASELINE_SYSTEM_PROMPT = (
     "You are a precise text reconstruction assistant. "
@@ -19,7 +36,6 @@ RECOVERED_OPEN = "<RECOVERED_PROBLEM>"
 RECOVERED_CLOSE = "</RECOVERED_PROBLEM>"
 
 TRANSFORMATION_NAMES = [
-    "not_not",
     "opposites",
     "wrappers",
     "interleaved_context_line",
@@ -33,24 +49,6 @@ TRANSFORMATION_NAMES = [
     "snake_vertical",
     "snake_horizontal",
 ]
-
-TECHNIQUE_DESCRIPTIONS = {
-    "baseline": "No transformation applied. Recover the problem as it is presented in TRANSFORMED INPUT.",
-    "not_not": "The input contains inserted double negations ('not not') before some numerical values or adjectives. Remove the redundant double negations to recover the original problem.",
-    "opposites": "There are remapped terms in the input. The remappings are defined inside a defyn{} block. Apply the definitions to recover the original terms, and remove the defyn{} block.",
-    "wrappers": "There are remapped wrapper expressions in the input. The remappings are defined inside a defyn{} block. Apply the definitions to unwrap the original terms, and remove the defyn{} block.",
-    "interleaved_context_line": "The input consists of two problems, A and B, split into line segments of at most 60 symbols. Each segment is prefixed by a problem tag. Recover only the original statement of Problem A.",
-    "interleaved_context_word": "The input consists of two problems, A and B, interleaved word by word. The first word belongs to Problem A, the second to Problem B, and so on. Recover only the original statement of Problem A.",
-    "interleaved_context_symbol": "The input consists of two problems, A and B, interleaved symbol by symbol, including spaces and punctuation. The first symbol belongs to Problem A, the second to Problem B, and so on. Recover only the original statement of Problem A.",
-    "sentence_reversal": "The order of sentences in the input has been reversed. Sentences are defined as sequences of symbols separated by periods. Reverse the sentence order to recover the original problem.",
-    "word_reversal": "The order of words in the input has been reversed. Words are defined as sequences of symbols separated by spaces. Reverse the word order to recover the original problem.",
-    "split_reversal": "Every word in the input has its symbols reversed. Words are defined as sequences of symbols separated by spaces. Reverse the symbols within each word to recover the original problem.",
-    "rail_fence": "The input is encoded using the Rail Fence Cipher as a visual grid. Empty spaces are filled with dots. Read the characters in the zigzag rail-fence order to recover the original problem.",
-    "rectangle_perimeter": "The input is mapped onto the perimeter of a rectangle. The message follows the perimeter clockwise beginning at the top-left. Recover the original problem from the grid.",
-    "snake_vertical": "The input is written into a grid using a vertical snake pattern: down the first column, up the second column, and so on. Recover the original problem from the grid.",
-    "snake_horizontal": "The input is written into a grid using a horizontal snake pattern: right across the first row, left across the second row, and so on. Recover the original problem from the grid.",
-}
-
 
 def remove_latex_comments(text):
     lines = text.split("\n")
