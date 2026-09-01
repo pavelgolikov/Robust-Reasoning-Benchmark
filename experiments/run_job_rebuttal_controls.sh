@@ -33,18 +33,12 @@ python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --m
 python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --model nvidia/OpenReasoning-Nemotron-32B             --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron32_aime2025.out
 python evaluate_decode_recovery.py --dataset MathArena/aime_2025 --names all --model nvidia/OpenReasoning-Nemotron-7B              --max_model_length 32000  --max_tokens 32000 --n_samples 16 --num_gpus 4 --temperature 0.7 --top_p 1.0 &> decode_recovery_nemotron7_aime2025.out
 
-# NOTE: the passive-context commands below produced the REPEATED-excerpt arm
-# (passive_context/results/*_passive_context_d3_*.json). evaluate_passive_context.py now
-# defaults to --passive_mode unique, so re-running them as written would produce a
-# different condition under the old file names. Use run_job_passive_unique.sh for the
-# non-repeating arm, or add --passive_mode repeat here to reproduce these runs.
-
 # passive context eval on AIME 2024
-python evaluate_passive_context.py --dataset HuggingFaceH4/aime_2024 --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_qwen_aime2024.out
-python evaluate_passive_context.py --dataset HuggingFaceH4/aime_2024 --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_nemotron32_aime2024.out
-python evaluate_passive_context.py --dataset HuggingFaceH4/aime_2024 --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_nemotron7_aime2024.out
+python evaluate_passive_context.py --dataset HuggingFaceH4/aime_2024 --model Qwen/Qwen3-30B-A3B-Thinking-2507          --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --passive_mode unique --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_unique_qwen_aime2024.out
+python evaluate_passive_context.py --dataset HuggingFaceH4/aime_2024 --model nvidia/OpenReasoning-Nemotron-32B         --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --passive_mode unique --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_unique_nemotron32_aime2024.out
+python evaluate_passive_context.py --dataset HuggingFaceH4/aime_2024 --model nvidia/OpenReasoning-Nemotron-7B          --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --passive_mode unique --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_unique_nemotron7_aime2024.out
 
 # passive context eval on AIME 2025
-python evaluate_passive_context.py --dataset MathArena/aime_2025 --model Qwen/Qwen3-30B-A3B-Thinking-2507              --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_qwen_aime2025.out
-python evaluate_passive_context.py --dataset MathArena/aime_2025 --model nvidia/OpenReasoning-Nemotron-32B             --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_nemotron32_aime2025.out
-python evaluate_passive_context.py --dataset MathArena/aime_2025 --model nvidia/OpenReasoning-Nemotron-7B              --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_nemotron7_aime2025.out
+python evaluate_passive_context.py --dataset MathArena/aime_2025 --model Qwen/Qwen3-30B-A3B-Thinking-2507              --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --passive_mode unique --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_unique_qwen_aime2025.out
+python evaluate_passive_context.py --dataset MathArena/aime_2025 --model nvidia/OpenReasoning-Nemotron-32B             --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --passive_mode unique --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_unique_nemotron32_aime2025.out
+python evaluate_passive_context.py --dataset MathArena/aime_2025 --model nvidia/OpenReasoning-Nemotron-7B              --max_model_length 131072  --max_tokens 131072 --n_samples 16 --num_distractors 3 --passive_mode unique --num_gpus 4 --temperature 0.6 --top_p 0.95 &> passive_context_unique_nemotron7_aime2025.out
