@@ -36,8 +36,8 @@ RECOVERED_OPEN = "<RECOVERED_PROBLEM>"
 RECOVERED_CLOSE = "</RECOVERED_PROBLEM>"
 
 TRANSFORMATION_NAMES = [
-    "opposites",
-    "wrappers",
+    # "opposites",
+    # "wrappers",
     "interleaved_context_line",
     "interleaved_context_word",
     "interleaved_context_symbol",
