@@ -7,7 +7,6 @@ from interleaved_context_line.transformation import apply_interleaved_context_li
 from interleaved_context_word.transformation import apply_interleaved_context_word
 from interleaved_context_symbol.transformation import apply_interleaved_context_symbol
 from wrappers.transformation import apply_wrappers
-from context_saturation.transformation import apply_context_saturation
 from not_not.transformation import apply_not_not
 from word_reversal.transformation import apply_word_reversal
 from sentence_reversal.transformation import apply_sentence_reversal
@@ -183,8 +182,6 @@ def get_prompts(problem, name, extra_context=None, variables=None, seed=None, nu
             user_prompt_content = apply_interleaved_context_line(problem, extra_context)
     elif name == 'wrappers':
         user_prompt_content = apply_wrappers(problem, k=1)
-    elif name == 'context_saturation':
-        user_prompt_content = apply_context_saturation(problem, num_distractors, seed=seed, problem_variables=variables)
     elif name == 'split_reversal':
         user_prompt_content = apply_split_reversal(problem, separator=" ", func_name="reverse_string", seed=seed)
     elif name == 'rail_fence':
