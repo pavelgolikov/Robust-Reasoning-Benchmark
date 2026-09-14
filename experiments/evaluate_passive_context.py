@@ -163,6 +163,32 @@ def make_passive_body(passive_source, target_tokens, tokenizer, seed, mode="uniq
     return decode_tokens(tokenizer, token_ids).strip(), target_tokens / max(1, source_len)
 
 
+def result_key(record):
+    return (record["id"], record["sample_idx"])
+
+
+def load_checkpoint(path):
+    """Return (records, done_keys, run_meta) from a partial run, or empty state."""
+    if not os.path.exists(path):
+        return [], set(), {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"Ignoring unreadable checkpoint {path}: {exc}")
+        return [], set(), {}
+    records = payload.get("results", [])
+    return records, {result_key(r) for r in records}, payload.get("run_meta", {})
+
+
+def save_checkpoint(path, records, run_meta):
+    """Write via a temp file and rename, so a kill mid-write cannot corrupt the checkpoint."""
+    tmp = f"{path}.tmp"
+    with open(tmp, "w") as f:
+        json.dump({"run_meta": run_meta, "results": records}, f)
+    os.replace(tmp, path)
+
+
 def build_passive_prompt(target_problem, passive_body):
     """Mirror the compound prompt's shape: one instruction naming the whole task and the
     answer format, then labelled blocks. Compound opens with "Solve these completely
@@ -368,6 +394,17 @@ def main():
     )
     parser.add_argument("--passive_text_file", type=str, default=None)
     parser.add_argument(
+        "--chunk_size",
+        type=int,
+        default=96,
+        help="Generate in chunks of this many prompts, checkpointing after each. 0 = one batch (no checkpointing).",
+    )
+    parser.add_argument(
+        "--no_resume",
+        action="store_true",
+        help="Ignore any existing checkpoint and regenerate every sample.",
+    )
+    parser.add_argument(
         "--passive_mode",
         type=str,
         default="unique",
@@ -537,72 +574,124 @@ def main():
                 }
             )
 
-    print(f"Generating responses for {len(prompts)} passive-context prompts...")
-    outputs = llm.generate(prompts, sampling_params) if not args.dry else [""] * len(prompts)
-
-    results = []
-    stats = {
-        "correct": 0,
-        "total": 0,
-        "failures": 0,
-        "max_token_cutoffs": 0,
-        "matched_compound_pre_target_tokens": 0,
-        "actual_pre_generation_context_tokens": 0,
-        "actual_passive_body_tokens": 0,
+    output_dir = os.path.join(base_dir, "passive_context", "results", safe_model_name, safe_dataset_name)
+    os.makedirs(output_dir, exist_ok=True)
+    run_key = (
+        f"{safe_model_name}_{safe_dataset_name}_passive_context_{args.passive_mode}"
+        f"_d{args.num_distractors}_s{args.seed}"
+    )
+    checkpoint_path = os.path.join(output_dir, f"{run_key}_partial.json")
+    run_meta = {
+        "run_key": run_key,
+        "compound_results_file": compound_source_file,
+        "passive_text_file": passive_path,
+        "n_samples": args.n_samples,
     }
 
-    for i, output in enumerate(outputs):
-        generated_text = output.outputs[0].text if not args.dry else "placeholder output from dry run"
-        meta = prompt_metadata[i]
+    results = []
+    done_keys = set()
+    if not args.no_resume:
+        results, done_keys, prior_meta = load_checkpoint(checkpoint_path)
+        if results:
+            stale = [
+                k for k, v in run_meta.items()
+                if k in prior_meta and prior_meta[k] != v
+            ]
+            if stale:
+                print(
+                    f"Checkpoint {checkpoint_path} was written under different settings "
+                    f"({', '.join(stale)}); ignoring it and regenerating from scratch."
+                )
+                results, done_keys = [], set()
+            else:
+                print(f"Resuming from {checkpoint_path}: {len(results)} samples already generated.")
 
-        try:
-            extracted, is_correct = extract_and_grade(generated_text, meta["ground_truth"], exp_name="compound")
-        except Exception as exc:
-            print(f"Error grading sample {meta['id']}: {exc}")
-            extracted, is_correct = f"ERROR: {exc}", False
+    pending = [
+        (prompt, meta)
+        for prompt, meta in zip(prompts, prompt_metadata)
+        if (meta["id"], meta["sample_idx"]) not in done_keys
+    ]
+    if done_keys and not pending:
+        print("Checkpoint already covers every prompt; skipping generation.")
 
-        try:
-            output_tokens = count_tokens(tokenizer, generated_text)
-        except Exception as exc:
-            raise RuntimeError(f"Failed to count output tokens: {exc}") from exc
+    chunk_size = args.chunk_size if args.chunk_size > 0 else len(pending)
+    total_chunks = (len(pending) + chunk_size - 1) // max(1, chunk_size)
+    print(
+        f"Generating responses for {len(pending)} passive-context prompts "
+        f"({len(done_keys)} already done) in {total_chunks} chunk(s) of up to {chunk_size}..."
+    )
 
-        stats["total"] += 1
-        stats["correct"] += int(is_correct)
-        stats["failures"] += int(extracted is None or (isinstance(extracted, str) and extracted.startswith("ERROR")))
-        stats["max_token_cutoffs"] += int(output_tokens >= args.max_tokens * 0.98)
-        stats["matched_compound_pre_target_tokens"] += meta["matched_compound_pre_target_tokens"]
-        stats["actual_pre_generation_context_tokens"] += meta["actual_pre_generation_context_tokens"]
-        stats["actual_passive_body_tokens"] += meta["actual_passive_body_tokens"]
-
-        results.append(
-            {
-                "id": meta["id"],
-                "sample_idx": meta["sample_idx"],
-                "system_prompt": meta["system_prompt"],
-                "original": meta["original"],
-                "unmodified_original": meta["unmodified_original"],
-                "target_problem": meta["target_problem"],
-                "ground_truth": meta["ground_truth"],
-                "length_match_source": meta["length_match_source"],
-                "compound_results_file": meta["compound_results_file"],
-                "compound_boundary_sample_idx": meta["compound_boundary_sample_idx"],
-                "compound_target_problem_num": meta["compound_target_problem_num"],
-                "compound_target_solution_start_char": meta["compound_target_solution_start_char"],
-                "matched_compound_pre_target_tokens": meta["matched_compound_pre_target_tokens"],
-                "passive_prompt_skeleton_tokens": meta["passive_prompt_skeleton_tokens"],
-                "passive_body_tokens_target": meta["passive_body_tokens_target"],
-                "actual_passive_body_tokens": meta["actual_passive_body_tokens"],
-                "actual_pre_generation_context_tokens": meta["actual_pre_generation_context_tokens"],
-                "passive_text_file": meta["passive_text_file"],
-                "passive_mode": meta["passive_mode"],
-                "passive_repeat_factor": meta["passive_repeat_factor"],
-                "fallback_pre_target_tokens": meta["fallback_pre_target_tokens"],
-                "output": generated_text,
-                "extracted": extracted,
-                "correct": is_correct,
-                "output_tokens": output_tokens,
-            }
+    for chunk_idx in range(total_chunks):
+        chunk = pending[chunk_idx * chunk_size:(chunk_idx + 1) * chunk_size]
+        chunk_prompts = [prompt for prompt, _ in chunk]
+        print(f"\n--- chunk {chunk_idx + 1}/{total_chunks}: {len(chunk_prompts)} prompts ---")
+        outputs = (
+            llm.generate(chunk_prompts, sampling_params)
+            if not args.dry
+            else [""] * len(chunk_prompts)
         )
+
+        for (_, meta), output in zip(chunk, outputs):
+            generated_text = output.outputs[0].text if not args.dry else "placeholder output from dry run"
+
+            try:
+                extracted, is_correct = extract_and_grade(generated_text, meta["ground_truth"], exp_name="compound")
+            except Exception as exc:
+                print(f"Error grading sample {meta['id']}: {exc}")
+                extracted, is_correct = f"ERROR: {exc}", False
+
+            try:
+                output_tokens = count_tokens(tokenizer, generated_text)
+            except Exception as exc:
+                raise RuntimeError(f"Failed to count output tokens: {exc}") from exc
+
+            results.append(
+                {
+                    "id": meta["id"],
+                    "sample_idx": meta["sample_idx"],
+                    "system_prompt": meta["system_prompt"],
+                    "original": meta["original"],
+                    "unmodified_original": meta["unmodified_original"],
+                    "target_problem": meta["target_problem"],
+                    "ground_truth": meta["ground_truth"],
+                    "length_match_source": meta["length_match_source"],
+                    "compound_results_file": meta["compound_results_file"],
+                    "compound_boundary_sample_idx": meta["compound_boundary_sample_idx"],
+                    "compound_target_problem_num": meta["compound_target_problem_num"],
+                    "compound_target_solution_start_char": meta["compound_target_solution_start_char"],
+                    "matched_compound_pre_target_tokens": meta["matched_compound_pre_target_tokens"],
+                    "passive_prompt_skeleton_tokens": meta["passive_prompt_skeleton_tokens"],
+                    "passive_body_tokens_target": meta["passive_body_tokens_target"],
+                    "actual_passive_body_tokens": meta["actual_passive_body_tokens"],
+                    "actual_pre_generation_context_tokens": meta["actual_pre_generation_context_tokens"],
+                    "passive_text_file": meta["passive_text_file"],
+                    "passive_mode": meta["passive_mode"],
+                    "passive_repeat_factor": meta["passive_repeat_factor"],
+                    "fallback_pre_target_tokens": meta["fallback_pre_target_tokens"],
+                    "output": generated_text,
+                    "extracted": extracted,
+                    "correct": is_correct,
+                    "output_tokens": output_tokens,
+                }
+            )
+
+        if not args.dry:
+            save_checkpoint(checkpoint_path, results, run_meta)
+            print(f"Checkpoint saved: {len(results)} samples -> {checkpoint_path}")
+
+    # Stats are derived from the full record list so that resumed samples are counted too.
+    stats = {
+        "correct": sum(int(r["correct"]) for r in results),
+        "total": len(results),
+        "failures": sum(
+            int(r["extracted"] is None or (isinstance(r["extracted"], str) and r["extracted"].startswith("ERROR")))
+            for r in results
+        ),
+        "max_token_cutoffs": sum(int(r["output_tokens"] >= args.max_tokens * 0.98) for r in results),
+        "matched_compound_pre_target_tokens": sum(r["matched_compound_pre_target_tokens"] for r in results),
+        "actual_pre_generation_context_tokens": sum(r["actual_pre_generation_context_tokens"] for r in results),
+        "actual_passive_body_tokens": sum(r["actual_passive_body_tokens"] for r in results),
+    }
 
     acc = stats["correct"] / stats["total"] if stats["total"] else 0.0
     avg_matched_pre_target = stats["matched_compound_pre_target_tokens"] / stats["total"] if stats["total"] else 0.0
@@ -655,16 +744,16 @@ def main():
     )
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    output_dir = os.path.join(base_dir, "passive_context", "results", safe_model_name, safe_dataset_name)
-    os.makedirs(output_dir, exist_ok=True)
-    run_id = (
-        f"{safe_model_name}_{safe_dataset_name}_passive_context_{args.passive_mode}"
-        f"_d{args.num_distractors}_s{args.seed}_{timestamp}"
-    )
+    run_id = f"{run_key}_{timestamp}"
     json_file = os.path.join(output_dir, f"{run_id}.json")
     with open(json_file, "w") as f:
         json.dump(results, f, indent=2)
     print(f"Saved to: {json_file}")
+
+    # The run completed, so the checkpoint is no longer needed.
+    if os.path.exists(checkpoint_path):
+        os.remove(checkpoint_path)
+        print(f"Removed checkpoint: {checkpoint_path}")
 
 
 if __name__ == "__main__":
