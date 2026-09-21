@@ -154,9 +154,24 @@ def mean(values):
     return sum(values) / len(values) if values else None
 
 
-def infer_transform(file_name):
+def infer_transform(file_name, model=None, dataset=None):
+    """Recover the transform from the run id: "{model}_{dataset}_{transform}_decode_recovery_...".
+
+    Deliberately not keyed off TRANSFORMATION_NAMES. That list is what `--names all` currently
+    covers, and transforms get commented out of it (opposites and wrappers are, right now) while
+    their results still sit on disk -- keying off it silently relabels those runs "unknown".
+    """
+    marker = "_decode_recovery_"
+    index = file_name.find(marker)
+    if index < 0:
+        return "unknown"
+    head = file_name[:index]
+    if model and dataset:
+        prefix = f"{model}_{dataset}_"
+        if head.startswith(prefix) and head[len(prefix):]:
+            return head[len(prefix):]
     for name in TRANSFORMATION_NAMES:
-        if f"_{name}_decode_recovery_" in file_name:
+        if head.endswith(f"_{name}"):
             return name
     return "unknown"
 
@@ -259,7 +274,7 @@ def summarize_file(path, experiments_dir, threshold):
     row = {
         "model": model,
         "dataset": dataset,
-        "transformation": infer_transform(file_name),
+        "transformation": infer_transform(file_name, model, dataset),
         "total": len(scored),
         "recovered_rate_as_run": mean([1.0 if s["raw_recovered"] else 0.0 for s in scored]),
         "exact_match_rate_as_run": mean([1.0 if s["raw_exact"] else 0.0 for s in scored]),
