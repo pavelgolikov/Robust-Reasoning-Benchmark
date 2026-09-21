@@ -78,6 +78,11 @@ def normalize_ignoring_space(text):
 # generation but far too slow for re-scoring ~37k stored samples. Keep the exact distance
 # for the normal case (an AIME problem is ~300 characters) and fall back earlier for the
 # rambling outputs, where the exact value would not change any conclusion.
+# Reconstructions shorter than this fraction of the oracle are counted as stubs rather than
+# scored as decode failures. A quarter is well clear of any genuine reconstruction while
+# catching the one-word placeholders these models emit.
+STUB_LENGTH_RATIO = 0.25
+
 CER_EXACT_AREA_LIMIT = 1_000_000
 
 
@@ -217,6 +222,13 @@ def score_entry(entry, threshold):
     nospace_recovered = normalize_ignoring_space(recovered)
     nospace_cer, _ = bounded_char_error_rate(nospace_original, nospace_recovered)
 
+    # A "stub" is a sample that emitted the tags and then put nothing usable between them --
+    # "and", "[the text]", or an empty string, typically after thousands of reasoning tokens.
+    # It is a failure to attempt the task, not a failed reconstruction, and it dominates the
+    # Nemotron cells (~20-33% for the 32B, ~44-57% for the 7B), so scoring it as a decode
+    # error makes the headline rate a measure of willingness to emit a verbatim copy.
+    is_stub = len(nospace_recovered) < STUB_LENGTH_RATIO * max(1, len(nospace_original))
+
     ref_tokens = norm_original.split()
     hyp_tokens = norm_recovered.split()
     overlaps = {}
@@ -229,6 +241,7 @@ def score_entry(entry, threshold):
         "raw_cer": raw_cer,
         "raw_recovered": raw_recovered_flag,
         "cer_estimated": raw_estimated,
+        "is_stub": is_stub,
         "norm_exact": norm_exact,
         "norm_cer": norm_cer,
         "norm_recovered": bool(norm_exact or norm_cer <= threshold),
@@ -279,7 +292,12 @@ def summarize_file(path, experiments_dir, threshold):
         "recovered_rate_as_run": mean([1.0 if s["raw_recovered"] else 0.0 for s in scored]),
         "exact_match_rate_as_run": mean([1.0 if s["raw_exact"] else 0.0 for s in scored]),
         "cer_mean_as_run": mean(raw_cers),
-        "recovered_rate": mean([1.0 if s["norm_recovered"] else 0.0 for s in scored]),
+        # Headline. Whitespace-insensitive: a model that reconstructs a problem exactly but
+        # renders "$b>9$" as "\\( b > 9 \\)" is correct, yet spacing alone puts it at ~4% CER,
+        # past the 2% gate. The spacing-sensitive rate is kept below for comparison.
+        "recovered_rate": mean([1.0 if s["nospace_recovered"] else 0.0 for s in scored]),
+        "recovered_rate_spacing_sensitive": mean([1.0 if s["norm_recovered"] else 0.0 for s in scored]),
+        "stub_rate": mean([1.0 if s["is_stub"] else 0.0 for s in scored]),
         "exact_match_rate": mean([1.0 if s["norm_exact"] else 0.0 for s in scored]),
         "cer_mean": mean(norm_cers),
         "cer_p25": quantile(norm_cers, 0.25),
@@ -290,9 +308,8 @@ def summarize_file(path, experiments_dir, threshold):
         # the output protocol. Report compliance and the rate among compliant samples separately.
         "tagged_rate": mean([1.0 if s["has_tags"] else 0.0 for s in scored]),
         "recovered_rate_tagged": mean(
-            [1.0 if s["norm_recovered"] else 0.0 for s in scored if s["has_tags"]]
+            [1.0 if s["nospace_recovered"] else 0.0 for s in scored if s["has_tags"]]
         ),
-        "recovered_rate_ignoring_space": mean([1.0 if s["nospace_recovered"] else 0.0 for s in scored]),
         "missing_tags": sum(1 for s in scored if not s["has_tags"]),
         "cutoffs": cutoffs,
         "problem_count": len(by_problem),
@@ -319,7 +336,8 @@ COLUMNS = [
     "total",
     "recovered_rate",
     "recovered_rate_tagged",
-    "recovered_rate_ignoring_space",
+    "recovered_rate_spacing_sensitive",
+    "stub_rate",
     "tagged_rate",
     "exact_match_rate",
     "cer_mean",
@@ -369,7 +387,7 @@ def print_table(rows, limit):
         return
     header = (
         f"{'model':<34} {'ds':<22} {'transform':<27} "
-        f"{'rec%':>6} {'+tag':>6} {'+sp':>6} {'as-run':>7} {'CERp50':>7} {'1gF1':>6} {'4gF1':>6}"
+        f"{'rec%':>6} {'|tag':>6} {'strict':>7} {'stub':>6} {'as-run':>7} {'CERp50':>7} {'4gF1':>6}"
     )
     print(header)
     print("-" * len(header))
@@ -377,8 +395,9 @@ def print_table(rows, limit):
         print(
             f"{row['model'][:34]:<34} {row['dataset'][:22]:<22} {row['transformation']:<27} "
             f"{100 * row['recovered_rate']:>6.1f} {100 * (row['recovered_rate_tagged'] or 0):>6.1f} "
-            f"{100 * row['recovered_rate_ignoring_space']:>6.1f} {100 * row['recovered_rate_as_run']:>7.1f} "
-            f"{row['cer_p50']:>7.3f} {row['ngram1_f1']:>6.3f} {row['ngram4_f1']:>6.3f}"
+            f"{100 * row['recovered_rate_spacing_sensitive']:>7.1f} {100 * row['stub_rate']:>6.1f} "
+            f"{100 * row['recovered_rate_as_run']:>7.1f} "
+            f"{row['cer_p50']:>7.3f} {row['ngram4_f1']:>6.3f}"
         )
 
 
