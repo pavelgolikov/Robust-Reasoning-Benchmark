@@ -179,7 +179,7 @@ def get_hatch_style(dataset_name):
         return '///'
     return ''
 
-def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
+def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy', compact=False):
     if not metrics_data_list: return
     data1 = metrics_data_list[0]
     data2 = metrics_data_list[1] if len(metrics_data_list) > 1 else data1
@@ -268,34 +268,62 @@ def plot_by_model(dataset_names, metrics_data_list, outdir, metric='accuracy'):
                         ax.text(b.get_x() + b.get_width() * 0.6, b.get_height() + 1.0, text, ha='center', va='bottom',
                         fontsize=12, fontweight='bold', rotation=90)
 
-        ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '), fontsize=20, pad=10, loc='left')
-        ax.set_xticks(x); ax.set_xticklabels(tech_labels, fontsize=16, rotation=45, ha='right')
+        ax.set_title(shorten(model_name, MODEL_SHORT_NAMES).replace('\n', ' '),
+                     fontsize=17 if compact else 20, pad=6 if compact else 10, loc='left')
+        ax.set_xticks(x)
+        ax.set_xticklabels(tech_labels, fontsize=14 if compact else 16, rotation=45, ha='right')
         if metric == 'accuracy':
             ax.set_ylabel("Accuracy (%)", fontsize=15)
-            ax.set_ylim(0, 115); ax.yaxis.set_major_locator(mticker.MultipleLocator(20))
+            # Compact panels are short, so the rotated value labels need explicit headroom
+            # above a 100% bar or they run into the panel title.
+            ax.set_ylim(0, 128 if compact else 115)
+            ax.yaxis.set_major_locator(mticker.MultipleLocator(50 if compact else 20))
         else:
             ax.set_ylabel("Output Length (1K tokens)", fontsize=15)
             max_val = max(max(accs1) if accs1 else 0, max(accs2) if accs2 else 0)
             ax.set_ylim(0, max_val * 1.35 if max_val > 0 else 1)
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
-        
+
         import matplotlib.patches as mpatches
         p1 = mpatches.Patch(facecolor='white', edgecolor='black', hatch=hatch1, label=shorten(dname1, DATASET_SHORT_NAMES))
         p2 = mpatches.Patch(facecolor='white', edgecolor='black', hatch=hatch2, label=shorten(dname2, DATASET_SHORT_NAMES))
-        ax.legend(handles=[p1, p2], loc='upper right', bbox_to_anchor=(1.0, 1.25), fontsize=10, ncol=2)
+        if not compact:
+            ax.legend(handles=[p1, p2], loc='upper right', bbox_to_anchor=(1.0, 1.25), fontsize=10, ncol=2)
+        return [p1, p2]
 
     ncols, n_models = 2, len(all_models)
     nrows = (n_models + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(6.5 * ncols, 3.8 * nrows))
+    row_h = 1.85 if compact else 3.8
+    fig, axes = plt.subplots(nrows, ncols, figsize=(6.5 * ncols, row_h * nrows))
     axes = np.atleast_2d(axes)
 
+    legend_handles = None
     for idx, model_name in enumerate(all_models):
-        row, col = divmod(idx, ncols); _plot_model_on_ax(axes[row, col], model_name)
+        row, col = divmod(idx, ncols); legend_handles = _plot_model_on_ax(axes[row, col], model_name)
     for idx in range(n_models, nrows * ncols):
         row, col = divmod(idx, ncols); axes[row, col].set_visible(False)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.96], h_pad=2.2, w_pad=2.0)
+    if compact:
+        # Only the bottom visible panel of each column keeps tick labels, and only the left
+        # column keeps the y label; one shared legend replaces the eight per-panel ones.
+        for col in range(ncols):
+            last_row = max((r for r in range(nrows) if r * ncols + col < n_models), default=None)
+            if last_row is None:
+                continue
+            for row in range(nrows):
+                if row * ncols + col >= n_models:
+                    continue
+                if row != last_row:
+                    axes[row, col].set_xticklabels([])
+                if col != 0:
+                    axes[row, col].set_ylabel("")
+        if legend_handles:
+            fig.legend(handles=legend_handles, loc='upper right', bbox_to_anchor=(0.995, 1.005),
+                       fontsize=14, ncol=2, frameon=False)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.97 if compact else 0.96],
+                     h_pad=0.8 if compact else 2.2, w_pad=2.0)
     os.makedirs(outdir, exist_ok=True)
     out_path = os.path.join(outdir, f"{metric}.pdf")
     fig.savefig(out_path, dpi=150, bbox_inches='tight', facecolor='white')
@@ -512,7 +540,7 @@ def load_compound_data_for_dataset(dataset_name, experiments_dir):
                 model_data[model][pos] = {'acc': float(c_acc), 'cutoffs': stats['cutoffs'], 'total': stats['total']}
     return model_data
 
-def plot_compound(dataset_names, outdir, experiments_dir):
+def plot_compound(dataset_names, outdir, experiments_dir, compact=False):
     data1 = load_compound_data_for_dataset(dataset_names[0], experiments_dir)
     data2 = load_compound_data_for_dataset(dataset_names[1], experiments_dir) if len(dataset_names) > 1 else {}
     
@@ -532,7 +560,7 @@ def plot_compound(dataset_names, outdir, experiments_dir):
     all_models = set(data1.keys()).union(set(data2.keys()))
     models_to_plot = [m for m in target_models if m in all_models and (data1.get(m) or data2.get(m))]
     
-    fig, ax = plt.subplots(figsize=(14, 8))
+    fig, ax = plt.subplots(figsize=(14, 6.0) if compact else (14, 8))
     x_ticks, x_tick_labels, model_centers, model_labels = [], [], [], []
     current_x = 0
     
@@ -593,7 +621,8 @@ def plot_compound(dataset_names, outdir, experiments_dir):
     ax.tick_params(axis='y', labelsize=16)
     
     for center, label in zip(model_centers, model_labels):
-        ax.text(center, -0.12, label, transform=ax.get_xaxis_transform(), ha='right', va='top', fontsize=26, rotation=45)
+        ax.text(center, -0.10 if compact else -0.12, label, transform=ax.get_xaxis_transform(),
+                ha='right', va='top', fontsize=24 if compact else 26, rotation=28 if compact else 45)
                 
     ax.set_ylabel("Accuracy on Last Problem (%)", fontsize=22)
     ax.set_ylim(0, 105)
@@ -608,7 +637,7 @@ def plot_compound(dataset_names, outdir, experiments_dir):
     
     ax.legend(handles=legend_elements, loc='lower left', fontsize=16, title="Datasets", title_fontsize=18)
     
-    fig.subplots_adjust(bottom=0.35, right=0.75, top=0.92)
+    fig.subplots_adjust(bottom=0.30 if compact else 0.35, right=0.99 if compact else 0.75, top=0.97 if compact else 0.92)
     xmax = x_ticks[-1] + 1 if x_ticks else 10
     ax.set_xlim(left=0, right=xmax)
     
@@ -628,6 +657,8 @@ def main():
     parser.add_argument("--plot_type", type=str, required=True, 
                     choices=['accuracy', 'average_accuracy_drop', 'output_length', 'radar_categories', 'compound'])
     parser.add_argument("--exclude_refusals", action="store_true")
+    parser.add_argument("--compact", action="store_true",
+                        help="Tighter layout for the paper: shared tick labels, one legend, shorter panels.")
     args = parser.parse_args()
 
     experiments_dir = args.experiments_dir or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -638,14 +669,14 @@ def main():
 
     if args.plot_type == 'compound':
         print(f"Generating combined compound plot...")
-        plot_compound(safe_datasets, outdir, experiments_dir)
+        plot_compound(safe_datasets, outdir, experiments_dir, compact=args.compact)
         return
 
     print(f"Loading data for datasets: {safe_datasets}...")
     metrics_data_list = [load_metrics_data(experiments_dir, sd) for sd in safe_datasets]
 
     if args.plot_type == 'accuracy':
-        plot_by_model(safe_datasets, metrics_data_list, outdir, metric='accuracy')
+        plot_by_model(safe_datasets, metrics_data_list, outdir, metric='accuracy', compact=args.compact)
     elif args.plot_type == 'output_length':
         plot_by_model(safe_datasets, metrics_data_list, outdir, metric='length')
     elif args.plot_type == 'average_accuracy_drop':

@@ -15,7 +15,6 @@ Standard library only: no HuggingFace datasets, vLLM, pandas, or model tokenizer
 
 import argparse
 import csv
-import difflib
 import functools
 import glob
 import json
@@ -73,30 +72,15 @@ def normalize_ignoring_space(text):
     return re.sub(r"\s+", "", normalize_for_scoring(text))
 
 
-# Exact Levenshtein is O(len(a)*len(b)) in pure Python. The run script only switches to a
-# difflib ratio above 6000 characters, which is fine when scoring is amortized over
-# generation but far too slow for re-scoring ~37k stored samples. Keep the exact distance
-# for the normal case (an AIME problem is ~300 characters) and fall back earlier for the
-# rambling outputs, where the exact value would not change any conclusion.
 # Reconstructions shorter than this fraction of the oracle are counted as stubs rather than
 # scored as decode failures. A quarter is well clear of any genuine reconstruction while
 # catching the one-word placeholders these models emit.
 STUB_LENGTH_RATIO = 0.25
 
-CER_EXACT_AREA_LIMIT = 1_000_000
-
 
 @functools.lru_cache(maxsize=200_000)
 def bounded_char_error_rate(reference, hypothesis):
-    ref_len = max(1, len(reference))
-    # A hypothesis several times longer than the reference is already saturated: the edit
-    # distance is at least the length difference, so the rate exceeds 2 whatever the exact
-    # alignment is. Return that lower bound instead of aligning a 100k-character ramble.
-    if len(hypothesis) > 3 * ref_len:
-        return (len(hypothesis) - len(reference)) / ref_len, True
-    if ref_len * len(hypothesis) > CER_EXACT_AREA_LIMIT:
-        ratio = difflib.SequenceMatcher(None, reference, hypothesis).ratio()
-        return 1.0 - ratio, True
+    """Exact CER for every sample; jiwer/rapidfuzz is fast enough to drop the old fallbacks."""
     return char_error_rate(reference, hypothesis)
 
 

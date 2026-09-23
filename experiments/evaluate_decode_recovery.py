@@ -1,11 +1,12 @@
 import argparse
-import difflib
 import importlib
 import json
 import os
 import random
 import re
 import time
+
+import jiwer
 
 from datasets import load_dataset
 
@@ -90,31 +91,20 @@ def normalize_for_recovery(text):
     return text.strip()
 
 
-def levenshtein_distance(a, b):
-    if a == b:
-        return 0
-    if len(a) < len(b):
-        a, b = b, a
-    previous = list(range(len(b) + 1))
-    for i, ca in enumerate(a, 1):
-        current = [i]
-        for j, cb in enumerate(b, 1):
-            insert_cost = current[j - 1] + 1
-            delete_cost = previous[j] + 1
-            replace_cost = previous[j - 1] + (ca != cb)
-            current.append(min(insert_cost, delete_cost, replace_cost))
-        previous = current
-    return previous[-1]
+def char_error_rate(a, b):
+    """Character error rate of hypothesis ``b`` against reference ``a``.
 
+    The standard ASR/OCR definition, CER = (S + D + I) / N, where S, D and I are the
+    substitutions, deletions and insertions of the optimal edit alignment and N is the
+    number of characters in the reference. Computed with jiwer so the number is the same
+    quantity any reviewer would reproduce from the name.
 
-def char_error_rate(a, b, max_exact_chars=6000):
-    if not a and not b:
-        return 0.0, False
-    denom = max(1, len(a))
-    if len(a) <= max_exact_chars and len(b) <= max_exact_chars:
-        return levenshtein_distance(a, b) / denom, False
-    ratio = difflib.SequenceMatcher(None, a, b).ratio()
-    return 1.0 - ratio, True
+    Returns (rate, estimated); ``estimated`` is retained for compatibility with stored
+    result files and is always False now that every sample is scored exactly.
+    """
+    if not a:
+        return (0.0, False) if not b else (float(len(b)), False)
+    return jiwer.cer(a, b), False
 
 
 def extract_recovered_text(output):
