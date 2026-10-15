@@ -105,22 +105,25 @@ def scan_and_calculate(experiments_dir, output_base):
                     "prompt_recovery" in f
                 )]
                 
-                latest = pick_latest_file(result_files)
-                if latest:
-                    tasks.append((technique, model_name, dataset_name, latest))
+                # A cell run in several batches is split across files; every batch is an
+                # independent sample of the same condition, so pool them all rather than
+                # keeping only the newest.
+                if result_files:
+                    tasks.append((technique, model_name, dataset_name, sorted(result_files)))
 
     # 2. Execute and Save
-    for technique, model_name, dataset_name, fpath in tqdm(tasks, desc="Calculating lengths"):
+    for technique, model_name, dataset_name, fpaths in tqdm(tasks, desc="Calculating lengths"):
         try:
-            with open(fpath, 'r') as f:
-                data = json.load(f)
-            
-            if isinstance(data, dict) and "results" in data:
-                results = data["results"]
-            elif isinstance(data, list):
-                results = data
-            else:
-                continue
+            if isinstance(fpaths, str):
+                fpaths = [fpaths]
+            results = []
+            for fpath in fpaths:
+                with open(fpath, 'r') as f:
+                    data = json.load(f)
+                if isinstance(data, dict) and "results" in data:
+                    results.extend(data["results"])
+                elif isinstance(data, list):
+                    results.extend(data)
 
             if not results:
                 continue

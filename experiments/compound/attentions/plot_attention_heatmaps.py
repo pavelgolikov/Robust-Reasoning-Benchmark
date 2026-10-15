@@ -75,7 +75,8 @@ def generate_combined_heatmap(all_results, out_path, exclude_system=False):
     if num_models == 0:
         return
 
-    fig, axes = plt.subplots(num_models, 1, figsize=(16, 3.0 * num_models), squeeze=False)
+    row_h = float(os.environ.get('RRB_ATTN_ROW_H', 3.0))
+    fig, axes = plt.subplots(num_models, 1, figsize=(16, row_h * num_models), squeeze=False)
     
     # title = "Attention Dilution across Layers"
     # if exclude_system:
@@ -96,7 +97,7 @@ def generate_combined_heatmap(all_results, out_path, exclude_system=False):
             text_color = "white"
             ax.text(avg_col_idx, i, f"{val:.1f}     ", ha="center", va="center", color=text_color, fontweight="bold", fontsize=16)
 
-        ax.set_title(model_name, fontsize=20, pad=10)
+        ax.set_title(model_name, fontsize=20, pad=4)
         # Show every 4th layer index + the 'Avg' column
         tick_indices = list(range(0, len(x_labels) - 1, 4))
         if (len(x_labels) - 2) not in tick_indices: # Ensure we show something near the end if needed, but 'Avg' is always last
@@ -112,9 +113,11 @@ def generate_combined_heatmap(all_results, out_path, exclude_system=False):
         
         if idx == num_models - 1:
             ax.set_xlabel("Layer index", fontsize=18)
+        else:
+            ax.set_xticklabels([])
 
     # Add a single colorbar for the whole figure
-    fig.subplots_adjust(right=0.85, hspace=0.7)
+    fig.subplots_adjust(right=0.85, hspace=float(os.environ.get('RRB_ATTN_HSPACE', 0.7)))
     cbar_ax = fig.add_axes([0.88, 0.15, 0.02, 0.7])
     cbar = fig.colorbar(axes[0, 0].images[0], cax=cbar_ax)
     cbar.set_label('Attention Mass (%)', fontsize=18)
@@ -125,7 +128,7 @@ def generate_combined_heatmap(all_results, out_path, exclude_system=False):
     print(f"Saved combined plot to {out_path}")
 
 def main():
-    target_dir = "/home/golikovp/Antigravity/Robust-Reasoning-Benchmark/experiments/compound/attentions"
+    target_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Target patterns for Qwen and Nemotron
     patterns = [

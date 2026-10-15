@@ -198,16 +198,43 @@ def entry_cutoff(entry, summary):
         return False
 
 
-def summarize_file(path, experiments_dir, n_draws, seed):
+def cell_of(path, experiments_dir):
+    """(model, dataset, condition) for one result file, without running the bootstrap."""
     parsed = parse_path(path, experiments_dir)
     if not parsed:
         return None
     technique, model, dataset, subcondition, file_name = parsed
-
-    data = read_json(path)
-    entries, summary = result_entries(data)
+    entries, summary = result_entries(read_json(path))
     if not entries:
         return None
+    return (model, dataset, infer_condition(technique, subcondition, file_name, summary, entries))
+
+
+def summarize_file(path, experiments_dir, n_draws, seed):
+    """Summarize one cell. ``path`` may be a list of files: a cell that was run in
+    several batches is split across files, and every batch is an independent sample of
+    the same condition, so they are pooled rather than deduplicated to the newest."""
+    paths = [path] if isinstance(path, str) else list(path)
+    entries, summary, parsed, file_name, mtime = [], {}, None, None, 0.0
+    for one in paths:
+        got = parse_path(one, experiments_dir)
+        if not got:
+            continue
+        part, part_summary = result_entries(read_json(one))
+        if not part_summary:
+            part_summary = {}
+        if not part:
+            continue
+        if parsed is None:
+            parsed = got
+            summary = part_summary
+            file_name = got[4]
+        entries.extend(part)
+        mtime = max(mtime, os.path.getmtime(one))
+    if parsed is None or not entries:
+        return None
+    technique, model, dataset, subcondition, _ = parsed
+    path = paths[0]
 
     condition = infer_condition(technique, subcondition, file_name, summary, entries)
     score_key = score_key_for(entries, summary, technique)
@@ -288,7 +315,7 @@ def summarize_file(path, experiments_dir, n_draws, seed):
             else ""
         ),
         "summary_task": summary.get("task", ""),
-        "mtime": os.path.getmtime(path),
+        "mtime": mtime,
         "problem_scores": problem_scores,
     }
 
@@ -558,18 +585,34 @@ def main():
     experiments_dir = os.path.abspath(args.experiments_dir)
     out_dir = args.out_dir or os.path.join(experiments_dir, "analysis", "rebuttal_stats")
 
+    discovered = discover_result_files(experiments_dir, args.include_decode_recovery)
+    if args.all_files:
+        groups = [[path] for path in discovered]
+    else:
+        # A cell run in several batches lands in several files. Pool them.
+        by_cell = defaultdict(list)
+        for path in discovered:
+            try:
+                key = cell_of(path, experiments_dir)
+            except Exception as exc:
+                print(f"Warning: failed to key {path}: {exc}")
+                continue
+            if key:
+                by_cell[key].append(path)
+        groups = [sorted(paths) for _, paths in sorted(by_cell.items())]
+        merged = sum(1 for paths in groups if len(paths) > 1)
+        if merged:
+            print(f"Pooled {merged} cells that were run across multiple files.")
+
     summaries = []
-    for path in discover_result_files(experiments_dir, args.include_decode_recovery):
+    for paths in groups:
         try:
-            row = summarize_file(path, experiments_dir, args.draws, args.seed)
+            row = summarize_file(paths, experiments_dir, args.draws, args.seed)
         except Exception as exc:
-            print(f"Warning: failed to summarize {path}: {exc}")
+            print(f"Warning: failed to summarize {paths[0]}: {exc}")
             continue
         if row:
             summaries.append(row)
-
-    if not args.all_files:
-        summaries = keep_latest_by_key(summaries)
 
     summaries = filter_rows(
         summaries,
